@@ -20,6 +20,7 @@
 
 	body {
 		background: _palette(bg);
+		position: relative;
 
 		// Prevents animation/transition "flicker" on page load.
 		// Automatically added/removed by js/main.js.

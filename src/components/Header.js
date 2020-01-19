@@ -1,59 +1,45 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 
+import logo from '../images/logo.png'
+
 const Header = props => (
   <header id="header" style={props.timeout ? { display: 'none' } : {}}>
-    <div className="logo">
-      <span className="icon fa-diamond"></span>
+    <div className="logo-container">
+      {<img src={logo} className="logo" alt="drone logo"/>}
+      <h1 className="logo-title">Emitters</h1>
     </div>
     <div className="content">
       <div className="inner">
-        <h1>Dimension</h1>
-        <p>
-          A fully responsive site template designed by{' '}
-          <a href="https://html5up.net">HTML5 UP</a> and released
-          <br />
-          for free under the{' '}
-          <a href="https://html5up.net/license">Creative Commons</a> license.
-        </p>
+        <p>Emitters is a single / co-op first-person shooter 🔫 survival <br/>drone invasions game, where deadly machines 🤖 were deployed throughout multiple levels 🌳 <br/>with the single intent of shooting you dead! ☠️</p>
       </div>
     </div>
     <nav>
       <ul>
         <li>
           <button
+            style={{
+              fontWeight: 'bold',
+              backgroundImage: "linear-gradient(to top , rgba(120,0,0,1) 0%, rgba(0,0,0,1) 80%)",
+              width: "250px"
+            }}
             onClick={() => {
               props.onOpenArticle('intro')
             }}
           >
-            Intro
+            I want this
           </button>
         </li>
         <li>
           <button
-            onClick={() => {
-              props.onOpenArticle('work')
+            style={{
+              backgroundColor: "black"
             }}
-          >
-            Work
-          </button>
-        </li>
-        <li>
-          <button
-            onClick={() => {
-              props.onOpenArticle('about')
-            }}
-          >
-            About
-          </button>
-        </li>
-        <li>
-          <button
             onClick={() => {
               props.onOpenArticle('contact')
             }}
           >
-            Contact
+            Not convinced?
           </button>
         </li>
       </ul>

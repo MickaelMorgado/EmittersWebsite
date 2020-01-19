@@ -4,6 +4,8 @@ import Layout from '../components/layout'
 import Header from '../components/Header'
 import Main from '../components/Main'
 import Footer from '../components/Footer'
+import BackgroundVideo from '../components/BackgroundVideo'
+import SteamWidget from '../components/SteamWidget'
 
 class IndexPage extends React.Component {
   constructor(props) {
@@ -105,7 +107,7 @@ class IndexPage extends React.Component {
             />
             <Footer timeout={this.state.timeout} />
           </div>
-          <div id="bg"></div>
+          <BackgroundVideo></BackgroundVideo>
         </div>
       </Layout>
     )

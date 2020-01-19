@@ -20,9 +20,16 @@
 	);
 
 // Font.
+
+	@font-face {
+		font-family: hemiHead;
+		src: url("/static/fonts/hemi-head-bd-it.ttf");
+	}
+
 	$font: (
 		family:						('Source Sans Pro', sans-serif),
 		family-fixed:				('Courier New', monospace),
+		family-brand:				('hemiHead', monospace),
 		weight:						300,
 		weight-bold:				600,
 		letter-spacing:				0.2rem,
@@ -31,7 +38,7 @@
 
 // Palette.
 	$palette: (
-		bg:							#1b1f22,
+		bg:							#0e0000,
 		bg-alt:						#000000,
 		bg-overlay:					rgba(19,21,25,0.5),
 		fg:							#ffffff,

@@ -42,6 +42,7 @@
     position: relative;
     margin-top: 3.5rem;
 
+    /*
     &:before {
       content: '';
       display: block;
@@ -52,6 +53,7 @@
       height: calc(3.5rem + 1px);
       background: _palette(border);
     }
+    */
   }
 
   > :first-child {
@@ -62,18 +64,22 @@
     }
   }
 
-  .logo {
-    width: 5.5rem;
-    height: 5.5rem;
-    line-height: 5.5rem;
-    border: solid _size(border-width) _palette(border);
-    border-radius: 100%;
+  .logo-container {
+    position: relative;
+  }
 
-    .icon {
-      &:before {
-        font-size: 2rem;
-      }
-    }
+  .logo {
+    width: 15rem;
+  }
+
+  .logo-title {
+    position: absolute;
+    display: block;
+    width: 100%;
+    text-align: center;
+    bottom: -20px;
+    left: 0;
+    font-family: _font(family-brand);
   }
 
   .content {
