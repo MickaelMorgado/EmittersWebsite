@@ -7,7 +7,6 @@ const Header = props => (
   <header id="header" style={props.timeout ? { display: 'none' } : {}}>
     <div className="logo-container">
       {<img src={logo} className="logo" alt="drone logo"/>}
-      <h1 className="logo-title">Emitters</h1>
     </div>
     <div className="content">
       <div className="inner">
@@ -18,11 +17,7 @@ const Header = props => (
       <ul>
         <li>
           <button
-            style={{
-              fontWeight: 'bold',
-              backgroundImage: "linear-gradient(to top , rgba(120,0,0,1) 0%, rgba(0,0,0,1) 80%)",
-              width: "250px"
-            }}
+            className="primary-button"
             onClick={() => {
               props.onOpenArticle('intro')
             }}

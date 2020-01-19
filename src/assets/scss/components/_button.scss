@@ -78,3 +78,22 @@
 	button {
 		line-height: calc(#{_size(element-height)} - 2px);
 	}
+
+.primary-button {
+	transition: all;
+	font-weight: bold;
+	background-color: rgba(120,0,0,1);
+	box-shadow: 0 0 45px -10px #c00;
+	width: 250px;
+	animation: blink 2s infinite;
+	
+	&:hover {
+		background-color: rgba(165, 52, 52, 1);
+	}
+}
+
+@keyframes blink {
+	0% {box-shadow: 0 0 0 -10px #c00;}
+	50% {box-shadow: 0 0 45px -10px #c00;}
+	100% {box-shadow: 0 0 0 -10px #c00;}
+}
