@@ -5,46 +5,48 @@
 
 // Duration.
 	$duration: (
-		transition:					0.2s,
-		bg:							2.5s,
-		intro:						0.75s,
-		article:					0.325s
+		transition:					0.1s,
+		bg:							0.1s,
+		intro:						0.1s,
+		article:					0.1s
 	);
 
 // Size.
 	$size: (
-		border-radius:				4px,
-		border-width:				1px,
+		border-radius:				0,
+		border-width:				0,
 		element-height:				2.75rem,
-		element-margin:				2rem
+		element-margin:				2rem,
+		element-padding: 			2.5rem,
 	);
 
 // Font.
 
-	@font-face {
-		font-family: hemiHead;
-		src: url("/static/fonts/hemi-head-bd-it.ttf");
-	}
+	@import url('https://fonts.googleapis.com/css?family=Roboto&display=swap');
 
 	$font: (
-		family:						('Source Sans Pro', sans-serif),
+		family:						('Roboto', sans-serif), // ('Source Sans Pro', sans-serif),
 		family-fixed:				('Courier New', monospace),
-		family-brand:				('hemiHead', monospace),
+		family-brand:				('Roboto', sans-serif),
 		weight:						300,
 		weight-bold:				600,
-		letter-spacing:				0.2rem,
-		letter-spacing-heading:		0.5rem
+		letter-spacing:				0.15rem, // 0.2rem,
+		letter-spacing-heading:		0.2rem
 	);
 
 // Palette.
 	$palette: (
-		bg:							#0e0000,
+		bg:							#000000,
 		bg-alt:						#000000,
-		bg-overlay:					rgba(19,21,25,0.5),
+		bg-overlay:					rgba(0,0,0,0.9),
+		color-primary:				rgba(100,0,0,0.9),
+		color-primary-hover:		rgba(100,0,0,1),
+		color-secondary:			rgba(0,0,0,0.9),
+		color-secondary-hover:		rgba(0,0,0,1),
 		fg:							#ffffff,
 		fg-bold:					#ffffff,
 		fg-light:					rgba(255,255,255,0.5),
 		border:						#ffffff,
-		border-bg:					rgba(255,255,255,0.075),
+		border-bg:					rgba(50,0,0,.9),
 		border-bg-alt:				rgba(255,255,255,0.175)
 	);

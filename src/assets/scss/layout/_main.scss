@@ -24,11 +24,12 @@
 				'opacity #{_duration(article)} ease-in-out',
 				'transform #{_duration(article)} ease-in-out'
 			));
-			@include padding(2.5rem, 2.5rem, (2rem, 0, 1rem, 0));
+			// @include padding(2.5rem, 2.5rem, (2rem, 0, 1rem, 0));
+			padding: _size(element-padding);
 			position: relative;
 			width: 40rem;
 			max-width: 100%;
-			background-color: transparentize(_palette(bg), 0.15);
+			background-color: _palette(bg-overlay);
 			border-radius: _size(border-radius);
 			opacity: 0;
 

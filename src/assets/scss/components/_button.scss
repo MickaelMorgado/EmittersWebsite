@@ -79,16 +79,26 @@
 		line-height: calc(#{_size(element-height)} - 2px);
 	}
 
-.primary-button {
+.primary-button,.secondary-button {
 	transition: all;
 	font-weight: bold;
-	background-color: rgba(120,0,0,1);
-	box-shadow: 0 0 45px -10px #c00;
 	width: 250px;
-	animation: blink 2s infinite;
 	
+	background-color: _palette(color-primary);
 	&:hover {
-		background-color: rgba(165, 52, 52, 1);
+		background-color: _palette(color-primary-hover);
+	}
+}
+
+.primary-button {
+	box-shadow: 0 0 45px -10px #c00;
+	animation: blink 2s infinite;
+}
+
+.secondary-button {
+	background-color: _palette(color-secondary);
+	&:hover {
+		background-color: _palette(color-secondary-hover);
 	}
 }
 
