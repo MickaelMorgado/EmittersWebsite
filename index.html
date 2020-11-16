@@ -1,0 +1,294 @@
+<html>
+	<head>
+
+		<title>Emitters - Drone Invasion</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+		<link rel="preconnect" href="https://fonts.gstatic.com">
+		<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;600&display=swap" rel="stylesheet">
+
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.9.0/slick-theme.min.css" integrity="sha512-17EgCFERpgZKcm0j0fEq1YCJuyAWdz9KUtv1EjVuaOz8pDnh/0nZxmU6BBXwaaxqoi9PQXnRWqlcDB027hgv9A==" crossorigin="anonymous" />
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.9.0/slick.min.css" integrity="sha512-yHknP1/AwR+yx26cB1y0cjvQUMvEa2PFzt1c9LlS4pRQ5NOTZFWbhBig+X9G9eYW/8m0/4OXNx8pxJ6z57x0dw==" crossorigin="anonymous" />
+		<link rel="stylesheet" href="assets/css.css"></style>
+		<link rel="stylesheet" href="assets/tablet.css"></style>
+		<link rel="stylesheet" href="assets/mobile.css"></style>
+
+		<script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.9.0/slick.min.js" integrity="sha512-HGOnQO9+SP1V92SrtZfjqxxtLmVzqZpjFFekvzZVWoiASSQgSr4cw9Kqd2+l8Llp4Gm0G8GIFJ4ddwZilcdb8A==" crossorigin="anonymous"></script>
+
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/waypoints/4.0.1/jquery.waypoints.min.js"></script>
+		<script src="assets/js/jquery.scrollify.js"></script>
+		<script src="assets/js.js"></script>
+	</head>
+	<div id="preloader"></div>
+	<header>
+		<img class="logo-mobile" src="assets/images/logo.png" alt="">
+		<a class="hamburger">
+			<span></span>
+			<span></span>
+			<span></span>
+		</a>
+		<a href="#home" class="header-link active">HOME</span></a>
+		<a href="#creator" class="header-link">CREATOR</span></a>
+		<a href="#story" class="header-link">STORY</span></a>
+		<a href="#content" class="header-link">CONTENT</span></a>
+		<a href="#enemies" class="header-link">ENEMIES</span></a>
+		<a href="#supports" class="header-link">SUPPORTS</span></a>
+		<a href="#levels" class="header-link">LEVELS</span></a>
+		<a href="#social" class="header-link">SOCIAL</span></a>
+		<a href="#reviewers" class="header-link">REVIEWERS</span></a>
+	</header>
+	<body>
+		<div class="parent">
+			<section id="home">
+				<video
+					id='trailerVideo'
+					class="trailer-video"
+				    src="assets/videos/Trailer.mp4"
+				    autoplay="autoplay"
+				    loop="loop"
+				    muted="muted"
+				    poster="assets/images/1.jpg">
+				</video>
+				<a href="#home" id="close" class="button button--function">Close</a>
+				<div class="grid-container side-caption">
+					<div class="row section-1">
+						<div class="section1-flex1"></div>
+						<div class="section1-flex2">
+							<img class="logo" src="assets/images/logo.png" alt="">
+							<h1 class="mb60">SURVIVAL DRONE INVASION</h1>
+							<ul class="flags">
+								<li class="mb30">A fast-paced, first-person experience set in a future taken over by deadly hi-tech drones.</li>
+								<li class="mb30">As humanity's only hope, it's your mission to identify this threat's origin and neutralize it.</li>
+								<li class="mb30">But are you ready to face an army whose single target is yourself?</li>
+							</ul>
+							<div class="mb60"></div>
+							<a id="watchTrailer" href="assets/videos/Trailer.mp4" class="button button--warning">Watch Trailer</a>
+							<a class="button button--go" href="https://store.steampowered.com/app/920640/Emitters/" target="_blank">Play on Steam</a>
+						</div>
+					</div>
+				</div>
+			</section>
+			<section id="creator" style="background-image: url('assets/images/2.png');">
+				<div class="grid-container">
+					<div class="row section-2">
+						<p class="big-text mb60 js-dynamic-text">
+							"Emitters is my 1st solo game dev project made on <a href="https://www.unrealengine.com/" target="_blank">UE4</a> a single player FPS survival drone invasion game released on <a href="https://store.steampowered.com/app/920640/Emitters/" target="_blank">STEAM</a>. The development started since 2017 learning from scratch, I hope you like it and see you on Emitters <a href="#social">social</a> networks."
+						</p>
+						<p class="js-dynamic-signature">Mickael Morgado <b>(HYTEK94)</b></p>
+					</div>
+				</div>
+			</section>
+			<section id="story" style="background-image: url('assets/images/5.png');">
+				<div class="grid-container side-caption-left">
+					<div class="row middle">
+						<div class="story__content">
+							<ul class="flags">
+								<li class="mb30">Emitters is an industry specialized in high-tech equipment for the army and for civilian protection</li>
+								<li class="mb30">since 2377, they've already deployed over 1 million robot units that prioritize human safety under any circunstances</li>
+								<li class="mb30">but recently, many units have been hijacked and become extremely dangerous, even killing people inadvertently</li>
+								<li class="mb30">"emitters industry" is working hard to stop these occurrences, but even with additional tests and 24h surveillance, incidents are exponentially becoming more frequent and dangerous</li>
+								<li class="mb30">these hijacks are the result of brute-force security breaches that somehow allow third-parties to take over targeted units, detaching them from emitter's control.</li>
+								<li class="mb50">after ceasing shipping of their products on a global scale, emitters started creating the best military android to identify and neutralize this global threat - and that android is you!</li>
+							</ul>
+							<p>"SAVE YOUR COMPANY. SAVE MANKIND"</p>
+						</div>
+					</div>
+				</div>
+			</section>
+			<section id="content">
+				<div class="Modern-Slider">
+					<div class="background-cover sl-image" style="background:  linear-gradient(180deg, rgba(0,0,0,1) 0%, rgba(255,255,255,0) 50%, rgba(0,0,0,1) 100%), url('assets/images/2.png') no-repeat center / cover">
+						<div class="container">
+							<div class="row middle inline">
+								<div class="col gamemode__col">
+									<h3>Game Modes</h3>
+									<ul class="flags">
+										<li>Power up The Totem</li>
+									</ul>
+									<div class="mb30">
+										<p>Collect all the <span class="color-identification-1">Batteries</span> that spawn in some waves of your training levels to activated all the <span class="color-identification-2">Chargers</span> on the map, recovering the arena electricity to escape to the next level.</p>
+									</div>
+								</div>
+								<div class="col gamemode__col">
+									<h3>Elements</h3>
+									<ul class="flags">
+										<li class="purple">Batteries</li>
+										<div class="row inline">
+											<p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Qui natus minus recusandae? Error voluptatibus soluta quibusdam repellat, ab, repellendus velit, veniam quis id alias asperiores, sint dolore reiciendis! Quod, enim.</p>
+											<img src="https://placehold.it/250" alt="">
+										</div>
+										<li class="blue">Chargers</li>
+										<p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Qui natus minus recusandae? Error voluptatibus soluta quibusdam repellat, ab, repellendus velit, veniam quis id alias asperiores, sint dolore reiciendis! Quod, enim.</p>
+										<li>Totem</li>
+										<p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Qui natus minus recusandae? Error voluptatibus soluta quibusdam repellat, ab, repellendus velit, veniam quis id alias asperiores, sint dolore reiciendis! Quod, enim.</p>
+									</ul>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="background-cover sl-image" style="background:  linear-gradient(180deg, rgba(0,0,0,1) 0%, rgba(255,255,255,0) 50%, rgba(0,0,0,1) 100%), url('assets/images/2.png') no-repeat center / cover">
+						<div class="container">
+							<div class="row middle inline">
+								<div class="col weapons-mods__col">
+									<h3>Weapons</h3>
+									<p>By completing levels you'll unlock new weapons that you can equip in your <a href="">Personal Area</a></p>
+									<ul class="flags">
+										<li>handgun</li>
+										<li>glass breaker</li>
+										<li>sniperz</li>
+										<li>dual gun</li>
+										<li>AK47</li>
+										<li>Shotty</li>
+									</ul>
+								</div>
+								<div class="col weapons-mods__col">
+									<h3>Mods</h3>
+									<p>Allows you to upgrade yourself or your guns by collecting <a href="">Req-Items</a> droped by the dead enemies or <a href="">Micro-Geminers</a> discovered on levels</p>
+									<h5>Active</h5>
+									<ul class="flags">
+										<li>Dash</li>
+										<li>Slow Motion</li>
+									</ul>
+									<h5>Passive</h5>
+									<ul class="flags">
+										<li>Airstricke Squadron</li>
+										<li>Critical bullet</li>
+										<li>Shield</li>
+									</ul>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+			<section id="enemies">
+				<div class="Modern-Slider">
+					<div class="background-cover sl-image" style="background:  linear-gradient(180deg, rgba(0,0,0,1) 0%, rgba(255,255,255,0) 50%, rgba(0,0,0,1) 100%), url('assets/images/2.png') no-repeat center / cover">
+						<div class="container">
+							<div class="row middle inline">
+								<div class="col media__col">
+									<h3>Drones</h3>
+									<p>Emitters Industry builded some quadcopters for military security each one auto-controlled by <a href="https://en.wikipedia.org/wiki/Artificial_intelligence" target="_blank" title="Artificial Intelligence">AI</a> but now they need to use them against you has your <a>training protocol</a> before possible World war.</p>
+								</div>
+								<div class="col media__col">
+									<div class="Modern-Slider-2">
+										<img src="assets/images/enemies/enemies1.png" alt="drone1">
+										<img src="assets/images/enemies/enemies2.png" alt="drone2">
+										<img src="assets/images/enemies/enemies3.png" alt="drone3">
+										<img src="assets/images/enemies/enemies4.png" alt="drone4">
+										<img src="assets/images/enemies/enemies5.png" alt="drone5">
+										<img src="assets/images/enemies/enemies6.png" alt="drone6">
+										<img src="assets/images/enemies/enemies7.png" alt="drone7">
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="background-cover sl-image" style="background:  linear-gradient(180deg, rgba(0,0,0,1) 0%, rgba(255,255,255,0) 50%, rgba(0,0,0,1) 100%), url('assets/images/2.png') no-repeat center / cover">
+						<div class="container">
+							<div class="row middle inline">
+								<div class="col media__col">
+									<h3>Androids</h3>
+									<p>Same as the Drones, Androids are created to secure multiple cities arround the world and even help people for daily routines.</p>
+								</div>
+								<div class="col media__col">
+									<div class="Modern-Slider-2">
+										<img src="assets/images/enemies/Android.png" alt="androids3">
+										<img src="assets/images/enemies/Android2.png" alt="androids2">
+										<img src="assets/images/enemies/Android1.png" alt="androids1">
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+			<section id="supports">
+				<div class="Modern-Slider">
+					<div class="background-cover sl-image" style="background:url('assets/images/supports/turrets.png') no-repeat center / cover">
+						<div class="container side-caption">
+							<div class="row middle inline">
+								<div class="col media__col">
+								</div>
+								<div class="col media__col">
+									<h3>Turrets</h3>
+									<p>Lorem ipsum, dolor sit, amet consectetur adipisicing elit. Ab voluptates sit architecto nihil saepe quos quaerat, nostrum unde consectetur praesentium placeat repudiandae fugiat, reiciendis cumque quisquam enim a magni laudantium!</p>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="background-cover sl-image" style="background:url('assets/images/supports/barrels.png') no-repeat center / cover">
+						<div class="container side-caption">
+							<div class="row middle inline">
+								<div class="col media__col">
+								</div>
+								<div class="col media__col">
+									<h3>Barrels</h3>
+									<p>Lorem ipsum, dolor sit, amet consectetur adipisicing elit. Ab voluptates sit architecto nihil saepe quos quaerat, nostrum unde consectetur praesentium placeat repudiandae fugiat, reiciendis cumque quisquam enim a magni laudantium!</p>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="background-cover sl-image" style="background:url('assets/images/supports/airstrike.png') no-repeat center / cover">
+						<div class="container side-caption">
+							<div class="row middle inline">
+								<div class="col media__col">
+								</div>
+								<div class="col media__col">
+									<h3>Airstrike</h3>
+									<p>Lorem ipsum, dolor sit, amet consectetur adipisicing elit. Ab voluptates sit architecto nihil saepe quos quaerat, nostrum unde consectetur praesentium placeat repudiandae fugiat, reiciendis cumque quisquam enim a magni laudantium!</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+			<section id="levels">
+				<div class="map-nav">
+					<button id="slickMapPrev" class="myPrevArrow myPrevArrow--top slick-arrow" tabindex="0"></button>
+					<button id="slickMapNext" class="myNextArrow myNextArrow--top slick-arrow" tabindex="0"></button>
+				</div>
+				<div class="Modern-Slider-3">
+					<div class="slide-map" style="background: linear-gradient(180deg, rgba(0,0,0,1) 0%, rgba(255,255,255,0) 25%, rgba(255,255,255,0) 75%, rgba(0,0,0,1) 100%), url('assets/images/maps/maphd1.png') no-repeat center / cover" alt="map1"><div class="map-title">AI Training</div></div>
+					<div class="slide-map" style="background: linear-gradient(180deg, rgba(0,0,0,1) 0%, rgba(255,255,255,0) 25%, rgba(255,255,255,0) 75%, rgba(0,0,0,1) 100%), url('assets/images/maps/maphd2.png') no-repeat center / cover" alt="map2"><div class="map-title">Adaptation</div></div>
+					<div class="slide-map" style="background: linear-gradient(180deg, rgba(0,0,0,1) 0%, rgba(255,255,255,0) 25%, rgba(255,255,255,0) 75%, rgba(0,0,0,1) 100%), url('assets/images/maps/maphd3.png') no-repeat center / cover" alt="map3"><div class="map-title">Garden</div></div>
+					<div class="slide-map" style="background: linear-gradient(180deg, rgba(0,0,0,1) 0%, rgba(255,255,255,0) 25%, rgba(255,255,255,0) 75%, rgba(0,0,0,1) 100%), url('assets/images/maps/maphd4.png') no-repeat center / cover" alt="map4"><div class="map-title">Industry</div></div>
+					<div class="slide-map" style="background: linear-gradient(180deg, rgba(0,0,0,1) 0%, rgba(255,255,255,0) 25%, rgba(255,255,255,0) 75%, rgba(0,0,0,1) 100%), url('assets/images/maps/maphd5.png') no-repeat center / cover" alt="map5"><div class="map-title">Metropolis</div></div>
+					<div class="slide-map" style="background: linear-gradient(180deg, rgba(0,0,0,1) 0%, rgba(255,255,255,0) 25%, rgba(255,255,255,0) 75%, rgba(0,0,0,1) 100%), url('assets/images/maps/maphd6.png') no-repeat center / cover" alt="map6"><div class="map-title">Final Test</div></div>
+				</div>
+			</section>
+			<section id="social" class="section-fade" style="background-image: url('assets/images/social.png');">
+				<div class="grid-container">
+					<div class="row section-3">
+						<div class="section3-flex1 big-text">FOLLOW THE DRONE INVASION:</div>
+						<div class="section3-flex2">
+							<ul class="pull-right">
+								<div><a href="https://bit.ly/emittersinstagram" class="button" target="_blank">Instagram</a></div>
+								<div><a href="https://bit.ly/emittersfacebook" class="button" target="_blank">Facebook</a></div>
+								<div><a href="https://bit.ly/emitterstwitter" class="button" target="_blank">Twitter</a></div>
+								<div><a href="https://www.youtube.com/channel/UCK0Ax0jYjQ5rGpiZHbl-yHw" class="button" target="_blank">Youtube</a></div>
+								<div><a href="https://mickaelmorgado.itch.io/emitters" class="button" target="_blank">Itchio</a></div>
+								<div><a href="https://discord.gg/DfmgVR6" class="button" target="_blank">Discord</a></div>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</section>
+			<section id="reviewers" class="section-fade" style="background-image: url('assets/images/3.png');">
+				<div class="grid-container">
+					<div class="row section-3">
+						<div class="section3-flex1">
+							<div class="big-text">
+								ARE YOU A REVIEWERS?
+							</div>
+							<p>If you wish to enter in contact with me send email at: <a href="mailto: myck.morgado@gmail.com">myck.morgado@gmail.com</a></p>
+						</div>
+						<div class="section3-flex2">
+							<a href="assets/EmittersPresskit.zip" class="button button--function pull-right">Download PressKit</a>
+						</div>
+					</div>
+				</div>
+			</section>
+		</div>
+	</body>
+</html>

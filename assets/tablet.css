@@ -1,0 +1,31 @@
+@media only screen and (max-width: 992px) {
+  
+  .side-caption:before {
+    background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 30%);
+  }
+
+  .trailer-video {
+    z-index: 0;
+    position: absolute;
+    width: 100%;
+    object-fit: cover;
+    top: -20%;
+    left: 0;
+    right: 0;
+    height: 700px;
+    transition: all .5s;
+  }
+
+  .parent {
+    padding-top: 85px;
+  }
+
+  .section1-flex2 {
+    margin-top: 250px;
+  }
+
+  .big-text {
+    font-size: 20px;  
+    line-height: 35px;
+  }
+}
