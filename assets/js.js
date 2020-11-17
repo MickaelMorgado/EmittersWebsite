@@ -34,6 +34,17 @@ $(document).ready(function(){
     $(".Modern-Slider-3").slick('slickNext');
   });
 
+  let counter = document.querySelector('#count-up'),
+      i = 20171300
+
+  function counterUp() {
+    if(i <= 20171337) {
+      counter.innerHTML = i
+      i += 1
+      setTimeout(counterUp, Math.floor(Math.random() * 6) * 1000 /2 )
+    }
+  }
+  counterUp()
 
 
   function showVideo() {
