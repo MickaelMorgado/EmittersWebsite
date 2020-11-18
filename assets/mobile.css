@@ -3,6 +3,10 @@
     font-size: 80%;
   }
 
+  .normal-container {
+    width: 90%;
+  }
+
   .button {
     max-width: 100%;
   }
@@ -17,32 +21,6 @@
 
   .logo {
     display: none;
-  }
-
-  .minus span:nth-child(1) ,
-  .minus span:nth-child(3) {
-    opacity: 0;
-    width: 0;
-  }
-
-  header {
-    height: 0;
-    padding-top: 80px;
-    flex-direction: column;
-    align-items: flex-end;
-  }
-
-  header.open {
-    height: auto;
-    padding-bottom: 40px;
-  }
-
-  .header-link {
-    display: block;
-  }
-
-  .hamburger {
-    display: flex;
   }
 
   section ,
@@ -78,5 +56,10 @@
   .big-text {
     font-size: 20px;  
     line-height: 35px;
+  }
+
+  /* SECTION */
+  section {
+    font-size: 80%;
   }
 }
