@@ -395,6 +395,13 @@ section {
   width: 100%;
 }
 
+.normal-container {
+  display: block;
+  margin: auto;
+  width: 1366px;
+  height: 100%;
+}
+
 .padded {
   padding-top: 100px;
   padding-bottom: 100px;
@@ -434,6 +441,29 @@ section {
   padding: 20px;
 }
 
+
+
+
+
+/* ======================================================================================================================
+  WEBSITE SECTIONS:
+*/
+
+.gamemode {
+  display: grid;
+  grid-template-columns: 320px auto; 
+  grid-template-rows: auto auto; 
+}
+
+.gamemode__gallery {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-gap: 40px;
+}
+
+.gamemode .col:last-child {
+  grid-column-end: span 2;
+}
 
 
 
@@ -599,13 +629,18 @@ section a {
 
 .image-block {
   position: relative;
-  width: 400px;
-  height: 250px;
+  width: 100%;
   overflow: hidden;
   margin-top: 20px;
   background-size: 100%;
   background-position: center;
   background-repeat: no-repeat;
+}
+
+.image-block:after { /* make it square */
+  content: '';
+  display: block;
+  padding-bottom: 100%;
 }
 
 .image-block__content {

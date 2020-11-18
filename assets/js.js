@@ -34,6 +34,8 @@ $(document).ready(function(){
     $(".Modern-Slider-3").slick('slickNext');
   });
 
+  // Counter up:
+
   let counter = document.querySelector('#count-up'),
       i = 20171300
 
@@ -44,8 +46,6 @@ $(document).ready(function(){
       setTimeout(counterUp, Math.floor(Math.random() * 6) * 1000 /2 )
     }
   }
-  counterUp()
-
 
   function showVideo() {
     $('#trailerVideo').prop('muted', false);
@@ -109,6 +109,10 @@ $(document).ready(function(){
       after : function () {
         var currentSectionId = $.scrollify.current()[0].id;
         highlightOnScroll(currentSectionId);
+
+        if ($.scrollify.current()[0].id == "content") {
+          counterUp()
+        }
       }
     });
   });
