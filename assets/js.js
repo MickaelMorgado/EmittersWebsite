@@ -121,8 +121,6 @@ $(document).ready(function(){
         x = (((e.clientX / maxX) * 2) - 1) * maxShadowOffset,
         y = (((e.clientY / maxY) * 2) - 1) * maxShadowOffset;
 
-        console.log(Math.random());
-
     $('.js-dynamic-text').css({
       textShadow: '' + -x/2 + 'px ' + -y/2 + 'px 5px rgba(0,0,0,1)',
       transform: `translate(${x}px,${y}px)`,
