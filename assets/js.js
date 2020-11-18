@@ -36,14 +36,21 @@ $(document).ready(function(){
 
   // Counter up:
 
-  let counter = document.querySelector('#count-up'),
+  let counter = $('#count-up'),
       i = 20171300
 
   function counterUp() {
     if(i <= 20171337) {
-      counter.innerHTML = i
+      counter[0].innerHTML = i
       i += 1
-      setTimeout(counterUp, Math.floor(Math.random() * 6) * 1000 /2 )
+      counter.addClass('jump');
+      
+      setTimeout(function(){
+        counter.removeClass('jump');
+        setTimeout(function(){
+          counterUp();
+        }, 100)
+      }, Math.floor(Math.random() * 6) * 1000 /2 )
     }
   }
 

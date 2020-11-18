@@ -1,0 +1,15 @@
+@media only screen and (max-width: 1366px) {
+  .normal-container {
+    width: 1200px;
+  }
+
+  .padded {
+    padding-top: 80px;
+    padding-bottom: 80px;
+  }
+
+  /* SECTION CONTENT */
+  .image-block__content {
+    font-size: 15px;
+  }
+}

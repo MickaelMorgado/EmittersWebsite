@@ -1,4 +1,57 @@
+@media only screen and (max-width: 1024px) {
+  .normal-container {
+    width: 920px;
+  }
+
+  .gamemode {
+    display: block;
+  }
+
+  .row.middle {
+    justify-content: initial;
+  }
+
+  .image-block__content {
+    font-size: 1em;
+  }
+
+  /* SECTION STORY */
+  .story__content {
+    width: 100%;
+  }
+  
+}
+
 @media only screen and (max-width: 992px) {
+
+  .minus span:nth-child(1) ,
+  .minus span:nth-child(3) {
+    opacity: 0;
+    width: 0;
+  }
+
+  header {
+    height: 0;
+    padding-top: 80px;
+    flex-direction: column;
+    align-items: flex-end;
+  }
+
+  header.open {
+    height: auto;
+    padding-bottom: 40px;
+  }
+
+  .header-link {
+    display: block;
+  }
+
+  .hamburger {
+    display: flex;
+  }
+
+
+
   
   .side-caption:before {
     background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 30%);
