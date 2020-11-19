@@ -21,6 +21,16 @@ body {
   color: var(--white);
 }
 
+::-moz-selection {
+  color: var(--white);
+  background: var(--red);
+}
+
+::selection {
+  color: var(--white);
+  background: var(--red);
+}
+
 h1, h2 {
   font-size: 2em;
 }
@@ -417,14 +427,19 @@ section {
   width: 100%;
 }
 
+.flex-container ,
 .normal-container {
   display: block;
   margin: auto;
   height: 100%;
   width: 1366px;
+  max-width: 90%;
 }
 
-
+.flex-container {
+  display: flex;
+  align-items: center;
+}
 
 .padded {
   padding-top: 100px;
@@ -471,21 +486,29 @@ section {
 
 
 
-/* ======================================================================================================================
-  WEBSITE SECTIONS:
-*/
+
+/* SECTION GAME MODE ====================================================*/
 
 .gamemode {
   display: grid;
   grid-template-columns: 420px auto; 
   grid-template-rows: auto auto;
   grid-gap: 0 30px;
+  width: 100%;
 }
 
 .gamemode__gallery {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   grid-gap: 40px;
+}
+
+.gamemode__gallery-item {
+  transition: all .25s ease-in-out;
+}
+
+.gamemode__gallery:hover .gamemode__gallery-item:not(:hover) {
+  filter: grayscale(1);
 }
 
 .gamemode .col:first-child ,
@@ -867,6 +890,13 @@ section a {
     background-color: red;
     box-shadow: 0 0 0 0 rgba(255,0,0,0), 0 0 0 0 rgba(255,255,255,0);
   }
+}
+
+.count-up-sentence {
+  font-size: 1.7em;
+  line-height: 2em;
+  font-weight: bold;
+  text-transform: uppercase;
 }
 
 #count-up {
