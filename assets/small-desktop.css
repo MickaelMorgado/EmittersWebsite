@@ -1,6 +1,6 @@
 @media only screen and (max-width: 1366px) {
   .normal-container {
-    width: 1200px;
+    width: 1024px;
   }
 
   .padded {
@@ -8,8 +8,16 @@
     padding-bottom: 80px;
   }
 
-  /* SECTION CONTENT */
+  /* SECTION GAME MODE ====================================================*/
   .image-block__content {
     font-size: 15px;
+  }
+
+  .gamemode {
+    display: block;
+  }
+
+  .gamemode__description {
+    margin-bottom: 60px;
   }
 }

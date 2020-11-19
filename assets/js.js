@@ -37,7 +37,7 @@ $(document).ready(function(){
   // Counter up:
 
   let counter = $('#count-up'),
-      i = 20171300
+      i = 20171200;
 
   function counterUp() {
     if(i <= 20171337) {
@@ -53,6 +53,7 @@ $(document).ready(function(){
       }, Math.floor(Math.random() * 6) * 1000 /2 )
     }
   }
+  counterUp();
 
   function showVideo() {
     $('#trailerVideo').prop('muted', false);
@@ -110,19 +111,15 @@ $(document).ready(function(){
     $(".header-link[href*='"+a+"']").addClass('active');
   }
 
-  $(function() {
+  if ($(window).width() >= 1366) {
     $.scrollify({
       section: "section",
       after : function () {
         var currentSectionId = $.scrollify.current()[0].id;
         highlightOnScroll(currentSectionId);
-
-        if ($.scrollify.current()[0].id == "content") {
-          counterUp()
-        }
       }
     });
-  });
+  }
 
   $("#creator").mousemove(function creatorMouseMove(e) {
 

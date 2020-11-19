@@ -3,24 +3,8 @@
     font-size: 80%;
   }
 
-  .normal-container {
-    width: 90%;
-  }
-
   .button {
     max-width: 100%;
-  }
-
-  .logo-mobile {
-    display: block;
-    position: absolute;
-    top: 5px;
-    left: 30px;
-    height: 70px;
-  }
-
-  .logo {
-    display: none;
   }
 
   section ,
@@ -58,8 +42,31 @@
     line-height: 35px;
   }
 
-  /* SECTION */
+  /* SECTION ==========================================*/
   section {
     font-size: 80%;
+  }
+
+  /* SECTION GAME MODE ==========================================*/
+  .image-block__content {
+    font-size: 1.2em;
+    line-height: 2.2em;
+  }
+}
+
+@media only screen and (max-width: 575px) {
+  .image-block {
+    background-size: cover;
+    background-position: bottom -100px center;
+  }
+
+  .image-block__content {
+    position: relative;
+    left: 0;
+    right: 0;
+  }
+
+  .gamemode__gallery-item--left .image-block__content {
+    left: 0;
   }
 }
