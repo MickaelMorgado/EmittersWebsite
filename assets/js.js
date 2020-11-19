@@ -9,7 +9,8 @@ $(document).ready(function(){
     autoplay:false,
     dots:true,
     prevArrow:'<button class="myPrevArrow"></button>',
-    nextArrow:'<button class="myNextArrow"></button>', 
+    nextArrow:'<button class="myNextArrow"></button>',
+    loop: false
   });
 
   $(".Modern-Slider-2").slick({
