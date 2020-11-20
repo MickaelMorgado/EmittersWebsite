@@ -14,7 +14,7 @@ html, body {
 }
 
 body {
-  background-color: var(--black); 
+  background-color: var(--dark); 
   font-family: 'Roboto', sans-serif;
   font-size: 62.5%; /* =10px */
   letter-spacing: 2px;
@@ -22,13 +22,13 @@ body {
 }
 
 ::-moz-selection {
-  color: var(--white);
-  background: var(--red);
+  color: gray;
+  background: black;
 }
 
 ::selection {
-  color: var(--white);
-  background: var(--red);
+  color: gray;
+  background: black;
 }
 
 h1, h2 {
@@ -275,8 +275,10 @@ ul.flags {
 ul.flags li {
   position: relative;
   padding-left: 40px;
+  margin-bottom: 20px;
   background-size: 20px;
-  line-height: 35px;
+  font-size: 1.2em;
+  line-height: 2em;
   text-transform: uppercase;
   font-weight: bold;
 }
@@ -286,7 +288,7 @@ ul.flags li:after {
   content: '';
   display: block;
   position: absolute;
-  top: 5px;
+  top: 0;
   left: 0;
   width: 23px;
   height: 23px;
