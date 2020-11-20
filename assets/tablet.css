@@ -42,7 +42,7 @@
   }
 
   header.open {
-    height: auto;
+    height: 360px;
     padding-bottom: 40px;
   }
 
@@ -64,10 +64,6 @@
 
   .logo {
     display: none;
-  }
-  
-  .side-caption:before {
-    background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 30%);
   }
 
   .trailer-video {
@@ -93,6 +89,22 @@
   .big-text {
     font-size: 20px;  
     line-height: 35px;
+  }
+
+  /* SECTION HOME =========================================================*/
+  .home-wrapper {
+    align-items: flex-end;
+  }
+
+  .home__content {
+    margin-left: 0;
+    margin-bottom: 60px;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .side-caption:before {
+    background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 65%);
   }
 
   /* SECTION GAME MODE ====================================================*/
