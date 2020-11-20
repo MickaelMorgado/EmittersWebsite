@@ -8,6 +8,11 @@
     padding-bottom: 80px;
   }
 
+  /* SECTION CREATOR =========================================================*/
+  .creator-wrapper {
+    font-size: .8em;
+  }
+  
   /* SECTION GAME MODE ====================================================*/
   .image-block__content {
     font-size: 15px;

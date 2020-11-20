@@ -84,16 +84,24 @@ $(document).ready(function(){
     $('html, body').animate({scrollTop: $(a).offset().top }, 'slow')
   }
 
+  function closeHeader() {
+    $('header').removeClass('open');
+    $('.hamburger').removeClass('minus');
+  }
+
+  function openHeader() {
+    $('header').addClass('open');
+    $('.hamburger').addClass('minus');
+  }
+
   // Hamburger:
 
   $('.hamburger').click(function(event) {
     var $header = $('header');
     if ($header.hasClass('open')) {
-      $('header').removeClass('open');
-      $('.hamburger').removeClass('minus');
+      closeHeader();
     } else {
-      $('header').addClass('open');
-      $('.hamburger').addClass('minus');
+      openHeader();
     }
   });
 
@@ -102,6 +110,7 @@ $(document).ready(function(){
   $(".header-link").click(function(event) {
     $(".header-link").removeClass('active');
     $(this).addClass('active');
+    closeHeader();
     easyScroll(this.attributes.href.value);
   });
 
