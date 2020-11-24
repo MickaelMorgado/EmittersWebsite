@@ -10,7 +10,11 @@ $(document).ready(function(){
     dots:true,
     prevArrow:'<button class="myPrevArrow"></button>',
     nextArrow:'<button class="myNextArrow"></button>',
-    loop: false
+    loop: false,
+    responsive: [{
+      breakpoint: 720,
+      settings: "unslick"
+    }]
   });
 
   $(".Modern-Slider-2").slick({
