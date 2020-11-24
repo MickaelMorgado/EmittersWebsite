@@ -17,6 +17,16 @@
     display: block;
   }
 
+  .flex-container--enemies {
+    height: auto;
+  }
+
+  #enemies .background-cover {
+    height: auto;
+    padding-top: 60px;
+    padding-bottom: 60px;
+  }
+
   .trailer-video {
     z-index: 0;
     position: absolute;
@@ -59,7 +69,12 @@
   /* SECTION CREATOR =========================================================*/
   .creator-wrapper {
     font-size: .6em;
-  }  
+  }
+
+  /* SECTION ENEMIES =========================================================*/
+  .enemies-wrapper {
+    flex-direction: column;
+  }
 
   /* SECTION GAME MODE ==========================================*/
   .image-block__content {

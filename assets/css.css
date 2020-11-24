@@ -437,6 +437,10 @@ section {
   align-items: center;
 }
 
+.flex-container--enemies {
+  max-width: 80%;
+}
+
 .padded {
   padding-top: 100px;
   padding-bottom: 100px;
@@ -526,6 +530,15 @@ section {
   font-size: 3em;  
   line-height: 1.8em;
   font-weight: bold;
+}
+
+.enemies-wrapper {
+  align-items: center;
+  height: 100%;
+  justify-content: center;
+  grid-area: row;
+  display: flex;
+  z-index: 1;
 }
 
 
