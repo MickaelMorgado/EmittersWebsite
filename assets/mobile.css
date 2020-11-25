@@ -52,6 +52,10 @@
     line-height: 35px;
   }
 
+  .map-nav {
+    width: 90%;
+  }
+
   /* SECTION ==========================================*/
   section {
     font-size: 80%;
