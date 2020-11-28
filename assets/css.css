@@ -532,6 +532,7 @@ section {
   font-weight: bold;
 }
 
+/* SECTION ENEMIES =========================================================*/
 .enemies-wrapper {
   align-items: center;
   height: 100%;
@@ -540,6 +541,80 @@ section {
   display: flex;
   z-index: 1;
 }
+
+
+/* SECTION SOCIAL =========================================================*/
+.social-strip {
+  display: flex;
+  padding: 50px;
+  top: 50%;
+  position: absolute;
+  left: 0;
+  right: 0;
+  background: rgba(0,0,0,0.9);
+  justify-content: space-around;
+}
+
+.social-strip-icons-wrapper {
+  display: flex;
+  justify-content: space-between;
+  width: 30%;
+}
+
+.social-strip__icon {
+  font-size: 50px;
+  display: block;
+  width: 80px;
+  text-align: center;
+  opacity: .7;
+  -webkit-transition: all .1s ease-out;
+     -moz-transition: all .1s ease-out;
+      -ms-transition: all .1s ease-out;
+       -o-transition: all .1s ease-out;
+          transition: all .1s ease-out;
+}
+.social-strip__icon:hover {
+  opacity: 1;
+  -webkit-transform: scale(1.5);
+     -moz-transform: scale(1.5);
+      -ms-transform: scale(1.5);
+       -o-transform: scale(1.5);
+          transform: scale(1.5);
+
+  animation-name: highlightSocial;
+  animation-duration: .5s;
+  animation-iteration-count: infinite;
+}
+
+@keyframes highlightSocial {
+  0%   {opacity: 1;}
+  75%  {opacity: .7;}
+  100%   {opacity: 1;}
+}
+
+.social-strip__icon--facebook {
+  color: #3b5998 
+}
+.social-strip__icon--discord {
+  color: #7289DA 
+}
+.social-strip__icon--instagram {
+  color: #de1b85 
+}
+.social-strip__icon--youtube {
+  color: #c4302b 
+}
+.social-strip__icon--itchio {
+  color: #ff5c5b 
+}
+.social-strip__icon--soundcloud {
+  color: #ff7700 
+}
+.social-strip__icon--twitter {
+  color: #00acee 
+}
+
+
 
 
 .map-nav {
