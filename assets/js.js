@@ -112,6 +112,7 @@ $(document).ready(function(){
   // HEADER LINKS :
 
   $(".header-link").click(function(event) {
+    event.preventDefault();
     $(".header-link").removeClass('active');
     $(this).addClass('active');
     closeHeader();
