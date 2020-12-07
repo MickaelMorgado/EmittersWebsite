@@ -287,10 +287,10 @@ ul.flags li:after {
   content: '';
   display: block;
   position: absolute;
-  top: 0;
+  top: 3px;
   left: 0;
-  width: 23px;
-  height: 23px;
+  width: 20px;
+  height: 20px;
   transform: rotate(45deg);
 }
 
