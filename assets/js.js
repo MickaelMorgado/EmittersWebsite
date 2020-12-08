@@ -109,6 +109,12 @@ $(document).ready(function(){
     }
   });
 
+  // HEADER LOGO LINKS :
+  
+  $("#header-logo-link").click(function(event) {
+    easyScroll(this.attributes.href.value);
+  });
+
   // HEADER LINKS :
 
   $(".header-link").click(function(event) {
@@ -129,12 +135,20 @@ $(document).ready(function(){
   // SCROLLIFY :
 
   if ($(window).width() >= 1366) {
+    $('.logo-header').addClass('hide');
     $.scrollify({
       section: "section",
       setHeights: false,
+      scrollSpeed: 800,
+      updateHash: false,
       after : function () {
         var currentSectionId = $.scrollify.current()[0].id;
         highlightOnScroll(currentSectionId);
+        if (currentSectionId == "home") {
+          $('.logo-header').addClass('hide');
+        } else {
+          $('.logo-header').removeClass('hide');
+        }
       }
     });
   }
