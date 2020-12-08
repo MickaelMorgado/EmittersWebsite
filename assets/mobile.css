@@ -102,4 +102,24 @@
   .gamemode__gallery-item--left .image-block__content {
     left: 0;
   }
+
+  /* SECTION GALLERY ====================================================*/
+  .gallery-grid {
+    height: auto;
+    grid-template-rows: repeat(5, 200px);
+    grid-template-areas:     
+      "gItem1 gItem1 gItem2 gItem2"
+      "gItem3 gItem3 gItem2 gItem2"
+      "gItem3 gItem3 gItem4 gItem4"
+      "gItem7 gItem7 gItem7 gItem7"
+      "gItem5 gItem5 gItem6 gItem6";
+  }
+
+  .gallery-item--horizontal {
+    background-size: auto 100%;
+  }
+  
+  .gallery-item--horizontal:hover {
+    background-size: auto 110%;
+  }
 }
