@@ -29,44 +29,6 @@
     padding-top: var(--header-offset-tablet);
   }
 
-  .minus span:nth-child(1) ,
-  .minus span:nth-child(3) {
-    opacity: 0;
-    width: 0;
-  }
-
-  header {
-    height: 0;
-    padding-top: 80px;
-    flex-direction: column;
-    align-items: flex-end;
-  }
-
-  header.open {
-    height: 380px;
-    padding-bottom: 40px;
-  }
-
-  .header-link {
-    display: block;
-  }
-
-  .hamburger {
-    display: flex;
-  }
-
-  .logo-mobile {
-    display: block;
-    position: absolute;
-    top: 5px;
-    left: 30px;
-    height: 70px;
-  }
-
-  .logo {
-    display: none;
-  }
-
   .trailer-video {
     z-index: 0;
     position: absolute;
