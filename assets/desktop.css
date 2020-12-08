@@ -1,3 +1,19 @@
+@media only screen and (max-width: 1680px) {
+  /* GALLERY ================================================================*/
+  .gallery-grid {
+    grid-template-columns: repeat(4, 25%);
+    grid-template-rows:  repeat(3, 33.33333%);
+    grid-template-areas: 
+      "gItem1 gItem1 gItem2 gItem5"
+      "gItem3 gItem4 gItem2 gItem6"
+      "gItem3 gItem7 gItem7 gItem6";
+  }
+
+  .zoom-image {
+    max-height: 80%;
+  }
+}
+
 @media only screen and (max-width: 1366px) {
   .normal-container {
     width: 1024px;

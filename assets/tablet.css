@@ -26,6 +26,7 @@
 
   section {
     height: auto;
+    padding-top: var(--header-offset-tablet);
   }
 
   .minus span:nth-child(1) ,
@@ -42,7 +43,7 @@
   }
 
   header.open {
-    height: 360px;
+    height: 380px;
     padding-bottom: 40px;
   }
 
@@ -148,4 +149,13 @@
     right: 0;
   }
 
+  /* SECTION LEVEL ====================================================*/
+  .map-title {
+    top: 42px;
+  }
+
+  /* SECTION GALLERY ====================================================*/
+  .gallery-grid {
+    grid-template-rows: repeat(3, 190px);
+  }
 }
