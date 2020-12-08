@@ -1025,6 +1025,7 @@ section a {
   background-position: center;
   border: inset 10px black;
   cursor: pointer;
+  overflow: hidden;
   -webkit-transition: all 2s ease-out;
    -moz-transition: all 2s ease-out;
     -ms-transition: all 2s ease-out;
@@ -1046,11 +1047,30 @@ section a {
   background-color: rgb(var(--black-rgb), .7);
   opacity: 0;
   z-index: 1;
-  -webkit-transition: all .25s ease-out;
-     -moz-transition: all .25s ease-out;
-      -ms-transition: all .25s ease-out;
-       -o-transition: all .25s ease-out;
-          transition: all .25s ease-out;
+  -webkit-transition: all .5s ease-out;
+     -moz-transition: all .5s ease-out;
+      -ms-transition: all .5s ease-out;
+       -o-transition: all .5s ease-out;
+          transition: all .5s ease-out;
+}
+
+.gallery-item:after {
+  content: '';
+  position: absolute;
+  width: 120px;
+  height: 100%;
+  z-index: 2;
+  opacity: .1;
+  background-color: #fff;
+  box-shadow: 0 0 2px 2px #fff;
+  transform: translate(-50%,-50%) skew(-25deg) scale(2);
+  top: -30%;
+  left: -30%;
+  -webkit-transition: all .5s ease;
+     -moz-transition: all .5s ease;
+      -ms-transition: all .5s ease;
+       -o-transition: all .5s ease;
+          transition: all .5s ease;
 }
 
 .gallery-item:hover {
@@ -1064,6 +1084,11 @@ section a {
 .gallery-item:hover:before ,
 .gallery-item:hover .gallery-item__content {
   opacity: 1;
+}
+
+.gallery-item:hover:after {
+  top: 130%;
+  left: 130%;
 }
 
 .gallery-item__content {
