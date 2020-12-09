@@ -17,11 +17,28 @@ $(document).ready(function(){
     }]
   });
 
-  $(".Modern-Slider-2").slick({
+  $('.Modern-Slider-2').slick({
     autoplay:false,
-    dots:true,
+    dots: false,
+    infinite: false,
+    speed: 400,
+    slidesToShow: 2,
+    slidesToScroll: 2,
     prevArrow:'<button class="myPrevArrow"></button>',
     nextArrow:'<button class="myNextArrow"></button>', 
+    responsive: [
+      {
+        breakpoint: 1024,
+        settings: {
+          slidesToShow: 2,
+        },
+        breakpoint: 768,
+        settings: {
+          slidesToShow: 1,
+          slidesToScroll: 1,
+        },
+      }
+    ]
   });
 
   $(".Modern-Slider-3").width($(document).width());
