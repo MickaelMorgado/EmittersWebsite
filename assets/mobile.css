@@ -80,9 +80,17 @@
     flex-direction: column;
   }
 
+  .fc-content {
+    font-size: 75%;
+  }
+
   .Modern-Slider-2 .slick-list {
-    width: 70vw;
-    height: 300px;
+    width: 80vw;
+    height: 400px;
+  }
+
+  .Modern-Slider-2 .slick-slide {
+    padding: 20px;
   }
 
   /* SECTION GAME MODE ==========================================*/
