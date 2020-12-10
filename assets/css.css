@@ -757,7 +757,17 @@ section {
   margin-bottom: 0;
 }
 
-
+/* SECTION SUPPORT =========================================================*/
+.support-wrapper {
+  height: 100%;
+  justify-content: flex-end;
+  flex-direction: row;
+  align-items: center;
+  grid-area: row;
+  display: flex;
+  z-index: 1;
+  padding-left: 70%;
+}
 
 /* SECTION SOCIAL =========================================================*/
 .social-strip {
