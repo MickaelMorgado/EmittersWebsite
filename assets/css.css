@@ -617,7 +617,7 @@ section {
 }
 
 .fcc-label {
-  font-size: .8em;
+  font-size: .7em;
   text-transform: uppercase;
   padding-top: 20px;
   display: block;
@@ -703,7 +703,7 @@ section {
   border-radius: 4px;
   padding: 5px;
   box-shadow: inset 0 0 0px 5px #333;
-  margin-top: 10px;
+  margin-top: 5px;
 }
 
 .meter > span {
@@ -722,17 +722,22 @@ section {
 
 .orange > span {
   background-color: #ff8429;
-  box-shadow: 0 0 20px 8px #843800;
+  box-shadow: 0 0 20px 8px #632a00;
 }
 
 .red > span {
   background-color: #fe3535;
-  box-shadow: 0 0 20px 8px #730000;
+  box-shadow: 0 0 20px 8px #880000;
 }
 
 .blue > span {
-  background-color: #2759ff;
-  box-shadow: 0 0 20px 8px #002fca;
+  background-color: #459bff;
+  box-shadow: 0 0 20px 8px #004f93;
+}
+
+.gray > span {
+  background-color: #bbb;
+  box-shadow: 0 0 20px 8px #555;
 }
 
 .Modern-Slider-2 .slick-list {
