@@ -5,17 +5,15 @@ $(document).ready(function(){
   var triggerOffset = "40%";
   
   // Sliders: 
-  $(".Modern-Slider").slick({
-    autoplay:false,
-    dots:true,
-    prevArrow:'<button class="myPrevArrow"></button>',
-    nextArrow:'<button class="myNextArrow"></button>',
-    loop: false,
-    responsive: [{
-      breakpoint: 720,
-      settings: "unslick"
-    }]
-  });
+  if ($(window).width() >= 768) {
+    $(".Modern-Slider").slick({
+      autoplay:false,
+      dots:true,
+      prevArrow:'<button class="myPrevArrow"></button>',
+      nextArrow:'<button class="myNextArrow"></button>',
+      loop: false
+    });
+  }
 
   $('.Modern-Slider-2').slick({
     autoplay:false,

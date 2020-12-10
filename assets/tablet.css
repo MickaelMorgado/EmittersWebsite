@@ -111,6 +111,22 @@
     right: 0;
   }
 
+  /* SECTION SUPPORT ==========================================*/
+  .support-wrapper {
+    align-items: flex-end;
+    justify-content: stretch;
+    padding-left: 0;
+  }
+
+  .support-wrapper .col {
+    margin-bottom: 60px;
+  }
+
+  .sl-image {
+    background-size: 200% !important;
+    background-position: 0 0 !important;
+  }
+
   /* SECTION LEVEL ====================================================*/
   .map-title {
     top: 42px;
