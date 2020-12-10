@@ -136,4 +136,13 @@
   .gallery-grid {
     grid-template-rows: repeat(3, 190px);
   }
+
+  /* SECTION SOCIAL ==========================================*/
+  #social {
+    height: 100%;
+  }
+
+  .social-strip {
+    flex-direction: column;
+  }
 }
