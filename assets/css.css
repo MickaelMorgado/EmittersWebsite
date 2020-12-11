@@ -271,6 +271,36 @@ video::-webkit-media-controls-start-playback-button {
           transition: all .5s ease-in-out;
 }
 
+.scroll-up {
+  position: fixed;
+  top: 140px;
+  right: 40px;
+  width: 250px;
+  z-index: 3;
+  border: none;
+  color: white;
+  padding: 20px;
+  font-size: 15px;
+  font-weight: lighter;
+  text-transform: uppercase;
+  background-color: transparent;
+  background-image: url('../assets/images/HUDHint.png');
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  background-position: center;
+  cursor: pointer;
+  font-family: 'Roboto';
+  letter-spacing: 1px;
+  opacity: 1;
+  text-align: center;
+  text-decoration: none;
+  transition: all .25s ease;
+}
+
+.scroll-up:hover {
+  opacity: .8;
+}
+
 .full-size {
   left: 0;
   right: 0;

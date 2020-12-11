@@ -24,6 +24,10 @@
     padding-bottom: 80px;
   }
 
+  .scroll-up {
+    display: none;
+  }
+
   /* SECTION CREATOR =========================================================*/
   .creator-wrapper {
     font-size: .8em;
