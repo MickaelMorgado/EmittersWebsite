@@ -15,6 +15,14 @@
   .story__content {
     width: 100%;
   }
+
+  .social-text {
+    font-size: 1.8em;
+  }
+
+  .social-strip-icons-wrapper {
+    width: 60%;
+  }
   
 }
 
@@ -149,7 +157,22 @@
     height: 100%;
   }
 
+  .social-text {
+    font-size: 1.5em;
+    margin-bottom: 20px;
+  }
+
   .social-strip {
     flex-direction: column;
+  }
+
+  .social-strip__icon {
+    font-size: 30px;
+    width: 30px;
+    opacity: 1;
+  }
+
+  .social-strip-icons-wrapper {
+    width: 100%;
   }
 }
