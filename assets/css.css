@@ -808,6 +808,12 @@ section {
 }
 
 /* SECTION SOCIAL =========================================================*/
+.social-text {
+  font-size: 2.5em;
+  line-height: 1.8em;
+  font-weight: bold;
+}
+
 .social-strip {
   display: flex;
   padding: 50px;
@@ -817,12 +823,13 @@ section {
   right: 0;
   background: rgba(0,0,0,0.9);
   justify-content: space-around;
+  align-items: center;
 }
 
 .social-strip-icons-wrapper {
   display: flex;
   justify-content: space-between;
-  width: 40%;
+  width: 50%;
   max-width: 700px;
 }
 
