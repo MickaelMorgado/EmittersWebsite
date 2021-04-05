@@ -44,9 +44,12 @@
 		<link rel="stylesheet" href="assets/desktop.css"></style>
 		<link rel="stylesheet" href="assets/tablet.css"></style>
 		<link rel="stylesheet" href="assets/mobile.css"></style>
-		<script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.9.0/slick.min.js" integrity="sha512-HGOnQO9+SP1V92SrtZfjqxxtLmVzqZpjFFekvzZVWoiASSQgSr4cw9Kqd2+l8Llp4Gm0G8GIFJ4ddwZilcdb8A==" crossorigin="anonymous"></script>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/waypoints/4.0.1/jquery.waypoints.min.js"></script>
+
+		<!-- js files -->
+		<script src="assets/js/jquery-3.5.1.min.js"></script>
+		<script src="assets/js/lozad.min.js"></script>
+		<script src="assets/js/jquery.waypoints.min.js"></script>
+		<script src="assets/js/slick.min.js"></script>
 		<script src="assets/js/jquery.scrollify.js"></script>
 		<script src="assets/js.js"></script>
 	</head>
@@ -80,7 +83,7 @@
 		<section id="home">
 			<video id="trailerVideo" class="trailer-video" src="assets/videos/Trailer.mp4" autoplay="autoplay" loop="loop" muted="muted" poster="assets/images/1.jpg"></video>
 			<a href="#home" id="close" class="button button--function"><span>Close</span></a>
-			<div class="flex-container side-caption home-wrapper">
+			<div class="flex-container side-caption side-caption--2 home-wrapper">
 				<div class="home__content">
 					<img class="logo" src="assets/images/logo.png" alt="">
 					<h1 class="mb60">SURVIVAL DRONE INVASION</h1>
@@ -433,12 +436,12 @@
 										<div class="fc-side fc-side--back">
 											<div class="fc-content">
 												<div class="fcc-title">Android G.R.N</div>
-												<div class="fcc-label">Resistance: 100</div>
+												<div class="fcc-label">Resistance: 250</div>
 												<div class="meter"><span style="width: 25%"></span></div>
 												<div class="fcc-label">Damage: 100</div>
 												<div class="meter"><span style="width: 30%"></span></div>
 												<div class="fcc-label">Shoot Agressivity: 100</div>
-												<div class="meter"><span style="width: 30%"></span></div>
+												<div class="meter"><span style="width: 40%"></span></div>
 											</div>
 										</div>
 									</div>
@@ -451,12 +454,12 @@
 										<div class="fc-side fc-side--back">
 											<div class="fc-content">
 												<div class="fcc-title">Android B.L.U</div>
-												<div class="fcc-label">Resistance: 100</div>
-												<div class="meter"><span style="width: 25%"></span></div>
+												<div class="fcc-label">Resistance: 500</div>
+												<div class="meter"><span style="width: 50%"></span></div>
 												<div class="fcc-label">Damage: 100</div>
 												<div class="meter"><span style="width: 30%"></span></div>
 												<div class="fcc-label">Shoot Agressivity: 100</div>
-												<div class="meter"><span style="width: 30%"></span></div>
+												<div class="meter"><span style="width: 40%"></span></div>
 											</div>
 										</div>
 									</div>
@@ -469,12 +472,12 @@
 										<div class="fc-side fc-side--back">
 											<div class="fc-content">
 												<div class="fcc-title">Android R.E.D</div>
-												<div class="fcc-label">Resistance: 100</div>
-												<div class="meter"><span style="width: 25%"></span></div>
+												<div class="fcc-label">Resistance: 1000</div>
+												<div class="meter"><span style="width: 100%"></span></div>
 												<div class="fcc-label">Damage: 250</div>
 												<div class="meter"><span style="width: 83%"></span></div>
 												<div class="fcc-label">Shoot Agressivity: 250</div>
-												<div class="meter"><span style="width: 25%"></span></div>
+												<div class="meter"><span style="width: 100%"></span></div>
 											</div>
 										</div>
 									</div>
@@ -487,7 +490,7 @@
 		</section>
 		<section id="supports">
 			<div class="Modern-Slider">
-				<div class="background-cover sl-image" style="background:url('assets/images/supports/turrets.png') no-repeat center / cover">
+				<div class="background-cover lozad sl-image" data-background-image="assets/images/supports/turrets.png">
 					<div class="container side-caption">
 						<div class="support-wrapper">
 							<div class="col">
@@ -501,7 +504,7 @@
 						</div>
 					</div>
 				</div>
-				<div class="background-cover sl-image" style="background:url('assets/images/supports/barrels.png') no-repeat center / cover">
+				<div class="background-cover lozad sl-image" data-background-image="assets/images/supports/barrels.png">
 					<div class="container side-caption">
 						<div class="support-wrapper">
 							<div class="col">
@@ -516,7 +519,7 @@
 						</div>
 					</div>
 				</div>
-				<div class="background-cover sl-image" style="background:url('assets/images/supports/airstrike.png') no-repeat center / cover">
+				<div class="background-cover lozad sl-image" data-background-image="assets/images/supports/airstrike.png">
 					<div class="container side-caption">
 						<div class="support-wrapper">
 							<div class="col">
@@ -531,7 +534,7 @@
 						</div>
 					</div>
 				</div>
-				<div class="background-cover sl-image" style="background:url('assets/images/supports/dronesupport.png') no-repeat center / cover">
+				<div class="background-cover lozad sl-image" data-background-image="assets/images/supports/dronesupport.png">
 					<div class="container side-caption">
 						<div class="support-wrapper">
 							<div class="col">
@@ -554,12 +557,12 @@
 				<button id="slickMapNext" class="myNextArrow myNextArrow--top slick-arrow" tabindex="0"></button>
 			</div>
 			<div class="Modern-Slider-3">
-				<div class="slide-map" style="background: linear-gradient(180deg, rgba(0,0,0,1) 0%, rgba(255,255,255,0) 25%, rgba(255,255,255,0) 75%, rgba(0,0,0,1) 100%), url('assets/images/maps/maphd1.png') no-repeat center / cover" alt="map1"><div class="map-title">AI Training</div></div>
-				<div class="slide-map" style="background: linear-gradient(180deg, rgba(0,0,0,1) 0%, rgba(255,255,255,0) 25%, rgba(255,255,255,0) 75%, rgba(0,0,0,1) 100%), url('assets/images/maps/maphd2.png') no-repeat center / cover" alt="map2"><div class="map-title">Adaptation</div></div>
-				<div class="slide-map" style="background: linear-gradient(180deg, rgba(0,0,0,1) 0%, rgba(255,255,255,0) 25%, rgba(255,255,255,0) 75%, rgba(0,0,0,1) 100%), url('assets/images/maps/maphd3.png') no-repeat center / cover" alt="map3"><div class="map-title">Garden</div></div>
-				<div class="slide-map" style="background: linear-gradient(180deg, rgba(0,0,0,1) 0%, rgba(255,255,255,0) 25%, rgba(255,255,255,0) 75%, rgba(0,0,0,1) 100%), url('assets/images/maps/maphd4.png') no-repeat center / cover" alt="map4"><div class="map-title">Industry</div></div>
-				<div class="slide-map" style="background: linear-gradient(180deg, rgba(0,0,0,1) 0%, rgba(255,255,255,0) 25%, rgba(255,255,255,0) 75%, rgba(0,0,0,1) 100%), url('assets/images/maps/maphd5.png') no-repeat center / cover" alt="map5"><div class="map-title">Metropolis</div></div>
-				<div class="slide-map" style="background: linear-gradient(180deg, rgba(0,0,0,1) 0%, rgba(255,255,255,0) 25%, rgba(255,255,255,0) 75%, rgba(0,0,0,1) 100%), url('assets/images/maps/maphd6.png') no-repeat center / cover" alt="map6"><div class="map-title">Final Test</div></div>
+				<div class="slide-map background-gradient lozad" data-background-image="assets/images/maps/maphd1.png" alt="map1"><div class="map-title">AI Training</div></div>
+				<div class="slide-map background-gradient lozad" data-background-image="assets/images/maps/maphd2.png" alt="map2"><div class="map-title">Adaptation</div></div>
+				<div class="slide-map background-gradient lozad" data-background-image="assets/images/maps/maphd3.png" alt="map3"><div class="map-title">Garden</div></div>
+				<div class="slide-map background-gradient lozad" data-background-image="assets/images/maps/maphd4.png" alt="map4"><div class="map-title">Industry</div></div>
+				<div class="slide-map background-gradient lozad" data-background-image="assets/images/maps/maphd5.png" alt="map5"><div class="map-title">Metropolis</div></div>
+				<div class="slide-map background-gradient lozad" data-background-image="assets/images/maps/maphd6.png" alt="map6"><div class="map-title">Final Test</div></div>
 			</div>
 		</section>
 		<section id="gallery">
@@ -618,7 +621,7 @@
 				</div>
 			</div>
 		</section>
-		<section id="social" class="section-fade" style="background-image:  linear-gradient(180deg, rgba(0,0,0,1) 0%, rgba(255,255,255,0) 50%, rgba(0,0,0,1) 100%), url('assets/images/social.png');">
+		<section id="social" class="section-fade background-gradient background-gradient--3 lozad" data-background-image="assets/images/social.png">
 			<div class="social-strip">
 				<span class="social-text">FOLLOW THE DRONE INVASION</span>
 				<div class="social-strip-icons-wrapper">
@@ -632,7 +635,7 @@
 				</div>
 			</div>
 		</section>
-		<section id="reviewers" class="section-fade" style="background: linear-gradient(rgb(0, 0, 0) 10%, rgba(0, 0, 0, 0.7) 50%, rgb(0, 0, 0) 90%), url('assets/images/3.png') center center / cover no-repeat">
+		<section id="reviewers" class="section-fade background-gradient background-gradient--2 lozad" data-background-image="assets/images/3.png">
 			<div class="flex-container">
 				<div class="row section-3">
 					<div class="section3-flex1">

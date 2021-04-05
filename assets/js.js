@@ -1,5 +1,10 @@
 $(document).ready(function(){
 
+  var observer = lozad('.lozad', {
+    rootMargin: '500px 500px' // ratio of element convergence
+  });
+  observer.observe();
+
   $('#preloader').addClass('preloader-hide');
 
   var triggerOffset = "40%";
