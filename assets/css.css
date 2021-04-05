@@ -226,7 +226,7 @@ video::-webkit-media-controls-start-playback-button {
 
 .side-caption:before {
   content: '';
-  background: linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 55%);
+  background: linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(0,0,0,.85) 55%);
   position: absolute;
   top: 0;
   left: 0;
@@ -237,9 +237,13 @@ video::-webkit-media-controls-start-playback-button {
   height: 100%;
 }
 
+.side-caption--2:before {
+  background: linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 55%);
+}
+
 .side-caption-left:before {
   content: '';
-  background: linear-gradient(-90deg, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 50%);
+  background: linear-gradient(-90deg, rgba(0,0,0,0) 0%, rgba(0,0,0,.95) 50%);
   position: absolute;
   top: 0;
   left: 0;
@@ -824,6 +828,7 @@ section {
   background: rgba(0,0,0,0.9);
   justify-content: space-around;
   align-items: center;
+  z-index: 2;
 }
 
 .social-strip-icons-wrapper {
@@ -944,6 +949,7 @@ section {
 
 .hide {
   opacity: 0;
+  pointer-events: none;
 }
 
 .button {
@@ -1170,13 +1176,14 @@ section a {
 .myNextArrow {
   position: absolute;
   top: 50%;
-  background-color: transparent;
-  border: none;
   height: 50px;
   width: 50px;
-  background-repeat: no-repeat;
   margin: 30px;
+  border: none;
+  border-radius: 4px;
   background-size: 100%;
+  background-repeat: no-repeat;
+  background-color: transparent;
   z-index: 1;
   cursor: pointer;
 }
@@ -1382,7 +1389,7 @@ section a {
   right: 0;
   bottom: 0;
   background-color: rgba(var(--black-rgb), .9);
-  z-index: 3;
+  z-index: 11; /* hover header */
   text-align: center;
   -webkit-transition: all .25s ease;
      -moz-transition: all .25s ease;
@@ -1464,6 +1471,11 @@ section a {
 
 .Modern-Slider-3 {
   width: 100%;
+  background-color: #000;
+  background-image: url('../assets/images/logo.png');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 320px;
 }
 
 .slide-map {
@@ -1471,4 +1483,29 @@ section a {
   width: 100%;
   height: 100vh;
   overflow: hidden;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.background-gradient:before {
+  content: '';
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  background: linear-gradient(180deg, rgba(0,0,0,1) 0%, rgba(255,255,255,0) 25%, rgba(255,255,255,0) 75%, rgba(0,0,0,1) 100%);
+  background-size: 100% 100%;
+  pointer-events: none;
+}
+
+.background-gradient--2:before {
+  background: linear-gradient(180deg, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 25%, rgba(0,0,0,0.8) 75%, rgba(0,0,0,1) 100%);
+}
+
+.background-gradient--3:before {
+  background: linear-gradient(180deg, rgba(0,0,0,1) 0%, rgba(0,0,0,0.3) 25%, rgba(0,0,0,0.3) 75%, rgba(0,0,0,1) 100%);
 }
