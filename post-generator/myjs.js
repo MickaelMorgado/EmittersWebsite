@@ -129,6 +129,26 @@ Array.prototype.random = function (length) {
 	return this[Math.floor((Math.random()*length))];
 }
 
+// Shuffle :
+function shuffle(array) {
+  var currentIndex = array.length, temporaryValue, randomIndex;
+
+  // While there remain elements to shuffle...
+  while (0 !== currentIndex) {
+
+    // Pick a remaining element...
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex -= 1;
+
+    // And swap it with the current element.
+    temporaryValue = array[currentIndex];
+    array[currentIndex] = array[randomIndex];
+    array[randomIndex] = temporaryValue;
+  }
+
+  return array;
+}
+
 function getRandom(arr, n) {
     var result = new Array(n),
         len = arr.length,
@@ -151,7 +171,12 @@ $(document).ready(function() {
 	$(".copybutton").on("click", function(){
 		$.notify("Copied", "info");
 	})
+
+  $(".appendToInput").on("click", function(){
+    $("#myInputTitle").val($("#myInputTitle").val() + this.dataset.clipboardText);
+  })
 	
+  // Selectize :
 	var $selectizeSelector = $(".js-my-selectize");
 	$selectizeSelector.selectize({
 		onChange: function(value) {
@@ -162,9 +187,9 @@ $(document).ready(function() {
 	});
 
 	// Hastags :
-	var randomizedTwitterTags = getRandom ( myTags , 20 ),
-		randomizedInstaTags = getRandom ( optimizedHastags , 5 ),
-		randomizedFacebookTags = getRandom ( myTags , 7 );
+	var randomizedTwitterTags = getRandom ( shuffle(myTags) , 20 ),
+		randomizedInstaTags = getRandom ( shuffle(optimizedHastags) , 5 ),
+		randomizedFacebookTags = getRandom ( shuffle(myTags) , 7 );
 
 	// Elements :
 	var $input = $('#myInputTitle'),
@@ -172,8 +197,10 @@ $(document).ready(function() {
 		$facebookTags = $(".facebookRandomTags"),
 		$instagramTags = $(".instaRandomTags"),
 		$twitterTags = $(".twitterTags"),
-		title = $input.val();
-
+		title = $input.val(),
+    stringFT = "",
+    stringIT = "",
+    stringTT = "";
 
 	$input
 		.val("Play for free the Emitters demo 🛸🔫 the new drone invasion game.");
@@ -185,14 +212,17 @@ $(document).ready(function() {
 		.keydown((e) => { $dynamicTitle.text(e.currentTarget.value) });
 
 	$.each(randomizedFacebookTags, function(index, value) {
-		$facebookTags.append("#" + value + " ")
+		stringFT = stringFT + "#" + value + " "
 	});
+  $facebookTags.val(stringFT)
 
 	$.each(randomizedFacebookTags, function(index, value) {
-		$instagramTags.append("#" + value + " ")
+		stringIT = stringIT + "#" + value + " "
 	});
+  $instagramTags.val(stringIT)
 
 	$.each(optimizedHastags, function(index, value) {
-		$twitterTags.append("#" + value + " ")
+		stringTT = stringTT + "#" + value + " "
 	});
+  $twitterTags.val(stringTT)
 });
