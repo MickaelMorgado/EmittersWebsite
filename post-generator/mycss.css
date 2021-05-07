@@ -1,0 +1,230 @@
+@import url('https://fonts.googleapis.com/css2?family=Raleway:wght@500&display=swap');
+
+:root {
+  --white: white;
+  --grey: #777;
+  --red: #700;
+  --links: #a33;
+  --bg-color: #111;
+  --border: #222;
+  --shadow: black;
+}
+
+body {
+	background-color: var(--bg-color);
+	font-family: 'Raleway', sans-serif;
+}
+
+input::selection { 
+	background: var(--grey) !important; 
+	color: white;
+}
+
+a {
+	color: var(--links);
+}
+
+p, label {
+	color: var(--white);
+}
+
+input {
+	display: block;
+	width: 100%;
+	padding: 10px;
+	border-radius: 4px;
+	border: none;
+	border-bottom: 1px solid var(--border);
+	background-color: var(--bg-color);
+	color: var(--grey);
+}
+
+.banner {
+	position: relative;
+	display: block;
+	height: 380px;
+	margin-bottom: 40px;
+	background-image: url('banner2.png');
+	background-position: center center;
+	background-size: cover;
+	box-shadow: inset 0 0 200px 0 var(--bg-color);
+}
+
+.banner-caption {
+	position: absolute;
+	text-align: center;
+	top: 50%;
+	left: 50%;
+	width: 750px;
+	max-width: 80%;
+	color: var(--white);
+	transform: translate(-50%,-70%);
+	z-index: 1;
+}
+
+.banner:after {
+	content:'';
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0,0,0,0.8);
+	box-shadow: inset 0 -20px 20px 0 var(--bg-color);
+}
+
+.caption-input {
+	display: flex;
+	align-items: center;
+}
+
+.caption-input > input {
+	flex-basis: 75%;
+	border-top-right-radius: 0;
+	border-bottom-right-radius: 0;
+}
+
+.caption-input > button {
+	flex-basis: 25%;
+	border-top-left-radius: 0;
+	border-bottom-left-radius: 0;
+}
+
+.caption-text {	
+	transition: all .5s ease-in-out;
+	overflow: hidden;
+	height: 90px;
+}
+
+.caption-text:hover {
+	height: 190px;
+}
+
+.caption-title {
+	margin-bottom: 20px;
+	font-size: 50px;
+	text-transform: uppercase;
+	color: var(--white);
+}
+
+.caption-small {
+	font-size: 12px;
+}
+
+.copybutton {
+	padding: 10px 15px;
+	background-color: #222;
+	border: none;
+	border-radius: 5px;
+	cursor: pointer;
+	color: var(--white);
+}
+
+.cb-small {
+	padding: 5px 10px;
+	margin-left: 10px;
+}
+
+label + .cb-small {
+	float: right;
+}
+
+.copybutton:hover {
+	background-color: #444;
+}
+
+.emoji-container {
+	display: flex;
+	align-item: top;
+	justify-content: space-between;
+	margin-bottom: 30px;
+}
+
+.emoji-container > * {
+	flex-basis: 30px
+}
+
+.emojipedia {
+	position: absolute;
+	display: inline-block;
+	bottom: -10px;
+    right: 20%;
+	width: 60px;
+	height: 60px;
+	border-radius: 100%;
+	background-image: url(https://emojipedia.org/static/img/logo/emojipedia-logo-140.0d779a8a903c.png);
+	background-size: 70%;
+	background-position: center center;
+	background-color: #dc6200;
+	background-repeat: no-repeat;
+	box-shadow: 0px 2px 10px 0px var(--shadow);
+	z-index: 2;
+	animation: anim 1s infinite;
+}
+
+.form-control {
+    display: block;
+    color: var(--grey);
+    background-color: var(--bg-color);
+    background-clip: padding-box;
+    border: none;
+}
+.form-control:focus {
+    background-color: var(--bg-color);
+}
+
+.mb-1 {
+	margin-bottom: 15px;
+}
+
+.selectize-input {
+	width: 90%;
+	float: left;
+	background: var(--bg-color);
+	border:none;
+}
+.selectize-control.multi .selectize-input [data-value] {
+    background-color: var(--red);
+    background-image: linear-gradient(to bottom, #f00, var(--red));
+}
+
+.selectize-control.multi .selectize-input > div {
+	border: none;
+}
+
+.selectize-dropdown [data-selectable], .selectize-dropdown .optgroup-header {
+    padding: 15px;
+    color: white;
+    background: var(--bg-color);
+}
+
+.selectize-dropdown [data-selectable].active, .selectize-dropdown .optgroup-header.active {
+    background: var(--red);
+}
+
+.spacer {	
+	margin-top: 15px;
+	margin-bottom: 15px;
+	color: var(--red);
+
+	//-webkit-animation: glow 1s ease-in-out infinite alternate;
+	//-moz-animation: glow 1s ease-in-out infinite alternate;
+	//animation: glow 1s ease-in-out infinite alternate;
+}
+
+@-webkit-keyframes glow {
+	from {
+	  text-shadow: 0 0 5px #700, 0 0 10px #700, 0 0 15px #700, 0 0 20px #700;
+	}
+	to {
+	  text-shadow: 0 0 10px #fff, 0 0 15px #700, 0 0 20px #f00, 0 0 25px #f00;
+	}
+}
+
+@keyframes anim {
+	0% { transform: translateY(0); box-shadow: 0px 2px 10px 0px var(--shadow); }
+	70% { transform: translateY(-8px); box-shadow: 0px 10px 10px 0px var(--shadow); }
+	100% { transform: translateY(0); box-shadow: 0px 2px 10px 0px var(--shadow); }
+}
