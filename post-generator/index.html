@@ -1,0 +1,260 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.12.1/css/selectize.default.css">
+    <link rel="stylesheet" href="mycss.css">
+    <title>QuickPosting</title>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.12.1/js/standalone/selectize.min.js" ></script>
+    <script src="notify.min.js"></script>
+    <script src="clipboard.min.js"></script>
+    <script src="myjs.js"></script>
+</head>
+
+<body>
+    <div class="banner">
+        <div class="banner-caption">
+            <div class="caption-text">
+                <div class="caption-title">My Posts Generator</div>
+                <div class="caption-small">Add your post content in the input below to create the post for each social media <br/>with randomized set of hastags defined on the js file of this project, <br/>then you can highlight the texts to copy and past on each social media.</div>
+            </div>
+            <div class="caption-input">
+                <input id="myInputTitle" class="form-control" type="text" placeholder="Enter post title" value="">
+                <button class="copybutton" data-clipboard-target="#myInputTitle">Copy to Clipboard</button>
+            </div>
+        </div>
+        <a href="https://emojipedia.org/search/" target="_blank" class="emojipedia" title="search icon from emojipedia"></a>
+    </div>
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="row">
+                    <div class="col-12 emoji-container">
+                        <button class="copybutton" data-clipboard-text="👉">👉</button>
+                        <button class="copybutton" data-clipboard-text="🛸">🛸</button>
+                        <button class="copybutton" data-clipboard-text="🔫">🔫</button>
+                        <button class="copybutton" data-clipboard-text="💥">💥</button>
+                        <button class="copybutton" data-clipboard-text="🦾">🦾</button>
+                        <button class="copybutton" data-clipboard-text="🤖">🤖</button>
+                        <button class="copybutton" data-clipboard-text="👽">👽</button>
+                        <button class="copybutton" data-clipboard-text="😂">😂</button>
+                        <button class="copybutton" data-clipboard-text="🤣">🤣</button>
+                        <button class="copybutton" data-clipboard-text="🌳">🌳</button>
+                        <button class="copybutton" data-clipboard-text="🌲">🌲</button>
+                        <button class="copybutton" data-clipboard-text="🔥">🔥</button>
+                        <button class="copybutton" data-clipboard-text="😎">😎</button>
+                        <button class="copybutton" data-clipboard-text="😈">😈</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <div class="mb-1">
+                    <label for="instaDL">Instagram: 👉 DL in bio: @emittersgame</label>
+                    <button class="copybutton cb-small" data-clipboard-text="👉 DL in bio: @emittersgame">Copy</button>
+                </div>
+                <div class="mb-1">
+                    <label for="twitterDL">Twitter: 👉 bit.ly/emitterssteamgame</label>
+                    <button class="copybutton cb-small" data-clipboard-text="👉 bit.ly/emitterssteamgame">Copy</button>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="spacer">------------------------------------------</div>
+            </div>
+            <div class="col-10">
+                <input type="text" id="selectizeHiddenInput">
+                <select 
+                    class="js-my-selectize" 
+                    targetInputId="selectizeHiddenInput" 
+                    name="example" 
+                    placeholder="Choose some hastags..." 
+                    multiple="multiple">
+                    <option selected value="#ue4">#ue4</option>
+                    <option value="#steam">#steam</option>
+                    <option value="#unity3d">#unity3d</option>
+                    <option selected value="#drones">#drones</option>
+                    <option value="#fpvaddict">#fpvaddict</option>
+                    <option value="#ai">#ai</option>
+                    <option value="#pc">#pc</option>
+                    <option value="#tech">#tech</option>
+                    <option value="#scifi">#scifi</option>
+                    <option value="#alien">#alien</option>
+                    <option value="#invasion">#invasion</option>
+                    <option value="#futuristic">#futuristic</option>
+                    <option value="#shooter">#shooter</option>
+                    <option value="#firstpersonshooter">#firstpersonshooter</option>
+                    <option value="#guns">#guns</option>
+                    <option value="#weapons">#weapons</option>
+                    <option value="#airsoft">#airsoft</option>
+                    <option value="#pubg">#pubg</option>
+                    <option value="#matrix">#matrix</option>
+                    <option value="#zombies">#zombies</option>
+                    <option value="#destiny">#destiny</option>
+                    <option value="#starwars">#starwars</option>
+                    <option value="#apexlegends">#apexlegends</option>
+                    <option value="#game">#game</option>
+                    <option value="#gamer">#gamer</option>
+                    <option value="#games">#games</option>
+                    <option value="#gaming">#gaming</option>
+                    <option value="#gamers">#gamers</option>
+                    <option value="#gameday">#gameday</option>
+                    <option value="#gamedev">#gamedev</option>
+                    <option value="#gameart">#gameart</option>
+                    <option value="#gameplay">#gameplay</option>
+                    <option value="#videogame">#videogame</option>
+                    <option value="#videogames">#videogames</option>
+                    <option value="#gamedevelopment">#gamedevelopment</option>
+                    <option value="#gamersofinstagram">#gamersofinstagram</option>
+                    <option value="#gamedesign">#gamedesign</option>
+                    <option value="#gamer4life">#gamer4life</option>
+                    <option value="#teamfollowback">#teamfollowback</option>
+                    <option value="#follow">#follow</option>
+                    <option value="#followback">#followback</option>
+                    <option value="#follow4followback">#follow4followback</option>
+                    <option value="#followtofollow">#followtofollow</option>
+                    <option value="#followtofollowback">#followtofollowback</option>
+                    <option value="#followtofollowforfollowingback">#followtofollowforfollowingback</option>
+                    <option value="#indie">#indie</option>
+                    <option value="#nextgame">#nextgame</option>
+                    <option selected value="#indiedev">#indiedev</option>
+                    <option selected value="#indiegame">#indiegame</option>
+                    <option value="#indiegames">#indiegames</option>
+                    <option value="#instagame">#instagame</option>
+                    <option value="#instagaming">#instagaming</option>
+                    <option selected value="#indiegamedev">#indiegamedev</option>
+                    <option value="#art">#art</option>
+                    <option value="#code">#code</option>
+                    <option value="#pixelart">#pixelart</option>
+                    <option value="#digitalart">#digitalart</option>
+                    <option value="#fun">#fun</option>
+                    <option value="#dark">#dark</option>
+                    <option value="#retro">#retro</option>
+                    <option value="#night">#night</option>
+                    <option value="#fantasy">#fantasy</option>
+                    <option value="#beautiful">#beautiful</option>
+                    <option value="#photooftheday">#photooftheday</option>
+                    <option value="#graphicdesign">#graphicdesign</option>
+                    <option value="#fun">#fun</option>
+                    <option selected value="#gamedevelopment">#gamedevelopment</option>
+                    <option value="#instagame">#instagame</option>
+                    <option value="#drawing">#drawing</option>
+                    <option value="#madewithunity">#madewithunity</option>
+                    <option value="#digitalart">#digitalart</option>
+                    <option value="#photooftheday">#photooftheday</option>
+                    <option value="#pixelart">#pixelart</option>
+                    <option value="#happy">#happy</option>
+                    <option value="#instagaming">#instagaming</option>
+                    <option value="#nextgame">#nextgame</option>
+                    <option value="#graphicdesign">#graphicdesign</option>
+                    <option value="#indiedev">#indiedev</option>
+                    <option value="#gamedev">#gamedev</option>
+                    <option value="#art">#art</option>
+                    <option value="#gaming">#gaming</option>
+                    <option value="#game">#game</option>
+                    <option value="#indie">#indie</option>
+                    <option value="#indiegamedev">#indiegamedev</option>
+                    <option value="#unity3d">#unity3d</option>
+                    <option value="#games">#games</option>
+                    <option value="#gameart">#gameart</option>
+                    <option value="#startup">#startup</option>
+                    <option value="#entrepreneur">#entrepreneur</option>
+                    <option value="#indiegames">#indiegames</option>
+                    <option value="#gamedesign">#gamedesign</option>
+                    <option value="#videogame">#videogame</option>
+                    <option value="#videogames">#videogames</option>
+                    <option value="#gamer">#gamer</option>
+                  </select>                
+            </div>
+            <div class="col-2">
+                <button class="copybutton cb-small" data-clipboard-target="#selectizeHiddenInput">Copy</button>
+            </div>
+            <div class="col-12">
+                <div class="spacer">------------------------------------------</div>
+            </div>
+            <div class="col-12">
+                <p>@madewithunreal #indiedev #indiegame #gamedev #games #indiegames #unity #gamedevelopment #gaming #indiegamedev #graphicdesign #drones #indiefps </p>
+                <p>#fun #gamedevelopment #instagame #drawing #madewithunity #digitalart #photooftheday #pixelart #happy #instagaming #nextgame #graphicdesign #indiegame #indiedev #gamedev #art #gaming #game #indie #indiegamedev #unity3d #games #gameart #startup #entrepreneur #indiegames #gamedesign #videogame #videogames #gamer</p>
+                <p class="facebookRandomTags"></p>
+                <p class="twitterTags"></p>
+                <p class="instaRandomTags"></p>
+                <button class="copybutton">copy</button>
+                <div class="spacer">------------------------------------------</div>
+            </div>
+        </div>
+        <div class="row">        
+            <!-- div class="col-6">
+                <h1>Only 
+                    <a 
+                    target="_blank" 
+                    href="https://www.facebook.com/emitters/">
+                        Facebook
+                    </a>
+                </h1>
+                <div class="spacer">------------------------------------------</div>
+                <p>
+                    .my-<span class="my-ti"></span>
+                    <br/>
+                    👉 Download: http://bit.ly/emitterssteamgame
+                    @madewithunreal #ue4 #steam #indiegame #futuristic #scifi #fps #gamedev #retro #firstpersonshooter #airsoft #guns #weapons #invasion #waves #pc #AI #StarWars #gaming #design #gaming #SoundCloud
+                </p>
+                <p>      
+                Emitters is a single / co-op first person shooter survival drone invasion game, where deadly machines were deployed throughout multiple levels with the single intent of shooting you dead !</p>
+                <p>Follow Dev @:</p>
+                <p>Instagram: <a href="https://www.instagram.com/emittersgame/" target="_blank">https://www.instagram.com/emittersgame/</a><br>Facebook: <a href="https://www.facebook.com/emitters/" target="_blank">https://www.facebook.com/emitters/</a><br>Twitter: <a href="https://twitter.com/Emitters8" target="_blank">https://twitter.com/Emitters8</a><br>Youtube: <a href="https://www.youtube.com/playlist?list=PLVN79JSTh68bbAS7M4fpVOblZ1ai8e2o7" target="_blank">https://www.youtube.com/playlist?list=PLVN79JSTh68bbAS7M4fpVOblZ1ai8e2o7</a><br>Trello: <a href="https://trello.com/b/xbwcLlRy/emitters" target="_blank">https://trello.com/b/xbwcLlRy/emitters</a></p>
+            </div-->
+            <div class="col-6">
+                <h1>
+                    <a 
+                    target="_blank" 
+                    href="https://www.reddit.com/r/Emitters/submit">
+                        Reddit
+                    </a>
+                </h1>
+                <div class="spacer">------------------------------------------</div>
+                <p class="dynamicTitle"></p>
+                <div class="spacer">------------------------------------------</div>
+                <div>
+                    <p>Download!: <a href="http://bit.ly/emitterssteamgame" target="_blank">http://bit.ly/emitterssteamgame</a><br>Emitters is a single / co-op first person shooter survival drone invasion game, where deadly machines were deployed throughout multiple levels with the single intent of shooting you dead !</p>
+                    <p>Follow Dev @:</p>
+                    <p>Instagram: <a href="https://www.instagram.com/emittersgame/" target="_blank">https://www.instagram.com/emittersgame/</a><br>Facebook: <a href="https://www.facebook.com/emitters/" target="_blank">https://www.facebook.com/emitters/</a><br>Twitter: <a href="https://twitter.com/Emitters8" target="_blank">https://twitter.com/Emitters8</a><br>Youtube: <a href="https://www.youtube.com/playlist?list=PLVN79JSTh68bbAS7M4fpVOblZ1ai8e2o7" target="_blank">https://www.youtube.com/playlist...</a><br>Trello: <a href="https://trello.com/b/xbwcLlRy/emitters" target="_blank">https://trello.com/b/xbwcLlRy/emitters</a></p>
+                </div>
+            </div>
+            <div class="col-6">
+                <h1>
+                    <a 
+                    target="_blank" 
+                    href="https://itch.io/dashboard/game/274198/new-devlog">
+                        Itch.io
+                    </a>
+                </h1>
+                <div class="spacer">------------------------------------------</div>
+                <p class="dynamicTitle"></p>
+                <hr/>
+                <p>
+                    <p>Download!: <a href="http://bit.ly/emitterssteamgame" target="_blank">http://bit.ly/emitterssteamgame</a><br>Emitters is a single / co-op first person shooter survival drone invasion game, where deadly machines were deployed throughout multiple levels with the single intent of shooting you dead !</p>
+                    <p>Follow Dev @:</p>
+                    <p>Instagram: <a href="https://www.instagram.com/emittersgame/" target="_blank">https://www.instagram.com/emittersgame/</a><br>Facebook: <a href="https://www.facebook.com/emitters/" target="_blank">https://www.facebook.com/emitters/</a><br>Twitter: <a href="https://twitter.com/Emitters8" target="_blank">https://twitter.com/Emitters8</a><br>Youtube: <a href="https://www.youtube.com/playlist?list=PLVN79JSTh68bbAS7M4fpVOblZ1ai8e2o7" target="_blank">https://www.youtube.com/playlist...</a><br>Trello: <a href="https://trello.com/b/xbwcLlRy/emitters" target="_blank">https://trello.com/b/xbwcLlRy/emitters</a></p>
+                </p>
+                <hr/>
+                <p>drones, futuristic, scifi, fps, shooter, retro, invasion, waves, starwars,</p>
+            </div>
+            <div class="col-6">
+                <h1>
+                    <a 
+                    target="_blank" 
+                    href="https://soundcloud.com/mickael-morgado/sets/emitters-ost">
+                        Soundcloud
+                    </a>
+                </h1>
+                <div class="spacer">------------------------------------------</div>
+                <p>drones futuristic scifi fps shooter retro invasion waves starwars </p>
+            </div>
+        </div>
+    </div>
+</body>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+</html>
