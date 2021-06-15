@@ -5,10 +5,12 @@
     <meta charset="utf-8">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.12.1/css/selectize.default.css">
+    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="mycss.css">
     <title>QuickPosting</title>
     <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.12.1/js/standalone/selectize.min.js" ></script>
+    <script defer src="https://friconix.com/cdn/friconix.js"></script>
     <script src="notify.min.js"></script>
     <script src="clipboard.min.js"></script>
     <script src="myjs.js"></script>
@@ -175,17 +177,26 @@
             <div class="col-12">
                 <div class="spacer">------------------------------------------</div>
             </div>
-            <div class="col-11">
-                <input type="text" id="tags1" value="@madewithunreal #indiedev #indiegame #gamedev #games #indiegames #unity #gamedevelopment #gaming #indiegamedev #graphicdesign #drones #indiefps">
+            <div class="flex items-center w-full px-13">
+                <div class="flex-none"><i class="fi-xnsuxl-instagram text-red-600"></i></div>
+                <div class="flex-grow">
+                    <input type="text" id="tags1" value="#indiedev #indiegame #gamedev #games #indiegames #unity #gamedevelopment #gaming #indiegamedev #graphicdesign #drones #indiefps #weapon #invasion #fps #UE4 #UE5 #repost">
+                </div>
+                <div class="flex-none"><button class="copybutton cb-small" data-clipboard-target="#tags1">Copy</button></div>
             </div>
-            <div class="col-1">
-                <button class="copybutton cb-small" data-clipboard-target="#tags1">Copy</button>
+            <div class="flex items-center w-full px-13">
+                <div class="flex-none"><i class="fi-xnsuxl-twitter text-red-600"></i></div>
+                <div class="flex-grow">
+                    <input type="text" id="tags2" value="@madewithunreal #indiedev #indiegame #gamedev #games #indiegames #unity #gamedevelopment #gaming #indiegamedev #graphicdesign #drones #indiefps #weapon #invasion #fps #UE4 #UE5">
+                </div>
+                <div class="flex-none"><button class="copybutton cb-small" data-clipboard-target="#tags2">Copy</button></div>
             </div>
-            <div class="col-11">
-                <input type="text" id="tags2" value="#fun #gamedevelopment #instagame #drawing #madewithunity #digitalart #photooftheday #pixelart #happy #instagaming #nextgame #graphicdesign #indiegame #indiedev #gamedev #art #gaming #game #indie #indiegamedev #unity3d #games #gameart #startup #entrepreneur #indiegames #gamedesign #videogame #videogames #gamer">
-            </div>
-            <div class="col-1">
-                <button class="copybutton cb-small" data-clipboard-target="#tags2">Copy</button>
+            <div class="flex items-center w-full px-13">
+                <div class="flex-none"><i class="fi-xnsuxl-linkedin text-red-600"></i></div>
+                <div class="flex-grow">
+                    <input type="text" id="tags3" value="#games #indiegames #fps #gamedevelopment #drones #indiefps #fun #instagame #drawing #madewithunity #digitalart #photooftheday #unity #nextgame #graphicdesign #indiegame #indiedev #gamedev #art #gaming #game #indie #indiegamedev #ue4 #ue5">
+                </div>
+                <div class="flex-none"><button class="copybutton cb-small" data-clipboard-target="#tags3">Copy</button></div>
             </div>
             <div class="col-11">
                 <input id="facebookRandomTags" class="facebookRandomTags" />
