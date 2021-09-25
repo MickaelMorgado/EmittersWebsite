@@ -238,7 +238,7 @@ video::-webkit-media-controls-start-playback-button {
 }
 
 .side-caption--2:before {
-  background: linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 55%);
+  background: linear-gradient(90deg, rgba(0,0,0,0) 45%, rgba(0,0,0,1) 55%);
 }
 
 .side-caption-left:before {
@@ -835,7 +835,7 @@ section {
   display: flex;
   justify-content: space-between;
   width: 50%;
-  max-width: 700px;
+  max-width: 800px;
 }
 
 .social-strip__icon {
@@ -890,7 +890,9 @@ section {
 .social-strip__icon--twitter {
   color: #00acee 
 }
-
+.social-strip__icon--twitch {
+  color: #6441a5 
+}
 
 
 
@@ -965,6 +967,7 @@ section {
   text-decoration: none;
   text-transform: uppercase;
   line-height: 50px;
+  font-family: "Azonix", sans-serif;
   font-size: 17px;
   font-weight: 300;
   -webkit-transition: all .1s ease-in-out;
