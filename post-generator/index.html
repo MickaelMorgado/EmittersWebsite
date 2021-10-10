@@ -67,6 +67,9 @@
             <div class="col-12">
                 <div class="spacer">------------------------------------------</div>
             </div>
+            <div class="col-12">
+                <button id="refreshButton" class="cb-small">Refresh</button>
+            </div>
             <div class="col-11">
                 <input type="text" id="selectizeHiddenInput">
                 <select 
@@ -75,146 +78,39 @@
                     name="example" 
                     placeholder="Choose some hastags..." 
                     multiple="multiple">
-                    <option selected value="#ue4">#ue4</option>
-                    <option value="#steam">#steam</option>
-                    <option value="#unity3d">#unity3d</option>
-                    <option selected value="#drones">#drones</option>
-                    <option value="#fpvaddict">#fpvaddict</option>
-                    <option value="#ai">#ai</option>
-                    <option value="#pc">#pc</option>
-                    <option value="#tech">#tech</option>
-                    <option value="#scifi">#scifi</option>
-                    <option value="#alien">#alien</option>
-                    <option value="#invasion">#invasion</option>
-                    <option value="#futuristic">#futuristic</option>
-                    <option value="#shooter">#shooter</option>
-                    <option value="#firstpersonshooter">#firstpersonshooter</option>
-                    <option value="#guns">#guns</option>
-                    <option value="#weapons">#weapons</option>
-                    <option value="#airsoft">#airsoft</option>
-                    <option value="#pubg">#pubg</option>
-                    <option value="#matrix">#matrix</option>
-                    <option value="#zombies">#zombies</option>
-                    <option value="#destiny">#destiny</option>
-                    <option value="#starwars">#starwars</option>
-                    <option value="#apexlegends">#apexlegends</option>
-                    <option value="#game">#game</option>
-                    <option value="#gamer">#gamer</option>
-                    <option value="#games">#games</option>
-                    <option value="#gaming">#gaming</option>
-                    <option value="#gamers">#gamers</option>
-                    <option value="#gameday">#gameday</option>
-                    <option value="#gamedev">#gamedev</option>
-                    <option value="#gameart">#gameart</option>
-                    <option value="#gameplay">#gameplay</option>
-                    <option value="#videogame">#videogame</option>
-                    <option value="#videogames">#videogames</option>
-                    <option value="#gamedevelopment">#gamedevelopment</option>
-                    <option value="#gamersofinstagram">#gamersofinstagram</option>
-                    <option value="#gamedesign">#gamedesign</option>
-                    <option value="#gamer4life">#gamer4life</option>
-                    <option value="#teamfollowback">#teamfollowback</option>
-                    <option value="#follow">#follow</option>
-                    <option value="#followback">#followback</option>
-                    <option value="#follow4followback">#follow4followback</option>
-                    <option value="#followtofollow">#followtofollow</option>
-                    <option value="#followtofollowback">#followtofollowback</option>
-                    <option value="#followtofollowforfollowingback">#followtofollowforfollowingback</option>
-                    <option value="#indie">#indie</option>
-                    <option value="#nextgame">#nextgame</option>
-                    <option selected value="#indiedev">#indiedev</option>
-                    <option selected value="#indiegame">#indiegame</option>
-                    <option value="#indiegames">#indiegames</option>
-                    <option value="#instagame">#instagame</option>
-                    <option value="#instagaming">#instagaming</option>
-                    <option selected value="#indiegamedev">#indiegamedev</option>
-                    <option value="#art">#art</option>
-                    <option value="#code">#code</option>
-                    <option value="#pixelart">#pixelart</option>
-                    <option value="#digitalart">#digitalart</option>
-                    <option value="#fun">#fun</option>
-                    <option value="#dark">#dark</option>
-                    <option value="#retro">#retro</option>
-                    <option value="#night">#night</option>
-                    <option value="#fantasy">#fantasy</option>
-                    <option value="#beautiful">#beautiful</option>
-                    <option value="#photooftheday">#photooftheday</option>
-                    <option value="#graphicdesign">#graphicdesign</option>
-                    <option value="#fun">#fun</option>
-                    <option selected value="#gamedevelopment">#gamedevelopment</option>
-                    <option value="#instagame">#instagame</option>
-                    <option value="#drawing">#drawing</option>
-                    <option value="#madewithunity">#madewithunity</option>
-                    <option value="#digitalart">#digitalart</option>
-                    <option value="#photooftheday">#photooftheday</option>
-                    <option value="#pixelart">#pixelart</option>
-                    <option value="#happy">#happy</option>
-                    <option value="#instagaming">#instagaming</option>
-                    <option value="#nextgame">#nextgame</option>
-                    <option value="#graphicdesign">#graphicdesign</option>
-                    <option value="#indiedev">#indiedev</option>
-                    <option value="#gamedev">#gamedev</option>
-                    <option value="#art">#art</option>
-                    <option value="#gaming">#gaming</option>
-                    <option value="#game">#game</option>
-                    <option value="#indie">#indie</option>
-                    <option value="#indiegamedev">#indiegamedev</option>
-                    <option value="#unity3d">#unity3d</option>
-                    <option value="#games">#games</option>
-                    <option value="#gameart">#gameart</option>
-                    <option value="#startup">#startup</option>
-                    <option value="#entrepreneur">#entrepreneur</option>
-                    <option value="#indiegames">#indiegames</option>
-                    <option value="#gamedesign">#gamedesign</option>
-                    <option value="#videogame">#videogame</option>
-                    <option value="#videogames">#videogames</option>
-                    <option value="#gamer">#gamer</option>
-                  </select>                
+                </select>
+                <br />
+                <br />
             </div>
             <div class="col-1">
                 <button class="copybutton cb-small" data-clipboard-target="#selectizeHiddenInput">Copy</button>
             </div>
             <div class="col-12">
-                <div class="spacer">------------------------------------------</div>
-            </div>
-            <div class="flex items-center w-full px-13">
-                <div class="flex-none"><i class="fi-xnsuxl-instagram text-red-600"></i></div>
-                <div class="flex-grow">
-                    <input type="text" id="tags1" value="#indiedev #indiegame #gamedev #games #indiegames #unity #gamedevelopment #gaming #indiegamedev #graphicdesign #drones #indiefps #weapon #invasion #fps #UE4 #UE5 #repost">
+                <div class="flex items-center w-full px-13">
+                    <div class="flex-none"><i class="fi-xnsuxl-instagram text-red-600"></i></div>
+                    <div class="flex-grow">
+                        <input type="text" id="tags1" value="">
+                    </div>
+                    <div class="flex-none"><button class="copybutton cb-small" data-clipboard-target="#tags1">Copy</button></div>
                 </div>
-                <div class="flex-none"><button class="copybutton cb-small" data-clipboard-target="#tags1">Copy</button></div>
             </div>
-            <div class="flex items-center w-full px-13">
-                <div class="flex-none"><i class="fi-xnsuxl-twitter text-red-600"></i></div>
-                <div class="flex-grow">
-                    <input type="text" id="tags2" value="@madewithunreal #indiedev #indiegame #gamedev #games #indiegames #unity #gamedevelopment #gaming #indiegamedev #graphicdesign #drones #indiefps #weapon #invasion #fps #UE4 #UE5">
+            <div class="col-12">
+                <div class="flex items-center w-full px-13">
+                    <div class="flex-none"><i class="fi-xnsuxl-twitter text-red-600"></i></div>
+                    <div class="flex-grow">
+                        <input type="text" id="tags2" value="">
+                    </div>
+                    <div class="flex-none"><button class="copybutton cb-small" data-clipboard-target="#tags2">Copy</button></div>
                 </div>
-                <div class="flex-none"><button class="copybutton cb-small" data-clipboard-target="#tags2">Copy</button></div>
             </div>
-            <div class="flex items-center w-full px-13">
-                <div class="flex-none"><i class="fi-xnsuxl-linkedin text-red-600"></i></div>
-                <div class="flex-grow">
-                    <input type="text" id="tags3" value="#games #indiegames #fps #gamedevelopment #drones #indiefps #fun #instagame #drawing #madewithunity #digitalart #photooftheday #unity #nextgame #graphicdesign #indiegame #indiedev #gamedev #art #gaming #game #indie #indiegamedev #ue4 #ue5">
+            <div class="col-12">
+                <div class="flex items-center w-full px-13">
+                    <div class="flex-none"><i class="fi-xnsuxl-linkedin text-red-600"></i></div>
+                    <div class="flex-grow">
+                        <input type="text" id="tags3" value="">
+                    </div>
+                    <div class="flex-none"><button class="copybutton cb-small" data-clipboard-target="#tags3">Copy</button></div>
                 </div>
-                <div class="flex-none"><button class="copybutton cb-small" data-clipboard-target="#tags3">Copy</button></div>
-            </div>
-            <div class="col-11">
-                <input id="facebookRandomTags" class="facebookRandomTags" />
-            </div>
-            <div class="col-1">
-                <button class="copybutton cb-small" data-clipboard-target="#facebookRandomTags">Copy</button>
-            </div>
-            <div class="col-11">
-                <input id="twitterTags" class="twitterTags" />
-            </div>
-            <div class="col-1">
-                <button class="copybutton cb-small" data-clipboard-target="#twitterTags">Copy</button>
-            </div>
-            <div class="col-11">
-                <input id="instaRandomTags" class="instaRandomTags" />
-            </div>
-            <div class="col-1">
-                <button class="copybutton cb-small" data-clipboard-target="#instaRandomTags">Copy</button>
             </div>
             <div class="col-12">
                 <div class="spacer">------------------------------------------</div>

@@ -1,136 +1,172 @@
-var myTags = [
-"ue4",
-"steam",
-"unity3d",
+const elements = {
+	buttons: {
+		appendToInput: ".appendToInput",
+		copyButtons: ".copybutton",
+		refreshButton: "#refreshButton",
+	},
+	textFields: {
+		instagram: "#tags1",
+		linkedin: "#tags3",
+		twitter: "#tags2",
+	},
+};
 
-"drone",
-"fpvaddict",
+const hastags = {
+	instagram: [
+		"InstaHastag1",
+		"InstaHastag2",
+		"InstaHastag3",
+		"InstaHastag4",
+		"InstaHastag5",
+		"InstaHastag6",
+		"InstaHastag7",
+		"InstaHastag8",
+	],
+	linkedin: [
+		"LinkedinHastag1",
+		"LinkedinHastag2",
+		"LinkedinHastag3",
+	],
+	reusables: [
+		"indiedev",
+		"indiegame",
+		"gamedev",
+		"games",
+		"indiegames",
+		"unity",
+		"gamedevelopment",
+		"gaming",
+		"indiegamedev",
+		"graphicdesign",
+		"drones",
+		"indiefps",
+		"weapon",
+		"invasion",
+		"fps",
+		"UE4",
+		"UE5",
+		"repost",
+	],
+	// selectize hashtags have to be different from reusables (to prevent possible duplicated hashtags):
+	selectize: [
+		"#ue4",
+		"#steam",
+		"#unity3d",
+		"#drones",
+		"#fpvaddict",
+		"#ai",
+		"#pc",
+		"#tech",
+		"#scifi",
+		"#alien",
+		"#invasion",
+		"#futuristic",
+		"#shooter",
+		"#firstpersonshooter",
+		"#guns",
+		"#weapons",
+		"#airsoft",
+		"#pubg",
+		"#matrix",
+		"#zombies",
+		"#destiny",
+		"#starwars",
+		"#apexlegends",
+		"#game",
+		"#gamer",
+		"#games",
+		"#gaming",
+		"#gamers",
+		"#gameday",
+		"#gamedev",
+		"#gameart",
+		"#gameplay",
+		"#videogame",
+		"#videogames",
+		"#gamedevelopment",
+		"#gamersofinstagram",
+		"#gamedesign",
+		"#gamer4life",
+		"#teamfollowback",
+		"#follow",
+		"#followback",
+		"#follow4followback",
+		"#followtofollow",
+		"#followtofollowback",
+		"#followtofollowforfollowingback",
+		"#indie",
+		"#nextgame",
+		"#indiedev",
+		"#indiegame",
+		"#indiegames",
+		"#instagame",
+		"#instagaming",
+		"#indiegamedev",
+		"#art",
+		"#code",
+		"#pixelart",
+		"#digitalart",
+		"#fun",
+		"#dark",
+		"#retro",
+		"#night",
+		"#fantasy",
+		"#beautiful",
+		"#photooftheday",
+		"#graphicdesign",
+		"#fun",
+		"#gamedevelopment",
+		"#instagame",
+		"#drawing",
+		"#madewithunity",
+		"#digitalart",
+		"#photooftheday",
+		"#pixelart",
+		"#happy",
+		"#instagaming",
+		"#nextgame",
+		"#graphicdesign",
+		"#indiedev",
+		"#gamedev",
+		"#art",
+		"#gaming",
+		"#game",
+		"#indie",
+		"#indiegamedev",
+		"#unity3d",
+		"#games",
+		"#gameart",
+		"#startup",
+		"#entrepreneur",
+		"#indiegames",
+		"#gamedesign",
+		"#videogame",
+		"#videogames",
+		"#gamer",
+	],
+	twitter: [
+		"TwitterHastag1",
+		"TwitterHastag2",
+		"TwitterHastag3",
+	],
+};
 
-"ai",
-"pc",
-"tech",
-"scifi",
-"alien",
-"invasion",
-"futuristic",
-
-"shooter",
-"firstpersonshooter",
-
-"guns",
-"weapons",
-"airsoft",
-
-"pubg",
-"matrix",
-"zombies",
-"destiny",
-"starwars",
-"apexlegends",
-
-"game",
-"gamer",
-"games",
-"gaming",
-"gamers",
-"gameday",
-"gamedev",
-"gameart",
-"gameplay",
-"videogame",
-"videogames",
-"gamedevelopment",
-"gamersofinstagram",
-"gamedesign",
-"gamer4life",
-
-"teamfollowback",
-"follow",
-"followback",
-"follow4followback",
-"followtofollow",
-"followtofollowback",
-"followtofollowforfollowingback",
-
-"indie",
-"nextgame",
-"indiedev",
-"indiegame",
-"indiegames",
-"instagame",
-"instagaming",
-"indiegamedev",
-
-"art",
-"code",
-"pixelart",
-"digitalart",
-
-"fun",
-"dark",
-"retro",
-"night",
-"fantasy",
-"beautiful",
-"photooftheday",
-"graphicdesign",
-
-"fun",
-"gamedevelopment",
-"instagame",
-"drawing",
-"madewithunity",
-"digitalart",
-"photooftheday",
-"pixelart",
-"happy",
-"instagaming",
-"nextgame",
-"graphicdesign",
-"indiedev",
-"gamedev",
-"art",
-"gaming",
-"game",
-"indie",
-"indiegamedev",
-"unity3d",
-"games",
-"gameart",
-"startup",
-"entrepreneur",
-"indiegames",
-"gamedesign",
-"videogame",
-"videogames",
-"gamer"
-];
-
-var optimizedHastags = ["drone",
-"futuristic",
-"scifi",
-"fpvaddict",
-"shooter",
-"gamedev",
-"videogames",
-"indiedev",
-"retro",
-"indiegames",
-"airsoft",
-"guns",
-"weapons",
-"invasion",
-"games",
-"starwars",
-"matrix"];
+const mentions = {
+	twitter: [
+		"@E1M1magazine",
+		"@FPS_DB",
+		"@IndieWorldOrder",
+		"@madewithUnreal",
+		"@UnrealEngine",
+	],
+}
 
 // Randomizer :
 Array.prototype.random = function (length) {
 	return this[Math.floor((Math.random()*length))];
 }
 
-// Shuffle :
-function shuffle(array) {
+const shuffle = (array) => {
   var currentIndex = array.length, temporaryValue, randomIndex;
 
   // While there remain elements to shuffle...
@@ -149,7 +185,7 @@ function shuffle(array) {
   return array;
 }
 
-function getRandom(arr, n) {
+const getRandom = (arr, n) => {
     var result = new Array(n),
         len = arr.length,
         taken = new Array(len);
@@ -163,66 +199,115 @@ function getRandom(arr, n) {
     return result;
 }
 
+const addToField = (input, value) => {
+	$(input)[0].value = value;
+};
+
+const createStringItemList = (array, prefix = "#") => {
+	var result = "";
+
+	$.each(array, function(index, value) {
+		result = result + prefix + value + " ";
+	});
+
+	return result;
+};
+
 // On document ready :
 $(document).ready(function() {
-
-	new ClipboardJS('.copybutton');
-
-	$(".copybutton").on("click", function(){
-		$.notify("Copied", "info");
-	})
-
-  $(".appendToInput").on("click", function(){
-    $("#myInputTitle").val($("#myInputTitle").val() + this.dataset.clipboardText);
-  })
 	
-  // Selectize :
-	var $selectizeSelector = $(".js-my-selectize");
-	$selectizeSelector.selectize({
-		onChange: function(value) {
-			var $targetInput = $("#" + this.$input.attr("targetInputId"));
-			var stringified = value.toString().replaceAll(","," ");
-			$targetInput.val(stringified);
-		}
-	});
+	const buttons = elements.buttons;
 
-	// Hastags :
-	var randomizedTwitterTags = getRandom ( shuffle(myTags) , 20 ),
-		randomizedInstaTags = getRandom ( shuffle(optimizedHastags) , 5 ),
-		randomizedFacebookTags = getRandom ( shuffle(myTags) , 7 );
+	new ClipboardJS(buttons.copyButtons);
 
-	// Elements :
-	var $input = $('#myInputTitle'),
-		$dynamicTitle = $(".dynamicTitle"),
-		$facebookTags = $(".facebookRandomTags"),
-		$instagramTags = $(".instaRandomTags"),
-		$twitterTags = $(".twitterTags"),
-		title = $input.val(),
-    stringFT = "",
-    stringIT = "",
-    stringTT = "";
+	// Button events:
+		$(buttons.copyButtons).on("click", function() {
+			$.notify("Copied", "info");
+		});
+		
+		$(buttons.appendToInput).on("click", function() {
+			$("#myInputTitle").val($("#myInputTitle").val() + this.dataset.clipboardText);
+		});
+		
+		$(buttons.refreshButton).on("click", function() {
+			PopulateInstagram();
+			PopulateLinkedin();
+			PopulateTwitter();
+			$.notify("Refreshed", "info");
+		});
 
-	$input
-		.val("Play for free the Emitters demo 🛸🔫 the new drone invasion game.");
+	var customHastags = "";
 	
-	$dynamicTitle
-		.text("Play for free the Emitters demo 🛸🔫 the new drone invasion game.");
+	const setCustomHastags = (stringListItem) => {
+		customHastags = stringListItem;
+		PopulateInstagram();
+		PopulateLinkedin();
+		PopulateTwitter();
+	};  	
+	
+	// Selectize :
+		var $selectizeSelector = $(".js-my-selectize");
 
-	$input
-		.keydown((e) => { $dynamicTitle.text(e.currentTarget.value) });
+		var arrayToSelectizeOptions = (array) => {
+			var result = array.map(item => ({text: item, value: item}));
+			return result;
+		};
 
-	$.each(randomizedFacebookTags, function(index, value) {
-		stringFT = stringFT + "#" + value + " "
-	});
-  $facebookTags.val(stringFT)
+		$selectizeSelector.selectize({
+			options: arrayToSelectizeOptions(hastags.selectize),
+			onChange: function(value) {
+				var $targetInput = $("#" + this.$input.attr("targetInputId"));
+				var stringified = value.toString().replaceAll(","," ");
+				setCustomHastags(stringified);
+				$targetInput.val(stringified);
+			},
+			create: function (input) {
+				return {
+					value: "#"+input,
+					text: "#"+input,
+				};
+			},
+		});
 
-	$.each(randomizedFacebookTags, function(index, value) {
-		stringIT = stringIT + "#" + value + " "
-	});
-  $instagramTags.val(stringIT)
+	// Populate Post Field:
+		var $input = $('#myInputTitle'),
+			$dynamicTitle = $(".dynamicTitle");
 
-	$.each(optimizedHastags, function(index, value) {
-		stringTT = stringTT + "#" + value + " "
-	});
-  $twitterTags.val(stringTT)
+		$input
+			.val("Play for free the Emitters demo 🛸🔫 the new drone invasion game.");
+		
+		$dynamicTitle
+			.text("Play for free the Emitters demo 🛸🔫 the new drone invasion game.");
+
+		$input
+			.keydown((e) => { $dynamicTitle.text(e.currentTarget.value) });
+  
+	// Populate Hashtag Fields:  
+  		// Instagram:
+		var PopulateInstagram = () => addToField(elements.textFields.instagram, customHastags + " " +
+			createStringItemList(
+				shuffle(
+					getRandom(hastags.reusables, 15)
+				)
+			)
+		);
+
+		// Linkedin:
+		var PopulateLinkedin = () => addToField(elements.textFields.linkedin, customHastags + " " +
+			createStringItemList(
+				shuffle(
+					getRandom(hastags.reusables, 10)
+				)
+			)
+		);
+
+		// Twitter:
+		var PopulateTwitter = () => addToField(elements.textFields.twitter,
+			createStringItemList(getRandom(mentions.twitter,1), "") + customHastags + " " +
+			createStringItemList(
+				shuffle(
+					getRandom(hastags.reusables, 10)
+				)
+			)
+		);
 });
