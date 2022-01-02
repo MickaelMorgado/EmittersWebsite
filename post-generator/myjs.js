@@ -8,6 +8,7 @@ const elements = {
 		instagram: "#tags1",
 		linkedin: "#tags3",
 		twitter: "#tags2",
+		tiktok: "#tags4",
 	},
 };
 
@@ -144,6 +145,19 @@ const hastags = {
 		"#videogames",
 		"#gamer",
 	],
+	tiktok: [
+		"ue4",
+		"unity",
+		"starwars",
+		"emitters",
+		"gamedev",
+		"alien",
+		"ufo",
+		"drones",
+		"indiegame",
+		"fps",
+		"unreal",
+	],
 	twitter: [
 		"TwitterHastag1",
 		"TwitterHastag2",
@@ -152,6 +166,11 @@ const hastags = {
 };
 
 const mentions = {
+	tiktok: [
+		"@gamelancer",
+		"@_triko_official_",
+		"@gaming",
+	],
 	twitter: [
 		"@E1M1magazine",
 		"@FPS_DB",
@@ -232,6 +251,7 @@ $(document).ready(function() {
 		$(buttons.refreshButton).on("click", function() {
 			PopulateInstagram();
 			PopulateLinkedin();
+			PopulateTiktok();
 			PopulateTwitter();
 			$.notify("Refreshed", "info");
 		});
@@ -242,6 +262,7 @@ $(document).ready(function() {
 		customHastags = stringListItem;
 		PopulateInstagram();
 		PopulateLinkedin();
+		PopulateTiktok();
 		PopulateTwitter();
 	};  	
 	
@@ -307,6 +328,20 @@ $(document).ready(function() {
 			createStringItemList(
 				shuffle(
 					getRandom(hastags.reusables, 10)
+				)
+			)
+		);
+
+		// Tiktok:
+		var PopulateTiktok = () => addToField(elements.textFields.tiktok,
+			createStringItemList([
+				mentions.tiktok[0],
+				mentions.tiktok[1],
+				mentions.tiktok[2]
+			], "") + customHastags + " " +
+			createStringItemList(
+				shuffle(
+					getRandom(hastags.tiktok, 10)
 				)
 			)
 		);
