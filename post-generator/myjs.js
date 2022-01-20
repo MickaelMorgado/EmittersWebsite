@@ -167,6 +167,7 @@ const hastags = {
 
 const mentions = {
 	tiktok: [
+		"@devforge",
 		"@gamelancer",
 		"@_triko_official_",
 		"@gaming",
