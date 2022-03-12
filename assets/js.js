@@ -210,6 +210,49 @@ $(document).ready(function(){
 
   });
 
+  // MATRIX :
+  const rows = 5;
+  const cols = 13;
+
+  function randomBool() {
+    return !Math.round(Math.random());
+  }
+  function getRandomArbitrary(min, max) {
+    return Math.random() * (max - min) + min;
+  }
+  function digitalAnimate() {
+    return "digital-animate-" + Math.round(getRandomArbitrary(0,4));
+  }
+
+  function line() {
+    var lining = "";
+    for (let i = 0; i < cols; i++) {
+      lining = lining + `<div class='cell ${randomBool()} ${digitalAnimate()}'></div>`;
+    }
+    return lining;
+  }
+
+  for (let i = 0; i < rows; i++) {
+    $('#matrix').append(`<div class='line'>${line()}</div>`);
+  }
+
+  // MASK OVERLAY :
+  $("#reviewers").mousemove(function creatorMouseMove(e) {
+
+    var maxShadowOffset = 30,
+        maskSize = 600 / 2;
+        maxX = $("#reviewers").width(),
+        maxY = $("#reviewers").height(),
+        x = (e.clientX / maxX) * 100,
+        y = (e.clientY / maxY) * 100;
+
+    $('#mask-overlay').css({
+      left: `${x}%`,
+      top: `${y}%`,
+    });
+
+  });
+
   // GALLERY :
   var $popup = $("#zoom");
 
