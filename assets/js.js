@@ -59,6 +59,44 @@ $(document).ready(function(){
     $(".Modern-Slider-3").slick('slickNext');
   });
 
+
+  /* Get mouse position or offsets in a section:
+
+    Example of use:
+
+      $("#weapons").mousemove(function(e) {
+        var position = mouseMoveInSection(e, 0.1);
+        $(".weapons-glass").css({
+          top: `${position.offset.y}%`,
+          left: `${position.offset.x}%`,
+        });
+      });
+  */
+  function mouseMoveInSection(event, factor) {
+    var maxX = $(event.currentTarget).width(),
+    maxY = $(event.currentTarget).height(),
+    x = (event.clientX / maxX) * 100,
+    y = (event.clientY / maxY) * 100;
+    
+    var coordinates = {
+      offset: {x, y},
+      centeredOffset: {
+        x: x - 50, 
+        y: y - 50
+      },
+      centeredOffsetWithFactor: {
+        x: (x - 50) * factor + 50,
+        y: (y - 50) * factor + 50 
+      },
+      position: {
+        x: event.clientX,
+        y: event.clientY
+      }
+    }
+
+    return coordinates;
+  }
+
   // Counter up:
 
   let counter = $('#count-up'),
@@ -251,6 +289,20 @@ $(document).ready(function(){
       top: `${y}%`,
     });
 
+  });
+
+  // GLASS :
+  $("#weapons").mousemove(function(e) {
+    var MMIS1 = mouseMoveInSection(e, 0.02);
+    var MMIS2 = mouseMoveInSection(e, -0.08);
+    $(".weapons-glass--1").css({
+      top: `${MMIS1.centeredOffsetWithFactor.y}%`,
+      left: `${MMIS1.centeredOffsetWithFactor.x}%`,
+    });
+    $(".weapons-glass--2").css({
+      top: `${MMIS2.centeredOffsetWithFactor.y}%`,
+      left: `${MMIS2.centeredOffsetWithFactor.x}%`,
+    });
   });
 
   // GALLERY :
