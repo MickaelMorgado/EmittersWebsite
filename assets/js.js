@@ -193,6 +193,23 @@ $(document).ready(function(){
     });
   });
 
+  // SOCIAL :
+
+  $("#social").mousemove(function creatorMouseMove(e) {
+
+    var maxShadowOffset = 30,
+        maxX = $("#social").width(),
+        maxY = $("#social").height(),
+        x = (e.clientX / maxX) * 100,
+        y = (e.clientY / maxY) * 100;
+
+    console.log(y);
+    $('.js-dynamic-background').css({
+      backgroundPosition: `${x}% ${y}%`,
+    });
+
+  });
+
   // GALLERY :
   var $popup = $("#zoom");
 

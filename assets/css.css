@@ -582,6 +582,7 @@ section {
   font-size: 3em;  
   line-height: 1.8em;
   font-weight: bold;
+  transition: all .5s ease-out;
 }
 
 /* SECTION ENEMIES =========================================================*/
@@ -745,6 +746,7 @@ section {
 .meter > span {
   display: block;
   height: 100%;
+  max-width: 0%;
   border-top-right-radius: 2px;
   border-bottom-right-radius: 2px;
   border-top-left-radius: 2px;
@@ -754,7 +756,13 @@ section {
   position: relative;
   overflow: hidden;
   box-shadow: 0 0 25px 3px red;
+  transition: max-width 1s ease-in .4s;
 }
+
+.flip-card:hover .meter > span {
+  max-width: 100%;
+}
+
 /*
 .orange > span {
   background-color: #ff8429;
@@ -812,6 +820,11 @@ section {
 }
 
 /* SECTION SOCIAL =========================================================*/
+#social {
+  background-size: 150%;
+  transition: all 1s ease-out;
+}
+
 .social-text {
   font-size: 2.5em;
   line-height: 1.8em;
@@ -825,9 +838,10 @@ section {
   position: absolute;
   left: 0;
   right: 0;
-  background: rgba(0,0,0,0.9);
+  background: rgba(0,0,0,0.6);
   justify-content: space-around;
   align-items: center;
+  box-shadow: 0 0 300px -30px var(--red);
   z-index: 2;
 }
 
@@ -839,7 +853,7 @@ section {
 }
 
 .social-strip__icon {
-  font-size: 50px;
+  font-size: 40px;
   display: block;
   width: 80px;
   text-align: center;
@@ -869,31 +883,33 @@ section {
   100%   {opacity: 1;}
 }
 
-.social-strip__icon--facebook {
-  color: #3b5998 
-}
-.social-strip__icon--discord {
-  color: #7289DA 
-}
-.social-strip__icon--instagram {
-  color: #de1b85 
-}
-.social-strip__icon--youtube {
-  color: #c4302b 
-}
-.social-strip__icon--itchio {
-  color: #ff5c5b 
-}
-.social-strip__icon--soundcloud {
-  color: #ff7700 
-}
-.social-strip__icon--twitter {
-  color: #00acee 
-}
-.social-strip__icon--twitch {
-  color: #6441a5 
-}
 
+.social-strip__icon--tiktok { color: #ff0050 }
+.social-strip__icon--tiktok:hover { text-shadow: 0 0 30px #ff0050; }
+
+.social-strip__icon--facebook { color: #3b5998 }
+.social-strip__icon--facebook:hover { text-shadow: 0 0 30px #3b5998; }
+
+.social-strip__icon--discord { color: #7289DA }
+.social-strip__icon--discord:hover { text-shadow: 0 0 30px #7289DA; }
+
+.social-strip__icon--instagram { color: #de1b85 }
+.social-strip__icon--instagram:hover { text-shadow: 0 0 30px #de1b85; }
+
+.social-strip__icon--youtube { color: #c4302b }
+.social-strip__icon--youtube:hover { text-shadow: 0 0 30px #c4302b; }
+
+.social-strip__icon--itchio { color: #ff5c5b }
+.social-strip__icon--itchio:hover { text-shadow: 0 0 30px #ff5c5b; }
+
+.social-strip__icon--soundcloud { color: #ff7700 }
+.social-strip__icon--soundcloud:hover { text-shadow: 0 0 30px #ff7700; }
+
+.social-strip__icon--twitter { color: #00acee }
+.social-strip__icon--twitter:hover { text-shadow: 0 0 30px #00acee; }
+
+.social-strip__icon--twitch { color: #6441a5 }
+.social-strip__icon--twitch:hover { text-shadow: 0 0 30px #6441a5; }
 
 
 .map-nav {
@@ -925,7 +941,7 @@ section {
   z-index: 1;
   font-weight: bold;
   font-size: 20px;
-  text-shadow: 3px 3px 3px var(--black);
+ text-shadow: 3px 3px 3px var(--black);
 }
 
 .Modern-Slider-3 .slick-cloned .map-title {
@@ -1161,6 +1177,9 @@ section a {
   height: 25vh;
 }
 
+
+/* STORY ================================================================*/
+
 .story__content {
   width: 50%;
   z-index: 1;
@@ -1170,6 +1189,24 @@ section a {
   line-height: 20px;
 }
 
+.story-line {
+  transition: opacity .5s ease;
+}
+
+.story-lines:hover .story-line {
+  opacity: .3;
+}
+
+.story-lines .story-line:hover {
+  opacity: 1;
+}
+
+.story-slogan {
+  padding-top: 30px;
+  color: var(--red);
+  font-weight: bold;
+  font-size: 12px;
+}
 
 /* ======================================================================================================================
   SLICK SLIDERS: 
@@ -1510,5 +1547,5 @@ section a {
 }
 
 .background-gradient--3:before {
-  background: linear-gradient(180deg, rgba(0,0,0,1) 0%, rgba(0,0,0,0.3) 25%, rgba(0,0,0,0.3) 75%, rgba(0,0,0,1) 100%);
+  background: linear-gradient(180deg, rgba(0,0,0,1) 0%, rgba(0,0,0,0.5) 45%, rgba(0,0,0,0.5) 65%, rgba(0,0,0,1) 100%);
 }
