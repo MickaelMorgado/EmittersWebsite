@@ -695,7 +695,8 @@ section {
 .fc-side--back.fc-side--type-nft:before {
   content: "NFT / DLC";
   position: absolute;
-  background-image: linear-gradient(135deg, rgba(var(--red-rgb), .9) 20%, transparent 80%);
+  bottom: 0;
+  background-image: linear-gradient(45deg, rgba(var(--red-rgb), .9) 20%, transparent 80%);
   padding: 2px 8px;
   font-size: 13px;
 }
@@ -754,8 +755,8 @@ section {
 }
 
 .fc-side--weapon {
-  background-size: 160%;
-  background-position: center 30%;
+  background-size: 100%;
+  background-position: center -50%;
 }
 
 /* GLASS EFFECT =================================================*/
