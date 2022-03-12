@@ -221,6 +221,18 @@ header {
   float: right; 
 }
 
+.red-label {
+  color: red;
+}
+
+.red-label--uppercase {
+  text-transform: uppercase;
+}
+
+.red-label--bold {
+  font-weight: bold;
+}
+
 video::-webkit-media-controls-start-playback-button {
   display: none;
 }
@@ -586,13 +598,52 @@ section {
   transition: all .5s ease-out;
 }
 
+/* SECTION WEAPONS =========================================================*/
+#weapons {
+  overflow: hidden;
+}
+
+.weapons-glass {
+  display: block;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 1;
+  width: 2000px;
+  height: 2000px;
+  background-size: 100%;
+  background-repeat: no-repeat;
+  background-image: url('../assets/images/glass-bullet-hole.png');
+  transform: translate(-50%, -50%);
+  // transition: all 1s ease-in-out;
+  opacity: .1;
+}
+
+.weapons-glass--1 {
+  transform: translate(-80%, -40%);
+}
+
+.weapons-glass--2 {
+  width: 3000px;
+  height: 3000px;
+  opacity: .3;
+  transform: translate(-30%, -20%);
+}
+
+.weapons-section__gallery {
+  display: grid;
+  grid-template-rows: repeat(2, 1fr);
+  grid-template-columns: repeat(5, 1fr);
+  grid-gap: 45px 0;
+}
+
 /* SECTION ENEMIES =========================================================*/
 #enemies {
   overflow: hidden;
 }
 
 .enemies-wrapper {
-  // align-items: center;
+  /* align-items: center; */
   height: 100%;
   justify-content: center;
   grid-area: row;
@@ -608,6 +659,15 @@ section {
   -moz-perspective: 130rem;
 }
 
+.flip-card--mini {
+  width: 200px;
+  height: 280px;
+}
+
+.flip-card--mini .fc-side {
+  border-width: 4px;
+}
+
 .fc-side {
   height: 100%;
   position: absolute;
@@ -616,12 +676,28 @@ section {
   right: 0;
   bottom: 0;
   backface-visibility: hidden;
+  border-width: 8px;
+  border-style: solid;
+  border-color: var(--gray);
+  background-color: var(--black);
 
   -webkit-transition: all .5s ease-out;
      -moz-transition: all .5s ease-out;
       -ms-transition: all .5s ease-out;
        -o-transition: all .5s ease-out;
           transition: all .5s ease-out;
+}
+
+.fc-side--type-nft {
+  border-color: var(--red);
+}
+
+.fc-side--back.fc-side--type-nft:before {
+  content: "NFT / DLC";
+  position: absolute;
+  background-image: linear-gradient(135deg, rgba(var(--red-rgb), .9) 20%, transparent 80%);
+  padding: 2px 8px;
+  font-size: 13px;
 }
 
 .fc-title {
@@ -665,20 +741,24 @@ section {
 .fc-side--front ,
 .fc-side--back {
   box-shadow: inset 0 0 20px 0px var(--black);
-  border-radius: 2px;
+  border-radius: 2px; 
   overflow: hidden;
 }
 
 .fc-side--front {
   position: relative;
   background-color: var(--black);
-  border: 8px solid var(--gray); 
   background-repeat: no-repeat;
   background-size: auto 75%;
   background-position: center 0;
 }
 
-/* Glass */
+.fc-side--weapon {
+  background-size: 160%;
+  background-position: center 30%;
+}
+
+/* GLASS EFFECT =================================================*/
 .fc-side--front:after ,
 .fc-side--back:after {
   content: '';
@@ -705,8 +785,6 @@ section {
 
 .fc-side--back {
   font-size: 1rem;
-  border: 8px solid var(--gray);
-  background-color: var(--black);
   transform: rotateY(-180deg);
 }
 
@@ -730,6 +808,18 @@ section {
       -ms-transform: rotateY(0);
        -o-transform: rotateY(0);
           transform: rotateY(0);
+}
+
+/* Glass effect on mini: */
+.flip-card--mini .fc-side--front:after ,
+.flip-card--mini .fc-side--back:after {
+  top: -50%;
+  left: -50%;
+}
+.flip-card--mini:hover .fc-side--front:after ,
+.flip-card--mini:hover .fc-side--back:after {
+  top: 140%;
+  left: 155%;
 }
 
 .meter { 
@@ -1213,7 +1303,7 @@ section a {
 
 #matrix {
   position: absolute;
-  opacity: .1;
+  opacity: .2;
   z-index: 1;
 }
 
@@ -1289,9 +1379,9 @@ section a {
   background-size: 50px 20px;
 }
 
-#mask-overlay{
+#mask-overlay {
   border-radius: 50%;
-  box-shadow: 0 0 0 9999px rgb(0 0 0 / 20%);
+  box-shadow: 0 0 0 9999px rgb(0 0 0 / 30%);
   height: 600px;
   width: 600px;
   position: absolute;
@@ -1414,7 +1504,7 @@ section a {
 
 .gallery-item {
   position: relative;
-  background-size: auto 100%;
+  background-size: auto 110%;
   background-repeat: no-repeat;
   background-position: center;
   border: inset 10px black;
@@ -1468,11 +1558,11 @@ section a {
 }
 
 .gallery-item:hover {
-  background-size: auto 110%;
+  background-size: auto 120%;
 }
 
 .gallery-item--horizontal:hover {
-  background-size: 110% auto;
+  background-size: 120% auto;
 }
 
 .gallery-item:hover:before ,
@@ -1481,8 +1571,8 @@ section a {
 }
 
 .gallery-item:hover:after {
-  top: 130%;
-  left: 130%;
+  top: 120%;
+  left: 120%;
 }
 
 .gallery-item__content {
@@ -1490,6 +1580,7 @@ section a {
   top: 50%;
   left: 50%;
   text-align: center;
+  text-transform: uppercase;
   font-size: 1rem;
   z-index: 2;
   opacity: 0;
