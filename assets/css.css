@@ -174,12 +174,6 @@ header {
 .header-link.active {
   color: var(--red);
 }
-/*
-.header-offset {
-  padding-top: var(--header-offset);
-  height: 100%;
-  position: relative;
-}*/
 
 .logo {
   width: 300px;
@@ -237,6 +231,37 @@ video::-webkit-media-controls-start-playback-button {
   display: none;
 }
 
+.watch-trailer-button {
+  display: block;
+  position: absolute;
+  width: 150px;
+  height: 150px;
+  background-color: rgba(0,0,0,.7);
+  z-index: 1;
+  border-radius: 100%;
+  top: 50%;
+  left: 25%;
+  opacity: 0;
+  transition: opacity .2s ease;
+}
+
+.watch-trailer-button:after {
+  content: "";
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 25px 0 25px 43.3px;
+  border-color: transparent transparent transparent #ffffff;
+  top: 50%;
+  right: 27px;
+  transform: translate(-50%, -50%);
+}
+
+.watch-trailer-button:hover {
+  opacity: 1;
+}
+  
 .side-caption:before {
   content: '';
   background: linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(0,0,0,.85) 55%);
@@ -585,6 +610,38 @@ section {
 }
 
 /* SECTION CREATOR =========================================================*/
+#creator:before {
+  content: "";
+  background-image: url('../assets/images/absorberDark.png');
+  display: block;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: .2;
+  background-position: 0 0;
+  background-repeat: no-repeat;
+  animation: displace 30s linear infinite;
+}
+
+@keyframes displace {
+  0% {
+    opacity: 0;
+    background-position: 90% center;
+  }
+  30% {
+    opacity: .2;
+  }
+  70% {
+    opacity: .2;
+  }
+  100% {
+    opacity: 0;
+    background-position: 10% center;
+  }
+}
+
 .creator-wrapper {
   flex-direction: column;
   justify-content: center;
