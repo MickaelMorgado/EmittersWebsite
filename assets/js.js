@@ -135,11 +135,13 @@ $(document).ready(function(){
   $('#watchTrailer').click(function(event) {
     event.preventDefault()
     showVideo()
+    $('#watchTrailer').fadeOut();
   });
-
+  
   $('#close').click(function(event) {
     event.preventDefault()
     closeVideo();
+    $('#watchTrailer').fadeIn();
   });
   
   function easyScroll(a) {
@@ -234,18 +236,10 @@ $(document).ready(function(){
   // SOCIAL :
 
   $("#social").mousemove(function creatorMouseMove(e) {
-
-    var maxShadowOffset = 30,
-        maxX = $("#social").width(),
-        maxY = $("#social").height(),
-        x = (e.clientX / maxX) * 100,
-        y = (e.clientY / maxY) * 100;
-
-    console.log(y);
+    var p = mouseMoveInSection(e, 0.1);
     $('.js-dynamic-background').css({
-      backgroundPosition: `${x}% ${y}%`,
+      backgroundPosition: `${p.offset.x}% ${p.offset.y}%`,
     });
-
   });
 
   // MATRIX :
