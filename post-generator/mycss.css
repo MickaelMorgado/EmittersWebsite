@@ -8,11 +8,19 @@
   --bg-color: #111;
   --border: #222;
   --shadow: black;
+
+  --twitch: #6441a5;
+  --tiktok: #ff0050;
+  --twitter: #00acee;
+  --linkedin: #0e76a8;
+  --facebook: #3b5998;
+  --instagram: #de1b85;
 }
 
 body {
 	background-color: var(--bg-color);
 	font-family: 'Raleway', sans-serif;
+	color: var(--white);
 }
 
 input::selection { 
@@ -113,6 +121,7 @@ input {
 	font-size: 12px;
 }
 
+.button ,
 .copybutton {
 	padding: 10px 15px;
 	background-color: #222;
@@ -131,15 +140,40 @@ label + .cb-small {
 	float: right;
 }
 
+.field-icon {
+	margin-right: 15px;
+}
+
 .copybutton:hover {
 	background-color: #444;
 }
 
 .emoji-container {
+	position: fixed;
+	z-index: 2;
+	top: 50px;
+	right: 30px;
+}
+
+.emoji-drawer {
 	display: flex;
 	align-item: top;
 	justify-content: space-between;
-	margin-bottom: 30px;
+	width: 300px;
+	padding: 30px;
+	border: 1px solid var(--border);
+	border-radius: 10px;
+	height: 300px;
+	gap: 10px;
+	background: #111;
+	grid-template-columns: repeat(4, 1fr);
+	flex-wrap: wrap;
+	transform: translateX(100%);
+	transition: transform .2s ease-out;
+}
+
+.emoji-container:hover .emoji-drawer {
+	transform: translateX(0);
 }
 
 .emoji-container > * {
@@ -149,8 +183,8 @@ label + .cb-small {
 .emojipedia {
 	position: absolute;
 	display: inline-block;
-	bottom: -10px;
-    right: 20%;
+    top: -30px;
+    left: -40px;
 	width: 60px;
 	height: 60px;
 	border-radius: 100%;
@@ -177,6 +211,14 @@ label + .cb-small {
 
 .mb-1 {
 	margin-bottom: 15px;
+}
+
+.copyable-hidden-input {
+	position: fixed;
+    top: 20px;
+	left: 20px;
+    width: 300px;
+	z-index: 2;
 }
 
 .selectize-input {
@@ -227,4 +269,110 @@ label + .cb-small {
 	0% { transform: translateY(0); box-shadow: 0px 2px 10px 0px var(--shadow); }
 	70% { transform: translateY(-8px); box-shadow: 0px 10px 10px 0px var(--shadow); }
 	100% { transform: translateY(0); box-shadow: 0px 2px 10px 0px var(--shadow); }
+}
+
+
+/* SOCIAL MEDIA ===============================*/
+.fa-twitter { 
+	color: var(--twitter);
+}
+
+.fa-instagram {
+	color: var(--instagram);
+}
+
+.fa-linkedin {
+	color: var(--linkedin);
+}
+
+.fa-tiktok {
+	color: var(--tiktok);
+}
+
+.social-media-screen {
+	position: relative;
+	margin-bottom: 30px;
+	border-radius: 15px;
+	border: 1px solid var(--grey);
+	overflow: hidden;
+	box-shadow: 0 0 40px -10px var(--border);
+}
+
+.social-media-header {
+	padding: 20px;
+}
+
+.profile-username {
+	padding-left: 10px;
+}
+
+.social-preview-image {
+	height: 220px;
+	background-image: url("../assets/images/enemies/Drone9.png");
+	background-position: center;
+	background-size: cover;
+}
+
+.social-preview-image--tiktok {
+	height: 525px;
+}
+	
+
+.social-preview-content,
+.social-preview-interactive-bar {
+	padding: 20px;
+}
+
+.social-preview-content {
+	height: 150px;
+    overflow: auto;
+}
+
+.social-preview-content-tiktok-wrapper {
+	position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.social-preview-interactive-bar {
+	min-height: 65px;
+	border-bottom: 1px solid var(--grey);
+}
+
+.social-submition {
+	height: 90px;
+	padding: 20px;
+	display: flex;
+	justify-content: space-between;
+    align-items: end;
+}
+
+.social-button {
+	font-weight: bold;
+	color: var(--white);
+	background-color: rgb(29, 155, 240);
+}
+
+.social-button--twitter {
+	padding: 10px 25px;
+	border-radius: 20px;
+}
+
+.social-button--linkedin {
+	padding: 3px 20px;
+	border-radius: 20px;
+	background-color: #0a66c2;
+}
+
+.social-button--instagram {
+	padding: 5px 10px;
+	font-size: 10px;
+	border-radius: 3px;
+	border: 1px solid var(--grey);
+	background-color: transparent;
+}
+
+.social-button--secondary {
+	background-color: var(--grey);
 }
