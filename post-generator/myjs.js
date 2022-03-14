@@ -14,6 +14,7 @@ const elements = {
 	},
 	socialPreviews: {
 		instagram: ".js-social-preview-instagram",
+		facebook: ".js-social-preview-facebook",
 		linkedin: ".js-social-preview-linkedin",
 		twitter: ".js-social-preview-twitter",
 		tiktok: ".js-social-preview-tiktok",
@@ -266,6 +267,7 @@ $(document).ready(function() {
 		PopulateLinkedin();
 		PopulateTiktok();
 		PopulateTwitter();
+		PopulateFacebook();
 		$.notify("Refreshed", "info");
 	}
 
@@ -331,7 +333,21 @@ $(document).ready(function() {
 		$input
 			.keydown((e) => { $dynamicTitle.text(e.currentTarget.value) });
   
-	// Populate Hashtag Fields and SocialPreviews:  
+	// Populate Hashtag Fields and SocialPreviews:
+		// Facebook:
+		var PopulateFacebook = () => {
+			var facebookHastagSetter = () => {
+				return customHastags + " " +
+				createStringItemList(
+					shuffle(
+						getRandom(hastags.reusables, 6)
+					)
+				)
+			}
+			addToField(elements.textFields.instagram, facebookHastagSetter());
+			addToSocialPreview(elements.socialPreviews.facebook, facebookHastagSetter());
+		}
+
   		// Instagram:
 		var PopulateInstagram = () => {
 			var instagramHastagSetter = () => {
