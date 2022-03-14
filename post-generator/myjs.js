@@ -3,13 +3,21 @@ const elements = {
 		appendToInput: ".appendToInput",
 		copyButtons: ".copybutton",
 		refreshButton: "#refreshButton",
+		mainButton: "#mainButton",
 	},
 	textFields: {
+		main: "#myInputTitle",
 		instagram: "#tags1",
 		linkedin: "#tags3",
 		twitter: "#tags2",
 		tiktok: "#tags4",
 	},
+	socialPreviews: {
+		instagram: ".js-social-preview-instagram",
+		linkedin: ".js-social-preview-linkedin",
+		twitter: ".js-social-preview-twitter",
+		tiktok: ".js-social-preview-tiktok",
+	}
 };
 
 const hastags = {
@@ -219,9 +227,22 @@ const getRandom = (arr, n) => {
     return result;
 }
 
+const getFieldValue = (input) => {
+	return $(input).val();
+}
+
 const addToField = (input, value) => {
 	$(input)[0].value = value;
 };
+
+const addToSocialPreview = (input, value) => {
+	var title = getFieldValue(elements.textFields.main);
+	var customText = `${title}
+	<br/>
+	<br/>
+	${value}`;
+	$(input).find(".social-preview-content").html(customText);
+}
 
 const createStringItemList = (array, prefix = "#") => {
 	var result = "";
@@ -240,33 +261,39 @@ $(document).ready(function() {
 
 	new ClipboardJS(buttons.copyButtons);
 
+	const popuplateAll = () => {
+		PopulateInstagram();
+		PopulateLinkedin();
+		PopulateTiktok();
+		PopulateTwitter();
+		$.notify("Refreshed", "info");
+	}
+
 	// Button events:
-		$(buttons.copyButtons).on("click", function() {
-			$.notify("Copied", "info");
+		/*
+			$(buttons.copyButtons).on("click", function() {
+				$.notify("Copied", "info");
+			});
+		*/
+		$(buttons.mainButton).on("click", function() {
+			popuplateAll();
 		});
 		
 		$(buttons.appendToInput).on("click", function() {
-			$("#myInputTitle").val($("#myInputTitle").val() + this.dataset.clipboardText);
+			$(elements.textFields.main).val($(elements.textFields.main).val() + this.dataset.clipboardText);
 		});
 		
 		$(buttons.refreshButton).on("click", function() {
-			PopulateInstagram();
-			PopulateLinkedin();
-			PopulateTiktok();
-			PopulateTwitter();
-			$.notify("Refreshed", "info");
+			popuplateAll();
 		});
 
 	var customHastags = "";
 	
 	const setCustomHastags = (stringListItem) => {
 		customHastags = stringListItem;
-		PopulateInstagram();
-		PopulateLinkedin();
-		PopulateTiktok();
-		PopulateTwitter();
-	};  	
-	
+		popuplateAll();
+	};
+
 	// Selectize :
 		var $selectizeSelector = $(".js-my-selectize");
 
@@ -304,46 +331,64 @@ $(document).ready(function() {
 		$input
 			.keydown((e) => { $dynamicTitle.text(e.currentTarget.value) });
   
-	// Populate Hashtag Fields:  
+	// Populate Hashtag Fields and SocialPreviews:  
   		// Instagram:
-		var PopulateInstagram = () => addToField(elements.textFields.instagram, customHastags + " " +
-			createStringItemList(
-				shuffle(
-					getRandom(hastags.reusables, 15)
+		var PopulateInstagram = () => {
+			var instagramHastagSetter = () => {
+				return customHastags + " " +
+				createStringItemList(
+					shuffle(
+						getRandom(hastags.reusables, 15)
+					)
 				)
-			)
-		);
+			}
+			addToField(elements.textFields.instagram, instagramHastagSetter());
+			addToSocialPreview(elements.socialPreviews.instagram, instagramHastagSetter());
+		}
 
 		// Linkedin:
-		var PopulateLinkedin = () => addToField(elements.textFields.linkedin, customHastags + " " +
-			createStringItemList(
-				shuffle(
-					getRandom(hastags.reusables, 10)
+		var PopulateLinkedin = () => {
+			var linkedinHastagSetter = () => {
+				return customHastags + " " +
+				createStringItemList(
+					shuffle(
+						getRandom(hastags.reusables, 10)
+					)
 				)
-			)
-		);
+			}
+			addToField(elements.textFields.linkedin, linkedinHastagSetter());
+			addToSocialPreview(elements.socialPreviews.linkedin, linkedinHastagSetter());
+		}
 
 		// Twitter:
-		var PopulateTwitter = () => addToField(elements.textFields.twitter,
-			createStringItemList(getRandom(mentions.twitter,1), "") + customHastags + " " +
-			createStringItemList(
-				shuffle(
-					getRandom(hastags.reusables, 10)
+		var PopulateTwitter = () => {
+			var twitterHastagSetter = () => {
+				return createStringItemList(getRandom(mentions.twitter,1), "") + customHastags + " " +
+				createStringItemList(
+					shuffle(
+						getRandom(hastags.reusables, 10)
+					)
 				)
-			)
-		);
+			}
+			addToField(elements.textFields.twitter, twitterHastagSetter());
+			addToSocialPreview(elements.socialPreviews.twitter, twitterHastagSetter());
+		}
 
 		// Tiktok:
-		var PopulateTiktok = () => addToField(elements.textFields.tiktok,
-			createStringItemList([
-				mentions.tiktok[0],
-				mentions.tiktok[1],
-				mentions.tiktok[2]
-			], "") + customHastags + " " +
-			createStringItemList(
-				shuffle(
-					getRandom(hastags.tiktok, 10)
+		var PopulateTiktok = () => {
+			var tiktokHastagSetter = () => {
+				return createStringItemList([
+					mentions.tiktok[0],
+					mentions.tiktok[1],
+					mentions.tiktok[2]
+				], "") + customHastags + " " +
+				createStringItemList(
+					shuffle(
+						getRandom(hastags.tiktok, 10)
+					)
 				)
-			)
-		);
+			}
+			addToField(elements.textFields.tiktok, tiktokHastagSetter());
+			addToSocialPreview(elements.socialPreviews.tiktok, tiktokHastagSetter());
+		}
 });
