@@ -36,7 +36,8 @@ p, label {
 	color: var(--white);
 }
 
-input {
+input ,
+textarea {
 	display: block;
 	width: 100%;
 	padding: 10px;
