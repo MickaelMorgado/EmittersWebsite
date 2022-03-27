@@ -158,7 +158,6 @@ label + .cb-small {
 
 .emoji-drawer {
 	display: flex;
-	align-item: top;
 	justify-content: space-between;
 	width: 300px;
 	padding: 30px;
@@ -251,19 +250,6 @@ label + .cb-small {
 	margin-top: 15px;
 	margin-bottom: 15px;
 	color: var(--red);
-
-	//-webkit-animation: glow 1s ease-in-out infinite alternate;
-	//-moz-animation: glow 1s ease-in-out infinite alternate;
-	//animation: glow 1s ease-in-out infinite alternate;
-}
-
-@-webkit-keyframes glow {
-	from {
-	  text-shadow: 0 0 5px #700, 0 0 10px #700, 0 0 15px #700, 0 0 20px #700;
-	}
-	to {
-	  text-shadow: 0 0 10px #fff, 0 0 15px #700, 0 0 20px #f00, 0 0 25px #f00;
-	}
 }
 
 @keyframes anim {
