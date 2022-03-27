@@ -238,10 +238,7 @@ const addToField = (input, value) => {
 
 const addToSocialPreview = (input, value) => {
 	var title = getFieldValue(elements.textFields.main);
-	var customText = `${title}
-	<br/>
-	<br/>
-	${value}`;
+	var customText = `${title}\r\r${value}`;
 	$(input).find(".social-preview-content").html(customText);
 }
 
@@ -272,11 +269,6 @@ $(document).ready(function() {
 	}
 
 	// Button events:
-		/*
-			$(buttons.copyButtons).on("click", function() {
-				$.notify("Copied", "info");
-			});
-		*/
 		$(buttons.mainButton).on("click", function() {
 			popuplateAll();
 		});
