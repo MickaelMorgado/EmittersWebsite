@@ -187,6 +187,7 @@ const mentions = {
 		"@IndieWorldOrder",
 		"@madewithUnreal",
 		"@UnrealEngine",
+		"@FPSthetics",
 	],
 }
 
