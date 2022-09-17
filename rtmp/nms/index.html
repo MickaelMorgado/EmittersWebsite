@@ -1,0 +1,93 @@
+<html>
+    <!--
+        How to use:
+        I have set a url parameter called "tunnel" where I need to provide ngrok link
+    -->
+    <style>
+        body {
+            background-color: #111;
+        }
+        .frame-container {
+            display: block;
+            margin: auto;
+            width: 80%;
+            text-align: center;
+            max-height: 80%;
+        }
+        .video-controls {
+            margin: 40px auto;
+        }
+        #videoElement {
+            max-width: 100%;
+            max-height: 80vh;
+            box-shadow: black 0 0 100px -10px;
+        }
+    </style>
+    <script src="https://cdn.bootcss.com/flv.js/1.5.0/flv.min.js"></script>
+    <div class="frame-container">
+        <div class="video-controls">
+            <button id="playButton" onclick="toggleVideo()">play</button>
+            <button id="muteButton" onclick="toggleSound()">mute</button>
+        </div>
+        <div class="video-wrapper">
+            <video id="videoElement"></video>
+        </div>
+    </div>
+    <script>
+        var flvPlayer = null
+        var togglePlay = false
+        var toggleMute = false
+        var playButton = null
+
+        function getTunnelUrl() {
+            var url = new URL(window.location.href);
+            var tunnel = url.searchParams.get("tunnel");
+            var firstUrlPart = tunnel ? tunnel : "http://localhost:8000"
+            var secondUrlPart = "/live/STREAM_NAME.flv"
+
+            console.log(firstUrlPart + secondUrlPart)
+            
+            return firstUrlPart + secondUrlPart
+        }
+
+        function reloadVideoSettings() {
+            console.log("Reloading video settings ...")
+            var videoElement = document.getElementById('videoElement');
+
+            playButton = document.getElementById('playButton');
+            
+            flvPlayer = flvjs.createPlayer({
+                type: 'flv',
+                url: getTunnelUrl()
+            });
+
+            flvPlayer.attachMediaElement(videoElement);
+        }
+
+        function toggleVideo() {
+            togglePlay = !togglePlay
+            if(togglePlay){
+                reloadVideoSettings()
+                flvPlayer.load()
+                flvPlayer.play()
+                playButton.innerHTML = "pause"
+            }else{
+                flvPlayer.unload();
+                playButton.innerHTML = "play"
+            }
+        }
+
+        function toggleSound() {
+            toggleMute = !toggleMute
+            if (toggleMute) {
+                flvPlayer.muted = true
+                muteButton.innerHTML = "unmute"
+            } else {
+                flvPlayer.muted = false
+                muteButton.innerHTML = "mute"
+            }
+        }
+
+        window.onload = reloadVideoSettings();
+    </script>
+</html>
