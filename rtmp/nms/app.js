@@ -8,7 +8,7 @@
 
   On rtmp/nms folder run:
 
-  - terminal 1: npx node-media-server
+  - terminal 1: npx node-media-server (I dont think this is necessary any more)
   - terminal 2: npx run app.js
   - terminal 3: npx ngrok http 8000
 
