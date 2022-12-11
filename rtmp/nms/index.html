@@ -159,6 +159,7 @@
 
         function playVideo() {
             setLogs('Player reloaded')
+            flvPlayer.unload()
             reloadVideoSettings()
             flvPlayer.load()
             var playPromise = flvPlayer.play();
