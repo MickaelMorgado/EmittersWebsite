@@ -4,8 +4,24 @@
         I have set a url parameter called "tunnel" where I need to provide ngrok link
     -->
     <style>
+        :root {
+            --red: #f54545;
+            --black1: black;
+            --black2: #111;
+            --black3: #222;
+            --grey: grey;
+        }
         body {
-            background-color: #111;
+            background-color: var(--black2);
+        }
+        button {
+            color: grey;
+            background: var(--black2);
+            padding: 8px 15px;
+            border-radius: 4px;
+            border: 2px solid var(--black3);
+            min-width: 100px;
+            cursor: pointer;
         }
         .frame-container {
             display: block;
@@ -17,10 +33,49 @@
         .video-controls {
             margin: 40px auto;
         }
+        .video-wrapper {
+            background-image: url("../../assets/images/logo.png");
+            background-size: 200px;
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: 1;
+            animation: blink-animation 2s infinite;
+            -webkit-animation: blink-animation 2s infinite;
+        }
+        @keyframes blink-animation {
+            0% { background-size: 200px; }
+            50% { background-size: 300px;}
+            100% { background-size: 200px; }
+        }
+        @-webkit-keyframes blink-animation {
+            0% { background-size: 200px; }
+            50% { background-size: 300px; }
+            100% { background-size: 200px; }
+        }
         #videoElement {
             max-width: 100%;
             max-height: 80vh;
-            box-shadow: black 0 0 100px -10px;
+            box-shadow: var(--black) 0 0 100px -10px;
+        }
+        #logs {
+            // position: fixed;
+            // top: 0;
+            // right: 0;
+
+            background: var(--black2);
+            border: none;
+            box-shadow: 0 0 15px var(--black);
+            border-radius: 5px;
+            color: var(--red);
+            padding: 15px;
+
+            // transform: translateX(90%);
+            // transition: all ease-out .25s;
+
+            margin: 50px;
+        }
+        #logs:hover {
+            transform: translateX(0);
         }
     </style>
     <script src="https://cdn.bootcss.com/flv.js/1.5.0/flv.min.js"></script>
@@ -32,6 +87,7 @@
         <div class="video-wrapper">
             <video id="videoElement"></video>
         </div>
+        <textarea name="logs" id="logs" cols="50" rows="5"></textarea>
     </div>
     <script>
         var flvPlayer = null
@@ -40,18 +96,18 @@
         var playButton = null
 
         function getTunnelUrl() {
-            var url = new URL(window.location.href);
-            var tunnel = url.searchParams.get("tunnel");
+            var url = new URL(window.location.href)
+            var tunnel = url.searchParams.get("tunnel")
             var firstUrlPart = tunnel ? tunnel : "http://localhost:8000"
             var secondUrlPart = "/live/STREAM_NAME.flv"
 
-            console.log(firstUrlPart + secondUrlPart)
+            console.log("Current URL Tunnel parameter: ", firstUrlPart + secondUrlPart)
             
             return firstUrlPart + secondUrlPart
         }
 
         function reloadVideoSettings() {
-            console.log("Reloading video settings ...")
+            setLogs('Reloading video settings')
             var videoElement = document.getElementById('videoElement');
 
             playButton = document.getElementById('playButton');
@@ -88,6 +144,41 @@
             }
         }
 
-        window.onload = reloadVideoSettings();
+        function setLogs(info) {
+            var tmpInfo = null
+            var textarea = document.getElementById('logs')
+            if(typeof info == 'string') {
+                tmpInfo = info
+            } else {
+                tmpInfo = JSON.stringify(info)
+            }
+            textarea.value = textarea.value + '\n' + tmpInfo
+            textarea.scrollTop = textarea.scrollHeight;
+            console.log(tmpInfo)
+        }
+
+        function playVideo() {
+            setLogs('Player reloaded')
+            reloadVideoSettings()
+            flvPlayer.load()
+            var playPromise = flvPlayer.play();
+
+            if (playPromise !== undefined) {
+                playPromise.then(_ => {
+                    // Automatic playback started!
+                    // Show playing UI.
+                    // We can now safely pause video...
+                        // flvPlayer.unload(); // video.pause();
+                    setLogs("Video should now play ...")
+                    console.log("Video should now play ...")
+                })
+                .catch(error => {
+                    setLogs("Got some stream errors, trying to force reload ...")
+                });
+            }
+        }
+
+        window.onload = playVideo()
+        window.onload = setInterval(() => playVideo(), 120 * 1000); // auto replay after 1min
     </script>
 </html>
