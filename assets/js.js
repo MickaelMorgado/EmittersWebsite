@@ -213,6 +213,21 @@ $(document).ready(function(){
     });
   }
 
+  // HOME :
+  function displayPlatformName () {
+    var container = $("#js-platform-name")
+    var nameElement = container.find(".platform-name")[0]
+    var platformsButton = container.find(".platforms-button")
+    
+    platformsButton.on("mouseenter", function() {
+      var platformRetrievedName = $(this).attr("platform-name")
+      nameElement.innerHTML = platformRetrievedName
+    })
+  }
+
+  displayPlatformName();
+  
+
   // CREATOR :
 
   $("#creator").mousemove(function creatorMouseMove(e) {

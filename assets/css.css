@@ -1281,6 +1281,90 @@ section a {
   top: 0;
 }
 
+.badge {
+  font-size: 12px;
+  text-transform: uppercase;
+  background-color: var(--black);
+  padding: 5px 10px;
+  border-radius: 3px;
+  color: var(--gray);
+  font-weight: bold;
+}
+
+.platforms {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.platforms-row {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+}
+
+.platform-name {
+  color: var(--red);
+  font-size: 15px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.platforms-button,
+.platforms-buttons-container {
+  transition: all .25s ease-in-out;
+}
+
+.platforms-buttons-container:hover .platforms-button {
+  opacity: 0.2;
+}
+
+.platforms-button {
+  width: 100px;
+  height: 100px;
+  border: 1px solid var(--red);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100%;
+  animation: alternate-reverse;
+}
+
+.platforms-button:hover {
+  animation: platforms-button-pulse .5s infinite alternate;
+}
+
+@keyframes platforms-button-pulse {
+  from {
+    box-shadow: var(--black) 0 0 80px -100px;
+  }
+  to {
+    box-shadow: var(--red) 0 0 70px -20px;
+  }
+}
+
+.platforms-buttons-container .platforms-button:hover {
+  opacity: 1;
+}
+
+.platforms-button--steam {
+  background-image: url("./images/icons/steam.png");
+  background-size: 90px;
+}
+
+.platforms-button--steam:hover {
+  background-size: 100px;
+}
+
+.platforms-button--ultra {
+  background-image: url("./images/svg/ultra.svg");
+  background-size: 45px;
+}
+
+.platforms-button--ultra:hover {
+  background-size: 55px;
+}
+
+
 /* =====================================================================================================================
   color-identification:
 */
