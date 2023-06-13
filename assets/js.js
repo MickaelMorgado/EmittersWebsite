@@ -219,9 +219,12 @@ $(document).ready(function(){
     var nameElement = container.find(".platform-name")[0]
     var platformsButton = container.find(".platforms-button")
     
-    platformsButton.on("mouseenter", function() {
+    platformsButton.hover(function() {
       var platformRetrievedName = $(this).attr("platform-name")
       nameElement.innerHTML = platformRetrievedName
+    },
+    function() {
+      nameElement.innerHTML = ""
     })
   }
 
