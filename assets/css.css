@@ -591,6 +591,7 @@ section {
 }
 
 .gamemode__gallery {
+  padding: 5px;
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   grid-gap: 40px;
@@ -1021,12 +1022,12 @@ section {
        -o-transform: scale(1.5);
           transform: scale(1.5);
 
-  animation-name: highlightSocial;
+  animation-name: opacityPulse;
   animation-duration: .5s;
   animation-iteration-count: infinite;
 }
 
-@keyframes highlightSocial {
+@keyframes opacityPulse {
   0%   {opacity: 1;}
   75%  {opacity: .7;}
   100%   {opacity: 1;}
@@ -1258,7 +1259,7 @@ section a {
   overflow: hidden;
   font-weight: bold;
   text-transform: uppercase;
-  line-height: 30px;
+  line-height: 25px;
 }
 
 .image-block ,
@@ -1282,6 +1283,7 @@ section a {
 }
 
 .badge {
+  display: inline-block;
   font-size: 12px;
   text-transform: uppercase;
   background-color: var(--black);
@@ -1330,7 +1332,11 @@ section a {
 }
 
 .platforms-button:hover {
-  animation: platforms-button-pulse .5s infinite alternate;
+  box-shadow: var(--red) 0 0 70px -20px;
+  animation-name: opacityPulse;
+  animation-duration: .5s;
+  animation-iteration-count: infinite;
+  /*animation: platforms-button-pulse 0.5s infinite alternate;*/
 }
 
 @keyframes platforms-button-pulse {
