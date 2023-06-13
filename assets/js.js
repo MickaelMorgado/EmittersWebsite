@@ -44,7 +44,6 @@ $(document).ready(function(){
     ]
   });
 
-  $(".Modern-Slider-3").width($(document).width());
   $(".Modern-Slider-3").slick({
     autoplay:false,
     dots:false,
