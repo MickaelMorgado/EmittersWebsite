@@ -200,6 +200,7 @@ $(document).ready(function(){
       setHeights: false,
       scrollSpeed: 800,
       updateHash: false,
+      sectionName: false,
       after : function () {
         var currentSectionId = $.scrollify.current()[0].id;
         highlightOnScroll(currentSectionId);
