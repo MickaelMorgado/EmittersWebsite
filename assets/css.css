@@ -1649,7 +1649,7 @@ section a {
   background-size: auto 110%;
   background-repeat: no-repeat;
   background-position: center;
-  border: inset 10px black;
+  border: solid 10px black;
   cursor: pointer;
   overflow: hidden;
   -webkit-transition: all 2s ease-out;
