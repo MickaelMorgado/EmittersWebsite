@@ -39,6 +39,11 @@
     transition: all .5s;
   }
 
+  .trailer-video.full-size {
+    top: 80px;
+    object-fit: contain;
+  }
+
   .parent {
     padding-top: 85px;
   }
@@ -64,6 +69,28 @@
   /* SECTION HOME ==========================================*/
   .home__content {
     font-size: .8em;
+  }
+
+  .home-wrapper {
+    margin-top: 200px;
+  }
+
+  .watch-trailer-button {
+    top: 110px;
+    left: 50%;
+    width: 90px;
+    height: 90px;
+    transform: translateX(-50%);
+    opacity: 1;
+  }
+
+  .watch-trailer-button:after {
+    right: 20px;
+    border-width: 15px 0 15px 22px;
+  }
+
+  #close {
+    width: 250px;
   }
 
   .side-caption:before {
@@ -97,6 +124,10 @@
   .image-block__content {
     font-size: 1.2em;
     line-height: 2.2em;
+  }
+
+  #social {
+    height: 200px;
   }
 }
 

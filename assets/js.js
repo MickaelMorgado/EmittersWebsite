@@ -117,16 +117,47 @@ $(document).ready(function(){
   }
   counterUp();
 
+  // TRAILER VIDEO:
+  var $video = $('#trailerVideo');
+
   function showVideo() {
-    $('#trailerVideo').prop('muted', false);
-    $('#trailerVideo').addClass('full-size');
+
+    $video[0].volume = 0;
+    $video.prop('muted', false);
+    $video.addClass('full-size');
     $('#close').addClass('show');
     $('.side-caption').addClass('hide');
+
+    const targetVolume = 0.5; // The final target volume
+    const incrementDuration = 4000; // The duration over which the volume will be incremented (in milliseconds)
+    const incrementInterval = 50; // The interval at which the volume will be incremented (in milliseconds)
+
+    return new Promise(resolve => {
+      let currentVolume = 0;
+      let incrementStep = (targetVolume / incrementDuration) * incrementInterval;
+
+      const incrementVolume = () => {
+        currentVolume += incrementStep;
+
+        if (currentVolume >= targetVolume) {
+          // Set the final volume and resolve the promise
+          $video[0].volume = targetVolume;
+          resolve();
+        } else {
+          // Increment the volume and schedule the next increment
+          $video[0].volume = currentVolume;
+          setTimeout(incrementVolume, incrementInterval);
+        }
+      };
+
+      // Start the volume incrementation
+      setTimeout(incrementVolume, incrementInterval);
+    });
   }
 
   function closeVideo() {
-    $('#trailerVideo').prop('muted', true);
-    $('#trailerVideo').removeClass('full-size');
+    $video.prop('muted', true);
+    $video.removeClass('full-size');
     $('#close').removeClass('show');
     $('.side-caption').removeClass('hide');
   }
@@ -156,6 +187,30 @@ $(document).ready(function(){
     $('header').addClass('open');
     $('.hamburger').addClass('minus');
   }
+
+  function calculatePercentage(value, maxValue) {
+    var rslt = value * 100 / maxValue
+    var rslt = Math.floor(rslt)
+    return rslt + '%'
+  }
+
+  function progressBarValue(value, maxValue) {
+    return `width: ${calculatePercentage(value, maxValue)}`
+  }
+
+  function setupProgressBars() {
+    $('.js-progress').each(
+      (item, element) => {
+        const { value, maxvalue } = element.dataset
+        element.style = progressBarValue(value, maxvalue)
+      }
+    )
+  }
+
+  setupProgressBars()
+
+  // Window accesible functions:
+  window.calculatePercentage = calculatePercentage;
 
   // Hamburger:
 
