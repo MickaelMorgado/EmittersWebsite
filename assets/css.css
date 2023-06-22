@@ -673,8 +673,8 @@ section {
   background-repeat: no-repeat;
   background-image: url('../assets/images/glass-bullet-hole.png');
   transform: translate(-50%, -50%);
-  // transition: all 1s ease-in-out;
-  opacity: .1;
+  /* transition: all 1s ease-in-out; */
+  opacity: 0.1;
 }
 
 .weapons-glass--1 {
@@ -1363,11 +1363,11 @@ section a {
 
 .platforms-button--ultra {
   background-image: url("./images/svg/ultra.svg");
-  background-size: 45px;
+  background-size: 43px;
 }
 
 .platforms-button--ultra:hover {
-  background-size: 55px;
+  background-size: 53px;
 }
 
 

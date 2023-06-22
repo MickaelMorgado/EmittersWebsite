@@ -85,7 +85,15 @@
 		</a>
 		<section id="home">
 			<a id="watchTrailer" href="assets/videos/Trailer.mp4" class="watch-trailer-button"></a>
-			<video id="trailerVideo" class="trailer-video" src="assets/videos/Trailer_HD.mp4" autoplay="autoplay" loop="loop" muted="muted" poster="assets/images/1.jpg"></video>
+			<video
+				id="trailerVideo"
+				class="trailer-video"
+				src="assets/videos/Trailer_HD.mp4"
+				autoplay="autoplay"
+				loop="loop"
+				muted="muted"
+				poster="assets/images/1.jpg"
+			></video>
 			<a href="#home" id="close" class="button button--function"><span>Close</span></a>
 			<div class="flex-container side-caption side-caption--2 home-wrapper">
 				<div class="home__content">
@@ -553,9 +561,9 @@
 											<div class="fc-content">
 												<div class="fcc-title">Metallium</div>
 												<div class="fcc-label">Damage: 25</div>
-												<div class="meter"><span style="width: 8%"></span></div>
+												<div class="meter"><span class="js-progress" data-value="25" data-maxvalue="300"></span></div>
 												<div class="fcc-label">Ammo: 20</div>
-												<div class="meter"><span style="width: 6%"></span></div>
+												<div class="meter"><span class="js-progress" data-value="20" data-maxvalue="30"></span></div>
 											</div>
 										</div>
 									</div>
@@ -571,9 +579,9 @@
 											<div class="fc-content">
 												<div class="fcc-title">Glass Breaker</div>
 												<div class="fcc-label">Damage: 40</div>
-												<div class="meter"><span style="width: 13%"></span></div>
+												<div class="meter"><span class="js-progress" data-value="40" data-maxvalue="300"></span></div>
 												<div class="fcc-label">Ammo: 30</div>
-												<div class="meter"><span style="width: 10%"></span></div>
+												<div class="meter"><span class="js-progress" data-value="30" data-maxvalue="30"></span></div>
 											</div>
 										</div>
 									</div>
@@ -590,9 +598,9 @@
 											<div class="fc-content">
 												<div class="fcc-title">Dual Gun</div>
 												<div class="fcc-label">Damage: 25</div>
-												<div class="meter"><span style="width: 8%"></span></div>
+												<div class="meter"><span class="js-progress" data-value="25" data-maxvalue="300"></span></div>
 												<div class="fcc-label">Ammo: 20</div>
-												<div class="meter"><span style="width: 6%"></span></div>
+												<div class="meter"><span class="js-progress" data-value="20" data-maxvalue="30"></span></div>
 											</div>
 										</div>
 									</div>
@@ -608,9 +616,9 @@
 											<div class="fc-content">
 												<div class="fcc-title">Shotty</div>
 												<div class="fcc-label">Damage: 200</div>
-												<div class="meter"><span style="width: 66%"></span></div>
+												<div class="meter"><span class="js-progress" data-value="200" data-maxvalue="300"></span></div>
 												<div class="fcc-label">Ammo: 10</div>
-												<div class="meter"><span style="width: 3%"></span></div>
+												<div class="meter"><span class="js-progress" data-value="10" data-maxvalue="30"></span></div>
 											</div>
 										</div>
 									</div>
@@ -626,9 +634,9 @@
 											<div class="fc-content">
 												<div class="fcc-title">Sniperz</div>
 												<div class="fcc-label">Damage: 300</div>
-												<div class="meter"><span style="width: 100%"></span></div>
+												<div class="meter"><span class="js-progress" data-value="300" data-maxvalue="300"></span></div>
 												<div class="fcc-label">Ammo: 15</div>
-												<div class="meter"><span style="width: 5%"></span></div>
+												<div class="meter"><span class="js-progress" data-value="15" data-maxvalue="30"></span></div>
 											</div>
 										</div>
 									</div>
@@ -645,9 +653,28 @@
 											<div class="fc-content">
 												<div class="fcc-title">AK74</div>
 												<div class="fcc-label">Damage: 80</div>
-												<div class="meter"><span style="width: 26%"></span></div>
+												<div class="meter"><span class="js-progress" data-value="80" data-maxvalue="300"></span></div>
 												<div class="fcc-label">Ammo: 20</div>
-												<div class="meter"><span style="width: 6%"></span></div>
+												<div class="meter"><span class="js-progress" data-value="20" data-maxvalue="30"></span></div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="col media__col">
+								<div class="ms2">
+									<div class="flip-card flip-card--mini">
+										<div class="fc-side fc-side--front fc-side--weapon"
+											style="background-image: url('assets/images/weapons/pg1.png')">
+											<div class="fc-title">PG1</div>
+										</div>
+										<div class="fc-side fc-side--back">
+											<div class="fc-content">
+												<div class="fcc-title">PG1</div>
+												<div class="fcc-label">Damage: 50</div>
+												<div class="meter"><span class="js-progress" data-value="50" data-maxvalue="300"></span></div>
+												<div class="fcc-label">Ammo: 30</div>
+												<div class="meter"><span class="js-progress" data-value="30" data-maxvalue="30"></span></div>
 											</div>
 										</div>
 									</div>
@@ -664,9 +691,9 @@
 											<div class="fc-content">
 												<div class="fcc-title">Missilerz</div>
 												<div class="fcc-label">Damage: 100</div>
-												<div class="meter"><span style="width: 33%"></span></div>
+												<div class="meter"><span class="js-progress" data-value="100" data-maxvalue="300"></span></div>
 												<div class="fcc-label">Ammo: 15</div>
-												<div class="meter"><span style="width: 5%"></span></div>
+												<div class="meter"><span class="js-progress" data-value="15" data-maxvalue="30"></span></div>
 											</div>
 										</div>
 									</div>
@@ -682,9 +709,9 @@
 											<div class="fc-content">
 												<div class="fcc-title">Exhauster</div>
 												<div class="fcc-label">Damage: 25</div>
-												<div class="meter"><span style="width: 8%"></span></div>
+												<div class="meter"><span class="js-progress" data-value="25" data-maxvalue="300"></span></div>
 												<div class="fcc-label">Ammo: 15</div>
-												<div class="meter"><span style="width: 5%"></span></div>
+												<div class="meter"><span class="js-progress" data-value="15" data-maxvalue="30"></span></div>
 											</div>
 										</div>
 									</div>
@@ -799,6 +826,7 @@
 				<div class="slide-map background-gradient lozad" data-background-image="assets/images/maps/maphd6.jpg" alt="map6"><div class="map-title">Final Test</div></div>
 				<div class="slide-map background-gradient lozad" data-background-image="assets/images/maps/maphd7.jpg" alt="map8"><div class="map-title">The Escape</div></div>
 				<div class="slide-map background-gradient lozad" data-background-image="assets/images/maps/maphd8.jpg" alt="map8"><div class="map-title">The Unknown</div></div>
+				<div class="slide-map background-gradient lozad" data-background-image="assets/images/maps/maphd9.png" alt="map9"><div class="map-title">The Absorber</div></div>
 			</div>
 		</section>
 		<section id="gallery">
@@ -884,13 +912,12 @@
 							<li>Developer: Mickael Morgado (HYTEK94)</li>
 							<li>Release date: October 2018</li>
 							<li>Platforms: Windows x64 (Steam)</li>
-							<li>Regular Price: 7,39&euro; / 8.07$</li>
 							<li>Website: <a href="https://emittersgame.com/">https://emittersgame.com/</a></li>
 						</ul>
 					</div>
 					<div class="section3-flex2">
 						<p>Download the press kit below for more description and media content like logos, videos, etc.</p>
-						<p>If you wish to enter in contact with me send email at: <a href="mailto: myck.morgado@gmail.com">myck.morgado@gmail.com</a> or DM me on my <a href="#social">social</a> network.</p>
+						<p>If you wish to enter in contact DM-me on my <a href="#social">social</a> network or over email, on the press kit below.</p>
 						<a href="assets/EmittersPresskit.zip" class="button button--function"><span>Download Press kit</span></a>
 					</div>
 				</div>
