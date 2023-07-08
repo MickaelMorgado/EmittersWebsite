@@ -30,6 +30,9 @@
             text-align: center;
             max-height: 80%;
         }
+        .full-screen {
+            width: 100%;
+        }
         .video-controls {
             margin: 40px auto;
         }
@@ -83,6 +86,7 @@
         <div class="video-controls">
             <button id="playButton" onclick="toggleVideo()">play</button>
             <button id="muteButton" onclick="toggleSound()">mute</button>
+            <button id="fullScreenButton" onclick="toggleFullScreen()">toggle full screen</button>
         </div>
         <div class="video-wrapper">
             <video id="videoElement"></video>
@@ -104,6 +108,17 @@
             console.log("Current URL Tunnel parameter: ", firstUrlPart + secondUrlPart)
             
             return firstUrlPart + secondUrlPart
+        }
+
+        function toggleFullScreen() {
+            var classForToggle = "full-screen";
+            var frame = document.getElementsByClassName("frame-container")[0];
+
+            if (frame.classList.contains(classForToggle)) {
+                frame.classList.remove(classForToggle);
+            } else {
+                frame.classList.add(classForToggle);
+            }
         }
 
         function reloadVideoSettings() {
