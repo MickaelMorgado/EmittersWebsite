@@ -57,4 +57,4 @@ On `rtmp/nms` folder run the following commands:
   and paste the Ngrok link as '?tunnel' parameter
 
   eg:
-    https://emittersgame.com/rtmp/nms/?tunnel=https://62e3-2001-8a0-7fd5-2500-bca1-adff-1f2a-53f7.ngrok.io
+    https://emittersgame.com/rtmp/nms/?tunnel=https://a580-2001-8a0-7fd5-2500-a54a-2bc1-d3f-417.ngrok-free.app
