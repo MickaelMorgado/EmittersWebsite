@@ -1,0 +1,1 @@
+run bash file to run the nodemon command which is a listener / watch for changes to refresh
