@@ -1,3 +1,21 @@
+Why:
+
+I always wanted to have the simplest way to stream my pc to closed friends/closed people (even 24/7 if I wanted to)
+
+What are the Advantages:
+
+- it uses OBS to be able to add custom layers and effects to screensharings/livestreams
+- since I'm using OBS, all the audio settings are working perfectly, so I can stream any desktop audios, even apps in background. (you cant do it on Discord for example where the audio only works for the actual app you are streaming (Desktop))
+- theses streams won't be regulated by third-parties such as youtube and twitch because its on my own website and its private to the ones who have the specific URL.
+- You can see it on any devices with a browser, like pc abd smartphones obviously but smartTVs (its basically your pc on a TV, great to see movies)
+
+Disavantage at the moment:
+
+- Its source quality, so your are downloading a huge quality file over your network (specially if using smartphone data and not wifi).
+- Because of that it can slightly break or loose connection at any moment so I made the website to refresh constantly to be partialy in sync.
+- Only toggle sound (no volume)
+
+
 
 ## Get started
 
