@@ -11,6 +11,12 @@ const {
   ActionRowBuilder,
   ComponentType,
   ActionRow,
+  SlashCommandBuilder,
+  EmbedBuilder,
+  ModalBuilder,
+  TextInputBuilder,
+  TextInputStyle,
+  InteractionType,
 } = require('discord.js');
 
 const client = new Client({
@@ -22,57 +28,173 @@ const client = new Client({
   ],
 });
 
-const prefix = '!'; // Change this to your desired command prefix
-const todoList = {};
+const enum_Status = {
+  completed: 'completed',
+  ongoing: 'ongoing',
+  todo: 'todo',
+};
+let todoList = [];
 
-client.once('ready', () => {
-  console.log(`Logged in as ${client.user.tag}`);
-});
-
-client.on('messageCreate', async (message) => {
-  // Check if the message is from a bot or doesn't start with the prefix
-  if (message.author.bot || !message.content.startsWith(prefix)) {
-    return;
+const getStatusEmoji = (enum_Status) => {
+  switch (enum_Status) {
+    case 'completed':
+      return `✅`;
+    case 'todo':
+      return `🟩`;
+    default:
+      return `🟩`;
   }
+};
 
-  const args = message.content.slice(prefix.length).trim().split(/ +/);
-  const command = args.shift().toLowerCase();
+const getTodoList = () => {
+  let result = ``;
+  todoList.forEach(({ id, description, status }) => {
+    result = result + `\n ${getStatusEmoji(status)} ${id} - ${description}`;
+  });
+  return `${result}`;
+};
 
-  const firstButton = new ButtonBuilder()
-    .setCustomId('first-button')
-    .setLabel('Add a todo')
-    .setStyle(ButtonStyle.Primary);
+const addTodoItem = (value) => {
+  let result = ``;
+  todoList = [
+    ...todoList,
+    { id: todoList.length, description: value, status: enum_Status.todo },
+  ];
+  return `${result}`;
+};
 
-  const actionRow = new ActionRowBuilder().addComponents(firstButton);
+const askForUserInput = (interaction) => {
+  return interaction.channel.createMessageCollector({
+    filter: (msg) => msg.author.id === interaction.user.id,
+    time: 30000, // Time limit in milliseconds (30 seconds)
+    max: 1, // Maximum number of messages to collect
+  });
+};
 
-  const reply = await message.reply({
-    content: 'TODO',
+const spawnModalAndWaitForInput = async (interaction, promptMessage) => {
+  const modal = new ModalBuilder()
+    .setTitle(promptMessage)
+    .setCustomId('myModal-1')
+    .setComponents(
+      new ActionRowBuilder().setComponents(
+        new TextInputBuilder()
+          .setLabel('input')
+          .setCustomId('modal-input')
+          .setStyle(TextInputStyle.Short)
+      )
+    );
+
+  interaction.showModal(modal);
+};
+
+const baseTodoTitle = `EMITTERS progress`;
+const todoTitleVersion = `v2.9`;
+const baseDescription = `Currently working and completing this todo list:\n`;
+const getTodoTitle = `${baseTodoTitle} ${todoTitleVersion}`;
+const replyPrefix = `${getTodoTitle} update:`;
+
+const updateEmbed = async (embed, interaction) => {
+  embed.setDescription(`${baseDescription}${getTodoList()}`);
+  await interaction.message.edit({
+    embeds: [embed],
     components: [actionRow],
   });
+};
 
-  const filter = (i) => i.user.id === message.author.id;
+// Embeds:
+const embed = new EmbedBuilder()
+  .setTitle(getTodoTitle)
+  .setDescription(`${baseDescription}${getTodoList()}`);
 
-  const collector = reply.createMessageComponentCollector({
-    componentType: ComponentType.Button,
-    filter,
-  });
+// Buttons:
+const addItemButton = new ButtonBuilder()
+  .setCustomId('add-item-button')
+  .setEmoji(`➕`)
+  .setLabel('Add item')
+  .setStyle(ButtonStyle.Primary);
 
-  collector.on('collect', (interaction) => {
-    if (interaction.customId === 'first-button') {
-      const todoText = 'This is a new todo item'; // Replace with user input or dynamic data
-      if (!todoList[interaction.user.id]) {
-        todoList[interaction.user.id] = [];
+const toggleStatusButton = new ButtonBuilder()
+  .setCustomId('toggle-status-button')
+  .setEmoji(`✔️`)
+  .setLabel('Toggle status')
+  .setStyle(ButtonStyle.Secondary);
+
+// Rows:
+const actionRow = new ActionRowBuilder().addComponents(
+  addItemButton,
+  toggleStatusButton
+);
+
+client.on('interactionCreate', async (interaction) => {
+  if (interaction.isButton() && interaction.customId === 'add-item-button') {
+    await spawnModalAndWaitForInput(
+      interaction,
+      'Please enter a todo item. 👇'
+    );
+  } else if (
+    interaction.isButton() &&
+    interaction.customId === 'toggle-status-button'
+  ) {
+    await interaction.reply(
+      'Please insert # of item ID you want to complete. 👇'
+    );
+
+    const collector = askForUserInput(interaction);
+
+    collector.on('collect', async (msg) => {
+      collector.stop(); // Stop collecting messages
+
+      const id = msg.content.trim();
+
+      /*
+      console.log(
+        `${todoList !== undefined} ${todoList.length > 0} ${id >= 0} ${
+          id < todoList.length
+        }`
+      );
+      */
+      if (
+        todoList !== undefined &&
+        todoList.length > 0 &&
+        id >= 0 &&
+        id < todoList.length
+      ) {
+        const selectedId = parseInt(id);
+        let currentItemStatus = todoList[selectedId];
+
+        if (currentItemStatus.status === enum_Status.completed) {
+          currentItemStatus.status = enum_Status.todo;
+        } else {
+          currentItemStatus.status = enum_Status.completed;
+        }
+
+        updateEmbed(embed, interaction);
       }
-      todoList[interaction.user.id].push(todoText);
 
-      const updatedTodoList = todoList[interaction.user.id].join('\n👉 - ');
+      msg.delete();
+      interaction.deleteReply();
+    });
+  } else if (interaction.type === InteractionType.ModalSubmit) {
+    const value = interaction.fields.getTextInputValue('modal-input');
 
-      interaction.update({
-        content: `TODO:\n- ${updatedTodoList}`, // Edit the message with additional text
-        components: [actionRow], // Remove the button
-      });
+    addTodoItem(value);
+
+    try {
+      updateEmbed(embed, interaction);
+      interaction.reply(
+        `${replyPrefix} ${interaction.user.username} added '${value}'!`
+      );
+    } catch (error) {
+      console.error('An error occurred while updating the embed:', error);
     }
-  });
+  } else if (interaction.commandName === 'todo') {
+    interaction.channel.send({
+      embeds: [embed],
+      components: [actionRow],
+    });
+    await interaction.reply({ content: 'TODO Created!', ephemeral: true });
+    interaction.deleteReply();
+  }
 });
 
 client.login(process.env.TOKEN);
