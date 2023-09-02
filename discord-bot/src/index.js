@@ -1,4 +1,5 @@
 require('dotenv').config();
+const fs = require('fs');
 
 const {
   Client,
@@ -33,7 +34,6 @@ const enum_Status = {
   ongoing: 'ongoing',
   todo: 'todo',
 };
-let todoList = [];
 
 const getStatusEmoji = (enum_Status) => {
   switch (enum_Status) {
@@ -47,20 +47,21 @@ const getStatusEmoji = (enum_Status) => {
 };
 
 const getTodoList = () => {
+  let arr = getJsonFromStorage();
   let result = ``;
-  todoList.forEach(({ id, description, status }) => {
+  arr.forEach(({ id, description, status }) => {
     result = result + `\n ${getStatusEmoji(status)} ${id} - ${description}`;
   });
   return `${result}`;
 };
 
 const addTodoItem = (value) => {
-  let result = ``;
+  let arr = getJsonFromStorage();
   todoList = [
-    ...todoList,
-    { id: todoList.length, description: value, status: enum_Status.todo },
+    ...arr,
+    { id: arr.length, description: value, status: enum_Status.todo },
   ];
-  return `${result}`;
+  updateStorage(todoList);
 };
 
 const askForUserInput = (interaction) => {
@@ -71,10 +72,19 @@ const askForUserInput = (interaction) => {
   });
 };
 
-const spawnModalAndWaitForInput = async (interaction, promptMessage) => {
+const enumModal = {
+  addItem: 'myModal-1',
+  toggleItem: 'myModal-2',
+};
+
+const spawnModalAndWaitForInput = async (
+  interaction,
+  promptMessage,
+  enumModal
+) => {
   const modal = new ModalBuilder()
     .setTitle(promptMessage)
-    .setCustomId('myModal-1')
+    .setCustomId(enumModal)
     .setComponents(
       new ActionRowBuilder().setComponents(
         new TextInputBuilder()
@@ -93,16 +103,35 @@ const baseDescription = `Currently working and completing this todo list:\n`;
 const getTodoTitle = `${baseTodoTitle} ${todoTitleVersion}`;
 const replyPrefix = `${getTodoTitle} update:`;
 
-const updateEmbed = async (embed, interaction) => {
+const updateEmbed = (embed, interaction) => {
   embed.setDescription(`${baseDescription}${getTodoList()}`);
-  await interaction.message.edit({
+  interaction.message.edit({
     embeds: [embed],
     components: [actionRow],
   });
 };
 
+// JSON Storage:
+const updateStorage = (data) => {
+  fs.writeFileSync(jsonFile, JSON.stringify(data));
+};
+
+const getJsonFromStorage = () => {
+  if (!jsonFile) return;
+  const rawData = fs.readFileSync(jsonFile);
+  return JSON.parse(rawData);
+};
+
+const jsonFile = 'src/fileStorage.json';
+let { key, name } = getJsonFromStorage();
+console.log(key, name);
+
+// updateStorage({ key: 'value' });
+
+console.log(getJsonFromStorage());
+
 // Embeds:
-const embed = new EmbedBuilder()
+let embed = new EmbedBuilder()
   .setTitle(getTodoTitle)
   .setDescription(`${baseDescription}${getTodoList()}`);
 
@@ -129,37 +158,41 @@ client.on('interactionCreate', async (interaction) => {
   if (interaction.isButton() && interaction.customId === 'add-item-button') {
     await spawnModalAndWaitForInput(
       interaction,
-      'Please enter a todo item. 👇'
+      'Please enter a todo item. 👇',
+      enumModal.addItem
     );
   } else if (
     interaction.isButton() &&
     interaction.customId === 'toggle-status-button'
   ) {
-    await interaction.reply(
-      'Please insert # of item ID you want to complete. 👇'
+    /*
+    await interaction.reply({
+      content: 'Please insert # of item ID you want to complete. 👇',
+      ephemeral: true,
+    });
+    */
+    await spawnModalAndWaitForInput(
+      interaction,
+      'Please insert # of item ID 👇',
+      enumModal.toggleItem
     );
 
+    /*
     const collector = askForUserInput(interaction);
 
     collector.on('collect', async (msg) => {
-      collector.stop(); // Stop collecting messages
+      collector.stop();
 
       const id = msg.content.trim();
+      const selectedId = parseInt(id);
+      let todoList = getJsonFromStorage();
 
-      /*
-      console.log(
-        `${todoList !== undefined} ${todoList.length > 0} ${id >= 0} ${
-          id < todoList.length
-        }`
-      );
-      */
       if (
         todoList !== undefined &&
         todoList.length > 0 &&
         id >= 0 &&
         id < todoList.length
       ) {
-        const selectedId = parseInt(id);
         let currentItemStatus = todoList[selectedId];
 
         if (currentItemStatus.status === enum_Status.completed) {
@@ -168,25 +201,57 @@ client.on('interactionCreate', async (interaction) => {
           currentItemStatus.status = enum_Status.completed;
         }
 
+        updateStorage(todoList);
         updateEmbed(embed, interaction);
       }
 
-      msg.delete();
-      interaction.deleteReply();
+      // msg.delete();
+      // interaction.deleteReply();
     });
+    */
   } else if (interaction.type === InteractionType.ModalSubmit) {
-    const value = interaction.fields.getTextInputValue('modal-input');
+    switch (interaction.customId) {
+      case 'myModal-1':
+        const value = interaction.fields.getTextInputValue('modal-input');
 
-    addTodoItem(value);
+        addTodoItem(value);
+        // updateEmbed(embed, interaction);
 
-    try {
-      updateEmbed(embed, interaction);
-      interaction.reply(
-        `${replyPrefix} ${interaction.user.username} added '${value}'!`
-      );
-    } catch (error) {
-      console.error('An error occurred while updating the embed:', error);
+        break;
+      case 'myModal-2':
+        const id = interaction.fields.getTextInputValue('modal-input');
+        const selectedId = parseInt(id);
+        let todoList = getJsonFromStorage();
+
+        if (
+          todoList !== undefined &&
+          todoList.length > 0 &&
+          id >= 0 &&
+          id < todoList.length
+        ) {
+          let currentItemStatus = todoList[selectedId];
+
+          if (currentItemStatus.status === enum_Status.completed) {
+            currentItemStatus.status = enum_Status.todo;
+          } else {
+            currentItemStatus.status = enum_Status.completed;
+          }
+
+          updateStorage(todoList);
+        }
+        break;
     }
+
+    updateEmbed(embed, interaction);
+    /*
+    await interaction.message.edit(
+      embed.setDescription(`${baseDescription}${getTodoList()}`)
+    );
+    await interaction.reply({
+      content: 'TODO Created!',
+      ephemeral: true,
+    });
+    */
   } else if (interaction.commandName === 'todo') {
     interaction.channel.send({
       embeds: [embed],
