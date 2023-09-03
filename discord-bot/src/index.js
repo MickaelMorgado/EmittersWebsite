@@ -1,4 +1,5 @@
 require('dotenv').config();
+const fs = require('fs');
 
 const {
   Client,
@@ -33,7 +34,6 @@ const enum_Status = {
   ongoing: 'ongoing',
   todo: 'todo',
 };
-let todoList = [];
 
 const getStatusEmoji = (enum_Status) => {
   switch (enum_Status) {
@@ -47,20 +47,21 @@ const getStatusEmoji = (enum_Status) => {
 };
 
 const getTodoList = () => {
+  let arr = getJsonFromStorage();
   let result = ``;
-  todoList.forEach(({ id, description, status }) => {
+  arr.forEach(({ id, description, status }) => {
     result = result + `\n ${getStatusEmoji(status)} ${id} - ${description}`;
   });
   return `${result}`;
 };
 
 const addTodoItem = (value) => {
-  let result = ``;
+  let arr = getJsonFromStorage();
   todoList = [
-    ...todoList,
-    { id: todoList.length, description: value, status: enum_Status.todo },
+    ...arr,
+    { id: arr.length, description: value, status: enum_Status.todo },
   ];
-  return `${result}`;
+  updateStorage(todoList);
 };
 
 const askForUserInput = (interaction) => {
@@ -71,10 +72,19 @@ const askForUserInput = (interaction) => {
   });
 };
 
-const spawnModalAndWaitForInput = async (interaction, promptMessage) => {
+const enumModal = {
+  addItem: 'myModal-1',
+  toggleItem: 'myModal-2',
+};
+
+const spawnModalAndWaitForInput = async (
+  interaction,
+  promptMessage,
+  enumModalVar
+) => {
   const modal = new ModalBuilder()
     .setTitle(promptMessage)
-    .setCustomId('myModal-1')
+    .setCustomId(enumModalVar)
     .setComponents(
       new ActionRowBuilder().setComponents(
         new TextInputBuilder()
@@ -84,7 +94,51 @@ const spawnModalAndWaitForInput = async (interaction, promptMessage) => {
       )
     );
 
-  interaction.showModal(modal);
+  await interaction.showModal(modal);
+  const modalSubmitInteraction = await interaction.awaitModalSubmit({
+    filter: (i) => {
+      switch (enumModalVar) {
+        case enumModal.addItem:
+          addTodoItem(i.fields.getTextInputValue('modal-input'));
+          // embed.setDescription(`${baseDescription}${getTodoList()}`);
+          break;
+        case enumModal.toggleItem:
+          const id = i.fields.getTextInputValue('modal-input');
+          const selectedId = parseInt(id);
+          let todoList = getJsonFromStorage();
+
+          if (
+            todoList !== undefined &&
+            todoList.length > 0 &&
+            id >= 0 &&
+            id < todoList.length
+          ) {
+            let currentItemStatus = todoList[selectedId];
+
+            if (currentItemStatus.status === enum_Status.completed) {
+              currentItemStatus.status = enum_Status.todo;
+            } else {
+              currentItemStatus.status = enum_Status.completed;
+            }
+
+            updateStorage(todoList);
+            // embed.setDescription(`${baseDescription}${getTodoList()}`);
+            i.reply(`${replyPrefix} an item has been updated!`);
+          }
+          break;
+        default:
+          console.log(`modal`);
+          break;
+      }
+      return true;
+    },
+    time: 10000,
+  });
+
+  modalSubmitInteraction.reply({
+    content: `Action Submitted`,
+    ephemeral: true,
+  });
 };
 
 const baseTodoTitle = `EMITTERS progress`;
@@ -101,8 +155,22 @@ const updateEmbed = async (embed, interaction) => {
   });
 };
 
+// JSON Storage:
+const updateStorage = (data) => {
+  fs.writeFileSync(jsonFile, JSON.stringify(data));
+};
+
+const getJsonFromStorage = () => {
+  if (!jsonFile) return;
+  const rawData = fs.readFileSync(jsonFile);
+  return JSON.parse(rawData);
+};
+
+const jsonFile = 'src/fileStorage.json';
+console.log(getJsonFromStorage());
+
 // Embeds:
-const embed = new EmbedBuilder()
+let embed = new EmbedBuilder()
   .setTitle(getTodoTitle)
   .setDescription(`${baseDescription}${getTodoList()}`);
 
@@ -119,75 +187,51 @@ const toggleStatusButton = new ButtonBuilder()
   .setLabel('Toggle status')
   .setStyle(ButtonStyle.Secondary);
 
+const refreshButton = new ButtonBuilder()
+  .setCustomId('refresh-button')
+  .setEmoji(`🔃`)
+  .setStyle(ButtonStyle.Secondary);
+
 // Rows:
 const actionRow = new ActionRowBuilder().addComponents(
   addItemButton,
-  toggleStatusButton
+  toggleStatusButton,
+  refreshButton
 );
 
 client.on('interactionCreate', async (interaction) => {
+  /* ADD ITEM: */
   if (interaction.isButton() && interaction.customId === 'add-item-button') {
     await spawnModalAndWaitForInput(
       interaction,
-      'Please enter a todo item. 👇'
+      'Please enter a todo item. 👇',
+      enumModal.addItem
     );
   } else if (
+    /* REFRESH UI: */
+    interaction.isButton() &&
+    interaction.customId === 'refresh-button'
+  ) {
+    embed.setDescription(`${baseDescription}${getTodoList()}`);
+    await interaction.message.edit({
+      embeds: [embed],
+      components: [actionRow],
+    });
+    interaction.reply({ content: 'UI refreshed!', ephemeral: true });
+    interaction.deleteReply();
+    // msg.delete();
+  } else if (
+    /* TOGGLE STATUS: */
     interaction.isButton() &&
     interaction.customId === 'toggle-status-button'
   ) {
-    await interaction.reply(
-      'Please insert # of item ID you want to complete. 👇'
+    await spawnModalAndWaitForInput(
+      interaction,
+      'Please insert # of item ID 👇',
+      enumModal.toggleItem
     );
-
-    const collector = askForUserInput(interaction);
-
-    collector.on('collect', async (msg) => {
-      collector.stop(); // Stop collecting messages
-
-      const id = msg.content.trim();
-
-      /*
-      console.log(
-        `${todoList !== undefined} ${todoList.length > 0} ${id >= 0} ${
-          id < todoList.length
-        }`
-      );
-      */
-      if (
-        todoList !== undefined &&
-        todoList.length > 0 &&
-        id >= 0 &&
-        id < todoList.length
-      ) {
-        const selectedId = parseInt(id);
-        let currentItemStatus = todoList[selectedId];
-
-        if (currentItemStatus.status === enum_Status.completed) {
-          currentItemStatus.status = enum_Status.todo;
-        } else {
-          currentItemStatus.status = enum_Status.completed;
-        }
-
-        updateEmbed(embed, interaction);
-      }
-
-      msg.delete();
-      interaction.deleteReply();
-    });
-  } else if (interaction.type === InteractionType.ModalSubmit) {
-    const value = interaction.fields.getTextInputValue('modal-input');
-
-    addTodoItem(value);
-
-    try {
-      updateEmbed(embed, interaction);
-      interaction.reply(
-        `${replyPrefix} ${interaction.user.username} added '${value}'!`
-      );
-    } catch (error) {
-      console.error('An error occurred while updating the embed:', error);
-    }
   } else if (interaction.commandName === 'todo') {
+    /* TODO COMMAND: */
     interaction.channel.send({
       embeds: [embed],
       components: [actionRow],
