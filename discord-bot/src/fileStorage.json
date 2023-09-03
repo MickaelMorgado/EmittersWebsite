@@ -1,0 +1,17 @@
+[
+  {
+    "id": 0,
+    "description": "fix Emissive Saber kill enemies",
+    "status": "completed"
+  },
+  {
+    "id": 1,
+    "description": "fix hitmarkers replication",
+    "status": "completed"
+  },
+  {
+    "id": 2,
+    "description": "player camera shake replication",
+    "status": "todo"
+  }
+]
