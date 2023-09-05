@@ -19,6 +19,10 @@
     "description": "Update button menu styles and fix 'Reset' buttons positions",
     "status": "completed"
   },
-  { "id": 4, "description": "Grenade kill replication", "status": "todo" }
-  { "id": 5, "description": "MPS_Drones replication damage (HUD), same as grenade issue", "status": "todo" }
+  { "id": 4, "description": "Grenade kill replication", "status": "todo" },
+  {
+    "id": 5,
+    "description": "MPS_Drones replication damage (HUD), same as grenade issue",
+    "status": "todo"
+  }
 ]
