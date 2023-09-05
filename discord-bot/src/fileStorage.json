@@ -13,5 +13,11 @@
     "id": 2,
     "description": "player camera shake replication",
     "status": "todo"
-  }
+  },
+  {
+    "id": 3,
+    "description": "Update button menu styles and fix 'Reset' buttons positions",
+    "status": "completed"
+  },
+  { "id": 4, "description": "Grenade kill replication", "status": "todo" }
 ]

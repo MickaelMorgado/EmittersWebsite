@@ -123,7 +123,9 @@ const spawnModalAndWaitForInput = async (
 
             updateStorage(todoList);
             // embed.setDescription(`${baseDescription}${getTodoList()}`);
-            i.reply(`${replyPrefix} an item has been updated!`);
+            i.reply(
+              `${replyPrefix} '${currentItemStatus.description}' has been updated!`
+            );
           }
           break;
         default:
