@@ -96,7 +96,6 @@ const spawnModalAndWaitForInput = async (
 
   await interaction.showModal(modal);
   const modalSubmitInteraction = await interaction.awaitModalSubmit({
-    time: 10000,
     filter: (i) => {
       switch (enumModalVar) {
         case enumModal.addItem:
