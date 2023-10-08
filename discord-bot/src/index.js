@@ -96,11 +96,17 @@ const spawnModalAndWaitForInput = async (
 
   await interaction.showModal(modal);
   const modalSubmitInteraction = await interaction.awaitModalSubmit({
+    time: 99999,
     filter: (i) => {
       switch (enumModalVar) {
         case enumModal.addItem:
-          addTodoItem(i.fields.getTextInputValue('modal-input'));
+          const inputValue = i.fields.getTextInputValue('modal-input');
+          addTodoItem(inputValue);
           // embed.setDescription(`${baseDescription}${getTodoList()}`);
+          i.reply({
+            content: `${replyPrefix} '${inputValue}' has been added!`,
+            ephemeral: true,
+          });
           break;
         case enumModal.toggleItem:
           const id = i.fields.getTextInputValue('modal-input');
@@ -123,7 +129,9 @@ const spawnModalAndWaitForInput = async (
 
             updateStorage(todoList);
             // embed.setDescription(`${baseDescription}${getTodoList()}`);
-            i.reply(`${replyPrefix} an item has been updated!`);
+            i.reply(
+              `${replyPrefix} '${currentItemStatus.description}' has been updated!`
+            );
           }
           break;
         default:
@@ -132,7 +140,6 @@ const spawnModalAndWaitForInput = async (
       }
       return true;
     },
-    time: 10000,
   });
 
   modalSubmitInteraction.reply({
