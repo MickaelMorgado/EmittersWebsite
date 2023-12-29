@@ -36,6 +36,7 @@
         <div class="emoji-drawer">
             <a href="https://emojipedia.org/search/" target="_blank" class="emojipedia" title="search icon from emojipedia"></a>
             <button class="copybutton appendToInput" data-clipboard-text="👉">👉</button>
+            <button class="copybutton appendToInput" data-clipboard-text="👇">👇</button>
             <button class="copybutton appendToInput" data-clipboard-text="🛸">🛸</button>
             <button class="copybutton appendToInput" data-clipboard-text="🔫">🔫</button>
             <button class="copybutton appendToInput" data-clipboard-text="💥">💥</button>
@@ -56,6 +57,11 @@
 
 
     <div class="container">
+        <div class="row">
+            <div class="col-6">
+                <label for="mentionsCheckbox">Add mentions: <input type="checkbox" id="mentionsCheckbox" checked onclick="checkCheckboxStatus()"></label>
+            </div>
+        </div>
         <div class="row">
             <div class="col-12">
                 <button id="refreshButton" class="button cb-small">Refresh</button>
