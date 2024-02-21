@@ -2031,7 +2031,7 @@ section a {
   );
 }
 
-input {
+input, select {
   background: black;
   margin: 20px;
   color: white;
