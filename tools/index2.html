@@ -1,0 +1,72 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+        integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.12.1/css/selectize.default.css">
+    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css.css">
+    <title>QuickPosting</title>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"
+        integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.12.1/js/standalone/selectize.min.js"></script>
+    <script defer src="https://friconix.com/cdn/friconix.js"></script>
+    <link href="../assets/fonts/css/all.css" rel="stylesheet"> <!--load all styles -->
+    <link href="css.css" rel="stylesheet"> <!--load all styles -->
+    <script src="notify.min.js"></script>
+    <script src="clipboard.min.js"></script>
+    <script src="js2.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+
+<body>
+    <div class="col padded">
+        <h1>Probability</h1>
+        <label for="green-probability">Winrate (0-1):</label>
+        <input type="text" id="green-probability" placeholder=".25" value=".25">
+        <label for="risk">Risk:</label>
+        <input type="number" id="risk" value="1.5">
+        <label for="reward">Reward:</label>
+        <input type="number" id="reward" value="2">
+        <button id="run">run</button>
+
+        <div class="myrow">
+            <div class="mycol">
+                <div class="myrow">
+                    <div><label for="reward">Outcome:</label></div>
+                    <div ><div id="die" class="box">1</div></div>
+                </div>
+            </div>
+            <div class="mycol">
+                <div class="myrow">
+                    <div ><label for="reward">Profit:</label></div>
+                    <div ><div id="pool1" class="pool"></div></div>
+                </div>
+            </div>
+            <div class="mycol">
+                <div class="myrow">
+                    <div><label for="reward">Loss:</label></div>
+                    <div>
+                        <div id="pool2" class="pool"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="mycol">
+                <div class="myrow">
+                    <div><label for="reward">Result: </label></div>
+                    <div>
+                        <div id="result"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+    integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+    crossorigin="anonymous"></script>
+
+</html>

@@ -55,6 +55,16 @@ p {
   line-height: 1.8em;
 }
 
+.myrow {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0 -15px;
+}
+
+.mycol {
+  padding: 0 15px;
+}
+
 #preloader {
   display: block;
   position: fixed;
