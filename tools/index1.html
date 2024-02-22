@@ -23,30 +23,17 @@
 
 <body>
     <div class="col padded">
-        <h1>Tools</h1>
-        <a 
-            href="./index1.html"
-            style="background-image: url('https://img.freepik.com/free-vector/graph-chart-with-moving-up-arrow-stock-market-financial-investment-diagram-blue-background_56104-1814.jpg');"
-            class="mybutton mybutton__big-picture"
-            title="Data Analisis"
-            >
-            <div class="mybutton__text ellipsis">Data Analisis</div>
-        </a>
-        <a 
-            href="./index2.html"
-            style="background-image: url('https://w0.peakpx.com/wallpaper/744/907/HD-wallpaper-what-are-flag-patterns-on-forex-charts.jpg');"
-            class="mybutton mybutton__big-picture"
-            title="Trade"
-            >
-            <div class="mybutton__text ellipsis">Trade</div>
-        </a>
-        <a href="./index3.html"
-            style="background-image: url('https://emittersgame.com/assets/images/absorberDark.png');"
-            class="mybutton mybutton__big-picture"
-            title="Emitters Styling Guidelines"
-            >
-            <div class="mybutton__text ellipsis">Emitters Styling Guidelines</div>
-        </a>
+        <h1>Chart analisis from Google Sheet</h1>
+        <input type="text" id="userInput" placeholder="Any Google Sheet ID (url param: ?sheetId=)">
+        <select id="chartTypeSelect">
+            <option value="bar">Bar</option>
+            <option value="line">Line</option>
+            <option value="PNL">PNL</option>
+        </select>
+        <input type="number" id="minValueInput" value="0">
+        <input type="number" id="maxValueInput" value="2000">
+        <div id="data"></div>
+        <canvas id="myChart" width="1080" height="500"></canvas>
     </div>
 </body>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"

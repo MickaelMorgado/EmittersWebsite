@@ -11,6 +11,7 @@
   --black-rgb: 0, 0, 0;
   --header-offset: 100px;
   --header-offset-tablet: 82px;
+  --transition-time: .2s;
 }
 
 html,
@@ -53,6 +54,72 @@ h5 {
 p {
   font-size: 1.8em;
   line-height: 1.8em;
+}
+
+input,
+select,
+.mybutton {
+  background: black;
+  margin: 20px;
+  color: white;
+  padding: 10px;
+  border: 2px solid #222;
+  border-radius: 3px;
+}
+
+.mybutton {
+  display: inline-block;
+  padding: 10px 20px;
+  cursor: pointer;
+}
+
+.mybutton__big-picture {
+  position: relative;
+  background-size: 100% auto;
+  width: 300px;
+  height: 150px;
+  transition: all var(--transition-time) ease-out;
+
+  &::after {
+    content: '';
+    display: block;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    position: absolute;
+    background-image: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0) 0%,
+      rgba(0, 0, 0, 1) 100%
+    );
+  }
+
+  &:hover {
+    background-size: 105% auto;
+  }
+}
+
+.mybutton__text {
+  position: absolute;
+  z-index: 1;
+  color: white;
+  text-align: center;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.ellipsis {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mybutton__big-picture .mybutton__text {
+  bottom: 15px;
+  left: 20px;
+  right: 20px;
+  text-align: left;
 }
 
 .myrow {
@@ -2039,13 +2106,4 @@ section a {
     rgba(0, 0, 0, 0.5) 65%,
     rgba(0, 0, 0, 1) 100%
   );
-}
-
-input, select {
-  background: black;
-  margin: 20px;
-  color: white;
-  padding: 10px;
-  border: 2px solid #222;
-  border-radius: 3px;
 }

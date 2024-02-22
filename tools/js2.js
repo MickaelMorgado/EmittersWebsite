@@ -57,6 +57,6 @@ $(document).ready(function () {
       elements.pool2.innerHTML = sumPool2;
 
       elements.result.innerHTML = sumPool1 - sumPool2;
-    }, 100);
+    }, 50);
   };
 });
