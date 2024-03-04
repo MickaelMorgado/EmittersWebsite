@@ -13,6 +13,8 @@ $(document).ready(function () {
     rewardInput: $('#reward')[0],
     riskInput: $('#risk')[0],
     result: $('#result')[0],
+    chart1: $('#myChart')[0],
+    render1: $('#render1')[0],
   };
 
   // Call the main function when the button is clicked
@@ -59,4 +61,49 @@ $(document).ready(function () {
       elements.result.innerHTML = sumPool1 - sumPool2;
     }, 50);
   };
+
+  winLossClass = (value) => {
+    return value > 0 ? 'win' : value < 0 ? 'loss' : '';
+  };
+
+  const chart = () => {
+    // Use the provided googleSheetId if available, otherwise use the one from URL parameters
+    var spreadsheetId = '19Xef2pU1IGmlTo07YvrCO1cMlB0QgBwkMQ3Xy7xo1Tc';
+    var apiKey = 'AIzaSyC8GoxfXDxwEO_bxMHfpJs1_f8qfmYFSu4';
+    var chartUrl =
+      'https://sheets.googleapis.com/v4/spreadsheets/' +
+      spreadsheetId +
+      '/values/EURUSD - Trading History!A13:Z260?key=' +
+      apiKey;
+
+    fetch(chartUrl)
+      .then((response) => response.json())
+      .then((data) => {
+        var values = data.values;
+        for (var i = 0; i < values.length; i++) {
+          elements.render1.innerHTML += `<div class='generated-table'>
+            <div>${values[i][0]}</div>
+            <div class="${winLossClass(values[i][1])}">${values[i][1]}</div>
+            <div class="${values[i][2] > 0 ? 'loss' : ''}">${values[i][2]}</div>
+            <div class="${
+              values[i][5] > 0 ? 'win' : values[i][5] < 0 ? 'loss' : ''
+            }">${values[i][5]}</div>
+            <div>${values[i][4]}</div>
+            <div><a href="${values[i][11]}" target="_blank">chart</a></div>
+            <div class="ellipsis" title="${values[i][12]}">${
+            values[i][12]
+          }</div>
+            <div>${values[i][6]}</div>
+            <div>${values[i][10]}</div>
+          </div>`;
+        }
+      })
+      .catch((error) => {
+        console.error('Error fetching data:', error);
+      });
+
+    //elements.render1.innerHTML = `<iframe src="${chartUrl}/pubhtml?widget=true&amp;headers=false"></iframe>`;
+  };
+
+  chart();
 });
