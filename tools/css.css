@@ -3,6 +3,7 @@
 :root {
     --background-color: #111;
     --card-color: #111;
+    --border: #222;
     --text: #999;
     --win: #55cf77;
     --loss: #ff6a6a;
@@ -55,34 +56,56 @@
     text-overflow: ellipsis;
 }
 
+.iframepreview {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    width: 500px;
+    height: 300px;
+}
+
 .generated-table {
     display: flex;
     gap: 10px;
     text-align: right;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
 }
-.generated-table>div:nth-child(1) {
-    min-width: 80px;
+.column1 ,
+.generated-table > div:nth-child(1)
+{
+    width: 80px;
     text-align: center;
 }
-.generated-table>div:nth-child(4) {
-    min-width: 100px;
+.column4 ,
+.generated-table > div:nth-child(4)
+{
+    width: 100px;
 }
-.generated-table>div:nth-child(6) {
-    min-width: 200px;
+.column6 ,
+.generated-table > div:nth-child(6)
+{
+    width: 100px;
     text-align: center;
 }
-.generated-table > div:nth-child(7) {
+.column7 ,
+.generated-table > div:nth-child(7)
+{
     width: 600px;
     text-align: left;
 }
-.generated-table > div:nth-child(8) {
+.column8 ,
+.generated-table > div:nth-child(8)
+{
     width: 200px;
     text-align: center;
 }
-.generated-table > div:nth-child(9) {
-    min-width: 100px;
+.column9 ,
+.generated-table > div:nth-child(9)
+{
+    width: 300px;
     text-align: left;
 }
 .generated-table > div {
-    min-width: 50px;
+    width: 50px;
 }
