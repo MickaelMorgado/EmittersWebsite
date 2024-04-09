@@ -67,10 +67,12 @@ $(document).ready(function () {
     return value > 0 ? 'win' : value < 0 ? 'loss' : '';
   };
 
+  /*
   window.preview = (url) => {
     console.log('Previewing:', url);
     elements.iframePreview.src = url;
   };
+  */
 
   const chart = () => {
     // Use the provided googleSheetId if available, otherwise use the one from URL parameters
@@ -105,7 +107,6 @@ $(document).ready(function () {
                 data-iframe-preview="${values[i][11]}"
                 class="btn"
                 target="_blank"
-                onmouseover="preview(this.dataset.iframePreview)"
               >
                 view
               </a>
