@@ -15,6 +15,7 @@ $(document).ready(function () {
     result: $('#result')[0],
     chart1: $('#myChart')[0],
     render1: $('#render1')[0],
+    iframePreview: $('#iframepreview')[0],
   };
 
   // Call the main function when the button is clicked
@@ -66,6 +67,11 @@ $(document).ready(function () {
     return value > 0 ? 'win' : value < 0 ? 'loss' : '';
   };
 
+  window.preview = (url) => {
+    console.log('Previewing:', url);
+    elements.iframePreview.src = url;
+  };
+
   const chart = () => {
     // Use the provided googleSheetId if available, otherwise use the one from URL parameters
     var spreadsheetId = '19Xef2pU1IGmlTo07YvrCO1cMlB0QgBwkMQ3Xy7xo1Tc';
@@ -81,21 +87,35 @@ $(document).ready(function () {
       .then((data) => {
         var values = data.values;
         for (var i = 0; i < values.length; i++) {
-          elements.render1.innerHTML += `<div class='generated-table'>
-            <div>${values[i][0]}</div>
-            <div class="${winLossClass(values[i][1])}">${values[i][1]}</div>
-            <div class="${values[i][2] > 0 ? 'loss' : ''}">${values[i][2]}</div>
-            <div class="${
+          elements.render1.innerHTML += `<tr class='generated-table'>
+            <td class="column1">${values[i][0]}</td>
+            <td class="column2 ${winLossClass(values[i][1])}">${
+            values[i][1]
+          }</td>
+            <td class="column3 ${values[i][2] > 0 ? 'loss' : ''}">${
+            values[i][2]
+          }</td>
+            <td class="column4 ${
               values[i][5] > 0 ? 'win' : values[i][5] < 0 ? 'loss' : ''
-            }">${values[i][5]}</div>
-            <div>${values[i][4]}</div>
-            <div><a href="${values[i][11]}" target="_blank">chart</a></div>
-            <div class="ellipsis" title="${values[i][12]}">${
+            }">${values[i][5]}</td>
+            <td class="column5">${values[i][4]}</td>
+            <td class="column6">
+              <a
+                href="${values[i][11]}"
+                data-iframe-preview="${values[i][11]}"
+                class="btn"
+                target="_blank"
+                onmouseover="preview(this.dataset.iframePreview)"
+              >
+                view
+              </a>
+            </td>
+            <td class="column7 ellipsis" title="${values[i][12]}">${
             values[i][12]
-          }</div>
-            <div>${values[i][6]}</div>
-            <div>${values[i][10]}</div>
-          </div>`;
+          }</td>
+            <td class="column8">${values[i][6]}</td>
+            <td class="column9">${values[i][10]}</td>
+          </tr>`;
         }
       })
       .catch((error) => {
