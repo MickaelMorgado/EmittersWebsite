@@ -104,11 +104,10 @@ $(document).ready(function () {
             <td class="column6">
               <a
                 href="${values[i][11]}"
-                data-iframe-preview="${values[i][11]}"
                 class="btn"
                 target="_blank"
               >
-                view
+                entry
               </a>
             </td>
             <td class="column7 ellipsis" title="${values[i][12]}">${
@@ -116,6 +115,11 @@ $(document).ready(function () {
           }</td>
             <td class="column8">${values[i][6]}</td>
             <td class="column9">${values[i][10]}</td>
+            <td class="column10">${
+              values[i][13] !== undefined
+                ? `<a href="${values[i][13]}" class="btn" target="_blank">result</a>`
+                : `<span></span>`
+            }</td>
           </tr>`;
         }
       })
