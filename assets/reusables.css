@@ -1,0 +1,55 @@
+:root {
+  --border: 5px;
+  --dark1: #000;
+  --dark2: #111;
+  --dark3: #222;
+  --grey1: #555;
+  --grey2: #999;
+  --primary: #ff394a;
+  --primary2: #ff000f;
+  --success: #55cf77;
+  --padding: calc(var(--border) + var(--border));
+  --padding-medium: calc(var(--padding) + var(--border));
+  --padding-large: calc(var(--padding-medium) + var(--padding-medium));
+  --bold: 700;
+}
+
+.h-card {
+  border-radius: var(--border);
+  padding: var(--padding-large);
+  background-color: var(--dark2);
+}
+
+.h-styles label {
+  margin-bottom: 0;
+  color: var(--grey1);
+}
+
+.h-styles code {
+  margin-bottom: var(--padding);
+}
+
+.h-btn {
+  border-radius: var(--border);
+  padding: var(--border) var(--padding-medium);
+  font-weight: var(--bold);
+  line-height: 1;
+  cursor: pointer;
+  text-transform: uppercase;
+  background-color: var(--grey2);
+  color: var(--dark1);
+}
+
+.h-btn-primary {
+  background-color: var(--primary);
+  color: var(--dark1);
+}
+
+.h-btn-success {
+  background-color: var(--success);
+  color: var(--dark1);
+}
+
+.h-padded {
+  padding: var(--padding-large);
+}
