@@ -1,0 +1,195 @@
+<html>
+  <head>
+    <title>test</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ScrollMagic/2.0.7/ScrollMagic.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ScrollMagic/2.0.7/plugins/animation.gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/Observer.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/MotionPathPlugin.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/CustomEase.min.js"></script>
+
+    <!--
+      <script src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/16327/MotionPathHelper.min.js?v=46"></script>
+      more at: https://codepen.io/fr3d3ric/pen/NWWJoMg
+    -->
+    <link rel="stylesheet" href="https://cdn.hips.com/assets/frontend20/bootstrap/bootstrap-a3ace479d6ea71428ed6c7c33966c56620228ef1f9de1edd5b281b6ba892e3c6.css">
+    <link rel="stylesheet" href="https://cdn.hips.com/assets/frontend20/main-829f1bb4abc4136588e3238276a852668416f52483649f13acf9c101addba092.css">
+    <link rel="stylesheet" href="./assets/styles/debug.css">
+    <link rel="stylesheet" href="./assets/styles/styles.css">
+  </head>
+  <body class="page-home">
+    <header>
+      <div class="navbar-main-container">
+        <img src="https://cdn.hips.com/assets/logotypes/redux/color/hips-aa696dfa4c50892d2ae12a1c4aebaeb96bcbb8f169c706bc0cd7382f03cdaa8d.svg" alt="Hips" width="84px">
+        <div class="navbar-main-content">
+          <div class="navbar-main-mobile-header">
+            <a class="navbar-main-brand" href="/pt/home">
+              <i class="navbar-main-brand-icon icon fab fa-hips"></i>
+            </a>
+          </div>
+          <ul class="navbar-main-nav">
+            <li class="navbar-main-nav-item"><a class="navbar-main-nav-link" href="/pt/terminals">Payment Products</a></li>
+            <li class="navbar-main-nav-item"><a class="navbar-main-nav-link" href="/pt/resources">Resources</a></li>
+            <li class="navbar-main-nav-item"><a class="navbar-main-nav-link" href="/pt/pricing">Pricing</a></li>
+            <li class="navbar-main-nav-item"><a class="navbar-main-nav-link" href="/pt/store">Store</a></li>
+            <li class="navbar-main-nav-item"><a class="navbar-main-nav-link" href="https://jobs.hips.com/" target="_blank">Careers</a></li>
+          </ul>
+        </div>
+        <div class="navbar-main-content-btn topnav">
+          <div class="cart-wrapper" data-totalitems="0" id="cart">
+            <a class="navbar-main-btn btn btn-outline-primary" href="/pt/checkout">Shop Now</a>
+          </div>
+          <a class="navbar-main-btn btn btn-primary" href="https://dashboard.hips.com/users/sign_in">Sign In</a>
+          <button class="btn navbar-main-toggler" data-open-navbar-main="" type="button">
+            <span class="navbar-main-toggler-item"></span>
+            <span class="navbar-main-toggler-item"></span>
+            <span class="navbar-main-toggler-item"></span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <div id="pos-animation" class="pos-animation"></div>
+
+    <div id="gsap-pos-area">
+      <!--
+      -->
+      <div id="pos-animation-points">
+        <div class="d-point d-point--1"></div>
+        <div class="d-point d-point--2"></div>
+        <div class="d-point d-point--3"></div>
+        <div class="d-point d-point--4"></div>
+        <div class="d-point d-point--5"></div>
+      </div>
+
+      <div id="pos-animation-svg">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 200">
+          <path fill="none" />
+        </svg>
+      </div>
+
+      <section id="section0" class="banner vignette">
+        <div class="caption">
+          <p class="caption-title">Add payment services to your offering.</p>
+          <a class="custom-btn">scroll down</a>
+        </div>
+        <div id="pos-animation-idle" class="pos-animation-idle">
+          <div class="pos pos-white"></div>
+          <div class="pos pos-black"></div>
+        </div>
+      </section>
+      <section id="section1" class="container">
+        <div class="content">
+          <p class="title">PAX A920</p>
+          <p class="subtitle">Standalone, Android</p>
+          <p>
+            The most beautiful and popular mobile payment terminal powered with
+            Android
+          </p>
+          <ul>
+            <li>Bringing elegance & style to each paying customer</li>
+            <li>
+              Transform the customer experience with a new leading-edge solution
+            </li>
+            <li>Take advantage of an Android community business application</li>
+            <li>
+              Speed up the checkout process, accepting all payment methods
+              including alternative ones
+            </li>
+            <li>Support daily business through cloud services capabilities</li>
+          </ul>
+        </div>
+      </section>
+      <section id="section2">
+        <div class="container">
+          <!--div id="pos-black-2">
+            <div class="pos pos-black" alt="pos-black"></div>
+          </div-->
+          <div class="content content--2">
+            <p class="title">APOS A8</p>
+            <p class="subtitle">Standalone, Android</p>
+            <p>
+              The most beautiful and popular mobile payment terminal powered with
+              Android
+            </p>
+            <ul>
+              <li>Bringing elegance & style to each paying customer</li>
+              <li>
+                Transform the customer experience with a new leading-edge solution
+              </li>
+              <li>Take advantage of an Android community business application</li>
+              <li>
+                Speed up the checkout process, accepting all payment methods
+                including alternative ones
+              </li>
+              <li>Support daily business through cloud services capabilities</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    </div>
+    <section>
+      <div class="section-container section-advantage">
+        <div class="section-advantage-title">HIPS ADVANTAGE</div>
+        <h2>100% partnership driven omnichannel white label payment gateway.</h2>
+        <div class="section-advantage-subheading">Build or scale a domestic or global payment business. Whether its In-Store, mPOS, Unattended, QR or Online payments.</div>
+        CAROUSEL
+        <a class="btn btn-outline-primary" href="/pt/terminals">Explore Payment Products<i class="icon icon-arrow-right"></i></a>
+      </div>
+    </section>
+    <footer class="footer-main">
+      <div class="footer-main-top">
+        <div class="section-container">
+          <div class="footer-main-top-row">
+            <div class="footer-main-top-col">
+              <a href="/pt/home">
+                <img class="footer-main-top-col-logo" src="https://cdn.hips.com/assets/logotypes/redux/white/hips-greendot-b22bba88b69457f1e4f5f75bb7341a3fb1481e894ff081856caa628575848471.svg" alt="Hips greendot">
+              </a>
+            </div>
+            <div class="footer-main-top-col">
+              <div class="footer-main-top-col">
+                <div class="footer-main-top-nav-title">PAYMENT PRODUCTS</div>
+                <div class="footer-main-top-nav">
+                  <a class="footer-main-top-nav-link" href="/pt/qr">QR Payments</a>
+                  <a class="footer-main-top-nav-link" href="/pt/terminals">Payment Terminals</a>
+                  <a class="footer-main-top-nav-link" href="/pt/mobile-webb-payments">Mobile/Webb Payments</a>
+                  <a class="footer-main-top-nav-link" href="/pt/open-banking-payments">Open Banking Payments</a>
+                  <a class="footer-main-top-nav-link" href="/pt/card-issuing">Card Issuing</a>
+                  <a class="footer-main-top-nav-link" href="/pt/payment-facilitator">PayFac</a>
+                  <a class="footer-main-top-nav-link" href="/pt/white-label-payment-gateway">Payment Gateway</a>
+                </div>
+              </div>
+            </div>
+            <div class="footer-main-top-col"><div class="footer-main-top-nav-title">TERMINALS</div><div class="footer-main-top-nav"><a class="footer-main-top-nav-link" href="/pt/terminals_m010">M010 (mPos/PIN pad)</a><a class="footer-main-top-nav-link" href="/pt/terminals_m020">M020 (mPos/PIN pad)</a><a class="footer-main-top-nav-link" href="/pt/terminals_p400">P400 (Countertop PIN pad)</a><a class="footer-main-top-nav-link" href="/pt/terminals_a920">A920 (Standalone)</a><a class="footer-main-top-nav-link" href="/pt/terminals_im30">IM30 (Unattended)</a></div></div>
+            <div class="footer-main-top-col"><div class="footer-main-top-nav-title">PRICING</div><div class="footer-main-top-nav"><a class="footer-main-top-nav-link" href="/pt/pricing-iso">ISO Edition</a><a class="footer-main-top-nav-link" href="/pt/pricing-gateway">Gateway Edition <div class="badge badge-light" style="margin-top:-2px;">WL</div></a><a class="footer-main-top-nav-link" href="/pt/pricing">PayFac Edition <div class="badge badge-light" style="margin-top:-2px;">WL</div></a><a class="footer-main-top-nav-link" href="/pt/interchange-plus-plus">Interchange (IC++)</a><a class="footer-main-top-nav-link" href="/pt/store">Hardware</a><a class="footer-main-top-nav-link" href="/pt/store">Shop Now</a></div></div>
+            <div class="footer-main-top-col"><div class="footer-main-top-nav-title">DEVELOPERS</div><div class="footer-main-top-nav"><a class="footer-main-top-nav-link" href="https://docs.hips.com/docs" target="_blank">Docs and Guides</a><a class="footer-main-top-nav-link" href="https://docs.hips.com/reference" target="_blank">API Reference</a><a class="footer-main-top-nav-link" href="/pt/resources">SDKs and Resources</a></div><div class="footer-main-top-nav-title mt-3">HIPS</div><div class="footer-main-top-nav"><a class="footer-main-top-nav-link" href="https://jobs.hips.com/" target="_blank">Careers</a></div></div>
+          </div>
+          <div class="footer-main-top-row footer-main-top-row-social"><div class="footer-main-top-col"><div class="footer-main-top-nav-title">FOLLOW US</div><div class="footer-main-top-nav footer-main-top-nav-inline"><a class="footer-main-top-nav-link footer-main-top-nav-link-social" href="https://www.facebook.com/hipspay/" target="_blank"><i class="fab fa-facebook"></i></a><a class="footer-main-top-nav-link footer-main-top-nav-link-social" href="https://twitter.com/hips_status" target="_blank"><i class="fab fa-twitter"></i></a><a class="footer-main-top-nav-link footer-main-top-nav-link-social" href="https://www.linkedin.com/company/15154801" target="_blank"><i class="fab fa-linkedin"></i></a><a class="footer-main-top-nav-link footer-main-top-nav-link-social" href="https://github.com/hipspay" target="_blank"><i class="fab fa-github"></i></a><a class="footer-main-top-nav-link footer-main-top-nav-link-social" href="https://www.youtube.com/c/hipspay" target="_blank"><i class="fab fa-youtube"></i></a></div></div></div>
+        </div>
+      </div>
+      <div class="footer-main-bottom">
+        <div class="section-container">
+          <div class="footer-main-bottom-row">
+            <div class="footer-main-bottom-col">
+              <small class="footer-main-bottom-copyright">© 2024 Hips</small>
+              <div class="footer-main-bottom-nav">
+                <a class="footer-main-bottom-nav-link" href="/pt/terms">Terms</a>
+                <a class="footer-main-bottom-nav-link" href="/pt/data_policy">Privacy</a>
+              </div>
+            </div>
+            <div class="footer-main-bottom-col">
+              <div class="footer-main-bottom-nav">
+                <a class="footer-main-bottom-nav-link" href="https://status.hips.com" target="_blank">System status</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+    <script src="./assets/js/elements.js"></script>
+    <script src="./assets/js/main.js"></script>
+    <script src="./assets/js/animations.js"></script>
+  </body>
+</html>
