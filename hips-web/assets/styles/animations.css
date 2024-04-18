@@ -10,36 +10,36 @@
 }
 
 .d-point--1 {
-  top: 20%;
+  top: 300px;
   left: 50%;
 }
 
 .d-point--2 {
   top: 40%;
-  left: 30%;
+  left: 25%;
 }
 
 .d-point--3 {
   top: auto;
-  left: auto;
-  bottom: 50%;
-  right: 20%;
+  bottom: 40%;
+  left: 120%;
 }
 
 .d-point--4 {
   top: auto;
-  bottom: 20%;
-  left: 20%;
+  left: auto;
+  bottom: 25%;
+  right: 25%;
 }
 
 .d-point--5 {
-  bottom: 12%;
-  left: 30%;
   top: auto;
+  left: auto;
+  bottom: 17%;
+  right: 35%;
 }
 
-/*
-#pos-animation {
+.d-pos-animation {
   border: 1px solid lightblue;
   :after {
     content: "";
@@ -55,20 +55,29 @@
   }
 }
 
-#pos-animation-svg path {
+.d-pos-animation-svg path {
   stroke: red;
   stroke-width: 0.05;
 }
 
-.d-point {
+.d-point-debugger .d-point {
   border: 5px solid orange;
 }
-*/
 
 @media screen and (max-width: 1500px) {
   .d-point--3,
   .d-point--4 {
     right: 0;
+  }
+}
+
+@media screen and (max-width: 1300px) {
+  .d-point--2 {
+    top: 65%;
+    left: 65%;
+  }
+  .d-point--5 {
+    right: 20%;
   }
 }
 
