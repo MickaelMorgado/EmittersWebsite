@@ -1,0 +1,3 @@
+[submodule "HipsWeb"]
+	path = HipsWeb
+	url = https://github.com/MickaelMorgado/HipsWeb
