@@ -15,12 +15,15 @@
     <script defer src="https://friconix.com/cdn/friconix.js"></script>
     <link href="../assets/fonts/css/all.css" rel="stylesheet"> <!--load all styles -->
     <link href="css.css" rel="stylesheet"> <!--load all styles -->
+    <link href="css2.css" rel="stylesheet"> <!--load all styles -->
     <script src="notify.min.js"></script>
     <script src="clipboard.min.js"></script>
     <script src="js.js"></script>
     <script src="js2.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/htmx.org@1.9.11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/OrbitControls.min.js"></script>
 </head>
 
 <body class="style-trade">
@@ -96,7 +99,7 @@
                                 <th>Result</th>
                             </tr>
                         </thead>
-                        <tbody id="render1"></tbody>
+                        <tbody id="mySheet1"></tbody>
                     </table>
                 </div>
             </div>
@@ -118,6 +121,39 @@
         <!--div class="iframepreview">
             <iframe id="iframepreview" src="https://mega.nz/file/YckWEKDa#sDre54zcdy-J5on1cOqur69FMQqMSyLEcPLelMKhxBs" width="500px" height="300px" frameborder="0"></iframe>
         </div-->
+        <div class="myrow">
+            <div class="card">
+                <div class="card-body">
+                    <table>
+                        <thead>
+                            <tr class="generated-table">
+                                <th>Date</th>
+                                <th>W</th>
+                                <th>L</th>
+                                <th>PNL</th>
+                                <th>Numb</th>
+                                <th class="ellipsis">Screenshot</th>
+                                <th>Note</th>
+                                <th>Session</th>
+                                <th>Analisis</th>
+                                <th>Result</th>
+                            </tr>
+                        </thead>
+                        <tbody id="mySheet2"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="myrow">
+            <div id="render2" width="100%" height="500px"></div>
+        </div>
+        <div class="myrow">
+            <div class="card">
+                <div class="card-body">
+                    <div id="render1"></div>
+                </div>
+            </div>
+        </div>
     </div>
 </body>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
