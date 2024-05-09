@@ -1,9 +1,13 @@
 import './App.css'
+import MainWebsitePage from './MainWebsitePage'
 import ThreeJSExample from './ThreeJSExample'
 
 const App = () => {
   return (
-    <ThreeJSExample />
+    <>
+      <MainWebsitePage />
+      <ThreeJSExample />
+    </>
   )
 }
 
