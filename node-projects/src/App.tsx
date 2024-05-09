@@ -1,7 +1,7 @@
 import './App.css'
 import ThreeJSExample from './ThreeJSExample'
 
-function App() {
+const App = () => {
   return (
     <ThreeJSExample />
   )
