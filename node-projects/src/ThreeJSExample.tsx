@@ -1,39 +1,66 @@
-import * as THREE from 'three';
+import { Canvas, useFrame, useLoader } from '@react-three/fiber';
+import { useRef, useState } from 'react';
+import { Group, Mesh, Object3DEventMap } from 'three';
+import { OrbitControls } from '@react-three/drei';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 
-function ThreeJSExample() {
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    
-    let renderer = document.querySelector('#threejs-canvas') as HTMLCanvasElement | null;
-    if (!renderer) {
-        renderer = document.createElement('canvas');
-        renderer.id = 'threejs-canvas';
-        document.body.appendChild(renderer);
-    }
+const Cube = () => {
+    const meshRef = useRef<Mesh>(null);
 
-    const threeRenderer = new THREE.WebGLRenderer({ canvas: renderer });
+    const [isHovered, setIsHovered] = useState(false);
 
-    threeRenderer.setSize(window.innerWidth, window.innerHeight);
+    useFrame((state, delta) => {
+        const speed = isHovered ? 8 : 2;
+        if (meshRef.current) {
+            meshRef.current.rotation.x += delta * speed;
+            meshRef.current.rotation.y += delta * speed;
+        }
+    });
 
-    const geometry = new THREE.BoxGeometry(1, 1, 1);
-    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-    const cube = new THREE.Mesh(geometry, material);
-    scene.add(cube);
+    return (
+        <mesh
+            ref={meshRef}
+            onPointerEnter={(event) => (event.stopPropagation(), setIsHovered(true))}
+            onPointerLeave={() => (setIsHovered(false))}
+        >
+            <boxGeometry args={[2, 2, 4]} />
+            <meshStandardMaterial color={isHovered ? "lightblue" : "red"} />
+        </mesh>
+    );
+};
 
-    camera.position.z = 5;
+// const groupRef = useRef<Group<Object3DEventMap>>(null);
 
-    function animate() {
-        requestAnimationFrame(animate);
+const A3DModel = () => {
+    const gltf = useLoader(GLTFLoader, '../src/assets/3DModels/01.glb');
 
-        cube.rotation.x += 0.01;
-        cube.rotation.y += 0.01;
+    // Assign the loaded model to the group's children
+    // useEffect(() => {
+    //     if (gltf && gltf.scene) {
+    //         if (groupRef.current) {
+    //             groupRef.current.add(gltf.scene);
+    //         }
+    //     }
+    // }, [gltf]);
 
-        threeRenderer.render(scene, camera);
-    }
+    // return <group ref={groupRef} />;
+    return <primitive object={gltf.scene} />;
+};
 
-    animate();
-
-    return null;
+const ThreeJSExample = () => {
+    return (
+        <Canvas
+            camera={{
+                position: [5, 5, -5], // Adjust camera position if needed
+                fov: 75,
+            }}
+        >
+            <ambientLight intensity={2} />
+            <pointLight position={[10, 10, 10]} />
+            <A3DModel />
+            <OrbitControls />
+        </Canvas>
+    );
 }
 
 export default ThreeJSExample;
