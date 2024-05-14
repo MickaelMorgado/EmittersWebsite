@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import './App.css'
 import MainWebsitePage from './MainWebsitePage'
 import ThreeJSExample from './ThreeJSExample'
@@ -5,8 +6,10 @@ import ThreeJSExample from './ThreeJSExample'
 const App = () => {
   return (
     <>
-      <MainWebsitePage />
-      <ThreeJSExample />
+      <div id="website-content" className='page-home'>
+        <ThreeJSExample />
+        <MainWebsitePage />
+      </div>
     </>
   )
 }

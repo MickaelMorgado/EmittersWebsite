@@ -17,6 +17,8 @@
     "@theatre/core": "^0.5.1",
     "@theatre/r3f": "^0.5.1",
     "@theatre/studio": "^0.5.1",
+    "@types/gsap": "^3.0.0",
+    "gsap": "^3.12.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "three": "^0.164.1"
