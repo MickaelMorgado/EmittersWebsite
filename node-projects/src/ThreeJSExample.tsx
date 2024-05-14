@@ -15,7 +15,7 @@ const MyGLTFModel = () => {
     const mixerRef = useRef();
 
     // Load GLTF model
-    const gltf = useLoader(GLTFLoader, '../src/assets/3DModels/StabilizedNewPOSWithAnimations.glb');
+    const gltf = useLoader(GLTFLoader, '../src/assets/3DModels/StabilizedNewDoublePOSWithAnimations.glb');
 
     // Traverse through the loaded model to set properties
     gltf.scene.traverse((node) => {
@@ -63,7 +63,7 @@ const MyGLTFModel = () => {
     useFrame((_, delta) => {
         if (mixerRef.current) mixerRef.current.update(delta);
     });
-
+    debugger
     if (gltf.animations[0]) {
         // Play specific animation
         const action = mixerRef.current?.clipAction(gltf.animations[0]);
