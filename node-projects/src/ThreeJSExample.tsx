@@ -59,20 +59,26 @@ const MyGLTFModel = () => {
         mixerRef.current = new AnimationMixer(gltf.scene);
     }
 
-    // Play animation
-    useFrame((_, delta) => {
-        if (mixerRef.current) mixerRef.current.update(delta);
-    });
-    debugger
-    if (gltf.animations[0]) {
-        // Play specific animation
-        const action = mixerRef.current?.clipAction(gltf.animations[0]);
+    let actions = [];
+
+    for (var i = 0; i < gltf.animations.length; i++) {
+        mixerRef.current?.clipAction(gltf.animations[i]);
+    }
+
+    for (var i = 0; i <= mixerRef.current?._actions.length; i++) {
+        const action = mixerRef.current?._actions[i];
         if (action) {
             action.play();
             action.paused = true;
         }
-    
-        if (mixerRef.current) createAnimation(mixerRef.current, action, gltf.animations[0], 1.5);
+
+        // Play animation
+        useFrame((_, delta) => {
+            if (mixerRef.current) {
+                mixerRef.current.update(delta);
+            }
+        });
+        //if (mixerRef.current) createAnimation(mixerRef.current, actions[i], gltf.animations[i], 1.5);
     }
 
     return <primitive object={gltf.scene} ref={modelRef} />;
