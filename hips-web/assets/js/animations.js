@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", (event) => {
+document.addEventListener('DOMContentLoaded', (event) => {
   gsap.registerPlugin(
     ScrollTrigger,
     ScrollMagic,
@@ -12,9 +12,9 @@ document.addEventListener("DOMContentLoaded", (event) => {
 
   // Adding some debug styles:
   if (debug) {
-    elements.posAnimation.classList.add("d-pos-animation");
-    elements.posAnimationSVGWrapper.classList.add("d-pos-animation-svg");
-    elements.posAnimationPointWrapper.classList.add("d-point-debugger");
+    elements.posAnimation.classList.add('d-pos-animation');
+    elements.posAnimationSVGWrapper.classList.add('d-pos-animation-svg');
+    elements.posAnimationPointWrapper.classList.add('d-point-debugger');
   }
 
   // Image Sequence Animation: ------------------------------------------------
@@ -30,10 +30,10 @@ document.addEventListener("DOMContentLoaded", (event) => {
     const container = elements.posAnimation;
 
     for (let i = frameStart; i <= frameEnd; i++) {
-      const frame = document.createElement("div");
-      frame.classList.add("js-generated-frame");
+      const frame = document.createElement('div');
+      frame.classList.add('js-generated-frame');
       frame.style.backgroundImage = `url('./assets/images/Render0099-10000${i}.png')`;
-      frame.style.visibility = "hidden";
+      frame.style.visibility = 'hidden';
       container.appendChild(frame);
     }
   };
@@ -42,7 +42,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
   generateFrames();
 
   // Get all frame elements:
-  const frames = document.querySelectorAll(".js-generated-frame");
+  const frames = document.querySelectorAll('.js-generated-frame');
 
   // Function to update the frame at a given index:
   const updateFrame = (index) => {
@@ -50,7 +50,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
       return;
     } else {
       frames.forEach((frame, idx) => {
-        frame.style.visibility = idx === index ? "visible" : "hidden"; // Show the frame at the given index, hide others
+        frame.style.visibility = idx === index ? 'visible' : 'hidden'; // Show the frame at the given index, hide others
       });
     }
   };
@@ -78,27 +78,27 @@ document.addEventListener("DOMContentLoaded", (event) => {
   let converted = anchors.map((p) => matrix.apply(p));
   let rawPath = MotionPathPlugin.arrayToRawPath(converted, { curviness: 2 });
 
-  path.setAttribute("d", MotionPathPlugin.rawPathToString(rawPath));
+  path.setAttribute('d', MotionPathPlugin.rawPathToString(rawPath));
 
   // place the converted points as <circle> elements
   for (let i = 0; i < converted.length; i++) {
-    createSVG("circle", svg, {
+    createSVG('circle', svg, {
       cx: converted[i].x,
       cy: converted[i].y,
       r: 0.5,
-      fill: debug ? "red" : "none",
+      fill: debug ? 'red' : 'none',
     });
   }
 
   // helper function for creating SVG elements
   function createSVG(type, container, attributes) {
-    var element = document.createElementNS("http://www.w3.org/2000/svg", type),
+    var element = document.createElementNS('http://www.w3.org/2000/svg', type),
       reg = /([a-z])([A-Z])/g,
       p;
     for (p in attributes) {
       element.setAttributeNS(
         null,
-        p.replace(reg, "$1-$2").toLowerCase(),
+        p.replace(reg, '$1-$2').toLowerCase(),
         attributes[p]
       );
     }
@@ -108,12 +108,12 @@ document.addEventListener("DOMContentLoaded", (event) => {
 
   // Ease to control speed of vertical position progress:
   CustomEase.create(
-    "oldEase",
-    "M0,0 C0.378,0 0.125,0.3 0.4,0.3 0.539,0.3 0.621,0.316 0.663,0.343 0.734,0.388 0.738,0.604 0.77,0.773 0.783,0.847 0.853,1 1,1 "
+    'oldEase',
+    'M0,0 C0.378,0 0.125,0.3 0.4,0.3 0.539,0.3 0.621,0.316 0.663,0.343 0.734,0.388 0.738,0.604 0.77,0.773 0.783,0.847 0.853,1 1,1 '
   );
   CustomEase.create(
-    "newEase",
-    "M0,0 C0,0 0.039,0.001 0.058,0.021 0.084,0.049 0.068,0.145 0.119,0.146 0.244,0.146 0.159,0.3 0.267,0.3 0.418,0.3 0.32,0.3 0.476,0.3 0.834,0.3 0.608,1 0.87,1 1.034,1 1,1 1,1 "
+    'newEase',
+    'M0,0 C0,0 0.039,0.001 0.058,0.021 0.084,0.049 0.068,0.145 0.119,0.146 0.244,0.146 0.159,0.3 0.267,0.3 0.418,0.3 0.32,0.3 0.476,0.3 0.834,0.3 0.608,1 0.87,1 1.034,1 1,1 1,1 '
   );
   const easeScale = [0, 1, 0, 0, 1, 0, 0];
 
@@ -121,8 +121,8 @@ document.addEventListener("DOMContentLoaded", (event) => {
   tl.to(elements.posAnimation, {
     scrollTrigger: {
       trigger: elements.posArea,
-      start: "500px center",
-      end: "90% center",
+      start: '500px center',
+      end: '90% center',
       scrub: 0.4,
       onUpdate: (self) => {
         const minScale = 0.8; // Minimum scale
@@ -157,7 +157,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
       alignOrigin: [0.5, 0.5],
       reverse: true,
     },
-    ease: "newEase", // The "ease" property seems to be related to timeline, so it can affect the MotionPath following speed but might not speed up the vertical progress from ScrollTrigger
+    ease: 'newEase', // The "ease" property seems to be related to timeline, so it can affect the MotionPath following speed but might not speed up the vertical progress from ScrollTrigger
     immediateRender: false,
   });
 
@@ -166,13 +166,13 @@ document.addEventListener("DOMContentLoaded", (event) => {
 
   contentElements.forEach((contentElement, index) => {
     gsap.to(contentElement, {
-      x: "100%",
+      x: '100%',
       opacity: 1,
       duration: 1,
       scrollTrigger: {
         trigger: contentElement.parentElement,
-        start: "-25% center",
-        end: "25% center",
+        start: '-25% center',
+        end: '25% center',
         scrub: 1,
         id: `contentAnimation-${index}`,
       },
