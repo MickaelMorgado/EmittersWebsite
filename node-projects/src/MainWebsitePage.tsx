@@ -7,68 +7,70 @@ const MainWebsitePage = () => {
 
     useEffect(() => {
         gsap.registerPlugin(ScrollTrigger);
-    const scriptUrls = [
-      './src/assets/js/vendor/jquery.min.js',
-      './src/assets/js/vendor/gsap.min.js',
-      './src/assets/js/vendor/ScrollMagic.min.js',
-      './src/assets/js/vendor/animation.gsap.min.js',
-      './src/assets/js/vendor/ScrollTrigger.min.js',
-      './src/assets/js/vendor/Observer.min.js',
-      './src/assets/js/vendor/MotionPathPlugin.min.js',
-      './src/assets/js/vendor/CustomEase.min.js',
-      './src/assets/js/elements.js',
-      './src/assets/js/main.js',
-      //'./src/assets/js/animations.js'
-      './src/assets/js/vendor/HipsHome.js'
-    ];
+        const scriptUrls = [
+            './src/assets/js/vendor/jquery.min.js',
+            './src/assets/js/vendor/gsap.min.js',
+            './src/assets/js/vendor/ScrollMagic.min.js',
+            './src/assets/js/vendor/animation.gsap.min.js',
+            './src/assets/js/vendor/ScrollTrigger.min.js',
+            './src/assets/js/vendor/Observer.min.js',
+            './src/assets/js/vendor/MotionPathPlugin.min.js',
+            './src/assets/js/vendor/CustomEase.min.js',
+            './src/assets/js/elements.js',
+            './src/assets/js/main.js',
+            //'./src/assets/js/animations.js'
+            './src/assets/js/vendor/HipsHome.js'
+        ];
 
-    // Dynamically load scripts
-    const loadScript = (url: string) => {
-      return new Promise((resolve, reject) => {
-        const script = document.createElement('script');
-        script.src = url;
-        script.async = true;
-        script.onload = resolve;
-        script.onerror = reject;
-        document.head.appendChild(script);
-      });
-    };
+        // Dynamically load scripts
+        const loadScript = (url: string) => {
+        return new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = url;
+            script.async = true;
+            script.onload = resolve;
+            script.onerror = reject;
+            document.head.appendChild(script);
+        });
+        };
 
-    Promise.all(scriptUrls.map(loadScript))
-      .then(() => setScriptsLoaded(true))
-      .catch((error) => console.error('Error loading scripts:', error));
+        Promise.all(scriptUrls.map(loadScript))
+        .then(() => setScriptsLoaded(true))
+        .catch((error) => console.error('Error loading scripts:', error));
 
-    return () => {
-      // Clean up by removing dynamically added scripts when component unmounts
-      scriptUrls.forEach(url => {
-        const script = document.querySelector(`script[src="${url}"]`);
-        if (script) {
-          document.head.removeChild(script);
-        }
-      });
-    };
-  }, []); // Empty dependency array ensures effect runs only once on mount
+        return () => {
+            // Clean up by removing dynamically added scripts when component unmounts
+            scriptUrls.forEach(url => {
+                const script = document.querySelector(`script[src="${url}"]`);
+                if (script) {
+                    document.head.removeChild(script);
+                }
+            });
+        };
+    }, []); // Empty dependency array ensures effect runs only once on mount
 
     // Content Animations:
-  useEffect(() => {
-    const contentElements = document.getElementsByClassName('content');
-    const contentArray = Array.from(contentElements);
+    useEffect(() => {
+        window.onload = () => {
+            const contentElements = document.getElementsByClassName('content');
+            const contentArray = Array.from(contentElements);
 
-    contentArray.forEach((contentElement, index) => {
-      gsap.to(contentElement, {
-        x: '0',
-        opacity: 1,
-        duration: 2,
-        scrollTrigger: {
-          trigger: contentElement.parentElement,
-          start: '-25% center',
-          end: '25% center',
-          scrub: 1,
-          id: `contentAnimation-${index}`,
-        },
-      });
-    });
-  }, []);
+            contentArray.forEach((contentElement, index) => {
+                gsap.to(contentElement, {
+                    x: '0',
+                    opacity: 1,
+                    duration: 2,
+                    scrollTrigger: {
+                    trigger: contentElement.parentElement,
+                    start: '-25% center',
+                    end: '25% center',
+                    scrub: 1,
+                    id: `contentAnimation-${index}`,
+                    },
+                });
+            });
+        }
+    }, []);
 
   // HTML content of your existing webpage
   const webpageContent = `
