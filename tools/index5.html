@@ -92,10 +92,51 @@
 				color: #000000;
 				background-color: rgba(0,255,255,0.75);
 			}
+
+            .cursor-line {
+                border-width: 0 1px 1px 0;
+                border-style: dashed;
+                border-color: #555;
+
+                position: fixed;
+                top: 0;
+                left: 0;
+                pointer-events: none;
+                z-index: 1001;
+            }
+
+            .cursor-line__horizontal {
+                transform: translateX(-50%);
+                width: 200vw;
+                height: 0;
+            }
+
+            .cursor-line__vertical {
+                transform: translateY(-50%);
+                width: 0;
+                height: 200vh;
+            }
+
+            .hidder {
+                display: none;
+                position: fixed;
+                background-color: black;
+                z-index: 1000;
+                width: 200vw;
+                height: 200vh;
+                transform: translateY(-50%);
+            }
+
+            .hidder.active {
+                display: block;
+            }
 		</style>
 	</head>
 	<body>
 		<div id="container"></div>
+        <div class="hidder"></div>
+        <div class="cursor-line cursor-line__horizontal"></div>
+        <div class="cursor-line cursor-line__vertical"></div>
 
 		<script type="importmap">
 			{
@@ -1995,7 +2036,7 @@
 
                     // object.position.x = (i % 10) * w + wOffset / 4 * (i % 10); // Reset x position for each row
          
-                    const gridSize = 5; // Define the size of your grid
+                    const gridSize = 8; // Define the size of your grid
                     const spacing = wOffset; // Define the spacing between objects
 
                     const x = (i % gridSize) * spacing * 9;
@@ -2085,6 +2126,31 @@
 				renderer.render( scene, camera );
 
 			}
+
+            document.body.addEventListener('mousemove', function(event) {
+                const mouseX = event.clientX;
+                const mouseY = event.clientY;
+                
+                var x = document.getElementsByClassName('cursor-line__horizontal')[0];
+                var y = document.getElementsByClassName('cursor-line__vertical')[0];
+                var hidder = document.getElementsByClassName('hidder')[0];
+
+                x.style.top = mouseY + 'px';
+                x.style.left = mouseX + 'px';
+                y.style.top = mouseY + 'px';
+                y.style.left = mouseX + 'px';
+                hidder.style.top = mouseY + 'px';
+                hidder.style.left = mouseX + 'px';
+            });
+            
+            window.addEventListener('keydown', function(event) {
+                if (event.key === 'h') {
+                    var elements = document.getElementsByClassName('hidder');
+                    for (var i = 0; i < elements.length; i++) {
+                        elements[i].classList.toggle('active');
+                    }
+                }
+            });
 
 		</script>
 	</body>
