@@ -32,7 +32,15 @@ const MyGLTFScene = () => {
     let updatedModels: Modified3DObject[] = [];
 
     // Load GLTF model
-    const gltf = useLoader(GLTFLoader, '../src/assets/3DModels/StabilizedNewDoublePOSWithAnimations.glb');
+    const gltf = useLoader(
+        GLTFLoader,
+        '../src/assets/3DModels/StabilizedNewDoublePOSWithAnimations.glb',
+        () => {},
+        (xhr) => {
+            let modelLoad = (xhr.loaded / xhr.total) * 100
+            modelLoad == 100 ? setTimeout(() => window.elements.threeCanvas.classList = 'fade-in', 200) : null;
+        }
+    );
 
     // Traverse through the loaded model to set properties
     gltf.scene.traverse((node) => {
@@ -62,7 +70,7 @@ const MyGLTFScene = () => {
             
             if (node.material.name === "Glossy Plastic.001") {
                 node.material.metalness = 1;
-                node.material.roughness = 0;
+                node.material.roughness = .08;
             }
 
         }
@@ -163,7 +171,7 @@ const ThreeJSExample = () => {
                     rollFrequency={0}
                     yawFrequency={0}
                 />
-                <Environment preset="studio" environmentIntensity={.15} />
+                <Environment preset="studio" environmentIntensity={0.15} environmentRotation={new THREE.Euler(0, .7, 0, 'XYZ')} />
                 <ambientLight intensity={10} />
                 <directionalLight intensity={5} position={[20, 30, 0]} />
                 <MyGLTFScene />
