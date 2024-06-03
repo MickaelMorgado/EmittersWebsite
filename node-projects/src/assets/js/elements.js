@@ -15,6 +15,7 @@ var elements = {
   posBlack: document.querySelector("#pos-black"),
   posBlack2: document.querySelector("#pos-black-2"),
   preloaderAnimation: document.querySelector("#preloader-animation"),
+  threeCanvas: document.querySelector("#floating-canvas"),
   section2: document.querySelector("#section2"),
   svg: document.querySelector("#pos-animation-svg svg"),
 };
