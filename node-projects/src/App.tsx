@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import './App.css'
 import MainWebsitePage from './MainWebsitePage'
 import ThreeJSExample from './ThreeJSExample'
