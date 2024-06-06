@@ -1,3 +1,9 @@
-[submodule "HipsWeb"]
-	path = HipsWeb
-	url = https://github.com/MickaelMorgado/HipsWeb
+[submodule "hipsweb"]
+	path = hipsweb
+	url = https://gitlab.dengun.org/hips/hipsweb.git
+[submodule "Hipsweb"]
+	path = Hipsweb
+	url = https://gitlab.dengun.org/hips/hipsweb.git
+[submodule "hips"]
+	path = hips
+	url = https://gitlab.dengun.org/hips/hipsweb.git
