@@ -53,3 +53,9 @@
 .h-padded {
   padding: var(--padding-large);
 }
+
+.h-ellipsis {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

@@ -13,27 +13,31 @@
         integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.12.1/js/standalone/selectize.min.js"></script>
     <script defer src="https://friconix.com/cdn/friconix.js"></script>
-    <link href="../assets/fonts/css/all.css" rel="stylesheet"> <!--load all styles -->
+    <link href="../assets/fonts/css/all.css" rel="stylesheet">
+    <link href="css.css" rel="stylesheet">
     <script src="notify.min.js"></script>
     <script src="clipboard.min.js"></script>
+    <script src="js.js"></script>
     <script src="js1.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 </head>
 
-<body>
-    <div class="col padded">
-        <h1>Chart analisis from Google Sheet</h1>
-        <input type="text" id="userInput" placeholder="Any Google Sheet ID (url param: ?sheetId=)">
-        <select id="chartTypeSelect">
-            <option value="bar">Bar</option>
-            <option value="line">Line</option>
-            <option value="PNL">PNL</option>
-        </select>
-        <input type="number" id="minValueInput" value="0">
-        <input type="number" id="maxValueInput" value="2000">
-        <div id="data"></div>
-        <canvas id="myChart" width="1080" height="500"></canvas>
+<body class="style-trade">
+    <div class="container">
+        <div class="col padded">
+            <h1>Chart analisis from Google Sheet</h1>
+            <input type="text" id="userInput" placeholder="Any Google Sheet ID (url param: ?sheetId=)">
+            <select id="chartTypeSelect">
+                <option value="bar">Bar</option>
+                <option value="line">Line</option>
+                <option value="PNL">PNL</option>
+            </select>
+            <input type="number" id="minValueInput" value="0">
+            <input type="number" id="maxValueInput" value="2000">
+            <div id="data"></div>
+            <canvas id="myChart" width="1080" height="500"></canvas>
+        </div>
     </div>
 </body>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
