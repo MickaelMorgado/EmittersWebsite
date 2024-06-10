@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SciChart Example</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+    }
+  </style>
+</head>
+<body>
+
+<!-- HTML part with inline styles -->
+<div id="scichart-root" style="width: 100%; height: 100%; margin: auto;"></div>
+
+<!-- CDN link for SciChart library -->
+<script src="https://cdn.jsdelivr.net/npm/scichart/index.min.js"></script>
+
+<!-- SciChart inline script -->
+<script>
+  // Define the initSciChart function
+  function initSciChart() {
+    const {
+      SciChartSurface,
+      NumericAxis,
+      FastCandlestickRenderableSeries,
+      OhlcDataSeries,
+      SciChartJsNavyTheme,
+      NumberRange,
+      MouseWheelZoomModifier,
+      ZoomPanModifier,
+      ZoomExtentsModifier
+    } = SciChart;
+
+    // Tell SciChart where to get webassembly files from.
+    SciChartSurface.useWasmFromCDN();
+
+    // Initialize SciChartSurface. Don't forget to await!
+    SciChartSurface.create("scichart-root", {
+      theme: new SciChartJsNavyTheme(),
+      title: "OHLC Chart",
+      titleStyle: { fontSize: 22 }
+    }).then(({ sciChartSurface, wasmContext }) => {
+      // Create an XAxis and YAxis with growBy padding
+      const growBy = new NumberRange(0.1, 0.1);
+      sciChartSurface.xAxes.add(new NumericAxis(wasmContext, { axisTitle: "Time", growBy }));
+      sciChartSurface.yAxes.add(new NumericAxis(wasmContext, { axisTitle: "Price", growBy }));
+
+      // Axios code to fetch data
+      axios.get('https://api.binance.com/api/v3/klines?symbol=LTCBTC&interval=15m')
+        .then(response => {
+          const data = response.data;
+
+          // Extract OHLC data from the response
+          const ohlcData = data.map(item => {
+            /*https://developers.binance.com/docs/binance-spot-api-docs/rest-api#klinecandlestick-data*/
+            return {
+                time: item[0],
+                open: parseFloat(item[1]),
+                high: parseFloat(item[2]),
+                low: parseFloat(item[3]),
+                close: parseFloat(item[4])
+            }
+          });
+
+
+          // Create an OHLC data series
+          const ohlcDataSeries = new OhlcDataSeries(wasmContext, {
+            xValues: ohlcData.map(item => item.time),
+            openValues: ohlcData.map(item => item.open),
+            highValues: ohlcData.map(item => item.high),
+            lowValues: ohlcData.map(item => item.low),
+            closeValues: ohlcData.map(item => item.close)
+          });
+
+          // Create an OHLC series
+          sciChartSurface.renderableSeries.add(new FastCandlestickRenderableSeries(wasmContext, {
+            dataSeries: ohlcDataSeries,
+            strokeThickness: 1,
+          }));
+        })
+        .catch(error => {
+          console.error('Error fetching data:', error);
+        });
+      
+      // Add some interaction modifiers to show zooming and panning
+      sciChartSurface.chartModifiers.add(new MouseWheelZoomModifier(), new ZoomPanModifier(), new ZoomExtentsModifier());
+    }).catch(error => {
+      console.error('Error initializing SciChart:', error);
+    });
+  }
+  
+  // Call initSciChart after the window has finished loading
+  window.onload = initSciChart;
+</script>
+
+<!-- Axios library -->
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+</body>
+</html>
