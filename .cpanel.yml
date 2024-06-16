@@ -3,4 +3,4 @@ deployment:
   tasks:
     - export DEPLOYPATH=/home2/emittersgame/public_html/
     - /bin/cp -R * $DEPLOYPATH
-    - submodule: 'update'
+    # - submodule: 'update'
