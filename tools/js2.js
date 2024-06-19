@@ -1,11 +1,10 @@
 $(document).ready(function () {
-  var sumPool1 = 0;
-  var sumPool2 = 0;
   var greenProbability = 0.25; // Default value
   var reward = 2;
 
   var elements = {
     button: $('#run')[0],
+    stop: $('#stop')[0],
     die: $('#die')[0],
     pool1: $('#pool1')[0],
     pool2: $('#pool2')[0],
@@ -22,13 +21,15 @@ $(document).ready(function () {
     resume: $('#resume')[0],
   };
 
+  elements.stop.hidden = true;
+
   // Call the main function when the button is clicked
   elements.button.onclick = function () {
-    // Get the green probability value from the input field and convert it to a number
-    greenProbability = parseFloat(elements.probabilityInput.value);
-    reward = parseFloat(elements.rewardInput.value);
-    risk = parseFloat(elements.riskInput.value);
     mainFunction();
+  };
+
+  elements.stop.onclick = function () {
+    stopFunction();
   };
 
   // Function to generate a random number between +1 and -1 with a given probability
@@ -40,7 +41,18 @@ $(document).ready(function () {
 
   // Main function to be executed
   const mainFunction = () => {
-    setInterval(() => {
+    var sumPool1 = 0;
+    var sumPool2 = 0;
+
+    elements.button.hidden = true;
+    elements.stop.hidden = false;
+
+    myInterval = setInterval(() => {
+      // Get the green probability value from the input field and convert it to a number
+      greenProbability = parseFloat(elements.probabilityInput.value);
+      reward = parseFloat(elements.rewardInput.value);
+      risk = parseFloat(elements.riskInput.value);
+
       const randomDirection = Math.floor(Math.random() * 2); // Generate a random number: 0 or 1
       const rewardSign = randomPositiveOrNegative(greenProbability); // Determine reward sign based on greenProbability
       // const rewardValue = rewardSign * reward; // Multiply reward by the sign to get the final reward value
@@ -65,6 +77,12 @@ $(document).ready(function () {
 
       elements.result.innerHTML = sumPool1 - sumPool2;
     }, 50);
+  };
+
+  const stopFunction = () => {
+    elements.stop.hidden = true;
+    elements.button.hidden = false;
+    clearInterval(myInterval);
   };
 
   winLossClass = (value) => {

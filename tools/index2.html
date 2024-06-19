@@ -28,56 +28,52 @@
 
 <body class="style-trade">
     <div class="col padded">
-        <h1>Probability</h1>
-        <label for="green-probability">Winrate (0-1):</label>
-        <input type="text" id="green-probability" placeholder=".25" value=".25">
-        <label for="risk">Risk:</label>
-        <input type="number" id="risk" value="1.5">
-        <label for="reward">Reward:</label>
-        <input type="number" id="reward" value="2">
-        <button id="run" class="mybutton">run</button>
-
         <div class="myrow">
-            <div class="mycol">
-                <div class="myrow">
-                    <div><label for="reward">Outcome:</label></div>
-                    <div ><div id="die" class="box">1</div></div>
-                </div>
-            </div>
-            <div class="mycol">
-                <div class="myrow">
-                    <div ><label for="reward">Profit:</label></div>
-                    <div ><div id="pool1" class="pool"></div></div>
-                </div>
-            </div>
-            <div class="mycol">
-                <div class="myrow">
-                    <div><label for="reward">Loss:</label></div>
-                    <div>
-                        <div id="pool2" class="pool"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="mycol">
-                <div class="myrow">
-                    <div><label for="reward">Result: </label></div>
-                    <div>
-                        <div id="result"></div>
-                    </div>
-                </div>
+            <div class="col">
+                <h1>Probability</h1>
             </div>
         </div>
         <div class="myrow">
-            <div class="card">
-                <div class="card-body">
-                    <div>date | win | loss | PNL | number | screenshot | note | session | analisis</div>
-                    <div>
-                        <script class="powered" type="text/javascript" src="https://widgets.myfxbook.com/scripts/fxOutlook.js?type=0&symbols=,1,2"></script>
+            <div class="col">
+                <label for="green-probability">Winrate (0-1):</label>
+                <input type="number" id="green-probability" placeholder="0.25" value="0.25" step="0.01" min="0" max="1">
+                <label for="risk">Risk:</label>
+                <input type="number" id="risk" value="1.5" step="0.1" min="0">
+                <label for="reward">Reward:</label>
+                <input type="number" id="reward" value="2" step="0.1" min="0">
+                <button id="run" class="mybutton">run</button>
+                <button id="stop" class="mybutton">stop</button>
+            </div>
+        </div>
+        <div class="col">
+            <div class="myrow">
+                <div class="mycol">
+                    <div class="myrow">
+                        <div><label for="reward">Outcome:</label></div>
+                        <div ><div id="die" class="box">1</div></div>
                     </div>
-                    <div style="font-size: 10px">
-                        <a href="https://www.myfxbook.com" title="" class="myfxbookLink" target="_self" rel="noopener">Powered by Myfxbook.com</a>
+                </div>
+                <div class="mycol">
+                    <div class="myrow">
+                        <div ><label for="reward">Profit:</label></div>
+                        <div ><div id="pool1" class="pool"></div></div>
                     </div>
-                    <script type="text/javascript">showOutlookWidget()</script>
+                </div>
+                <div class="mycol">
+                    <div class="myrow">
+                        <div><label for="reward">Loss:</label></div>
+                        <div>
+                            <div id="pool2" class="pool"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mycol">
+                    <div class="myrow">
+                        <div><label for="reward">Result: </label></div>
+                        <div>
+                            <div id="result"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
