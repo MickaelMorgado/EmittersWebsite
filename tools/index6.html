@@ -3,36 +3,106 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="../assets/css.css">
+  <link rel="stylesheet" href="../assets/reusables.css">
   <title>SciChart Example</title>
   <style>
     html, body {
       margin: 0;
       padding: 0;
     }
+
+    #upload-section {
+      position: fixed;
+      padding: 5px;
+      width: 100%;
+      z-index: 1;
+      background: rgba(0, 0, 0, 0.5);
+      height: 80px;
+      overflow: hidden;
+      transition: all .5s ease;
+    }
+
+    #upload-section:hover {
+      padding: 20px;
+      height: 180px;
+    }
+
+    #upload-section > .h-flex > div {
+      transition: all .5s ease;
+    }
+
+    #upload-section > .h-flex > div:nth-child(1),
+    #upload-section > .h-flex > div:nth-child(3) {
+      width: 0%;
+      opacity: 0;
+    }
+
+    #upload-section:hover > .h-flex > div {
+      width: 33%;
+      opacity: 1;
+    }
   </style>
 </head>
-<body>
+<body class="h-style">
+
+    <div id="upload-section" class="h-padded">
+      <div class="h-flex">
+        <div>
+          <h2>Upload and Read a CSV File</h2>
+          <p>Export MT5 bars by using CTRL+U then go to Bars tab, filter the range and export, then upload it here: </p>
+          <p>More info: <a target="_blank" href="https://myforex.com/en/mt5guide/export-historicaldata.html">Export Historical Data</a></p>
+        </div>
+        <div>
+          <input type="file" id="csvFileInput" accept=".csv">
+        </div>
+        <div><textarea id="csvContent" rows="10" style="width: 100%;"></textarea></div>
+      </div>      
+    </div>
 
 <!-- HTML part with inline styles -->
-<div id="scichart-root" style="width: 100%; height: 100%; margin: auto;"></div>
+<div id="scichart-root" style="width: 100vw; height: 100vh; margin: auto;"></div>
 
 <!-- CDN link for SciChart library -->
 <script src="https://cdn.jsdelivr.net/npm/scichart/index.min.js"></script>
 
 <!-- SciChart inline script -->
 <script>
+
+  document.getElementById('csvFileInput').addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const content = e.target.result;
+
+          document.getElementById('csvContent').value = content;
+
+          initSciChart(content);
+          document.getElementById('scichart-root').style.display = 'block';
+        };
+        reader.readAsText(file);
+    } else {
+        alert("No file selected");
+    }
+  });
+
   // Define the initSciChart function
-  function initSciChart() {
+  function initSciChart(data) {
     const {
       SciChartSurface,
       NumericAxis,
       FastCandlestickRenderableSeries,
       OhlcDataSeries,
       SciChartJsNavyTheme,
+      SciChartJSDarkv2Theme,
       NumberRange,
       MouseWheelZoomModifier,
       ZoomPanModifier,
-      ZoomExtentsModifier
+      ZoomExtentsModifier,
+      YAxisDragModifier,
+      XAxisDragModifier,
+      EDragMode
     } = SciChart;
 
     // Tell SciChart where to get webassembly files from.
@@ -40,7 +110,7 @@
 
     // Initialize SciChartSurface. Don't forget to await!
     SciChartSurface.create("scichart-root", {
-      theme: new SciChartJsNavyTheme(),
+      theme: new SciChartJSDarkv2Theme(),
       title: "OHLC Chart",
       titleStyle: { fontSize: 22 }
     }).then(({ sciChartSurface, wasmContext }) => {
@@ -48,53 +118,97 @@
       const growBy = new NumberRange(0.1, 0.1);
       sciChartSurface.xAxes.add(new NumericAxis(wasmContext, { axisTitle: "Time", growBy }));
       sciChartSurface.yAxes.add(new NumericAxis(wasmContext, { axisTitle: "Price", growBy }));
+      
+      const buildChartData = (data) => {
+        // Extract OHLC data from the response
 
-      // Axios code to fetch data
-      axios.get('https://api.binance.com/api/v3/klines?symbol=LTCBTC&interval=15m')
-        .then(response => {
-          const data = response.data;
+        // Parse CSV content
+        const rows = data.trim().split('\r\n'); // Split by lines
+        const header = rows[0].split('\t'); // Extract headers
+        const rdata = rows.slice(1).map(row => row.split('\t')); // Split rows into fields
 
-          // Extract OHLC data from the response
-          const ohlcData = data.map(item => {
-            /*https://developers.binance.com/docs/binance-spot-api-docs/rest-api#klinecandlestick-data*/
-            return {
-                time: item[0],
-                open: parseFloat(item[1]),
-                high: parseFloat(item[2]),
-                low: parseFloat(item[3]),
-                close: parseFloat(item[4])
-            }
-          });
-
-
-          // Create an OHLC data series
-          const ohlcDataSeries = new OhlcDataSeries(wasmContext, {
-            xValues: ohlcData.map(item => item.time),
-            openValues: ohlcData.map(item => item.open),
-            highValues: ohlcData.map(item => item.high),
-            lowValues: ohlcData.map(item => item.low),
-            closeValues: ohlcData.map(item => item.close)
-          });
-
-          // Create an OHLC series
-          sciChartSurface.renderableSeries.add(new FastCandlestickRenderableSeries(wasmContext, {
-            dataSeries: ohlcDataSeries,
-            strokeThickness: 1,
-          }));
-        })
-        .catch(error => {
-          console.error('Error fetching data:', error);
+        const ohlcData = rdata.map(row => {
+          /*https://developers.binance.com/docs/binance-spot-api-docs/rest-api#klinecandlestick-data*/
+          /*return {
+              time: row[0],
+              open: parseFloat(row[1]),
+              high: parseFloat(row[2]),
+              low: parseFloat(row[3]),
+              close: parseFloat(row[4])
+          }*/
+          
+          /* MT5 exported CSV format: */
+          return {
+            time: `${row[0]} ${row[1]}`,
+            open: parseFloat(row[2]),
+            high: parseFloat(row[3]),
+            low: parseFloat(row[4]),
+            close: parseFloat(row[5])
+          }
         });
+
+        // Create an OHLC data series
+        const ohlcDataSeries = new OhlcDataSeries(wasmContext, {
+          /*xValues: ohlcData.map(item => {
+            new Date(`${item.time.replace(/\./g, '-').split(' ')[0]}T${item.time.split(' ')[1]}`).getTime();
+          } ),
+          */
+          xValues: ohlcData.map((item, index) => index),
+          openValues: ohlcData.map(item => item.open),
+          highValues: ohlcData.map(item => item.high),
+          lowValues: ohlcData.map(item => item.low),
+          closeValues: ohlcData.map(item => item.close)
+        });
+
+        // Create an OHLC series
+        sciChartSurface.renderableSeries.add(new FastCandlestickRenderableSeries(wasmContext, {
+          dataSeries: ohlcDataSeries,
+          strokeThickness: 1,
+        }));
+
+        sciChartSurface
+          .chartModifiers
+            .add(
+              new MouseWheelZoomModifier(),
+              new ZoomPanModifier(),
+              new ZoomExtentsModifier(),
+              new YAxisDragModifier({
+                dragMode: EDragMode.Scaling,
+              }),
+              new XAxisDragModifier({
+                dragMode: EDragMode.Scaling,
+              }),
+            );
+      }
+
+      buildChartData(data);
+      // Axios code to fetch data
+      /*
+        axios.get('https://api.binance.com/api/v3/klines?symbol=LTCBTC&interval=1m')
+          .then(response => {
+            const data = response.data;
+
+            // buildChartData(data);
+
+          })
+          .catch(error => {
+            console.error('Error fetching data:', error);
+          });
+      */
       
       // Add some interaction modifiers to show zooming and panning
-      sciChartSurface.chartModifiers.add(new MouseWheelZoomModifier(), new ZoomPanModifier(), new ZoomExtentsModifier());
+      // sciChartSurface.chartModifiers.add(new MouseWheelZoomModifier(), new ZoomPanModifier(), new ZoomExtentsModifier());
     }).catch(error => {
       console.error('Error initializing SciChart:', error);
     });
+
   }
+
+  // Add some interaction modifiers to show zooming and panning
+  // sciChartSurface.chartModifiers.add(new MouseWheelZoomModifier(), new ZoomPanModifier(), new ZoomExtentsModifier());
   
   // Call initSciChart after the window has finished loading
-  window.onload = initSciChart;
+  // window.onload = initSciChart;
 </script>
 
 <!-- Axios library -->
