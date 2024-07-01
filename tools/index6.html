@@ -110,10 +110,63 @@
 
     // Initialize SciChartSurface. Don't forget to await!
     SciChartSurface.create("scichart-root", {
-      theme: new SciChartJSDarkv2Theme(),
+      theme: new SciChartJsNavyTheme(),
       title: "OHLC Chart",
       titleStyle: { fontSize: 22 }
     }).then(({ sciChartSurface, wasmContext }) => {
+
+      // Create a custom theme by implementing all the properties from IThemeProvider
+      const customTheme = {
+        axisBorder: "Transparent",
+        axisTitleColor: "#111",
+        annotationsGripsBackroundBrush: "white",
+        annotationsGripsBorderBrush: "white",
+        axis3DBandsFill: "#1F3D6833",
+        axisBandsFill: "#1F3D6833",
+        axisPlaneBackgroundFill: "Transparent",
+        columnFillBrush: "white",
+        columnLineColor: "Transparent",
+        cursorLineBrush: "#111",
+        downBandSeriesFillColor: "#52CC5490",
+        downBandSeriesLineColor: "#E26565FF",
+        downBodyBrush: "#F00",
+        downWickColor: "#F00",
+        gridBackgroundBrush: "white",
+        gridBorderBrush: "white",
+        labelForegroundBrush: "#EEEEEE",
+        legendBackgroundBrush: "#1D2C35",
+        lineSeriesColor: "white",
+        loadingAnimationBackground: "#111",
+        loadingAnimationForeground: "#111",
+        majorGridLineBrush: "#222",
+        minorGridLineBrush: "#333",
+        mountainAreaBrush: "white",
+        mountainLineColor: "white",
+        overviewFillBrush: "white",
+        planeBorderColor: "white",
+        rolloverLineBrush: "#FD9F2533",
+        rubberBandFillBrush: "#99999933",
+        rubberBandStrokeBrush: "#99999977",
+        sciChartBackground: "#111",
+        scrollbarBackgroundBrush: "white",
+        scrollbarBorderBrush: "white",
+        scrollbarGripsBackgroundBrush: "white",
+        scrollbarViewportBackgroundBrush: "white",
+        scrollbarViewportBorderBrush: "white",
+        shadowEffectColor: "white",
+        textAnnotationBackground: "#333",
+        textAnnotationForeground: "#EEEEEE",
+        tickTextBrush: "#333",
+        upBandSeriesFillColor: "white",
+        upBandSeriesLineColor: "white",
+        upBodyBrush: "#FFF",
+        upWickColor: "#FFF"
+      }
+
+      // customTheme = new SciChartJsNavyTheme();
+      
+      sciChartSurface.applyTheme(customTheme);
+
       // Create an XAxis and YAxis with growBy padding
       const growBy = new NumberRange(0.1, 0.1);
       sciChartSurface.xAxes.add(new NumericAxis(wasmContext, { axisTitle: "Time", growBy }));
