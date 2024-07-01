@@ -149,7 +149,7 @@ const spawnModalAndWaitForInput = async (
 };
 
 const baseTodoTitle = `EMITTERS progress`;
-const todoTitleVersion = `v2.9`;
+const todoTitleVersion = `v2.9.20`;
 const baseDescription = `Currently working and completing this todo list:\n`;
 const getTodoTitle = `${baseTodoTitle} ${todoTitleVersion}`;
 const replyPrefix = `${getTodoTitle} update:`;
