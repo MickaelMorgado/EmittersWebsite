@@ -19,10 +19,14 @@
     "@theatre/r3f": "^0.5.1",
     "@theatre/studio": "^0.5.1",
     "@types/gsap": "^3.0.0",
+    "axios": "^1.7.2",
     "gsap": "^3.12.5",
     "react": "^18.2.0",
+    "react-apexcharts": "^1.4.1",
     "react-dom": "^18.2.0",
-    "three": "^0.164.1"
+    "scichart": "^3.3.592",
+    "three": "^0.164.1",
+    "vite-plugin-wasm": "^3.3.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.66",
