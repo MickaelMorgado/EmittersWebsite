@@ -14,6 +14,10 @@
   --bold: 700;
 }
 
+.h-flex {
+  display: flex;
+}
+
 .h-card {
   border-radius: var(--border);
   padding: var(--padding-large);
@@ -52,4 +56,10 @@
 
 .h-padded {
   padding: var(--padding-large);
+}
+
+.h-ellipsis {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
