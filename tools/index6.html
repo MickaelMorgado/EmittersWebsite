@@ -24,22 +24,29 @@
     }
 
     #upload-section:hover {
-      padding: 20px;
       height: 180px;
+    }
+
+    #upload-section > .h-flex {
+      gap: 30px;
     }
 
     #upload-section > .h-flex > div {
       transition: all .5s ease;
     }
 
-    #upload-section > .h-flex > div:nth-child(1),
+    #upload-section > .h-flex > div:nth-child(2),
     #upload-section > .h-flex > div:nth-child(3) {
-      width: 0%;
+      //width: 0%;
       opacity: 0;
     }
 
+    #upload-section > .h-flex > div:nth-child(3) {
+      width: 500px;
+    }
+
     #upload-section:hover > .h-flex > div {
-      width: 33%;
+      //width: 33%;
       opacity: 1;
     }
   </style>
@@ -49,12 +56,12 @@
     <div id="upload-section" class="h-padded">
       <div class="h-flex">
         <div>
+          <input type="file" id="csvFileInput" accept=".csv">
+        </div>
+        <div>
           <h2>Upload and Read a CSV File</h2>
           <p>Export MT5 bars by using CTRL+U then go to Bars tab, filter the range and export, then upload it here: </p>
           <p>More info: <a target="_blank" href="https://myforex.com/en/mt5guide/export-historicaldata.html">Export Historical Data</a></p>
-        </div>
-        <div>
-          <input type="file" id="csvFileInput" accept=".csv">
         </div>
         <div><textarea id="csvContent" rows="10" style="width: 100%;"></textarea></div>
       </div>      
@@ -102,6 +109,8 @@
       ZoomExtentsModifier,
       YAxisDragModifier,
       XAxisDragModifier,
+      DateTimeNumericAxis,
+      SmartDateLabelProvider,
       EDragMode
     } = SciChart;
 
@@ -168,11 +177,12 @@
       sciChartSurface.applyTheme(customTheme);
 
       // Create an XAxis and YAxis with growBy padding
-      const growBy = new NumberRange(0.1, 0.1);
-      sciChartSurface.xAxes.add(new NumericAxis(wasmContext, { axisTitle: "Time", growBy }));
-      sciChartSurface.yAxes.add(new NumericAxis(wasmContext, { axisTitle: "Price", growBy }));
+      // sciChartSurface.xAxes.add(new NumericAxis(wasmContext, { axisTitle: "Time", growBy }));
+      // sciChartSurface.yAxes.add(new NumericAxis(wasmContext, { axisTitle: "Price", growBy }));
       
       const buildChartData = (data) => {
+
+        const growBy = new NumberRange(0.1, 0.1);
         // Extract OHLC data from the response
 
         // Parse CSV content
@@ -200,18 +210,32 @@
           }
         });
 
+        const minDate = new Date(ohlcData[0].time);
+        const maxDate = new Date(ohlcData[ohlcData.length - 1].time);
+
         // Create an OHLC data series
         const ohlcDataSeries = new OhlcDataSeries(wasmContext, {
           /*xValues: ohlcData.map(item => {
             new Date(`${item.time.replace(/\./g, '-').split(' ')[0]}T${item.time.split(' ')[1]}`).getTime();
           } ),
           */
-          xValues: ohlcData.map((item, index) => index),
+          xValues: ohlcData.map((item, index) => {
+            let startDate = new Date(item.time).getTime() / 1000;
+            let adjustedStartDate = startDate - 3600 * 1; // offset data to match -1h (matching tradingview time)
+            return adjustedStartDate;
+          }),
           openValues: ohlcData.map(item => item.open),
           highValues: ohlcData.map(item => item.high),
           lowValues: ohlcData.map(item => item.low),
           closeValues: ohlcData.map(item => item.close)
         });
+        
+        sciChartSurface.xAxes.add(new DateTimeNumericAxis(wasmContext, {
+          //labelProvider: new SmartDateLabelProvider(),
+          //visibleRange: new NumberRange(minDate.getTime() / 1000, maxDate.getTime() / 1000),
+          growBy
+        }));
+        sciChartSurface.yAxes.add(new NumericAxis(wasmContext, { growBy }));
 
         // Create an OHLC series
         sciChartSurface.renderableSeries.add(new FastCandlestickRenderableSeries(wasmContext, {
