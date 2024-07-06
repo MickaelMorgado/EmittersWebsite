@@ -111,7 +111,8 @@
       XAxisDragModifier,
       DateTimeNumericAxis,
       SmartDateLabelProvider,
-      EDragMode
+      EDragMode,
+      CursorModifier
     } = SciChart;
 
     // Tell SciChart where to get webassembly files from.
@@ -235,12 +236,34 @@
           //visibleRange: new NumberRange(minDate.getTime() / 1000, maxDate.getTime() / 1000),
           growBy
         }));
-        sciChartSurface.yAxes.add(new NumericAxis(wasmContext, { growBy }));
+        sciChartSurface.yAxes.add(new NumericAxis(wasmContext, {
+          labelPrecision: 5,
+          growBy
+        }));
 
         // Create an OHLC series
         sciChartSurface.renderableSeries.add(new FastCandlestickRenderableSeries(wasmContext, {
           dataSeries: ohlcDataSeries,
           strokeThickness: 1,
+        }));
+
+        // Add CursorModifier for crosshair
+        sciChartSurface.chartModifiers.add(new CursorModifier({
+          // Optional properties to configure what parts are shown
+          // showTooltip: true,
+          showAxisLabels: true,
+          showXLine: true,
+          showYLine: true,
+          // How close to a datapoint to show the tooltip? 10 = 10 pixels. 0 means always
+          // hitTestRadius: 10,
+          // Optional properties to configure the axis labels
+          axisLabelFill: "#555",
+          axisLabelStroke: "#ccc",
+          // Optional properties to configure line and tooltip style
+          crosshairStroke: "#555",
+          crosshairStrokeThickness: 1,
+          tooltipContainerBackground: "#000",
+          // tooltipTextStroke: "#ff6600",
         }));
 
         sciChartSurface
