@@ -110,7 +110,7 @@
       YAxisDragModifier,
       XAxisDragModifier,
       DateTimeNumericAxis,
-      SmartDateLabelProvider,
+      DateLabelProvider,
       EDragMode,
       CursorModifier
     } = SciChart;
@@ -211,6 +211,7 @@
           }
         });
 
+        const decimals = 5;
         const minDate = new Date(ohlcData[0].time);
         const maxDate = new Date(ohlcData[ohlcData.length - 1].time);
 
@@ -232,12 +233,12 @@
         });
         
         sciChartSurface.xAxes.add(new DateTimeNumericAxis(wasmContext, {
-          //labelProvider: new SmartDateLabelProvider(),
+          XAxis: new DateLabelProvider({ format: "HH:mm:ss" }),
           //visibleRange: new NumberRange(minDate.getTime() / 1000, maxDate.getTime() / 1000),
           growBy
         }));
         sciChartSurface.yAxes.add(new NumericAxis(wasmContext, {
-          labelPrecision: 5,
+          labelPrecision: decimals,
           growBy
         }));
 
