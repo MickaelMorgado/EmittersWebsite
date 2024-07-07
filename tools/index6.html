@@ -5,8 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="../assets/css.css">
   <link rel="stylesheet" href="../assets/reusables.css">
-  <title>SciChart Example</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <title>Back Testing</title>
   <style>
+    :root {
+      --main-width: 350px;
+    }
+
     html, body {
       margin: 0;
       padding: 0;
@@ -14,21 +19,25 @@
 
     #upload-section {
       position: fixed;
-      padding: 5px;
-      width: 100%;
+      height: 100%;
       z-index: 1;
       background: rgba(0, 0, 0, 0.5);
-      height: 80px;
+      width: var(--main-width);
       overflow: hidden;
       transition: all .5s ease;
+      overflow-y: auto;
+    }
+
+    #upload-section .h-flex {
+      flex-direction: column;
     }
 
     #upload-section:hover {
-      height: 180px;
+      //height: 180px;
     }
 
     #upload-section > .h-flex {
-      gap: 30px;
+      gap: 10px;
     }
 
     #upload-section > .h-flex > div {
@@ -38,43 +47,66 @@
     #upload-section > .h-flex > div:nth-child(2),
     #upload-section > .h-flex > div:nth-child(3) {
       //width: 0%;
-      opacity: 0;
-    }
-
-    #upload-section > .h-flex > div:nth-child(3) {
-      width: 500px;
+      opacity: 1;
     }
 
     #upload-section:hover > .h-flex > div {
       //width: 33%;
-      opacity: 1;
+      //opacity: 1;
+    }
+
+    #scichart-root {
+      margin-left: var(--main-width);
     }
   </style>
 </head>
 <body class="h-style">
 
-    <div id="upload-section" class="h-padded">
-      <div class="h-flex">
-        <div>
-          <input type="file" id="csvFileInput" accept=".csv">
+    <div id="upload-section">
+      <div class="h-padded">
+        <div class="h-flex">
+          <div>
+            <h3>Upload and Read a CSV File</h3>
+            <p>Export MT5 bars by using CTRL+U then go to Bars tab, filter the range and export, then upload it here: </p>
+            <p>More info: <a target="_blank" href="https://myforex.com/en/mt5guide/export-historicaldata.html">Export Historical Data</a></p>
+          </div>
+          <hr class="h-hr">
+          <div>
+            <input type="file" id="csvFileInput" accept=".csv">
+          </div>
+          <hr class="h-hr">
+          <label for="backtesting-hour">Backtesting Hour</label>
+          <input id="backtesting-hour" type="text" value="08:00:00">
+          <hr class="h-hr">
+          <!-- Added input type number with default values -->
+          <input id="SLPips" type="number" value="0.0001">
+          <input id="TPPips" type="number" value="0.0003">
+          <div class="row inline">
+            <button class="mybutton" data-anotation="RRBuy" title="RR Tool" disabled>
+              <i class="fas fa-ruler-combined"></i> Buy
+            </button>
+            <button class="mybutton" data-anotation="RRSell" title="RR Tool" disabled>
+              <i class="fas fa-ruler-combined"></i> Sell
+            </button>
+          </div>
+          <hr class="h-hr">
+          <div><textarea id="csvContent" rows="10" style="width: 100%;" class="h-field"></textarea></div>
         </div>
-        <div>
-          <h2>Upload and Read a CSV File</h2>
-          <p>Export MT5 bars by using CTRL+U then go to Bars tab, filter the range and export, then upload it here: </p>
-          <p>More info: <a target="_blank" href="https://myforex.com/en/mt5guide/export-historicaldata.html">Export Historical Data</a></p>
-        </div>
-        <div><textarea id="csvContent" rows="10" style="width: 100%;"></textarea></div>
-      </div>      
+      </div>
     </div>
 
 <!-- HTML part with inline styles -->
-<div id="scichart-root" style="width: 100vw; height: 100vh; margin: auto;"></div>
+<div id="scichart-root" style="height: 100vh;"></div>
 
 <!-- CDN link for SciChart library -->
 <script src="https://cdn.jsdelivr.net/npm/scichart/index.min.js"></script>
 
 <!-- SciChart inline script -->
 <script>
+
+  const decimals = 5;
+  let slSize = parseFloat(document.getElementById('SLPips').value);
+  let tpSize = parseFloat(document.getElementById('TPPips').value);
 
   document.getElementById('csvFileInput').addEventListener('change', function(event) {
     const file = event.target.files[0];
@@ -112,7 +144,15 @@
       DateTimeNumericAxis,
       DateLabelProvider,
       EDragMode,
-      CursorModifier
+      CursorModifier,
+      BoxAnnotation,
+      ECoordinateMode,
+      getCanvasCoordinatesFromEvent,
+      VerticalLineAnnotation,
+      SolidColorBrush,
+      Colors,
+      ELabelPlacement,
+      EAnnotationLayer,
     } = SciChart;
 
     // Tell SciChart where to get webassembly files from.
@@ -121,8 +161,6 @@
     // Initialize SciChartSurface. Don't forget to await!
     SciChartSurface.create("scichart-root", {
       theme: new SciChartJsNavyTheme(),
-      title: "OHLC Chart",
-      titleStyle: { fontSize: 22 }
     }).then(({ sciChartSurface, wasmContext }) => {
 
       // Create a custom theme by implementing all the properties from IThemeProvider
@@ -211,19 +249,32 @@
           }
         });
 
-        const decimals = 5;
         const minDate = new Date(ohlcData[0].time);
         const maxDate = new Date(ohlcData[ohlcData.length - 1].time);
 
         // Create an OHLC data series
         const ohlcDataSeries = new OhlcDataSeries(wasmContext, {
-          /*xValues: ohlcData.map(item => {
-            new Date(`${item.time.replace(/\./g, '-').split(' ')[0]}T${item.time.split(' ')[1]}`).getTime();
-          } ),
-          */
           xValues: ohlcData.map((item, index) => {
             let startDate = new Date(item.time).getTime() / 1000;
             let adjustedStartDate = startDate - 3600 * 1; // offset data to match -1h (matching tradingview time)
+            let backTestTime = startDate + 3600;
+                        
+            var time = item.time.split(' ')[1];
+            var selectedHour = document.getElementById('backtesting-hour').value;
+            if (time == selectedHour) {
+              // Display Backtesting dates:
+              console.log(`BackTesting: ${backTestTime}`);
+              sciChartSurface.annotations.add(new VerticalLineAnnotation({
+                stroke: "#999",
+                axisLabelFill: "#999",
+                strokeThickness: 1,
+                x1: backTestTime,
+                showLabel: true,
+                labelPlacement: ELabelPlacement.TopLeft,
+                labelValue: "Backtest",
+              }));
+            }
+
             return adjustedStartDate;
           }),
           openValues: ohlcData.map(item => item.open),
@@ -251,7 +302,7 @@
         // Add CursorModifier for crosshair
         sciChartSurface.chartModifiers.add(new CursorModifier({
           // Optional properties to configure what parts are shown
-          // showTooltip: true,
+          showTooltip: false,
           showAxisLabels: true,
           showXLine: true,
           showYLine: true,
@@ -296,7 +347,184 @@
             console.error('Error fetching data:', error);
           });
       */
+
+      sciChartSurface.domCanvas2D.addEventListener('click', (event) => {
+        //const coords = getCanvasCoordinatesFromEvent(sciChartSurface.domCanvas2D, event);
+        //console.log(coords);
+      });
       
+      // Load Tools:
+      document.querySelectorAll('[data-anotation]').forEach(button => {
+        button.removeAttribute('disabled');
+        button.addEventListener("click", function() {
+          let isListeningForToolActions = true;
+          var anotationType = this.dataset.anotation;
+
+          switch(anotationType) {
+            case 'RRBuy':
+              const rrTool = () => {
+                let entryYValue = null;
+
+                sciChartSurface.domCanvas2D.addEventListener('click', (event) => {
+                  if (!isListeningForToolActions) {
+                    return;
+                  }
+
+                  const rect = sciChartSurface.domCanvas2D.getBoundingClientRect();
+                  const mouseX = event.clientX - rect.left;
+                  const mouseY = event.clientY - rect.top - 10; // -10 to offset the canvas position
+
+                  const xCoordCalc = sciChartSurface.xAxes.get(0).getCurrentCoordinateCalculator();
+                  const yCoordCalc = sciChartSurface.yAxes.get(0).getCurrentCoordinateCalculator();
+                  
+                  const xGraphValue = parseFloat(xCoordCalc.getDataValue(mouseX).toFixed(0));
+                  const yGraphValue = parseFloat(yCoordCalc.getDataValue(mouseY).toFixed(decimals));
+
+                  console.log(`x: ${xGraphValue} y: ${yGraphValue}`);
+
+                  /*
+                  if (isFirstClick) {
+                    firstXValue = xDataValue;
+                    entryYValue = yDataValue;
+                    console.log(`x: ${firstXValue} y: ${entryYValue}`);
+                    isFirstClick = false;
+                  } else {
+                    var reward = tpSize;
+                    var a = sciChartSurface.yAxes.items[0];
+                    var minVal = entryYValue; // a.coordCalcCache.visibleMin; // a.visibleRangeProperty.min
+                    var maxVal = yDataValue; // a.coordCalcCache.visibleMax;// a.visibleRangeProperty.max
+
+                    // console.log(a)
+                    // console.log(a.coordCalcCache.visibleMin)
+                    // console.log(`SL area ${firstXValue}, ${xDataValue}, ${minVal}, ${maxVal}, TP area ${maxVal}, ${maxVal + reward}`);
+                    console.log(`x: ${firstXValue} y: ${entryYValue}`)
+
+                    // visibleRangeProperty I think this is used to zoom on the graph to that section
+                  */
+
+                    const RRToolStyles = {
+                      strokeThickness: 0,
+                      xCoordinateMode: ECoordinateMode.DataValue,
+                      yCoordinateMode: ECoordinateMode.DataValue,
+                      annotationLayer: EAnnotationLayer.AboveChart,
+                      opacity: '15',
+                    };
+                    sciChartSurface.annotations.add(
+                      new BoxAnnotation({
+                        ...RRToolStyles,
+                        fill: `#FF0000${RRToolStyles.opacity}`,
+                        x1: xGraphValue - 50, //firstXValue,
+                        x2: xGraphValue + 300, //xDataValue,
+                        y1: yGraphValue,
+                        y2: yGraphValue - slSize,
+                      })
+                    );
+                    sciChartSurface.annotations.add(
+                      new BoxAnnotation({
+                        ...RRToolStyles,
+                        fill: `#00FF00${RRToolStyles.opacity}`,
+                        x1: xGraphValue - 50, //firstXValue,
+                        x2: xGraphValue + 300, //xDataValue,
+                        y1: yGraphValue,
+                        y2: yGraphValue + tpSize,
+                      })
+                    );
+
+                    isListeningForToolActions = false;
+                  /*
+                    sciChartSurface.domCanvas2D.removeEventListener('click', rrTool);
+
+                    isFirstClick = true; // Reset for the next pair of clicks
+                  }*/
+                });
+              }
+              rrTool();
+              break;
+            case 'RRSell':
+              const rrTool2 = () => {
+                let entryYValue = null;
+
+                sciChartSurface.domCanvas2D.addEventListener('click', (event) => {
+                  if (!isListeningForToolActions) {
+                    return;
+                  }
+
+                  const rect = sciChartSurface.domCanvas2D.getBoundingClientRect();
+                  const mouseX = event.clientX - rect.left;
+                  const mouseY = event.clientY - rect.top - 10; // -10 to offset the canvas position
+
+                  const xCoordCalc = sciChartSurface.xAxes.get(0).getCurrentCoordinateCalculator();
+                  const yCoordCalc = sciChartSurface.yAxes.get(0).getCurrentCoordinateCalculator();
+                  
+                  const xGraphValue = parseFloat(xCoordCalc.getDataValue(mouseX).toFixed(0));
+                  const yGraphValue = parseFloat(yCoordCalc.getDataValue(mouseY).toFixed(decimals));
+
+                  console.log(`x: ${xGraphValue} y: ${yGraphValue}`);
+
+                  /*
+                  if (isFirstClick) {
+                    firstXValue = xDataValue;
+                    entryYValue = yDataValue;
+                    console.log(`x: ${firstXValue} y: ${entryYValue}`);
+                    isFirstClick = false;
+                  } else {
+                    var reward = tpSize;
+                    var a = sciChartSurface.yAxes.items[0];
+                    var minVal = entryYValue; // a.coordCalcCache.visibleMin; // a.visibleRangeProperty.min
+                    var maxVal = yDataValue; // a.coordCalcCache.visibleMax;// a.visibleRangeProperty.max
+
+                    // console.log(a)
+                    // console.log(a.coordCalcCache.visibleMin)
+                    // console.log(`SL area ${firstXValue}, ${xDataValue}, ${minVal}, ${maxVal}, TP area ${maxVal}, ${maxVal + reward}`);
+                    console.log(`x: ${firstXValue} y: ${entryYValue}`)
+
+                    // visibleRangeProperty I think this is used to zoom on the graph to that section
+                  */
+
+                    const RRToolStyles = {
+                      strokeThickness: 0,
+                      xCoordinateMode: ECoordinateMode.DataValue,
+                      yCoordinateMode: ECoordinateMode.DataValue,
+                      annotationLayer: EAnnotationLayer.AboveChart,
+                      opacity: '15',
+                    };
+                    sciChartSurface.annotations.add(
+                      new BoxAnnotation({
+                        ...RRToolStyles,
+                        fill: `#FF0000${RRToolStyles.opacity}`,
+                        x1: xGraphValue - 50, //firstXValue,
+                        x2: xGraphValue + 300, //xDataValue,
+                        y1: yGraphValue,
+                        y2: yGraphValue + slSize,
+                      })
+                    );
+                    sciChartSurface.annotations.add(
+                      new BoxAnnotation({
+                        ...RRToolStyles,
+                        fill: `#00FF00${RRToolStyles.opacity}`,
+                        x1: xGraphValue - 50, //firstXValue,
+                        x2: xGraphValue + 300, //xDataValue,
+                        y1: yGraphValue,
+                        y2: yGraphValue - tpSize,
+                      })
+                    );
+
+                    isListeningForToolActions = false;
+                  /*
+                    sciChartSurface.domCanvas2D.removeEventListener('click', rrTool);
+
+                    isFirstClick = true; // Reset for the next pair of clicks
+                  }*/
+                });
+              }
+              rrTool2();
+              break;
+            default:
+              alert('No tool selected');
+          }
+        });
+      });
+
       // Add some interaction modifiers to show zooming and panning
       // sciChartSurface.chartModifiers.add(new MouseWheelZoomModifier(), new ZoomPanModifier(), new ZoomExtentsModifier());
     }).catch(error => {
