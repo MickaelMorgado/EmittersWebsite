@@ -14,6 +14,23 @@
   --bold: 700;
 }
 
+input,
+select,
+.mybutton {
+  background: black;
+  margin: 0;
+  margin-bottom: 15px;
+  color: white;
+  padding: 10px;
+  border: 2px solid #222;
+  border-radius: 3px;
+}
+
+.h-col {
+  padding-left: var(--padding);
+  padding-right: var(--padding);
+}
+
 .h-flex {
   display: flex;
 }
@@ -44,6 +61,13 @@
   color: var(--dark1);
 }
 
+.h-field {
+  border-radius: var(--border);
+  padding: var(--border) var(--padding-medium);
+  background-color: var(--dark3);
+  color: var(--grey2);
+}
+
 .h-btn-primary {
   background-color: var(--primary);
   color: var(--dark1);
@@ -62,4 +86,10 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+hr.h-hr {
+  width: 90%;
+  border-color: #555;
+  margin-bottom: var(--padding-large);
 }
