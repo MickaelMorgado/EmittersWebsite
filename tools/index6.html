@@ -388,6 +388,21 @@
         button.addEventListener("click", function() {
           let isListeningForToolActions = true;
           var anotationType = this.dataset.anotation;
+          const rect = sciChartSurface.domCanvas2D.getBoundingClientRect();
+          const RRToolStyles = {
+            strokeThickness: 0,
+            xCoordinateMode: ECoordinateMode.DataValue,
+            yCoordinateMode: ECoordinateMode.DataValue,
+            annotationLayer: EAnnotationLayer.AboveChart,
+            opacity: '15',
+          };
+          const RRToolBoxAnnotation = (options, xGraphValue, yGraphValue) => new BoxAnnotation({
+            ...RRToolStyles,
+            x1: xGraphValue - 50, //firstXValue,
+            x2: xGraphValue + 300, //xDataValue,
+            y1: yGraphValue,
+            ...options,
+          })
 
           switch(anotationType) {
             case 'RRBuy':
@@ -399,7 +414,6 @@
                     return;
                   }
 
-                  const rect = sciChartSurface.domCanvas2D.getBoundingClientRect();
                   const mouseX = event.clientX - rect.left;
                   const mouseY = event.clientY - rect.top - 10; // -10 to offset the canvas position
 
@@ -409,34 +423,17 @@
                   const xGraphValue = parseFloat(xCoordCalc.getDataValue(mouseX).toFixed(0));
                   const yGraphValue = parseFloat(yCoordCalc.getDataValue(mouseY).toFixed(decimals));
 
-                  console.log(`x: ${xGraphValue} y: ${yGraphValue}`);
-
-                  const RRToolStyles = {
-                    strokeThickness: 0,
-                    xCoordinateMode: ECoordinateMode.DataValue,
-                    yCoordinateMode: ECoordinateMode.DataValue,
-                    annotationLayer: EAnnotationLayer.AboveChart,
-                    opacity: '15',
-                  };
                   sciChartSurface.annotations.add(
-                    new BoxAnnotation({
-                      ...RRToolStyles,
+                    RRToolBoxAnnotation({
                       fill: `#FF0000${RRToolStyles.opacity}`,
-                      x1: xGraphValue - 50, //firstXValue,
-                      x2: xGraphValue + 300, //xDataValue,
-                      y1: yGraphValue,
                       y2: yGraphValue - slSize,
-                    })
+                    }, xGraphValue, yGraphValue)
                   );
                   sciChartSurface.annotations.add(
-                    new BoxAnnotation({
-                      ...RRToolStyles,
+                    RRToolBoxAnnotation({
                       fill: `#00FF00${RRToolStyles.opacity}`,
-                      x1: xGraphValue - 50, //firstXValue,
-                      x2: xGraphValue + 300, //xDataValue,
-                      y1: yGraphValue,
                       y2: yGraphValue + tpSize,
-                    })
+                    }, xGraphValue, yGraphValue)
                   );
 
                   isListeningForToolActions = false;
@@ -453,7 +450,6 @@
                     return;
                   }
 
-                  const rect = sciChartSurface.domCanvas2D.getBoundingClientRect();
                   const mouseX = event.clientX - rect.left;
                   const mouseY = event.clientY - rect.top - 10; // -10 to offset the canvas position
 
@@ -463,34 +459,17 @@
                   const xGraphValue = parseFloat(xCoordCalc.getDataValue(mouseX).toFixed(0));
                   const yGraphValue = parseFloat(yCoordCalc.getDataValue(mouseY).toFixed(decimals));
 
-                  console.log(`x: ${xGraphValue} y: ${yGraphValue}`);
-
-                  const RRToolStyles = {
-                    strokeThickness: 0,
-                    xCoordinateMode: ECoordinateMode.DataValue,
-                    yCoordinateMode: ECoordinateMode.DataValue,
-                    annotationLayer: EAnnotationLayer.AboveChart,
-                    opacity: '15',
-                  };
                   sciChartSurface.annotations.add(
-                    new BoxAnnotation({
-                      ...RRToolStyles,
+                    RRToolBoxAnnotation({
                       fill: `#FF0000${RRToolStyles.opacity}`,
-                      x1: xGraphValue - 50, //firstXValue,
-                      x2: xGraphValue + 300, //xDataValue,
-                      y1: yGraphValue,
                       y2: yGraphValue + slSize,
-                    })
+                    }, xGraphValue, yGraphValue)
                   );
                   sciChartSurface.annotations.add(
-                    new BoxAnnotation({
-                      ...RRToolStyles,
+                    RRToolBoxAnnotation({
                       fill: `#00FF00${RRToolStyles.opacity}`,
-                      x1: xGraphValue - 50, //firstXValue,
-                      x2: xGraphValue + 300, //xDataValue,
-                      y1: yGraphValue,
                       y2: yGraphValue - tpSize,
-                    })
+                    }, xGraphValue, yGraphValue)
                   );
 
                   isListeningForToolActions = false;
