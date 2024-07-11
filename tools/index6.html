@@ -79,12 +79,29 @@
       <input id="backtesting-hour" type="text" value="08:00:00">
       <label for="NavigateTroughtDates">Navigate trought dates</label>
       <select id="NavigateTroughtDates">
-        <option value="2024/6/29">2024/6/29</option>
+        <!--option value="2024/6/29">2024/6/29</option>
         <option value="2024/7/1">2024/7/1</option>
         <option value="2024/7/2">2024/7/2</option>
         <option value="2024/7/3">2024/7/3</option>
-        <option value="2024/7/4">2024/7/4</option>
+        <option value="2024/7/4">2024/7/4</option-->
       </select>
+      <button id="prevDate" class="mybutton" title="Previous Date" onclick="changeDate(-1)">
+        <i class="fas fa-arrow-left"></i> Prev
+      </button>
+      <button id="nextDate" class="mybutton" title="Next Date" onclick="changeDate(1)">
+        <i class="fas fa-arrow-right"></i> Next
+      </button>
+      <script>
+        function changeDate(direction) {
+          const select = document.getElementById('NavigateTroughtDates');
+          let newIndex = select.selectedIndex + direction;
+          // Ensure newIndex is within the bounds of the select options
+          if (newIndex >= 0 && newIndex < select.options.length) {
+            select.selectedIndex = newIndex;
+            select.dispatchEvent(new Event('change'));
+          }
+        }
+      </script>
       <hr class="h-hr">
       <!-- Added input type number with default values -->
       <input id="SLPips" type="number" value="0.0001">
@@ -166,6 +183,7 @@
       ELabelPlacement,
       EAnnotationLayer,
       DateRange,
+      EAutoRange,
     } = SciChart;
 
     // Tell SciChart where to get webassembly files from.
@@ -199,8 +217,8 @@
         lineSeriesColor: "white",
         loadingAnimationBackground: "#111",
         loadingAnimationForeground: "#111",
-        majorGridLineBrush: "#222",
-        minorGridLineBrush: "#333",
+        majorGridLineBrush: "#111",
+        minorGridLineBrush: "#111",
         mountainAreaBrush: "white",
         mountainLineColor: "white",
         overviewFillBrush: "white",
@@ -279,6 +297,7 @@
             if (time == selectedHour) {
               // Display Backtesting dates:
               // console.log(`BackTesting: ${backTestTime}`);
+              document.getElementById('NavigateTroughtDates').innerHTML += `<option value="${new Date(backTestTime * 1000).toLocaleString()}">${new Date(backTestTime * 1000).toLocaleString()}</option>`;
               sciChartSurface.annotations.add(new VerticalLineAnnotation({
                 stroke: "#999",
                 axisLabelFill: "#999",
@@ -286,7 +305,7 @@
                 x1: backTestTime,
                 showLabel: true,
                 labelPlacement: ELabelPlacement.TopLeft,
-                labelValue: "Backtest",
+                labelValue: `${new Date(backTestTime * 1000).toLocaleString()}`,
               }));
             }
 
@@ -297,16 +316,19 @@
           lowValues: ohlcData.map(item => item.low),
           closeValues: ohlcData.map(item => item.close)
         });
-        
-        sciChartSurface.xAxes.add(new DateTimeNumericAxis(wasmContext, {
+
+        const xAxis = new DateTimeNumericAxis(wasmContext, {
           XAxis: new DateLabelProvider({ format: "HH:mm:ss" }),
-          //visibleRange: new NumberRange(minDate.getTime() / 1000, maxDate.getTime() / 1000),
           growBy
-        }));
-        sciChartSurface.yAxes.add(new NumericAxis(wasmContext, {
+        })
+        const yAxis = new NumericAxis(wasmContext, {
           labelPrecision: decimals,
+          autoRange: EAutoRange.Always,
           growBy
-        }));
+        });
+        
+        sciChartSurface.xAxes.add(xAxis);
+        sciChartSurface.yAxes.add(yAxis);
 
         // Create an OHLC series
         sciChartSurface.renderableSeries.add(new FastCandlestickRenderableSeries(wasmContext, {
@@ -332,6 +354,19 @@
           tooltipContainerBackground: "#000",
           // tooltipTextStroke: "#ff6600",
         }));
+
+        document.getElementById('NavigateTroughtDates').addEventListener('change', function(event) {
+          const getCandleNumberByDay = (days) => 86400 * days;
+          const selectedDate = event.target.value;
+          const rangeMinDate = getValueFromDate(selectedDate) + getCandleNumberByDay(-.025); // early in the morning
+          const rangeMaxDate = getValueFromDate(selectedDate) + getCandleNumberByDay(.1); // half of a day
+          const xAxis = sciChartSurface.xAxes.get(0);
+          const yAxis = sciChartSurface.yAxes.get(0);
+
+          xAxis.visibleRange = new NumberRange(rangeMinDate, rangeMaxDate);          
+          // yAxis.visibleRange = new NumberRange(1.07, 1.084);
+          //sciChartSurface.zoomExtents();
+        });
 
         sciChartSurface
           .chartModifiers
@@ -369,18 +404,6 @@
           //console.log(coords);
         });
       */
-
-      document.getElementById('NavigateTroughtDates').addEventListener('change', function(event) {
-        const selectedDate = event.target.value;
-        const rangeMinDate = getValueFromDate(selectedDate);
-        const rangeMaxDate = getValueFromDate(selectedDate) + 86400; // 1 day
-
-        console.log(`Visible Range: ${rangeMinDate}, ${rangeMaxDate}`);
-
-        sciChartSurface.xAxes.get(0).visibleRange = {min: rangeMinDate, max: rangeMaxDate};
-
-        sciChartSurface.zoomExtents();
-      });
       
       // Load Tools:
       document.querySelectorAll('[data-anotation]').forEach(button => {
