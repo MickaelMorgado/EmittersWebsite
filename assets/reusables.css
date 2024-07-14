@@ -19,7 +19,6 @@ select,
 .mybutton {
   background: black;
   margin: 0;
-  margin-bottom: 15px;
   color: white;
   padding: 10px;
   border: 2px solid #222;
@@ -31,8 +30,14 @@ select,
   padding-right: var(--padding);
 }
 
+/* FLEX BOX: */
 .h-flex {
   display: flex;
+  gap: var(--padding);
+}
+
+.h-flex--column {
+  flex-direction: column;
 }
 
 .h-card {
@@ -59,6 +64,21 @@ select,
   text-transform: uppercase;
   background-color: var(--grey2);
   color: var(--dark1);
+}
+
+.h-input-effects {
+  transition: all 0.25s ease-in-out;
+}
+
+.h-input-effects:hover {
+  border-color: var(--white);
+}
+
+/* FORM RELATED */
+.h-form-group {
+  gap: var(--padding);
+  display: flex;
+  flex-direction: column;
 }
 
 .h-field {
@@ -91,5 +111,4 @@ select,
 hr.h-hr {
   width: 90%;
   border-color: #555;
-  margin-bottom: var(--padding-large);
 }
