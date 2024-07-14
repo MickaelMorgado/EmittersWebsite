@@ -1,18 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="../assets/css.css">
-  <link rel="stylesheet" href="../assets/reusables.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="../assets/css.css" />
+  <link rel="stylesheet" href="../assets/reusables.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
   <title>Back Testing</title>
   <style>
     :root {
       --main-width: 350px;
+      --padding: 15px;
     }
 
-    html, body {
+    html,
+    body {
       margin: 0;
       padding: 0;
     }
@@ -24,353 +27,409 @@
       background: rgba(0, 0, 0, 0.5);
       width: var(--main-width);
       overflow: hidden;
-      transition: all .5s ease;
+      transition: all 0.5s ease;
       overflow-y: auto;
     }
 
-    #upload-section .h-flex {
-      flex-direction: column;
-    }
-
-    #upload-section:hover {
-      //height: 180px;
-    }
-
-    #upload-section > .h-flex {
+    #upload-section>.h-flex {
       gap: 10px;
     }
 
-    #upload-section > .h-flex > div {
-      transition: all .5s ease;
-    }
-
-    #upload-section > .h-flex > div:nth-child(2),
-    #upload-section > .h-flex > div:nth-child(3) {
-      //width: 0%;
-      opacity: 1;
-    }
-
-    #upload-section:hover > .h-flex > div {
-      //width: 33%;
-      //opacity: 1;
+    #upload-section>.h-flex>div {
+      transition: all 0.5s ease;
     }
 
     #scichart-root {
       margin-left: var(--main-width);
     }
+
+    .tools {
+      position: fixed;
+      top: var(--padding);
+      right: var(--padding);
+      background-color: #222;
+      padding: calc(var(--padding) / 2);
+      border-radius: 5px;
+      z-index: 1;
+    }
   </style>
 </head>
-<body class="h-style">
 
-<div id="upload-section">
-  <div class="h-padded">
-    <div class="h-flex">
-      <div>
-        <h3>Upload and Read a CSV File</h3>
-        <p>Export MT5 bars by using CTRL+U then go to Bars tab, filter the range and export, then upload it here: </p>
-        <p>More info: <a target="_blank" href="https://myforex.com/en/mt5guide/export-historicaldata.html">Export Historical Data</a></p>
-      </div>
-      <hr class="h-hr">
-      <div>
-        <input type="file" id="csvFileInput" accept=".csv">
-      </div>
-      <hr class="h-hr">
-      <label for="backtesting-hour">Backtesting Hour</label>
-      <input id="backtesting-hour" type="text" value="08:00:00">
-      <label for="NavigateTroughtDates">Navigate trought dates</label>
-      <select id="NavigateTroughtDates">
-        <!--option value="2024/6/29">2024/6/29</option>
-        <option value="2024/7/1">2024/7/1</option>
-        <option value="2024/7/2">2024/7/2</option>
-        <option value="2024/7/3">2024/7/3</option>
-        <option value="2024/7/4">2024/7/4</option-->
-      </select>
-      <button id="prevDate" class="mybutton" title="Previous Date" onclick="changeDate(-1)">
-        <i class="fas fa-arrow-left"></i> Prev
-      </button>
-      <button id="nextDate" class="mybutton" title="Next Date" onclick="changeDate(1)">
-        <i class="fas fa-arrow-right"></i> Next
-      </button>
-      <script>
-        function changeDate(direction) {
-          const select = document.getElementById('NavigateTroughtDates');
-          let newIndex = select.selectedIndex + direction;
-          // Ensure newIndex is within the bounds of the select options
-          if (newIndex >= 0 && newIndex < select.options.length) {
-            select.selectedIndex = newIndex;
-            select.dispatchEvent(new Event('change'));
+<body class="h-style">
+  <div id="upload-section">
+    <div class="h-padded">
+      <div class="h-flex h-flex--column">
+        <div>
+          <h3>Upload and Read a CSV File</h3>
+          <p>
+            Export MT5 bars by using CTRL+U then go to Bars tab, filter the
+            range and export, then upload it here:
+          </p>
+          <p>
+            More info:
+            <a target="_blank" href="https://myforex.com/en/mt5guide/export-historicaldata.html">Export Historical
+              Data</a>
+          </p>
+        </div>
+        <hr class="h-hr" />
+        <input type="file" id="csvFileInput" accept=".csv" class="h-input-effects" />
+        <hr class="h-hr" />
+        <label for="backtesting-hour">Backtesting Hour</label>
+        <input id="backtesting-hour" class="h-input-effects" type="text" value="08:00:00" />
+        <div class="h-flex">
+          <div class="h-form-group">
+            <label for="prevDate">Prev</label>
+            <button id="prevDate" title="Previous Date" class="mybutton h-input-effects" onclick="changeDate(-1)">
+              <i class="fas fa-arrow-left"></i>
+            </button>
+          </div>
+          <div class="h-form-group">
+            <label for="NavigateTroughtDates">Navigate trought dates</label>
+            <select id="NavigateTroughtDates" class="h-input-effects">
+              <!--
+                  <option value="2024/6/29">2024/6/29</option>
+                  <option value="2024/7/1">2024/7/1</option>
+                  <option value="2024/7/2">2024/7/2</option>
+                  <option value="2024/7/3">2024/7/3</option>
+                  <option value="2024/7/4">2024/7/4</option>
+                -->
+            </select>
+          </div>
+          <div class="h-form-group">
+            <label for="nextDate">Next</label>
+            <button id="nextDate" title="Next Date" class="mybutton h-input-effects" onclick="changeDate(1)">
+              <i class="fas fa-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+
+        <script>
+          function changeDate(direction) {
+            const select = document.getElementById('NavigateTroughtDates');
+            let newIndex = select.selectedIndex + direction;
+            // Ensure newIndex is within the bounds of the select options
+            if (newIndex >= 0 && newIndex < select.options.length) {
+              select.selectedIndex = newIndex;
+              select.dispatchEvent(new Event('change'));
+            }
           }
-        }
-      </script>
-      <hr class="h-hr">
-      <!-- Added input type number with default values -->
-      <input id="SLPips" type="number" value="0.0001">
-      <input id="TPPips" type="number" value="0.0003">
-      <div class="row inline">
-        <button class="mybutton" data-anotation="RRBuy" title="RR Tool" disabled>
-          <i class="fas fa-ruler-combined"></i> Buy
-        </button>
-        <button class="mybutton" data-anotation="RRSell" title="RR Tool" disabled>
-          <i class="fas fa-ruler-combined"></i> Sell
-        </button>
+        </script>
+        <hr class="h-hr" />
+        <!-- Added input type number with default values -->
+        <input id="SLPips" type="number" value="0.0001" class="h-input-effects" />
+        <input id="TPPips" type="number" value="0.0003" class="h-input-effects" />
+        <hr class="h-hr" />
+        <label for="backtesting-hour">Win Rate</label>
+        <input type="number" />
+        <input type="number" />
+        <hr class="h-hr" />
+        <div>
+          <textarea id="csvContent" rows="10" style="width: 100%" class="h-field"></textarea>
+        </div>
       </div>
-      <hr class="h-hr">
-      <label for="backtesting-hour">Win Rate</label>
-      <input type="number">
-      <input type="number">
-      <hr class="h-hr">
-      <div><textarea id="csvContent" rows="10" style="width: 100%;" class="h-field"></textarea></div>
     </div>
   </div>
-</div>
-<div id="scichart-root" style="height: 100vh;"></div>
+  <div class="tools">
+    <button class="mybutton h-input-effects" data-anotation="RRBuy" title="RR Tool" disabled>
+      <i class="fas fa-ruler-combined"></i> Buy
+    </button>
+    <button class="mybutton h-input-effects" data-anotation="RRSell" title="RR Tool" disabled>
+      <i class="fas fa-ruler-combined"></i> Sell
+    </button>
+    <button class="mybutton h-input-effects" data-anotation="line" title="Line Tool" disabled>
+      <i class="fas fa-grip-lines"></i> Line
+    </button>
+  </div>
+  <div id="scichart-root" style="height: 100vh"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/scichart/index.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-<script>
+  <script src="https://cdn.jsdelivr.net/npm/scichart/index.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script>
+    const decimals = 5;
+    let slSize = parseFloat(document.getElementById('SLPips').value);
+    let tpSize = parseFloat(document.getElementById('TPPips').value);
+    const EnumDirection = {
+      BULL: 'BULL',
+      BEAR: 'BEAR',
+    };
 
-  const decimals = 5;
-  let slSize = parseFloat(document.getElementById('SLPips').value);
-  let tpSize = parseFloat(document.getElementById('TPPips').value);
+    const getValueFromDate = (date) => {
+      return new Date(date).getTime() / 1000;
+    };
 
-  const getValueFromDate = (date) => {
-    return new Date(date).getTime() / 1000;
-  }
-
-  document.getElementById('csvFileInput').addEventListener('change', function(event) {
-    const file = event.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          const content = e.target.result;
-
-          document.getElementById('csvContent').value = content;
-
-          initSciChart(content);
-          document.getElementById('scichart-root').style.display = 'block';
-        };
-        reader.readAsText(file);
-    } else {
-        alert("No file selected");
+    function formatDate(date) {
+      const options = {
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+      };
+      return new Date(date).toLocaleDateString('en-GB', options);
     }
-  });
 
-  // Define the initSciChart function
-  function initSciChart(data) {
-    const {
-      SciChartSurface,
-      NumericAxis,
-      FastCandlestickRenderableSeries,
-      OhlcDataSeries,
-      SciChartJsNavyTheme,
-      SciChartJSDarkv2Theme,
-      NumberRange,
-      MouseWheelZoomModifier,
-      ZoomPanModifier,
-      ZoomExtentsModifier,
-      YAxisDragModifier,
-      XAxisDragModifier,
-      DateTimeNumericAxis,
-      DateLabelProvider,
-      EDragMode,
-      CursorModifier,
-      BoxAnnotation,
-      ECoordinateMode,
-      getCanvasCoordinatesFromEvent,
-      VerticalLineAnnotation,
-      SolidColorBrush,
-      Colors,
-      ELabelPlacement,
-      EAnnotationLayer,
-      DateRange,
-      EAutoRange,
-    } = SciChart;
+    // Handy function to execute actions step by step:
+    const stepByStep = (step, actions) => {
+      return actions[step - 1]();
+    };
 
-    // Tell SciChart where to get webassembly files from.
-    SciChartSurface.useWasmFromCDN();
+    document
+      .getElementById('csvFileInput')
+      .addEventListener('change', function (event) {
+        const file = event.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            const content = e.target.result;
 
-    // Initialize SciChartSurface. Don't forget to await!
-    SciChartSurface.create("scichart-root", {
-      theme: new SciChartJsNavyTheme(),
-    }).then(({ sciChartSurface, wasmContext }) => {
+            document.getElementById('csvContent').value = content;
 
-      // Create a custom theme by implementing all the properties from IThemeProvider
-      const customTheme = {
-        axisBorder: "Transparent",
-        axisTitleColor: "#111",
-        annotationsGripsBackroundBrush: "white",
-        annotationsGripsBorderBrush: "white",
-        axis3DBandsFill: "#1F3D6833",
-        axisBandsFill: "#1F3D6833",
-        axisPlaneBackgroundFill: "Transparent",
-        columnFillBrush: "white",
-        columnLineColor: "Transparent",
-        cursorLineBrush: "#111",
-        downBandSeriesFillColor: "#52CC5490",
-        downBandSeriesLineColor: "#E26565FF",
-        downBodyBrush: "#F00",
-        downWickColor: "#F00",
-        gridBackgroundBrush: "white",
-        gridBorderBrush: "white",
-        labelForegroundBrush: "#EEEEEE",
-        legendBackgroundBrush: "#1D2C35",
-        lineSeriesColor: "white",
-        loadingAnimationBackground: "#111",
-        loadingAnimationForeground: "#111",
-        majorGridLineBrush: "#111",
-        minorGridLineBrush: "#111",
-        mountainAreaBrush: "white",
-        mountainLineColor: "white",
-        overviewFillBrush: "white",
-        planeBorderColor: "white",
-        rolloverLineBrush: "#FD9F2533",
-        rubberBandFillBrush: "#99999933",
-        rubberBandStrokeBrush: "#99999977",
-        sciChartBackground: "#111",
-        scrollbarBackgroundBrush: "white",
-        scrollbarBorderBrush: "white",
-        scrollbarGripsBackgroundBrush: "white",
-        scrollbarViewportBackgroundBrush: "white",
-        scrollbarViewportBorderBrush: "white",
-        shadowEffectColor: "white",
-        textAnnotationBackground: "#333",
-        textAnnotationForeground: "#EEEEEE",
-        tickTextBrush: "#333",
-        upBandSeriesFillColor: "white",
-        upBandSeriesLineColor: "white",
-        upBodyBrush: "#FFF",
-        upWickColor: "#FFF"
-      }
+            initSciChart(content);
+            document.getElementById('scichart-root').style.display = 'block';
+          };
+          reader.readAsText(file);
+        } else {
+          alert('No file selected');
+        }
+      });
 
-      // customTheme = new SciChartJsNavyTheme();
-      
-      sciChartSurface.applyTheme(customTheme);
+    // Define the initSciChart function
+    function initSciChart(data) {
+      const {
+        SciChartSurface,
+        NumericAxis,
+        FastCandlestickRenderableSeries,
+        OhlcDataSeries,
+        SciChartJsNavyTheme,
+        SciChartJSDarkv2Theme,
+        NumberRange,
+        MouseWheelZoomModifier,
+        ZoomPanModifier,
+        ZoomExtentsModifier,
+        YAxisDragModifier,
+        XAxisDragModifier,
+        DateTimeNumericAxis,
+        DateLabelProvider,
+        EDragMode,
+        CursorModifier,
+        BoxAnnotation,
+        ECoordinateMode,
+        getCanvasCoordinatesFromEvent,
+        VerticalLineAnnotation,
+        SolidColorBrush,
+        Colors,
+        ELabelPlacement,
+        EAnnotationLayer,
+        DateRange,
+        EAutoRange,
+        LineAnnotation,
+      } = SciChart;
 
-      window.sciChartSurface = sciChartSurface;
+      // Tell SciChart where to get webassembly files from.
+      SciChartSurface.useWasmFromCDN();
 
-      // Create an XAxis and YAxis with growBy padding
-      // sciChartSurface.xAxes.add(new NumericAxis(wasmContext, { axisTitle: "Time", growBy }));
-      // sciChartSurface.yAxes.add(new NumericAxis(wasmContext, { axisTitle: "Price", growBy }));
-      
-      const buildChartData = (data) => {
+      // Initialize SciChartSurface. Don't forget to await!
+      SciChartSurface.create('scichart-root', {
+        theme: new SciChartJsNavyTheme(),
+      })
+        .then(({ sciChartSurface, wasmContext }) => {
+          // Create a custom theme by implementing all the properties from IThemeProvider
+          const customTheme = {
+            axisBorder: 'Transparent',
+            axisTitleColor: '#111',
+            annotationsGripsBackroundBrush: 'white',
+            annotationsGripsBorderBrush: 'white',
+            axis3DBandsFill: '#1F3D6833',
+            axisBandsFill: '#1F3D6833',
+            axisPlaneBackgroundFill: 'Transparent',
+            columnFillBrush: 'white',
+            columnLineColor: 'Transparent',
+            cursorLineBrush: '#111',
+            downBandSeriesFillColor: '#52CC5490',
+            downBandSeriesLineColor: '#E26565FF',
+            downBodyBrush: '#F00',
+            downWickColor: '#F00',
+            gridBackgroundBrush: 'white',
+            gridBorderBrush: 'white',
+            labelForegroundBrush: '#EEEEEE',
+            legendBackgroundBrush: '#1D2C35',
+            lineSeriesColor: 'white',
+            loadingAnimationBackground: '#111',
+            loadingAnimationForeground: '#111',
+            majorGridLineBrush: '#111',
+            minorGridLineBrush: '#111',
+            mountainAreaBrush: 'white',
+            mountainLineColor: 'white',
+            overviewFillBrush: 'white',
+            planeBorderColor: 'white',
+            rolloverLineBrush: '#FD9F2533',
+            rubberBandFillBrush: '#99999933',
+            rubberBandStrokeBrush: '#99999977',
+            sciChartBackground: '#111',
+            scrollbarBackgroundBrush: 'white',
+            scrollbarBorderBrush: 'white',
+            scrollbarGripsBackgroundBrush: 'white',
+            scrollbarViewportBackgroundBrush: 'white',
+            scrollbarViewportBorderBrush: 'white',
+            shadowEffectColor: 'white',
+            textAnnotationBackground: '#333',
+            textAnnotationForeground: '#EEEEEE',
+            tickTextBrush: '#333',
+            upBandSeriesFillColor: 'white',
+            upBandSeriesLineColor: 'white',
+            upBodyBrush: '#FFF',
+            upWickColor: '#FFF',
+          };
 
-        const growBy = new NumberRange(0.1, 0.1);
-        // Extract OHLC data from the response
+          // customTheme = new SciChartJsNavyTheme();
 
-        // Parse CSV content
-        const rows = data.trim().split('\r\n'); // Split by lines
-        const header = rows[0].split('\t'); // Extract headers
-        const rdata = rows.slice(1).map(row => row.split('\t')); // Split rows into fields
+          sciChartSurface.applyTheme(customTheme);
 
-        const ohlcData = rdata.map(row => {
-          /*https://developers.binance.com/docs/binance-spot-api-docs/rest-api#klinecandlestick-data*/
-          /*return {
-              time: row[0],
-              open: parseFloat(row[1]),
-              high: parseFloat(row[2]),
-              low: parseFloat(row[3]),
-              close: parseFloat(row[4])
-          }*/
-          
-          /* MT5 exported CSV format: */
-          return {
-            time: `${row[0]} ${row[1]}`,
-            open: parseFloat(row[2]),
-            high: parseFloat(row[3]),
-            low: parseFloat(row[4]),
-            close: parseFloat(row[5])
-          }
-        });
+          window.sciChartSurface = sciChartSurface;
 
-        const minDate = new Date(ohlcData[0].time);
-        const maxDate = new Date(ohlcData[ohlcData.length - 1].time);
+          // Create an XAxis and YAxis with growBy padding
+          // sciChartSurface.xAxes.add(new NumericAxis(wasmContext, { axisTitle: "Time", growBy }));
+          // sciChartSurface.yAxes.add(new NumericAxis(wasmContext, { axisTitle: "Price", growBy }));
 
-        // Create an OHLC data series
-        const ohlcDataSeries = new OhlcDataSeries(wasmContext, {
-          xValues: ohlcData.map((item, index) => {
-            let startDate = getValueFromDate(item.time);
-            let adjustedStartDate = startDate - 3600 * 1; // offset data to match -1h (matching tradingview time)
-            let backTestTime = startDate + 3600;
-                        
-            var time = item.time.split(' ')[1];
-            var selectedHour = document.getElementById('backtesting-hour').value;
-            if (time == selectedHour) {
-              // Display Backtesting dates:
-              // console.log(`BackTesting: ${backTestTime}`);
-              document.getElementById('NavigateTroughtDates').innerHTML += `<option value="${new Date(backTestTime * 1000).toLocaleString()}">${new Date(backTestTime * 1000).toLocaleString()}</option>`;
-              sciChartSurface.annotations.add(new VerticalLineAnnotation({
-                stroke: "#999",
-                axisLabelFill: "#999",
+          const buildChartData = (data) => {
+            const growBy = new NumberRange(0.1, 0.1);
+            // Extract OHLC data from the response
+
+            // Parse CSV content
+            const rows = data.trim().split('\r\n'); // Split by lines
+            const header = rows[0].split('\t'); // Extract headers
+            const rdata = rows.slice(1).map((row) => row.split('\t')); // Split rows into fields
+
+            const ohlcData = rdata.map((row) => {
+              /*https://developers.binance.com/docs/binance-spot-api-docs/rest-api#klinecandlestick-data*/
+              /*return {
+            time: row[0],
+            open: parseFloat(row[1]),
+            high: parseFloat(row[2]),
+            low: parseFloat(row[3]),
+            close: parseFloat(row[4])
+        }*/
+
+              /* MT5 exported CSV format: */
+              return {
+                time: `${row[0]} ${row[1]}`,
+                open: parseFloat(row[2]),
+                high: parseFloat(row[3]),
+                low: parseFloat(row[4]),
+                close: parseFloat(row[5]),
+              };
+            });
+
+            const minDate = new Date(ohlcData[0].time);
+            const maxDate = new Date(ohlcData[ohlcData.length - 1].time);
+
+            // Create an OHLC data series
+            const ohlcDataSeries = new OhlcDataSeries(wasmContext, {
+              xValues: ohlcData.map((item, index) => {
+                let startDate = getValueFromDate(item.time);
+                let adjustedStartDate = startDate - 3600 * 1; // offset data to match -1h (matching tradingview time)
+                let backTestTime = startDate + 3600;
+
+                var time = item.time.split(' ')[1];
+                var selectedHour =
+                  document.getElementById('backtesting-hour').value;
+                if (time == selectedHour) {
+                  let btt = backTestTime * 1000;
+                  let formatedDate = formatDate(btt);
+                  // Display Backtesting dates:
+                  // console.log(`BackTesting: ${backTestTime}`);
+                  document.getElementById(
+                    'NavigateTroughtDates'
+                  ).innerHTML += `<option value="${new Date(
+                    btt
+                  ).toLocaleString()}">
+                      ${formatDate(new Date(btt).toLocaleString())}</option>`;
+                  sciChartSurface.annotations.add(
+                    new VerticalLineAnnotation({
+                      stroke: '#999',
+                      axisLabelFill: '#999',
+                      strokeThickness: 1,
+                      x1: backTestTime,
+                      showLabel: true,
+                      labelPlacement: ELabelPlacement.TopLeft,
+                      labelValue: `${new Date(
+                        backTestTime * 1000
+                      ).toLocaleString()}`,
+                    })
+                  );
+                }
+
+                return adjustedStartDate;
+              }),
+              openValues: ohlcData.map((item) => item.open),
+              highValues: ohlcData.map((item) => item.high),
+              lowValues: ohlcData.map((item) => item.low),
+              closeValues: ohlcData.map((item) => item.close),
+            });
+
+            const xAxis = new DateTimeNumericAxis(wasmContext, { growBy });
+            const yAxis = new NumericAxis(wasmContext, {
+              labelPrecision: decimals,
+              autoRange: EAutoRange.Always,
+              growBy,
+            });
+
+            sciChartSurface.xAxes.add(xAxis);
+            sciChartSurface.yAxes.add(yAxis);
+
+            // Create an OHLC series
+            sciChartSurface.renderableSeries.add(
+              new FastCandlestickRenderableSeries(wasmContext, {
+                dataSeries: ohlcDataSeries,
                 strokeThickness: 1,
-                x1: backTestTime,
-                showLabel: true,
-                labelPlacement: ELabelPlacement.TopLeft,
-                labelValue: `${new Date(backTestTime * 1000).toLocaleString()}`,
-              }));
-            }
+              })
+            );
 
-            return adjustedStartDate;
-          }),
-          openValues: ohlcData.map(item => item.open),
-          highValues: ohlcData.map(item => item.high),
-          lowValues: ohlcData.map(item => item.low),
-          closeValues: ohlcData.map(item => item.close)
-        });
+            // Add CursorModifier for crosshair
+            sciChartSurface.chartModifiers.add(
+              new CursorModifier({
+                // Optional properties to configure what parts are shown
+                showTooltip: false,
+                showAxisLabels: true,
+                showXLine: true,
+                showYLine: true,
+                // How close to a datapoint to show the tooltip? 10 = 10 pixels. 0 means always
+                // hitTestRadius: 10,
+                // Optional properties to configure the axis labels
+                axisLabelFill: '#555',
+                axisLabelStroke: '#ccc',
+                // Optional properties to configure line and tooltip style
+                crosshairStroke: '#555',
+                crosshairStrokeThickness: 1,
+                tooltipContainerBackground: '#000',
+                // tooltipTextStroke: "#ff6600",
+              })
+            );
 
-        const xAxis = new DateTimeNumericAxis(wasmContext, {
-          XAxis: new DateLabelProvider({ format: "HH:mm:ss" }),
-          growBy
-        })
-        const yAxis = new NumericAxis(wasmContext, {
-          labelPrecision: decimals,
-          autoRange: EAutoRange.Always,
-          growBy
-        });
-        
-        sciChartSurface.xAxes.add(xAxis);
-        sciChartSurface.yAxes.add(yAxis);
+            document
+              .getElementById('NavigateTroughtDates')
+              .addEventListener('change', function (event) {
+                const getCandleNumberByDay = (days) => 86400 * days;
+                const selectedDate = event.target.value;
+                const rangeMinDate =
+                  getValueFromDate(selectedDate) +
+                  getCandleNumberByDay(-0.025); // early in the morning
+                const rangeMaxDate =
+                  getValueFromDate(selectedDate) + getCandleNumberByDay(0.1); // half of a day
+                const xAxis = sciChartSurface.xAxes.get(0);
+                const yAxis = sciChartSurface.yAxes.get(0);
 
-        // Create an OHLC series
-        sciChartSurface.renderableSeries.add(new FastCandlestickRenderableSeries(wasmContext, {
-          dataSeries: ohlcDataSeries,
-          strokeThickness: 1,
-        }));
+                xAxis.visibleRange = new NumberRange(
+                  rangeMinDate,
+                  rangeMaxDate
+                );
+                // yAxis.visibleRange = new NumberRange(1.07, 1.084);
+                //sciChartSurface.zoomExtents();
+              });
 
-        // Add CursorModifier for crosshair
-        sciChartSurface.chartModifiers.add(new CursorModifier({
-          // Optional properties to configure what parts are shown
-          showTooltip: false,
-          showAxisLabels: true,
-          showXLine: true,
-          showYLine: true,
-          // How close to a datapoint to show the tooltip? 10 = 10 pixels. 0 means always
-          // hitTestRadius: 10,
-          // Optional properties to configure the axis labels
-          axisLabelFill: "#555",
-          axisLabelStroke: "#ccc",
-          // Optional properties to configure line and tooltip style
-          crosshairStroke: "#555",
-          crosshairStrokeThickness: 1,
-          tooltipContainerBackground: "#000",
-          // tooltipTextStroke: "#ff6600",
-        }));
-
-        document.getElementById('NavigateTroughtDates').addEventListener('change', function(event) {
-          const getCandleNumberByDay = (days) => 86400 * days;
-          const selectedDate = event.target.value;
-          const rangeMinDate = getValueFromDate(selectedDate) + getCandleNumberByDay(-.025); // early in the morning
-          const rangeMaxDate = getValueFromDate(selectedDate) + getCandleNumberByDay(.1); // half of a day
-          const xAxis = sciChartSurface.xAxes.get(0);
-          const yAxis = sciChartSurface.yAxes.get(0);
-
-          xAxis.visibleRange = new NumberRange(rangeMinDate, rangeMaxDate);          
-          // yAxis.visibleRange = new NumberRange(1.07, 1.084);
-          //sciChartSurface.zoomExtents();
-        });
-
-        sciChartSurface
-          .chartModifiers
-            .add(
+            sciChartSurface.chartModifiers.add(
               new MouseWheelZoomModifier(),
               new ZoomPanModifier(),
               new ZoomExtentsModifier(),
@@ -379,39 +438,39 @@
               }),
               new XAxisDragModifier({
                 dragMode: EDragMode.Scaling,
-              }),
+              })
             );
-      }
+          };
 
-      buildChartData(data);
-      // Axios code to fetch data
-      /*
-        axios.get('https://api.binance.com/api/v3/klines?symbol=LTCBTC&interval=1m')
-          .then(response => {
-            const data = response.data;
+          buildChartData(data);
+          // Axios code to fetch data
+          /*
+            axios.get('https://api.binance.com/api/v3/klines?symbol=LTCBTC&interval=1m').then(response => {
+              const data = response.data;
+              // buildChartData(data);
+            }).catch(error => {
+              console.error('Error fetching data:', error);
+            });
+          */
 
-            // buildChartData(data);
+          /*
+            sciChartSurface.domCanvas2D.addEventListener('click', (event) => {
+              //const coords = getCanvasCoordinatesFromEvent(sciChartSurface.domCanvas2D, event);
+              //console.log(coords);
+            });
+          */
 
-          })
-          .catch(error => {
-            console.error('Error fetching data:', error);
-          });
-      */
+          let annotations = [];
 
-      /*
-        sciChartSurface.domCanvas2D.addEventListener('click', (event) => {
-          //const coords = getCanvasCoordinatesFromEvent(sciChartSurface.domCanvas2D, event);
-          //console.log(coords);
-        });
-      */
-      
-      // Load Tools:
-      document.querySelectorAll('[data-anotation]').forEach(button => {
-        button.removeAttribute('disabled');
-        button.addEventListener("click", function() {
-          let isListeningForToolActions = true;
-          var anotationType = this.dataset.anotation;
-          const rect = sciChartSurface.domCanvas2D.getBoundingClientRect();
+          const refreshAnnotations = () => {
+            annotations.forEach((annotation) => {
+              console.log(annotation);
+              /*document.getElementById('annotations').value = annotations
+                .map((a) => JSON.stringify(a))
+                .join('\n');*/
+            });
+          };
+
           const RRToolStyles = {
             strokeThickness: 0,
             xCoordinateMode: ECoordinateMode.DataValue,
@@ -419,106 +478,197 @@
             annotationLayer: EAnnotationLayer.AboveChart,
             opacity: '15',
           };
-          const RRToolBoxAnnotation = (options, xGraphValue, yGraphValue) => new BoxAnnotation({
-            ...RRToolStyles,
-            x1: xGraphValue - 50, //firstXValue,
-            x2: xGraphValue + 300, //xDataValue,
-            y1: yGraphValue,
-            ...options,
-          })
 
-          switch(anotationType) {
-            case 'RRBuy':
-              const rrTool = () => {
-                let entryYValue = null;
+          const RRToolBoxAnnotation = (
+            xGraphValue,
+            yGraphValue,
+            options,
+          ) =>
+            new BoxAnnotation({
+              ...RRToolStyles,
+              x1: xGraphValue - 50,
+              x2: xGraphValue + 300,
+              y1: yGraphValue,
+              ...options,
+            });
 
-                sciChartSurface.domCanvas2D.addEventListener('click', (event) => {
-                  if (!isListeningForToolActions) {
-                    return;
-                  }
 
-                  const mouseX = event.clientX - rect.left;
-                  const mouseY = event.clientY - rect.top - 10; // -10 to offset the canvas position
+          const addRRAnnotationBox = (ed) => {
+            if (ed === EnumDirection.BULL) {
+              sciChartSurface.annotations.add(
+                RRToolBoxAnnotation(
+                  coords.xGraphValue,
+                  coords.yGraphValue,
+                  {
+                    fill: `#00FF00${RRToolStyles.opacity}`,
+                    y2: coords.yGraphValue + tpSize,
+                  },
+                )
+              )
+              sciChartSurface.annotations.add(
+                RRToolBoxAnnotation(
+                  coords.xGraphValue,
+                  coords.yGraphValue,
+                  {
+                    fill: `#FF0000${RRToolStyles.opacity}`,
+                    y2: coords.yGraphValue - slSize,
+                  },
+                )
+              )
+            } else {
+              sciChartSurface.annotations.add(
+                RRToolBoxAnnotation(
+                  coords.xGraphValue,
+                  coords.yGraphValue,
+                  {
+                    fill: `#00FF00${RRToolStyles.opacity}`,
+                    y2: coords.yGraphValue - tpSize,
+                  },
+                )
+              )
+              sciChartSurface.annotations.add(
+                RRToolBoxAnnotation(
+                  coords.xGraphValue,
+                  coords.yGraphValue,
+                  {
+                    fill: `#FF0000${RRToolStyles.opacity}`,
+                    y2: coords.yGraphValue + slSize,
+                  },
+                )
+              )
+            };
+          };
 
-                  const xCoordCalc = sciChartSurface.xAxes.get(0).getCurrentCoordinateCalculator();
-                  const yCoordCalc = sciChartSurface.yAxes.get(0).getCurrentCoordinateCalculator();
-                  
-                  const xGraphValue = parseFloat(xCoordCalc.getDataValue(mouseX).toFixed(0));
-                  const yGraphValue = parseFloat(yCoordCalc.getDataValue(mouseY).toFixed(decimals));
 
-                  sciChartSurface.annotations.add(
-                    RRToolBoxAnnotation({
-                      fill: `#FF0000${RRToolStyles.opacity}`,
-                      y2: yGraphValue - slSize,
-                    }, xGraphValue, yGraphValue)
-                  );
-                  sciChartSurface.annotations.add(
-                    RRToolBoxAnnotation({
-                      fill: `#00FF00${RRToolStyles.opacity}`,
-                      y2: yGraphValue + tpSize,
-                    }, xGraphValue, yGraphValue)
-                  );
+          // Tools:
 
+          let coords = null;
+          let selectedTool = null;
+          let clickCount = 0;
+
+          let lineToolFirstPoint = null;
+          let lineToolSecondPoint = null;
+
+          sciChartSurface
+            .domCanvas2D
+            .addEventListener(
+              'click',
+              (event) => {
+                const rect = sciChartSurface.domCanvas2D.getBoundingClientRect();
+                const mouseX = event.clientX - rect.left;
+                const mouseY = event.clientY - rect.top - 10; // -10 to offset the canvas position
+                const xCoordCalc = sciChartSurface.xAxes.get(0).getCurrentCoordinateCalculator();
+                const yCoordCalc = sciChartSurface.yAxes.get(0).getCurrentCoordinateCalculator();
+
+                coords = {
+                  xPosition: xCoordCalc.getDataValue(event.clientX),
+                  yPosition: yCoordCalc.getDataValue(event.clientY),
+                  xGraphValue: parseFloat(xCoordCalc.getDataValue(mouseX).toFixed(0)),
+                  yGraphValue: parseFloat(yCoordCalc.getDataValue(mouseY).toFixed(decimals)),
+                  x: xCoordCalc,
+                  y: yCoordCalc,
+                };
+
+                console.log(coords);
+
+                /*if (isListeningForToolActions) {
+                  addRRAnnotationBox(EnumDirection.BULL);
                   isListeningForToolActions = false;
-                });
+                }*/
+
+                if (selectedTool != null) {
+                  clickCount++;
+                } else {
+                  clickCount = 0;
+                }
+
+                console.log(clickCount);
+
+                const previewLineActions = [
+                  () => {
+                    lineToolFirstPoint = coords;
+                  },
+                  () => {
+                    lineToolSecondPoint = coords;
+                    sciChartSurface.annotations.add(
+                      new LineAnnotation({
+                        stroke: '#555555',
+                        strokeThickness: 2,
+                        x1: lineToolFirstPoint.xGraphValue,
+                        x2: lineToolSecondPoint.xGraphValue,
+                        y1: lineToolFirstPoint.yGraphValue,
+                        y2: lineToolSecondPoint.yGraphValue,
+                      })
+                    );
+                    clickCount = 0;
+                    selectedTool = null;
+                  },
+                ]
+
+                switch (selectedTool) {
+                  case 'RRBuy':
+                    addRRAnnotationBox(EnumDirection.BULL);
+                    selectedTool = null;
+                    break;
+                  case 'RRSell':
+                    addRRAnnotationBox(EnumDirection.SELL);
+                    selectedTool = null;
+                    break;
+                  case 'line':
+                    stepByStep(clickCount, previewLineActions);
+                  default: return;
+                }
+              },
+            );
+
+          document.querySelectorAll('[data-anotation]').forEach((button) => {
+            button.removeAttribute('disabled');
+            button.addEventListener('click', function () {
+              let isListeningForToolActions = true;
+              var anotationType = this.dataset.anotation;
+              const rect = sciChartSurface.domCanvas2D.getBoundingClientRect();
+
+              const rrTool = (enumDirection) => {
+                isListeningForToolActions = true;
+              };
+
+              switch (anotationType) {
+                case 'RRBuy':
+                  selectedTool = 'RRBuy';
+                  break;
+                case 'RRSell':
+                  selectedTool = 'RRSell';
+                  break;
+                case 'line':
+                  selectedTool = 'line';
+                  /*
+                    const annotationLine = sciChartSurface.annotations.add(
+                      new LineAnnotation({ stroke: "#555555", strokeThickness: 3, x1: 1, x2: 2, y1: 4, y2: 6, }),
+                    );
+                    annotations.push(annotationLine);
+                    refreshAnnotations();
+                  */
+                  break;
+                default:
+                  console.log('No type');
               }
-              rrTool();
-              break;
-            case 'RRSell':
-              const rrTool2 = () => {
-                let entryYValue = null;
+            });
+          });
 
-                sciChartSurface.domCanvas2D.addEventListener('click', (event) => {
-                  if (!isListeningForToolActions) {
-                    return;
-                  }
-
-                  const mouseX = event.clientX - rect.left;
-                  const mouseY = event.clientY - rect.top - 10; // -10 to offset the canvas position
-
-                  const xCoordCalc = sciChartSurface.xAxes.get(0).getCurrentCoordinateCalculator();
-                  const yCoordCalc = sciChartSurface.yAxes.get(0).getCurrentCoordinateCalculator();
-                  
-                  const xGraphValue = parseFloat(xCoordCalc.getDataValue(mouseX).toFixed(0));
-                  const yGraphValue = parseFloat(yCoordCalc.getDataValue(mouseY).toFixed(decimals));
-
-                  sciChartSurface.annotations.add(
-                    RRToolBoxAnnotation({
-                      fill: `#FF0000${RRToolStyles.opacity}`,
-                      y2: yGraphValue + slSize,
-                    }, xGraphValue, yGraphValue)
-                  );
-                  sciChartSurface.annotations.add(
-                    RRToolBoxAnnotation({
-                      fill: `#00FF00${RRToolStyles.opacity}`,
-                      y2: yGraphValue - tpSize,
-                    }, xGraphValue, yGraphValue)
-                  );
-
-                  isListeningForToolActions = false;
-                });
-              }
-              rrTool2();
-              break;
-            default:
-              alert('No type');
-          }
+          // Add some interaction modifiers to show zooming and panning
+          // sciChartSurface.chartModifiers.add(new MouseWheelZoomModifier(), new ZoomPanModifier(), new ZoomExtentsModifier());
+        })
+        .catch((error) => {
+          console.error('Error initializing SciChart:', error);
         });
-      });
+    }
 
-      // Add some interaction modifiers to show zooming and panning
-      // sciChartSurface.chartModifiers.add(new MouseWheelZoomModifier(), new ZoomPanModifier(), new ZoomExtentsModifier());
-    }).catch(error => {
-      console.error('Error initializing SciChart:', error);
-    });
+    // Add some interaction modifiers to show zooming and panning
+    // sciChartSurface.chartModifiers.add(new MouseWheelZoomModifier(), new ZoomPanModifier(), new ZoomExtentsModifier());
 
-  }
-
-  // Add some interaction modifiers to show zooming and panning
-  // sciChartSurface.chartModifiers.add(new MouseWheelZoomModifier(), new ZoomPanModifier(), new ZoomExtentsModifier());
-  
-  // Call initSciChart after the window has finished loading
-  // window.onload = initSciChart;
-</script>
+    // Call initSciChart after the window has finished loading
+    // window.onload = initSciChart;
+  </script>
 </body>
+
 </html>
