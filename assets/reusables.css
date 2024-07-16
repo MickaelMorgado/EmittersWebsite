@@ -25,6 +25,20 @@ select,
   border-radius: 3px;
 }
 
+input:disabled,
+select:disabled,
+.mybutton:disabled {
+  background: var(--dark2);
+  color: var(--grey1);
+  cursor: not-allowed;
+}
+
+input:disabled:hover,
+select:disabled:hover,
+.mybutton:disabled:hover {
+  border-color: var(--grey1);
+}
+
 .h-col {
   padding-left: var(--padding);
   padding-right: var(--padding);
