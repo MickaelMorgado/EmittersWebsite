@@ -139,6 +139,9 @@
     <button class="mybutton h-input-effects" data-anotation="line" title="Line Tool" disabled>
       <i class="fas fa-grip-lines"></i> Line
     </button>
+    <button class="mybutton h-input-effects" data-anotation="rectangle" title="Rectangle Tool" disabled>
+      <i class="fa-regular fa-square"></i> Rectangle
+    </button>
   </div>
   <div id="scichart-root" style="height: 100vh"></div>
 
@@ -164,7 +167,7 @@
         day: 'numeric',
         hour: '2-digit',
         minute: '2-digit',
-        second: '2-digit',
+        // second: '2-digit',
         hour12: false,
       };
       return new Date(date).toLocaleDateString('en-GB', options);
@@ -225,6 +228,12 @@
         DateRange,
         EAutoRange,
         LineAnnotation,
+        AxisMarkerAnnotation,
+        CustomAnnotation,
+        EVerticalAnchorPoint,
+        EHorizontalAnchorPoint,
+        ENumericFormat,
+        EDateFormatter,
       } = SciChart;
 
       // Tell SciChart where to get webassembly files from.
@@ -304,13 +313,15 @@
 
             const ohlcData = rdata.map((row) => {
               /*https://developers.binance.com/docs/binance-spot-api-docs/rest-api#klinecandlestick-data*/
-              /*return {
-            time: row[0],
-            open: parseFloat(row[1]),
-            high: parseFloat(row[2]),
-            low: parseFloat(row[3]),
-            close: parseFloat(row[4])
-        }*/
+              /*
+                return {
+                  time: row[0],
+                  open: parseFloat(row[1]),
+                  high: parseFloat(row[2]),
+                  low: parseFloat(row[3]),
+                  close: parseFloat(row[4])
+                }
+              */
 
               /* MT5 exported CSV format: */
               return {
@@ -327,25 +338,25 @@
 
             // Create an OHLC data series
             const ohlcDataSeries = new OhlcDataSeries(wasmContext, {
-              xValues: ohlcData.map((item, index) => {
-                let startDate = getValueFromDate(item.time);
-                let adjustedStartDate = startDate - 3600 * 1; // offset data to match -1h (matching tradingview time)
-                let backTestTime = startDate + 3600;
+              xValues: ohlcData.map((candle, index) => {
+                let candleTime = getValueFromDate(candle.time);
+                let offsetedCandleTime = (candleTime) => candleTime - 3600 * 1; // offset data to match -1h (matching tradingview time - actuall candle bar Y axis location)
 
-                var time = item.time.split(' ')[1];
-                var selectedHour =
-                  document.getElementById('backtesting-hour').value;
+                let backTestTime = candleTime + 3600;
+                var time = candle.time.split(' ')[1];
+                var selectedHour = document.getElementById('backtesting-hour').value;
+
                 if (time == selectedHour) {
                   let btt = backTestTime * 1000;
                   let formatedDate = formatDate(btt);
-                  // Display Backtesting dates:
-                  // console.log(`BackTesting: ${backTestTime}`);
-                  document.getElementById(
-                    'NavigateTroughtDates'
-                  ).innerHTML += `<option value="${new Date(
-                    btt
-                  ).toLocaleString()}">
-                      ${formatDate(new Date(btt).toLocaleString())}</option>`;
+
+                  // Display Backtesting dates on the select element:
+                  document
+                    .getElementById('NavigateTroughtDates')
+                    .innerHTML += `<option value="${new Date(btt).toLocaleString()}">
+                      ${formatDate(new Date(btt))}</option>`;
+
+                  // Backtesting line annotation:
                   sciChartSurface.annotations.add(
                     new VerticalLineAnnotation({
                       stroke: '#999',
@@ -354,22 +365,60 @@
                       x1: backTestTime,
                       showLabel: true,
                       labelPlacement: ELabelPlacement.TopLeft,
-                      labelValue: `${new Date(
-                        backTestTime * 1000
-                      ).toLocaleString()}`,
+                      labelValue: `${formatDate(new Date(btt))}`,
                     })
                   );
                 }
 
-                return adjustedStartDate;
+                // Add annotations for MSS:
+                /*
+                const indicateCandle = (candle, ohlcData, index) => {
+                  const analysisRange = 1;
+                  const currentCandleLocation = offsetedCandleTime(getValueFromDate(candle.time));
+                  const currentCandleLocationOffseted = offsetedCandleTime(getValueFromDate(candle.time)) - 3600 * analysisRange;
+
+                  if (index - analysisRange >= analysisRange && index - analysisRange < ohlcData.length && ohlcData[index - analysisRange] !== undefined) {
+                    const x1 = currentCandleLocationOffseted;
+                    const y1 = ohlcData[index - analysisRange].close;
+                    const midCandleIndex = index - analysisRange;
+                    const farLeftIndex = index - analysisRange - analysisRange;
+
+                    isAfterPriceLower = ohlcData[index].high < ohlcData[midCandleIndex].high
+                    isBeforePriceLower = ohlcData[farLeftIndex].high < ohlcData[midCandleIndex].high
+                    if (isAfterPriceLower && isBeforePriceLower) {
+                      const middleCandle = ohlcData[midCandleIndex];
+                      //debugger
+                      const middleCandleLocation = offsetedCandleTime(getValueFromDate(middleCandle.time));
+                      //console.log(x, a);
+                      sciChartSurface.annotations.add(
+                        new CustomAnnotation({
+                          x1,
+                          y1,
+                          verticalAnchorPoint: EVerticalAnchorPoint.Top,
+                          horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
+                          svgString:
+                            '<svg id="Capa_1" xmlns="http://www.w3.org/2000/svg"><g transform="translate(-53.867218,-5.091687)"><path style="fill:#1cb61c;fill-opacity:0.34117647;stroke:#00b400;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" d="m 55.47431,83.481251 c 7.158904,-7.408333 7.158904,-7.408333 7.158904,-7.408333 l 7.158906,7.408333 H 66.212668 V 94.593756 H 59.053761 V 83.481251 Z"/></g></svg>',
+                        })
+                      );
+                    }
+                  }
+                };
+
+                indicateCandle(candle, ohlcData, index);
+                */
+                return offsetedCandleTime(candleTime);
               }),
-              openValues: ohlcData.map((item) => item.open),
-              highValues: ohlcData.map((item) => item.high),
-              lowValues: ohlcData.map((item) => item.low),
-              closeValues: ohlcData.map((item) => item.close),
+              openValues: ohlcData.map((candle) => candle.open),
+              highValues: ohlcData.map((candle) => candle.high),
+              lowValues: ohlcData.map((candle) => candle.low),
+              closeValues: ohlcData.map((candle) => candle.close),
             });
 
             const xAxis = new DateTimeNumericAxis(wasmContext, { growBy });
+            xAxis.labelProvider.formatCursorLabel = (dataValue) => {
+              const unixDateStamp = dataValue - 3600;
+              return formatDate(unixDateStamp * 1000);
+            };
             const yAxis = new NumericAxis(wasmContext, {
               labelPrecision: decimals,
               autoRange: EAutoRange.Always,
@@ -539,7 +588,6 @@
             };
           };
 
-
           // Tools:
 
           let coords = null;
@@ -548,6 +596,8 @@
 
           let lineToolFirstPoint = null;
           let lineToolSecondPoint = null;
+          let rectangleToolFirstPoint = null;
+          let rectangleToolSecondPoint = null;
 
           sciChartSurface
             .domCanvas2D
@@ -569,7 +619,7 @@
                   y: yCoordCalc,
                 };
 
-                console.log(coords);
+                // console.log(coords);
 
                 /*if (isListeningForToolActions) {
                   addRRAnnotationBox(EnumDirection.BULL);
@@ -582,9 +632,9 @@
                   clickCount = 0;
                 }
 
-                console.log(clickCount);
+                // console.log(clickCount);
 
-                const previewLineActions = [
+                const lineToolActions = [
                   () => {
                     lineToolFirstPoint = coords;
                   },
@@ -605,17 +655,44 @@
                   },
                 ]
 
+                const rectangleToolActions = [
+                  () => {
+                    rectangleToolFirstPoint = coords;
+                  },
+                  () => {
+                    rectangleToolSecondPoint = coords;
+                    sciChartSurface.annotations.add(
+                      new BoxAnnotation({
+                        x1: rectangleToolFirstPoint.xGraphValue,
+                        x2: rectangleToolSecondPoint.xGraphValue,
+                        y1: rectangleToolFirstPoint.yGraphValue,
+                        y2: rectangleToolSecondPoint.yGraphValue,
+                        fill: `#00FF00${RRToolStyles.opacity}`,
+                        stroke: '#00FF00',
+                        strokeThickness: 1,
+                        opacity: 0.5,
+                      })
+                    );
+                    clickCount = 0;
+                    selectedTool = null;
+                  },
+                ]
+
                 switch (selectedTool) {
                   case 'RRBuy':
                     addRRAnnotationBox(EnumDirection.BULL);
+                    clickCount = 0;
                     selectedTool = null;
                     break;
                   case 'RRSell':
                     addRRAnnotationBox(EnumDirection.SELL);
+                    clickCount = 0;
                     selectedTool = null;
                     break;
                   case 'line':
-                    stepByStep(clickCount, previewLineActions);
+                    stepByStep(clickCount, lineToolActions);
+                  case 'rectangle':
+                    stepByStep(clickCount, rectangleToolActions);
                   default: return;
                 }
               },
@@ -641,13 +718,9 @@
                   break;
                 case 'line':
                   selectedTool = 'line';
-                  /*
-                    const annotationLine = sciChartSurface.annotations.add(
-                      new LineAnnotation({ stroke: "#555555", strokeThickness: 3, x1: 1, x2: 2, y1: 4, y2: 6, }),
-                    );
-                    annotations.push(annotationLine);
-                    refreshAnnotations();
-                  */
+                  break;
+                case 'rectangle':
+                  selectedTool = 'rectangle';
                   break;
                 default:
                   console.log('No type');
