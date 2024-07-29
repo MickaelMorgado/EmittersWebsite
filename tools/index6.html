@@ -157,7 +157,7 @@
     };
 
     const getValueFromDate = (date) => {
-      return new Date(date).getTime() / 1000;
+      return new Date(date).getTime(); // / 1000;
     };
 
     function formatDate(date) {
@@ -339,21 +339,27 @@
             // Create an OHLC data series
             const ohlcDataSeries = new OhlcDataSeries(wasmContext, {
               xValues: ohlcData.map((candle, index) => {
-                let candleTime = getValueFromDate(candle.time);
-                let offsetedCandleTime = (candleTime) => candleTime - 3600 * 1; // offset data to match -1h (matching tradingview time - actuall candle bar Y axis location)
+                let candleTime = candle.time;
+                var time = candleTime.split(' ')[1];
+                var candleTimeStamp = getValueFromDate(candleTime);
 
-                let backTestTime = candleTime + 3600;
-                var time = candle.time.split(' ')[1];
+                let offsetCandleTimeStamp = (candleTimeStamp) => candleTimeStamp - 3600 * 1; // offset data to match -1h (matching tradingview time - actuall candle bar Y axis location)
+                
+                let dateOptionForSelect = candleTimeStamp;
+                let backTestTime = getValueFromDate(candleTime) + 3600;
+
                 var selectedHour = document.getElementById('backtesting-hour').value;
 
                 if (time == selectedHour) {
                   let btt = backTestTime * 1000;
                   let formatedDate = formatDate(btt);
 
+                  //debugger;
+
                   // Display Backtesting dates on the select element:
                   document
                     .getElementById('NavigateTroughtDates')
-                    .innerHTML += `<option value="${new Date(btt).toLocaleString()}">
+                    .innerHTML += `<option value="${offsetCandleTimeStamp}">
                       ${formatDate(new Date(btt))}</option>`;
 
                   // Backtesting line annotation:
@@ -406,7 +412,7 @@
 
                 indicateCandle(candle, ohlcData, index);
                 */
-                return offsetedCandleTime(candleTime);
+                return dateOptionForSelect;
               }),
               openValues: ohlcData.map((candle) => candle.open),
               highValues: ohlcData.map((candle) => candle.high),
@@ -469,6 +475,7 @@
                   getValueFromDate(selectedDate) + getCandleNumberByDay(0.1); // half of a day
                 const xAxis = sciChartSurface.xAxes.get(0);
                 const yAxis = sciChartSurface.yAxes.get(0);
+                debugger;
 
                 xAxis.visibleRange = new NumberRange(
                   rangeMinDate,
