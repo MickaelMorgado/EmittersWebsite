@@ -54,14 +54,20 @@
       position: absolute;
     }
 
-    .tools {
+    .tools,
+    .rules {
       position: fixed;
       top: var(--padding);
       right: var(--padding);
-      background-color: #222;
+      background-color: var(--transparent-dark3);
       padding: calc(var(--padding) / 2);
       border-radius: 5px;
       z-index: 2;
+    }
+
+    .rules {
+      top: auto;
+      bottom: 40px;
     }
   </style>
 </head>
@@ -135,20 +141,36 @@
           <button id="hidderReset" title="Restart" class="mybutton h-input-effects" onclick="hidderRestart()">
             <i class="fas fa-repeat"></i>
           </button>
-          <button id="hidderNextCandle" title="Reveal Next Candle" class="mybutton h-input-effects" onclick="hidderNext()">
+          <button id="hidderNextCandle" title="Reveal Next Candle" class="mybutton h-input-effects"
+            onclick="hidderNext()">
             <i class="fas fa-arrow-right"></i>
           </button>
         </div>
         <script>
+          document.addEventListener('DOMContentLoaded', () => {
+            const hidder = document.getElementById('hidder');
+            const moveButton = document.getElementById('hidderNextCandle');
+            let intervalId;
 
-          function hidderNext() {
-            let hidder = document.getElementById('hidder');
-            // Check if the left property is set, if not, initialize it
-            if (!hidder.style.left) {
-              hidder.style.left = '800px';
+            function moveElement() {
+              if (!hidder.style.left) {
+                hidder.style.left = '800px';
+              }
+              hidder.style.left = parseInt(hidder.style.left, 10) + 10 + 'px';
             }
-            hidder.style.left = parseInt(hidder.style.left, 10) + 10 + 'px';
-          }
+
+            moveButton.addEventListener('mousedown', () => {
+              intervalId = setInterval(moveElement, 50);
+            });
+
+            moveButton.addEventListener('mouseup', () => {
+              clearInterval(intervalId);
+            });
+
+            moveButton.addEventListener('mouseleave', () => {
+              clearInterval(intervalId);
+            });
+          });
 
           function hidderRestart() {
             let hidder = document.getElementById('hidder');
@@ -184,6 +206,30 @@
     <button class="mybutton h-input-effects" data-anotation="rectangle" title="Rectangle Tool" disabled>
       <i class="fa-regular fa-square"></i> Rectangle
     </button>
+  </div>
+  <div class="rules">
+    <ol style="width: 300px; padding: 0;">
+      <li class="flex-container">
+        <input type="checkbox" id="rule1">
+        <label for="rule1">HLs / LHs</label>
+      </li>
+      <li class="flex-container">
+        <input type="checkbox" id="rule2">
+        <label for="rule2">Breakout MSS (closed)</label>
+      </li>
+      <li class="flex-container">
+        <input type="checkbox" id="rule4">
+        <label for="rule4">Has good RR FVG TP Target</label>
+      </li>
+      <li class="flex-container">
+        <input type="checkbox" id="rule3">
+        <label for="rule3">MSS Breaker has FVG (Displacement from a Liquidity)</label>
+      </li>
+      <li class="flex-container">
+        <input type="checkbox" id="rule4">
+        <label for="rule4">Pullback at FVG (50% above)</label>
+      </li>
+    </ol>
   </div>
   <div id="hidder"></div>
   <div id="scichart-root" style="height: 100vh"></div>
@@ -395,11 +441,11 @@
                 let candleTime = candle.time;
                 let unixTime = convertMT5DateToUnix(candleTime);
                 let time = candleTime.split(' ')[1];
-                
+
                 var candleTimeStamp = getCandleChartAxisLocationFromDate(candleTime);
 
                 let offsetCandleTimeStamp = (candleTimeStamp) => candleTimeStamp - 3600 * 1; // offset data to match -1h (matching tradingview time - actuall candle bar Y axis location)
-                
+
                 let offsetedCandleTime = offsetCandleTimeStamp(candleTimeStamp);
                 let dateOptionForSelect = candleTimeStamp;
                 let backTestTime = getCandleChartAxisLocationFromDate(candleTime) + 3600;
@@ -466,7 +512,7 @@
 
                   indicateCandle(candle, ohlcData, index);
                 */
-                
+
                 return unixTime + 3600;
               }),
               openValues: ohlcData.map((candle) => candle.open),
