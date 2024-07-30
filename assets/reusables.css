@@ -8,6 +8,8 @@
   --primary: #ff394a;
   --primary2: #ff000f;
   --success: #55cf77;
+  --transparent-grey1: rgba(85, 85, 85, 0.5);
+  --transparent-dark3: rgba(34, 34, 34, 0.5);
   --padding: calc(var(--border) + var(--border));
   --padding-medium: calc(var(--padding) + var(--border));
   --padding-large: calc(var(--padding-medium) + var(--padding-medium));
@@ -16,13 +18,41 @@
 
 input,
 select,
-.mybutton {
+.mybutton,
+input[type="checkbox"]::before {
   background: black;
   margin: 0;
   color: white;
   padding: 10px;
   border: 2px solid #222;
   border-radius: 3px;
+}
+
+input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  position: relative;
+  appearance: none;
+  visibility: hidden;
+  margin-right: var(--padding);
+}
+
+input[type="checkbox"]::before {
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  display: inline-block;
+  content: "";
+  visibility: visible;
+  width: 17px;
+  height: 17px;
+  padding: 0;
+}
+
+input[type="checkbox"]:checked::before {
+  box-shadow: inset 0 0 0 3px var(--dark1);
+  background-color: var(--primary);
 }
 
 input:disabled,
