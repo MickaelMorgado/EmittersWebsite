@@ -43,6 +43,17 @@
       margin-left: var(--main-width);
     }
 
+    #hidder {
+      display: none;
+      left: 800px;
+      right: 69px;
+      top: 0;
+      bottom: 24px;
+      background: #141515;
+      z-index: 1;
+      position: absolute;
+    }
+
     .tools {
       position: fixed;
       top: var(--padding);
@@ -50,7 +61,7 @@
       background-color: #222;
       padding: calc(var(--padding) / 2);
       border-radius: 5px;
-      z-index: 1;
+      z-index: 2;
     }
   </style>
 </head>
@@ -119,6 +130,37 @@
         <input id="SLPips" type="number" value="0.0001" class="h-input-effects" />
         <input id="TPPips" type="number" value="0.0003" class="h-input-effects" />
         <hr class="h-hr" />
+        <label for="">Hidder</label>
+        <div class="h-flex">
+          <button id="hidderReset" title="Restart" class="mybutton h-input-effects" onclick="hidderRestart()">
+            <i class="fas fa-repeat"></i>
+          </button>
+          <button id="hidderNextCandle" title="Reveal Next Candle" class="mybutton h-input-effects" onclick="hidderNext()">
+            <i class="fas fa-arrow-right"></i>
+          </button>
+        </div>
+        <script>
+
+          function hidderNext() {
+            let hidder = document.getElementById('hidder');
+            // Check if the left property is set, if not, initialize it
+            if (!hidder.style.left) {
+              hidder.style.left = '800px';
+            }
+            hidder.style.left = parseInt(hidder.style.left, 10) + 10 + 'px';
+          }
+
+          function hidderRestart() {
+            let hidder = document.getElementById('hidder');
+            if (hidder.style.display === 'none') {
+              hidder.style.display = 'block';
+            } else {
+              hidder.style.display = 'none';
+            }
+            hidder.style.left = "800px";
+          }
+        </script>
+        <hr class="h-hr" />
         <label for="backtesting-hour">Win Rate</label>
         <input type="number" />
         <input type="number" />
@@ -143,6 +185,7 @@
       <i class="fa-regular fa-square"></i> Rectangle
     </button>
   </div>
+  <div id="hidder"></div>
   <div id="scichart-root" style="height: 100vh"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/scichart/index.min.js"></script>
@@ -156,9 +199,12 @@
       BEAR: 'BEAR',
     };
 
-    const getValueFromDate = (date) => {
+    const getCandleChartAxisLocationFromDate = (date) => {
       return new Date(date).getTime(); // / 1000;
     };
+
+    // Window assignments:
+    window.getCandleChartAxisLocationFromDate = getCandleChartAxisLocationFromDate;
 
     function formatDate(date) {
       const options = {
@@ -176,6 +222,11 @@
     // Handy function to execute actions step by step:
     const stepByStep = (step, actions) => {
       return actions[step - 1]();
+    };
+
+    const convertMT5DateToUnix = (candleTime) => {
+      const ct = candleTime.replace('.', '-').replace('.', '-');
+      return new Date(ct).getTime() / 1000;
     };
 
     document
@@ -234,6 +285,7 @@
         EHorizontalAnchorPoint,
         ENumericFormat,
         EDateFormatter,
+        Point,
       } = SciChart;
 
       // Tell SciChart where to get webassembly files from.
@@ -339,14 +391,18 @@
             // Create an OHLC data series
             const ohlcDataSeries = new OhlcDataSeries(wasmContext, {
               xValues: ohlcData.map((candle, index) => {
+                const firstDateOfData = new Date(ohlcData[0].time);
                 let candleTime = candle.time;
-                var time = candleTime.split(' ')[1];
-                var candleTimeStamp = getValueFromDate(candleTime);
+                let unixTime = convertMT5DateToUnix(candleTime);
+                let time = candleTime.split(' ')[1];
+                
+                var candleTimeStamp = getCandleChartAxisLocationFromDate(candleTime);
 
                 let offsetCandleTimeStamp = (candleTimeStamp) => candleTimeStamp - 3600 * 1; // offset data to match -1h (matching tradingview time - actuall candle bar Y axis location)
                 
+                let offsetedCandleTime = offsetCandleTimeStamp(candleTimeStamp);
                 let dateOptionForSelect = candleTimeStamp;
-                let backTestTime = getValueFromDate(candleTime) + 3600;
+                let backTestTime = getCandleChartAxisLocationFromDate(candleTime) + 3600;
 
                 var selectedHour = document.getElementById('backtesting-hour').value;
 
@@ -354,13 +410,11 @@
                   let btt = backTestTime * 1000;
                   let formatedDate = formatDate(btt);
 
-                  //debugger;
-
                   // Display Backtesting dates on the select element:
                   document
                     .getElementById('NavigateTroughtDates')
-                    .innerHTML += `<option value="${offsetCandleTimeStamp}">
-                      ${formatDate(new Date(btt))}</option>`;
+                    .innerHTML += `<option value="${unixTime}">
+                      ${candleTime}</option>`;
 
                   // Backtesting line annotation:
                   sciChartSurface.annotations.add(
@@ -368,51 +422,52 @@
                       stroke: '#999',
                       axisLabelFill: '#999',
                       strokeThickness: 1,
-                      x1: backTestTime,
+                      x1: unixTime + 3600,
                       showLabel: true,
                       labelPlacement: ELabelPlacement.TopLeft,
-                      labelValue: `${formatDate(new Date(btt))}`,
+                      labelValue: `${candleTime}`,
                     })
                   );
                 }
 
                 // Add annotations for MSS:
                 /*
-                const indicateCandle = (candle, ohlcData, index) => {
-                  const analysisRange = 1;
-                  const currentCandleLocation = offsetedCandleTime(getValueFromDate(candle.time));
-                  const currentCandleLocationOffseted = offsetedCandleTime(getValueFromDate(candle.time)) - 3600 * analysisRange;
+                  const indicateCandle = (candle, ohlcData, index) => {
+                    const analysisRange = 1;
+                    const currentCandleLocation = offsetedCandleTime(getCandleChartAxisLocationFromDate(candle.time));
+                    const currentCandleLocationOffseted = offsetedCandleTime(getCandleChartAxisLocationFromDate(candle.time)) - 3600 * analysisRange;
 
-                  if (index - analysisRange >= analysisRange && index - analysisRange < ohlcData.length && ohlcData[index - analysisRange] !== undefined) {
-                    const x1 = currentCandleLocationOffseted;
-                    const y1 = ohlcData[index - analysisRange].close;
-                    const midCandleIndex = index - analysisRange;
-                    const farLeftIndex = index - analysisRange - analysisRange;
+                    if (index - analysisRange >= analysisRange && index - analysisRange < ohlcData.length && ohlcData[index - analysisRange] !== undefined) {
+                      const x1 = currentCandleLocationOffseted;
+                      const y1 = ohlcData[index - analysisRange].close;
+                      const midCandleIndex = index - analysisRange;
+                      const farLeftIndex = index - analysisRange - analysisRange;
 
-                    isAfterPriceLower = ohlcData[index].high < ohlcData[midCandleIndex].high
-                    isBeforePriceLower = ohlcData[farLeftIndex].high < ohlcData[midCandleIndex].high
-                    if (isAfterPriceLower && isBeforePriceLower) {
-                      const middleCandle = ohlcData[midCandleIndex];
-                      //debugger
-                      const middleCandleLocation = offsetedCandleTime(getValueFromDate(middleCandle.time));
-                      //console.log(x, a);
-                      sciChartSurface.annotations.add(
-                        new CustomAnnotation({
-                          x1,
-                          y1,
-                          verticalAnchorPoint: EVerticalAnchorPoint.Top,
-                          horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
-                          svgString:
-                            '<svg id="Capa_1" xmlns="http://www.w3.org/2000/svg"><g transform="translate(-53.867218,-5.091687)"><path style="fill:#1cb61c;fill-opacity:0.34117647;stroke:#00b400;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" d="m 55.47431,83.481251 c 7.158904,-7.408333 7.158904,-7.408333 7.158904,-7.408333 l 7.158906,7.408333 H 66.212668 V 94.593756 H 59.053761 V 83.481251 Z"/></g></svg>',
-                        })
-                      );
+                      isAfterPriceLower = ohlcData[index].high < ohlcData[midCandleIndex].high
+                      isBeforePriceLower = ohlcData[farLeftIndex].high < ohlcData[midCandleIndex].high
+                      if (isAfterPriceLower && isBeforePriceLower) {
+                        const middleCandle = ohlcData[midCandleIndex];
+                        //debugger
+                        const middleCandleLocation = offsetedCandleTime(getCandleChartAxisLocationFromDate(middleCandle.time));
+                        //console.log(x, a);
+                        sciChartSurface.annotations.add(
+                          new CustomAnnotation({
+                            x1,
+                            y1,
+                            verticalAnchorPoint: EVerticalAnchorPoint.Top,
+                            horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
+                            svgString:
+                              '<svg id="Capa_1" xmlns="http://www.w3.org/2000/svg"><g transform="translate(-53.867218,-5.091687)"><path style="fill:#1cb61c;fill-opacity:0.34117647;stroke:#00b400;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" d="m 55.47431,83.481251 c 7.158904,-7.408333 7.158904,-7.408333 7.158904,-7.408333 l 7.158906,7.408333 H 66.212668 V 94.593756 H 59.053761 V 83.481251 Z"/></g></svg>',
+                          })
+                        );
+                      }
                     }
-                  }
-                };
+                  };
 
-                indicateCandle(candle, ohlcData, index);
+                  indicateCandle(candle, ohlcData, index);
                 */
-                return dateOptionForSelect;
+                
+                return unixTime + 3600;
               }),
               openValues: ohlcData.map((candle) => candle.open),
               highValues: ohlcData.map((candle) => candle.high),
@@ -466,23 +521,19 @@
             document
               .getElementById('NavigateTroughtDates')
               .addEventListener('change', function (event) {
-                const getCandleNumberByDay = (days) => 86400 * days;
+                const getCandleNumberByDay = (days) => 86400 * days; // Get the number of candles in a day (candle count for a entire day)
                 const selectedDate = event.target.value;
-                const rangeMinDate =
-                  getValueFromDate(selectedDate) +
-                  getCandleNumberByDay(-0.025); // early in the morning
-                const rangeMaxDate =
-                  getValueFromDate(selectedDate) + getCandleNumberByDay(0.1); // half of a day
+                const rangeMinDate = parseInt(selectedDate) + 1800 // + half an hour
+                const rangeMaxDate = parseInt(selectedDate) + getCandleNumberByDay(0.1); // getCandleChartAxisLocationFromDate(selectedDate) + getCandleNumberByDay(0.1); // half of a day
                 const xAxis = sciChartSurface.xAxes.get(0);
                 const yAxis = sciChartSurface.yAxes.get(0);
-                debugger;
 
                 xAxis.visibleRange = new NumberRange(
                   rangeMinDate,
                   rangeMaxDate
                 );
                 // yAxis.visibleRange = new NumberRange(1.07, 1.084);
-                //sciChartSurface.zoomExtents();
+                // sciChartSurface.zoomExtents();
               });
 
             sciChartSurface.chartModifiers.add(
