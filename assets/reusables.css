@@ -80,6 +80,10 @@ select:disabled:hover,
   gap: var(--padding);
 }
 
+.h-flex--center {
+  align-items: center;
+}
+
 .h-flex--column {
   flex-direction: column;
 }
@@ -144,6 +148,14 @@ select:disabled:hover,
 
 .h-padded {
   padding: var(--padding-large);
+}
+
+.h-padded-medium {
+  padding: var(--padding-medium);
+}
+
+.h-padded-small {
+  padding: var(--padding);
 }
 
 .h-ellipsis {
