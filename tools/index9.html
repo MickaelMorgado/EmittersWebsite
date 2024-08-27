@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+        integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&display=swap">
+    <script src="../assets/reusables.js"></script>
+
+    <title>Web3 Financial Dashboard</title>
+    <style>
+        body {
+            font-family: 'Ubuntu', sans-serif;
+            background-color: #000000;
+            color: #EDEDED;
+        }
+
+        .card {
+            border: 1px solid #222;
+            background: #111111;
+            border-radius: 15px;
+            box-shadow: 5px 5px 15px #000000, -5px -5px 15px #1A1A1A;
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 10px 10px 30px #000000, -10px -10px 30px #1A1A1A;
+        }
+
+        .card-header {
+            border-bottom: none;
+            color: #888888;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .card-title {
+            color: #EDEDED;
+            font-size: 1.75rem;
+            font-weight: bold;
+        }
+
+        .card-text {
+            color: #BBBBBB;
+        }
+
+        .container {
+            padding-top: 50px;
+        }
+
+        canvas {
+            margin-top: 20px;
+            background-color: #111111;
+            border-radius: 15px;
+            padding: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+    
+
+        <div class="row">
+            <!-- Total Balance -->
+            <div class="col-md-4 mb-4">
+                <div class="card p-3">
+                    <div class="card-header">Hypothetical Total Balance</div>
+                    <div class="card-body">
+                        <h5 class="card-title">$<span id="HTP"></span></h5>
+                        <p class="card-text">Your total balance across all accounts.</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Profit Factor -->
+            <div class="col-md-4 mb-4">
+                <div class="card p-3">
+                    <div class="card-header">Profit Factor</div>
+                    <div class="card-body">
+                        <h5 class="card-title">$1.45</h5>
+                        <p class="card-text">Revenue generated this month.</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Accumulated Commisions -->
+            <div class="col-md-4 mb-4">
+                <div class="card p-3">
+                    <div class="card-header">Accumulated Commisions</div>
+                    <div class="card-body">
+                        <h5 class="card-title">-$5,000</h5>
+                        <p class="card-text">Expenses incurred this month.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Revenue Chart -->
+            <div class="col-md-12">
+                <canvas id="revenueChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    async function runProcess() {
+        try {
+            let labels = [];
+            let revenueData = [];
+            let values = [];
+
+            getGoogleSheetData(
+                '19Xef2pU1IGmlTo07YvrCO1cMlB0QgBwkMQ3Xy7xo1Tc',
+                'EURUSD - Trading History LDN Scalp',
+                'A3:Z260'
+            )
+                .then((rowData) => {
+                    values = extractArrayFromRows(rowData, 16);
+                    init(values);
+                })
+                .catch((error) => {
+                    console.error('Error fetching data:', error);
+                });
+
+            const init = (values) => {
+                values.forEach((row, index) => {
+                    // Extract label and revenue data
+                    labels.push(index); // Adjust if labels are in a different column
+                    revenueData.push(parseFloat(row)); // Adjust if data is in a different column
+                    
+                    const parsedValue = parseFloat(row);
+                    if (!isNaN(parsedValue)) {
+                        lastValidNumber = parsedValue;
+                        document.getElementById('HTP').innerText = `${parsedValue}`;
+                    } else if (lastValidNumber !== null) {
+                        document.getElementById('HTP').innerText = `${lastValidNumber}`;
+                    } else {
+                        document.getElementById('HTP').innerText = 'Invalid number';
+                    }
+                });
+
+
+            // Update Revenue Chart with fetched data
+            var ctx = document.getElementById('revenueChart').getContext('2d');
+            
+            gradient = ctx.createLinearGradient(0, 25, 0, 800);
+            gradient.addColorStop(0, 'rgba(0, 255, 100, 1)');
+            gradient.addColorStop(1, 'rgba(0,0,0,0)');
+            
+            var revenueChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Profit Factor by session',
+                        data: revenueData,
+                        // backgroundColor: 'rgba(0, 255, 100, 0.3)',  // Light greenish color with transparency
+                        backgroundColor: gradient,
+                        borderColor: 'rgba(0, 255, 100, 1)',      // Brighter green for the line
+                        borderWidth: 2,
+                        fill: true,
+                        pointStyle: false, // 'rectRot',
+                        //pointRadius: 3,
+                        //pointBackgroundColor: '#FFFFFF',             // White points for high contrast
+                        pointBorderColor: 'rgba(0,0,0,0)', // 'rgba(34, 193, 195, 1)',   // Green border for the points
+                        pointHoverRadius: 7,
+                        pointHoverBackgroundColor: '#000000',         // Black on hover for visibility
+                        pointHoverBorderColor: 'rgba(0,0,0,0)', // 'rgba(34, 193, 195, 1)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false,
+                                color: '#333333'
+                            }
+                        },
+                        y: {
+                            grid: {
+                                color: '#333333'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#EDEDED'  // Light text for the legend
+                            }
+                        }
+                    }
+                }
+            });
+            }
+
+
+
+        } catch (error) {
+            console.error('Error fetching data from Google Sheets:', error);
+        }
+    }
+
+    // Run the function to fetch and update chart
+    runProcess();
+</script>
+
+
+</body>
+
+</html>
