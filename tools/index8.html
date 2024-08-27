@@ -1,0 +1,57 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+        integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.12.1/css/selectize.default.css">
+    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css.css">
+    <title>QuickPosting</title>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"
+        integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.12.1/js/standalone/selectize.min.js"></script>
+    <script defer src="https://friconix.com/cdn/friconix.js"></script>
+    <link href="../assets/fonts/css/all.css" rel="stylesheet">
+    <link href="css.css" rel="stylesheet">
+    <script src="js.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ffmpeg/0.12.10/umd/ffmpeg.min.js" integrity="sha512-j2FJMGBh+AdPWKCKDqIzH67vu4ps8OsNZqqetz8YSlbwy2ZwFTL+p6Hp1j17nL0B7IDl9E4zhPUXZKwz7MzjQQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+
+<body class="style-trade">
+    <div class="container">
+        <div class="col padded">
+            <h1>test</h1>
+        </div>
+    </div>
+</body>
+
+<script>
+    document.ready = function() {
+        console.log('ready');
+        const ffmpeg = window.ffmpeg;
+        console.log(ffmpeg);
+    }
+
+    async function loadFFmpeg() {
+        
+      if (window.FFmpegWASM) {
+        const { createFFmpeg, fetchFile } = window.FFmpegWASM;
+        debugger
+        const ffmpeg = createFFmpeg({ log: true });
+
+        await ffmpeg.load();
+        console.log('FFmpegWASM loaded successfully!');
+        // Add additional FFmpeg operations here
+      } else {
+        console.error('FFmpegWASM is not available in window.');
+      }
+    }
+
+    loadFFmpeg()
+</script>
+
+</html>
