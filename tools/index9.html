@@ -73,7 +73,7 @@
                         dataRows = extractArrayFromRows(rowData, columnToIndex("Q"));
                         dates = extractArrayFromRows(rowData, columnToIndex("A"));
                         
-                        for (let i = 0; i < rowData.length - 22; i++) {
+                        for (let i = 0; i < rowData.length; i++) {
                             const row = rowData[i];
                             document
                                 .querySelector("[data-table1='date']")
