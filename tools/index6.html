@@ -190,24 +190,35 @@
         <div>
           <textarea id="csvContent" rows="10" style="width: 100%" class="h-field"></textarea>
         </div>
+        <hr class="h-hr" />
+        <div>
+          you can customize the colors by adding the following parameters to the URL:
+          <textarea style="width: 100%" class="h-field">?bullishColor=00FF00&bearishColor=00FFFF</textarea>
+        </div>
       </div>
     </div>
   </div>
   <div class="tools">
-    <button class="mybutton h-input-effects" data-anotation="RRBuy" title="RR Tool" disabled>
-      <i class="fas fa-ruler-combined"></i> Buy
+    <button class="mybutton h-input-effects" data-anotation="RRBuy" title="RR Tool (Buy)" disabled>
+      <i class="fas fa-ruler-combined"></i>
     </button>
-    <button class="mybutton h-input-effects" data-anotation="RRSell" title="RR Tool" disabled>
-      <i class="fas fa-ruler-combined"></i> Sell
+    <button class="mybutton h-input-effects" data-anotation="RRSell" title="RR Tool (Sell)" disabled>
+      <i class="fas fa-ruler-combined"></i>
     </button>
     <button class="mybutton h-input-effects" data-anotation="line" title="Line Tool" disabled>
-      <i class="fas fa-grip-lines"></i> Line
+      <i class="fas fa-grip-lines"></i>
+    </button>
+    <button class="mybutton h-input-effects" data-anotation="BOS" title="BOS Tool" disabled>
+      <i class="fas fa-grip-lines"></i>
+    </button>
+    <button class="mybutton h-input-effects" data-anotation="Circle" title="Circle Tool" disabled>
+      <i class="fas fa-circle"></i>
     </button>
     <button class="mybutton h-input-effects" data-anotation="rectangle" title="Rectangle Tool" disabled>
-      <i class="fa-regular fa-square"></i> Rectangle
+      <i class="fa-regular fa-square"></i>
     </button>
   </div>
-  <div class="rules">
+  <!--div class="rules">
     <ol style="width: 300px; padding: 0;">
       <li class="flex-container">
         <input type="checkbox" id="rule1">
@@ -230,7 +241,7 @@
         <label for="rule4">Pullback at FVG (50% above)</label>
       </li>
     </ol>
-  </div>
+  </div-->
   <div id="hidder"></div>
   <div id="scichart-root" style="height: 100vh"></div>
 
@@ -342,6 +353,15 @@
         theme: new SciChartJsNavyTheme(),
       })
         .then(({ sciChartSurface, wasmContext }) => {
+
+          let bullishColor = '#FFF';
+          let bearishColor = '#F00';
+
+          // Extract URL parameters
+          const urlParams = new URLSearchParams(window.location.search);
+          bullishColor = decodeURIComponent(urlParams.get('bullishColor') || bullishColor);
+          bearishColor = decodeURIComponent(urlParams.get('bearishColor') || bearishColor);
+          
           // Create a custom theme by implementing all the properties from IThemeProvider
           const customTheme = {
             axisBorder: 'Transparent',
@@ -356,8 +376,8 @@
             cursorLineBrush: '#111',
             downBandSeriesFillColor: '#52CC5490',
             downBandSeriesLineColor: '#E26565FF',
-            downBodyBrush: '#F00',
-            downWickColor: '#F00',
+            downBodyBrush: bearishColor,
+            downWickColor: bearishColor,
             gridBackgroundBrush: 'white',
             gridBorderBrush: 'white',
             labelForegroundBrush: '#EEEEEE',
@@ -374,7 +394,7 @@
             rolloverLineBrush: '#FD9F2533',
             rubberBandFillBrush: '#99999933',
             rubberBandStrokeBrush: '#99999977',
-            sciChartBackground: '#111',
+            sciChartBackground: '#000',
             scrollbarBackgroundBrush: 'white',
             scrollbarBorderBrush: 'white',
             scrollbarGripsBackgroundBrush: 'white',
@@ -386,8 +406,8 @@
             tickTextBrush: '#333',
             upBandSeriesFillColor: 'white',
             upBandSeriesLineColor: 'white',
-            upBodyBrush: '#FFF',
-            upWickColor: '#FFF',
+            upBodyBrush: bullishColor,
+            upWickColor: bullishColor,
           };
 
           // customTheme = new SciChartJsNavyTheme();
@@ -653,7 +673,7 @@
                   coords.xGraphValue,
                   coords.yGraphValue,
                   {
-                    fill: `#00FF00${RRToolStyles.opacity}`,
+                    fill: `#${bullishColor}${RRToolStyles.opacity}`,
                     y2: coords.yGraphValue + tpSize,
                   },
                 )
@@ -663,7 +683,7 @@
                   coords.xGraphValue,
                   coords.yGraphValue,
                   {
-                    fill: `#FF0000${RRToolStyles.opacity}`,
+                    fill: `#${bearishColor}${RRToolStyles.opacity}`,
                     y2: coords.yGraphValue - slSize,
                   },
                 )
@@ -674,7 +694,7 @@
                   coords.xGraphValue,
                   coords.yGraphValue,
                   {
-                    fill: `#00FF00${RRToolStyles.opacity}`,
+                    fill: `#${bullishColor}${RRToolStyles.opacity}`,
                     y2: coords.yGraphValue - tpSize,
                   },
                 )
@@ -684,7 +704,7 @@
                   coords.xGraphValue,
                   coords.yGraphValue,
                   {
-                    fill: `#FF0000${RRToolStyles.opacity}`,
+                    fill: `#${bearishColor}${RRToolStyles.opacity}`,
                     y2: coords.yGraphValue + slSize,
                   },
                 )
@@ -746,8 +766,8 @@
                     lineToolSecondPoint = coords;
                     sciChartSurface.annotations.add(
                       new LineAnnotation({
-                        stroke: '#555555',
-                        strokeThickness: 2,
+                        stroke: `#${bullishColor}`,
+                        strokeThickness: 1,
                         x1: lineToolFirstPoint.xGraphValue,
                         x2: lineToolSecondPoint.xGraphValue,
                         y1: lineToolFirstPoint.yGraphValue,
@@ -757,6 +777,56 @@
                     clickCount = 0;
                     selectedTool = null;
                   },
+                ]
+
+                const BOSActions = [
+                  () => {
+                    lineToolFirstPoint = coords;
+                  },
+                  () => {
+                    lineToolSecondPoint = {
+                      ...coords,
+                      yGraphValue: lineToolFirstPoint.yGraphValue, 
+                    };
+                    sciChartSurface.annotations.add(
+                      new LineAnnotation({
+                        stroke: `#${bullishColor}`,
+                        strokeThickness: 1,
+                        x1: lineToolFirstPoint.xGraphValue,
+                        x2: lineToolSecondPoint.xGraphValue,
+                        y1: lineToolFirstPoint.yGraphValue,
+                        y2: lineToolSecondPoint.yGraphValue,
+                      })
+                    );
+                    clickCount = 0;
+                    selectedTool = null;
+                  },
+                ]
+
+                const CircleActions = [
+                  () => {
+                    lineToolFirstPoint = coords;
+                    sciChartSurface.annotations.add(
+                      new CustomAnnotation({
+                        x1: lineToolFirstPoint.xGraphValue,
+                        y1: lineToolFirstPoint.yGraphValue,
+                        verticalAnchorPoint: EVerticalAnchorPoint.Center,
+                        horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
+                        svgString: '<svg id="Capa_1" xmlns="http://www.w3.org/2000/svg">' +
+                                   `<circle cx="10" cy="10" r="8" style="fill:#${bullishColor};fill-opacity:0.34117647;stroke:#${bullishColor};stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />` +
+                                   '</svg>',
+ 
+                      })
+                    );
+                    clickCount = 0;
+                    selectedTool = null;
+                  },
+                  /*() => {
+                    lineToolSecondPoint = {
+                      ...coords,
+                      yGraphValue: lineToolFirstPoint.yGraphValue, 
+                    };
+                  },*/
                 ]
 
                 const rectangleToolActions = [
@@ -771,8 +841,8 @@
                         x2: rectangleToolSecondPoint.xGraphValue,
                         y1: rectangleToolFirstPoint.yGraphValue,
                         y2: rectangleToolSecondPoint.yGraphValue,
-                        fill: `#00FF00${RRToolStyles.opacity}`,
-                        stroke: '#00FF00',
+                        fill: `#${bullishColor}${RRToolStyles.opacity}`,
+                        stroke: `#${bullishColor}`,
                         strokeThickness: 1,
                         opacity: 0.5,
                       })
@@ -795,8 +865,16 @@
                     break;
                   case 'line':
                     stepByStep(clickCount, lineToolActions);
+                    break;
+                  case 'BOS':
+                    stepByStep(clickCount, BOSActions);
+                    break;
+                  case 'Circle':
+                    stepByStep(clickCount, CircleActions);
+                    break;
                   case 'rectangle':
                     stepByStep(clickCount, rectangleToolActions);
+                    break;
                   default: return;
                 }
               },
@@ -822,6 +900,12 @@
                   break;
                 case 'line':
                   selectedTool = 'line';
+                  break;
+                case 'BOS':
+                  selectedTool = 'BOS';
+                  break;
+                case 'Circle':
+                  selectedTool = 'Circle';
                   break;
                 case 'rectangle':
                   selectedTool = 'rectangle';
