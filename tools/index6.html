@@ -533,7 +533,7 @@
                   indicateCandle(candle, ohlcData, index);
                 */
 
-                return unixTime + 3600;
+                return unixTime - 3600;
               }),
               openValues: ohlcData.map((candle) => candle.open),
               highValues: ohlcData.map((candle) => candle.high),
