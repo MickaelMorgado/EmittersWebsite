@@ -70,7 +70,7 @@
                     `A${readSheetDataRangeMin}:Z${readSheetDataRangeMax}`
                 )
                     .then((rowData) => {
-                        dataRows = extractArrayFromRows(rowData, columnToIndex("Q"));
+                        dataRows = extractArrayFromRows(rowData, columnToIndex("R"));
                         dates = extractArrayFromRows(rowData, columnToIndex("A"));
                         
                         for (let i = 0; i < rowData.length; i++) {
