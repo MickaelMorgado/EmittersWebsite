@@ -11,7 +11,7 @@
   --black-rgb: 0, 0, 0;
   --header-offset: 100px;
   --header-offset-tablet: 82px;
-  --transition-time: .2s;
+  --transition-time: 0.2s;
 }
 
 html,
@@ -75,6 +75,7 @@ select,
 
 .mybutton__big-picture {
   position: relative;
+  background-position: center;
   background-size: 100% auto;
   width: 300px;
   height: 150px;
