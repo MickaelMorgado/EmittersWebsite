@@ -1968,7 +1968,7 @@
                 'A3:Z260'
             )
                 .then((rowData) => {
-                    const listOfImagesSrcs = extractArrayFromRows(rowData, columnToIndex("J"));
+                    const listOfImagesSrcs = extractArrayFromRows(rowData, 3);
                     init(listOfImagesSrcs);
                 })
                 .catch((error) => {
@@ -2036,7 +2036,7 @@
 
                     // object.position.x = (i % 10) * w + wOffset / 4 * (i % 10); // Reset x position for each row
          
-                    const gridSize = 30; // Define the size of your grid
+                    const gridSize = 8; // Define the size of your grid
                     const spacing = wOffset; // Define the spacing between objects
 
                     const x = (i % gridSize) * spacing * 9;

@@ -1,65 +1,94 @@
 <!doctype html>
-<html>
+<html class="h-full">
 
 <head>
     <meta charset="utf-8">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
         integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.12.1/css/selectize.default.css">
-    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="./assets/css.css">
+    <!--link rel="stylesheet" href="./assets/css.css"-->
     <title>QuickPosting</title>
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"
         integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.12.1/js/standalone/selectize.min.js"></script>
     <script defer src="https://friconix.com/cdn/friconix.js"></script>
-    <link href="./assets/fonts/css/all.css" rel="stylesheet"> <!--load all styles -->
+    <!--link href="./assets/fonts/css/all.css" rel="stylesheet"--> <!--load all styles -->
     <script src="notify.min.js"></script>
     <script src="clipboard.min.js"></script>
     <script src="./tools/js.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+    <link rel="icon" href="https://ui-avatars.com/api/?name=H&rounded=true&background=000000&color=ffffff" type="image/png">
+    <script>document.addEventListener('DOMContentLoaded', function() { document.title = `HYTEK - ${document.getElementsByTagName("h1")[0].innerText}` });</script>
+    <style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Saira+Condensed:wght@100;200;300;400;500;600;700;800;900&family=Teko:wght@300..700&display=swap');</style>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                fontFamily: {
+                    saira: ['Saira Condensed', 'sans-serif'],
+                },
+                letterSpacing: {
+                    wide: '1em', // class='tracking-wide'
+                },
+                extend: {
+                    colors: {
+                        primary: '#ff394a',
+                        secondary: '#00222D',
+                        grey: '#888',
+                        grey_dark: '#333',
+                    }
+                }
+            }
+        }
+    </script>
 </head>
 
-<body>
-    <div class="col padded">
-        <h1>Mickael</h1>
-        <a 
-            href="https://www.youtube.com/@HYTEK94"
-            style="background-image: url('https://yt3.googleusercontent.com/mB3_xUFuoL6GVzt-ie5ylQLwmt9cmkQxc8W7r-vLM_4uojmckdgCDarMmgGLIYz8DgENvJHk=w1060-fcrop64=1,00005a57ffffa5a8-k-c0xffffffff-no-nd-rj');"
-            class="mybutton mybutton__big-picture"
-            title="Youtube Channel"
-						target="_blank"
-					>
-            <div class="mybutton__text ellipsis">Youtube Channel</div>
-        </a>
-        <a 
-            href="https://www.tiktok.com/@mickaelmorgado7"
-            style="background-image: url('https://media.cnn.com/api/v1/images/stellar/prod/gettyimages-1470268139.jpg?c=16x9&q=h_833,w_1480,c_fill');"
-            class="mybutton mybutton__big-picture"
-            title="Tiktok"
-						target="_blank"
-					>
-            <div class="mybutton__text ellipsis">Tiktok (mickaelmorgado7)</div>
-        </a>
-        <a 
-            href="https://emittersgame.com"
-            style="background-image: url('https://emittersgame.com/assets/images/1.jpg');"
-            class="mybutton mybutton__big-picture"
-            title="My Game (Emitters)"
-						target="_blank"
-					>
-            <div class="mybutton__text ellipsis">My Game (Emitters)</div>
-        </a>
-        <a 
-            href="https://www.instagram.com/noirdrivenantagonists/"
-            style="background-image: url('./assets/images/357127350_574345674872819_4669765311118751170_n.jpeg');"
-            class="mybutton mybutton__big-picture"
-            title="Instagram (noirdrivenantagonists)"
-						target="_blank"
-					>
-            <div class="mybutton__text ellipsis">Instagram (noirdrivenantagonists)</div>
-        </a>
+<body class="font-saira bg-no-repeat h-full bg-gradient-to-br from-black via-black to-secondary text-grey">
+    <div class="p-10">
+        <div class="container m-auto">
+            <div class="flex">
+                <h1 class="text-4xl font-bold uppercase">Mickael</h1>
+            </div>
+            <div class="flex flex-wrap py-8 gap-12">
+                <a 
+                    href="https://www.youtube.com/@HYTEK94"
+                    style="background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 1)), url('https://yt3.googleusercontent.com/mB3_xUFuoL6GVzt-ie5ylQLwmt9cmkQxc8W7r-vLM_4uojmckdgCDarMmgGLIYz8DgENvJHk=w1060-fcrop64=1,00005a57ffffa5a8-k-c0xffffffff-no-nd-rj');"
+                    class="relative group rounded-lg border-2 border-grey_dark w-96 h-40 transition-all duration-1000 ease-out bg-center bg-no-repeat bg-[length:105%_auto] hover:bg-[length:150%_auto]"
+                    title="Youtube Channel"
+                                target="_blank"
+                            >
+                    <div class="card-content text-lg text-right text-grey-500 opacity-20 group-hover:opacity-100 group-hover:text-primary transition-all duration-700 absolute bottom-0 right-0 px-4 py-3">Youtube Channel</div>
+                </a>
+                <a 
+                    href="https://www.tiktok.com/@mickaelmorgado7"
+                    style="background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 1)), url('https://media.cnn.com/api/v1/images/stellar/prod/gettyimages-1470268139.jpg?c=16x9&q=h_833,w_1480,c_fill');"
+                    class="relative group rounded-lg border-2 border-grey_dark w-96 h-40 transition-all duration-1000 ease-out bg-center bg-no-repeat bg-[length:105%_auto] hover:bg-[length:150%_auto]"
+                    title="Tiktok"
+                                target="_blank"
+                            >
+                    <div class="card-content text-lg text-right text-grey-500 opacity-20 group-hover:opacity-100 group-hover:text-primary transition-all duration-700 absolute bottom-0 right-0 px-4 py-3">Tiktok (mickaelmorgado7)</div>
+                </a>
+                <a 
+                    href="https://emittersgame.com"
+                    style="background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 1)), url('https://emittersgame.com/assets/images/1.jpg');"
+                    class="relative group rounded-lg border-2 border-grey_dark w-96 h-40 transition-all duration-1000 ease-out bg-center bg-no-repeat bg-[length:105%_auto] hover:bg-[length:150%_auto]"
+                    title="My Game (Emitters)"
+                                target="_blank"
+                            >
+                    <div class="card-content text-lg text-right text-grey-500 opacity-20 group-hover:opacity-100 group-hover:text-primary transition-all duration-700 absolute bottom-0 right-0 px-4 py-3">My Game (Emitters)</div>
+                </a>
+                <a 
+                    href="https://www.instagram.com/noirdrivenantagonists/"
+                    style="background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 1)), url('./assets/images/357127350_574345674872819_4669765311118751170_n.jpeg');"
+                    class="relative group rounded-lg border-2 border-grey_dark w-96 h-40 transition-all duration-1000 ease-out bg-center bg-no-repeat bg-[length:105%_auto] hover:bg-[length:150%_auto]"
+                    title="Instagram (noirdrivenantagonists)"
+                                target="_blank"
+                            >
+                    <div class="card-content text-lg text-right text-grey-500 opacity-20 group-hover:opacity-100 group-hover:text-primary transition-all duration-700 absolute bottom-0 right-0 px-4 py-3">Instagram (noirdrivenantagonists)</div>
+                </a>
+            </div>
+        </div>
     </div>
 </body>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"

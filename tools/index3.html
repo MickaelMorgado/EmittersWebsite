@@ -23,11 +23,63 @@
     <script src="js2.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/htmx.org@1.9.11"></script>
+    
+    <link rel="icon" href="https://ui-avatars.com/api/?name=H&rounded=true&background=000000&color=ffffff" type="image/png">
+    <script>document.addEventListener('DOMContentLoaded', function() { document.title = `HYTEK - ${document.getElementsByTagName("h1")[0].innerText}` });</script>
 </head>
 
 <body class="h-styles">
     <div class="col padded">
         <h1 class="h-padded">Guideline</h1>
+        <div>
+            <pre>
+                <code>
+                    &lt;html class="h-full"&gt;
+                    ...
+                    &lt;head&gt;
+                        &lt;link rel="icon" href="https://ui-avatars.com/api/?name=H&rounded=true&background=000000&color=ffffff" type="image/png"&gt;
+                        &lt;script&gt;document.addEventListener('DOMContentLoaded', function() { document.title = `HYTEK - ${document.getElementsByTagName("h1")[0].innerText}` });&lt;/script&gt;
+                        &lt;style&gt;@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;family=Saira+Condensed:wght@100;200;300;400;500;600;700;800;900&amp;family=Teko:wght@300..700&amp;display=swap');&lt;/style&gt;
+                        &lt;script src=&quot;https://cdn.tailwindcss.com&quot;&gt;&lt;/script&gt;
+                        &lt;script&gt;
+                            tailwind.config = {
+                                theme: {
+                                    fontFamily: {
+                                        saira: ['Saira Condensed', 'sans-serif'],
+                                    },
+                                    letterSpacing: {
+                                        wide: '1em', // class='tracking-wide'
+                                    },
+                                    extend: {
+                                        colors: {
+                                            primary: '#ff394a',
+                                            secondary: '#00222D',
+                                            grey: '#888',
+                                            grey_dark: '#333',
+                                        }
+                                    }
+                                }
+                            }
+                        &lt;/script&gt;
+                    &lt;/head&gt;
+
+                    &lt;body class="font-saira bg-no-repeat h-full bg-gradient-to-br from-black via-black to-secondary text-grey bg-fixed"&gt;
+                        &lt;div class="p-10"&gt;
+                            &lt;div class="container"&gt;
+                    ...
+                </code>
+            </pre>
+            <br />
+            <br />
+            <h5>Copilot Prompt:</h5>
+            <pre>
+                <code>
+                    using the code I'm passing you, re-structure the following file:
+
+                    &lt;code above&gt;
+                </code>
+            </pre>
+        </div>
         <div class="h-card">
             <p>Use .h-style wrapper for any default tags overwrites:</p>
             <div>
