@@ -56,22 +56,3 @@ getGoogleSheetData(
 const extractArrayFromRows = (rowData, selectedIndex) => {
   return rowData.map((row) => row[selectedIndex]);
 };
-
-// Here's a JavaScript function that converts a chosen column from a Google Sheet (or Excel) format (e.g., "A", "B", ..., "Z", "AA", etc.) to its corresponding index number (0-based):
-/* 
-  Example usage:
-    console.log(columnToIndex("A"));  // Output: 0
-    console.log(columnToIndex("Z"));  // Output: 25
-    console.log(columnToIndex("AA")); // Output: 26
-    console.log(columnToIndex("AB")); // Output: 27
-    console.log(columnToIndex("AZ")); // Output: 51
-    console.log(columnToIndex("BA")); // Output: 52
-*/
-const columnToIndex = (column) => {
-  let index = 0;
-  for (let i = 0; i < column.length; i++) {
-    index *= 26;
-    index += column.charCodeAt(i) - 'A'.charCodeAt(0) + 1;
-  }
-  return index - 1; // Subtract 1 for 0-based indexing
-};

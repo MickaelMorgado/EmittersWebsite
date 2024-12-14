@@ -4,20 +4,6 @@
 <head>
     <meta charset="utf-8">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.12.1/css/selectize.default.css">
-    <title>QuickPosting</title>
-    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio,line-clamp,container-queries"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class', // Enable dark mode with a class
-            theme: {
-                extend: {
-                    colors: {
-                        'dark-background': '#000000', // Add black background for dark mode
-                    },
-                },
-            },
-        }
-    </script>
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"
         integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.12.1/js/standalone/selectize.min.js"></script>
@@ -26,49 +12,78 @@
     <script src="clipboard.min.js"></script>
     <script src="js.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <link rel="icon" href="https://ui-avatars.com/api/?name=H&rounded=true&background=000000&color=ffffff" type="image/png">
+    <script>document.addEventListener('DOMContentLoaded', function() { document.title = `HYTEK - ${document.getElementsByTagName("h1")[0].innerText}` });</script>
+    <style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Saira+Condensed:wght@100;200;300;400;500;600;700;800;900&family=Teko:wght@300..700&display=swap');</style>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                fontFamily: {
+                    saira: ['Saira Condensed', 'sans-serif'],
+                },
+                letterSpacing: {
+                    wide: '1em', // class='tracking-wide'
+                },
+                extend: {
+                    colors: {
+                        primary: '#ff394a',
+                        secondary: '#00222D',
+                        grey: '#888',
+                        grey_dark: '#333',
+                    }
+                }
+            }
+        }
+    </script>
 </head>
 
-<body class="bg-dark-background text-white">
-    <div class="flex min-h-screen flex-col items-center pt-16 sm:justify-center sm:pt-0">
-        <div class="relative mt-12 w-full max-w-lg sm:mt-10">
-            <div class="mx-5 border dark:border-b-white/50 dark:border-t-white/50 border-b-white/20 sm:border-t-white/20 shadow-[20px_0_20px_20px] shadow-slate-500/10 dark:shadow-white/20 rounded-lg border-white/20 border-l-white/20 border-r-white/20 sm:shadow-sm lg:rounded-xl lg:shadow-none">
-                <div class="flex flex-col p-6">
-                    <h3 class="text-xl font-semibold leading-6 tracking-tighter">Login</h3>
-                    <p class="mt-1.5 text-sm font-medium text-white/50">Protected Area</p>
-                </div>
-                <div class="p-6 pt-0">
-                    <form id="form">
-                        <div class="mt-4">
-                            <div>
-                                <div
-                                    class="group relative rounded-lg border focus-within:border-sky-200 px-3 pb-1.5 pt-2.5 duration-200 focus-within:ring focus-within:ring-sky-300/30">
-                                    <div class="flex justify-between">
-                                        <label class="text-xs font-medium text-muted-foreground group-focus-within:text-white text-gray-400">Password</label>
-                                    </div>
-                                    <div class="flex items-center">
-                                        <input
-                                            id="password"
-                                            type="password"
-                                            required autofocus
-                                            class="block w-full border-0 bg-transparent p-0 text-sm file:my-1 placeholder:text-muted-foreground/90 focus:outline-none focus:ring-0 focus:ring-teal-500 sm:leading-7 text-foreground"
-                                        />
-                                    </div>
+<body class="font-saira bg-no-repeat h-full bg-gradient-to-br from-black via-black to-secondary text-grey">
+    <div class="p-10">
+        <div class="container m-auto m-auto">
+            <div class="flex min-h-screen flex-col items-center pt-16 sm:justify-center sm:pt-0">
+                <div class="relative w-full max-w-lg">
+                    <div class="relative group rounded-lg border-2 border-grey_dark">
+                        <div class="flex flex-col p-6">
+                            <h1 class="text-xl">Login</h1>
+                            <p class="mt-1.5 text-sm">Protected Area</p>
+                        </div>
+                        <div class="p-6 pt-0">
+                            <form id="form">
+                                <div class="mt-4">
                                     <div>
-                                        <p class="h-hide" id="warning">Incorrect passphrase. Try again!</p>
+                                        <div
+                                            class="group relative rounded-lg border focus-within:border-sky-200 px-3 pb-1.5 pt-2.5 duration-200 focus-within:ring focus-within:ring-sky-300/30">
+                                            <div class="flex justify-between">
+                                                <label class="text-xs font-medium text-muted-foreground group-focus-within:text-white text-gray-400">Password</label>
+                                            </div>
+                                            <div class="flex items-center">
+                                                <input
+                                                    id="password"
+                                                    type="password"
+                                                    required autofocus
+                                                    class="block w-full border-0 bg-transparent p-0 text-sm file:my-1 placeholder:text-muted-foreground/90 focus:outline-none focus:ring-0 focus:ring-teal-500 sm:leading-7 text-foreground"
+                                                />
+                                            </div>
+                                            <div>
+                                                <p class="h-hide" id="warning">Incorrect passphrase. Try again!</p>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                                <div class="mt-4 flex items-center justify-end gap-x-2">
+                                    <button
+                                        class="font-semibold text-white hover:bg-black hover:text-white hover:ring hover:ring-white transition duration-300 inline-flex items-center justify-center rounded-md text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-blue text-black h-10 px-4 py-2"
+                                        type="submit"
+                                        id="submit"
+                                    >
+                                        Log in
+                                    </button>
+                                </div>
+                            </form>
                         </div>
-                        <div class="mt-4 flex items-center justify-end gap-x-2">
-                            <button
-                                class="font-semibold hover:bg-black hover:text-white hover:ring hover:ring-white transition duration-300 inline-flex items-center justify-center rounded-md text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-blue text-black h-10 px-4 py-2"
-                                type="submit"
-                                id="submit"
-                            >
-                                Log in
-                            </button>
-                        </div>
-                    </form>
+                    </div>
                 </div>
             </div>
         </div>

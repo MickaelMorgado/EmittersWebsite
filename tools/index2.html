@@ -3,19 +3,47 @@
 
 <head>
     <meta charset="utf-8">
+    <link rel="icon" href="https://ui-avatars.com/api/?name=H&rounded=true&background=000000&color=ffffff" type="image/png">
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.title = `HYTEK - ${document.getElementsByTagName("h1")[0].innerText}`
+        });
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Saira+Condensed:wght@100;200;300;400;500;600;700;800;900&family=Teko:wght@300..700&display=swap');
+    </style>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                fontFamily: {
+                    saira: ['Saira Condensed', 'sans-serif'],
+                },
+                letterSpacing: {
+                    wide: '1em', // class='tracking-wide'
+                },
+                extend: {
+                    colors: {
+                        primary: '#ff394a',
+                        secondary: '#00222D',
+                        grey: '#888',
+                        grey_dark: '#333',
+                    }
+                }
+            }
+        }
+    </script>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
         integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.12.1/css/selectize.default.css">
-    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="../assets/css.css">
     <title>QuickPosting</title>
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"
         integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.12.1/js/standalone/selectize.min.js"></script>
     <script defer src="https://friconix.com/cdn/friconix.js"></script>
-    <link href="../assets/fonts/css/all.css" rel="stylesheet"> <!--load all styles -->
-    <link href="css.css" rel="stylesheet"> <!--load all styles -->
-    <link href="css2.css" rel="stylesheet"> <!--load all styles -->
+    <link href="../assets/fonts/css/all.css" rel="stylesheet">
+    <link href="css.css" rel="stylesheet">
+    <link href="css2.css" rel="stylesheet">
     <script src="notify.min.js"></script>
     <script src="clipboard.min.js"></script>
     <script src="js.js"></script>
@@ -26,104 +54,101 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/OrbitControls.min.js"></script>
 </head>
 
-<body class="style-trade">
-    <div class="col padded">
-        <div class="myrow">
-            <div class="col">
-                <h1>Probability</h1>
-            </div>
-        </div>
-        <div class="myrow">
-            <div class="col">
-                <label for="green-probability">Winrate (0-1):</label>
-                <input type="number" id="green-probability" placeholder="0.25" value="0.25" step="0.01" min="0" max="1">
-                <label for="risk">Risk:</label>
-                <input type="number" id="risk" value="1.5" step="0.1" min="0">
-                <label for="reward">Reward:</label>
-                <input type="number" id="reward" value="2" step="0.1" min="0">
-                <button id="run" class="mybutton">run</button>
-                <button id="stop" class="mybutton">stop</button>
-            </div>
-        </div>
-        <div class="col">
-            <div class="myrow">
-                <div class="mycol">
-                    <div class="myrow">
-                        <div><label for="reward">Outcome:</label></div>
-                        <div ><div id="die" class="box">1</div></div>
+<body class="font-saira bg-no-repeat h-full bg-gradient-to-br from-black via-black to-secondary text-grey style-trade bg-fixed bg-fixed">
+    <div class="p-10">
+        <div class="container m-auto">
+            <div class="col padded">
+                <div class="myrow">
+                    <div class="col">
+                        <h1>PROBABILITIES</h1>
                     </div>
                 </div>
-                <div class="mycol">
-                    <div class="myrow">
-                        <div ><label for="reward">Profit:</label></div>
-                        <div ><div id="pool1" class="pool"></div></div>
+                <div class="myrow">
+                    <div class="col">
+                        <label for="green-probability">Winrate (0-1):</label>
+                        <input type="number" id="green-probability" placeholder="0.25" value="0.25" step="0.01" min="0" max="1">
+                        <label for="risk">Risk:</label>
+                        <input type="number" id="risk" value="1.5" step="0.1" min="0">
+                        <label for="reward">Reward:</label>
+                        <input type="number" id="reward" value="2" step="0.1" min="0">
+                        <button id="run" class="mybutton">run</button>
+                        <button id="stop" class="mybutton">stop</button>
                     </div>
                 </div>
-                <div class="mycol">
+                <div class="col">
                     <div class="myrow">
-                        <div><label for="reward">Loss:</label></div>
-                        <div>
-                            <div id="pool2" class="pool"></div>
+                        <div class="mycol">
+                            <div class="myrow">
+                                <div><label for="reward">Outcome:</label></div>
+                                <div><div id="die" class="box">1</div></div>
+                            </div>
+                        </div>
+                        <div class="mycol">
+                            <div class="myrow">
+                                <div><label for="reward">Profit:</label></div>
+                                <div><div id="pool1" class="pool"></div></div>
+                            </div>
+                        </div>
+                        <div class="mycol">
+                            <div class="myrow">
+                                <div><label for="reward">Loss:</label></div>
+                                <div><div id="pool2" class="pool"></div></div>
+                            </div>
+                        </div>
+                        <div class="mycol">
+                            <div class="myrow">
+                                <div><label for="reward">Result: </label></div>
+                                <div><div id="result"></div></div>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="mycol">
                     <div class="myrow">
-                        <div><label for="reward">Result: </label></div>
-                        <div>
-                            <div id="result"></div>
+                        <div class="card">
+                            <div class="card-body">
+                                <div id="resume"></div>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
-            <div class="myrow">
-                <div class="card">
-                    <div class="card-body">
-                        <div id="resume"></div>
+                    <div class="myrow">
+                        <div class="card">
+                            <div class="card-body">
+                                <table>
+                                    <thead>
+                                        <tr class="generated-table">
+                                            <th>Date</th>
+                                            <th>W</th>
+                                            <th>L</th>
+                                            <th>PNL</th>
+                                            <th>Numb</th>
+                                            <th class="ellipsis">Screenshot</th>
+                                            <th>Note</th>
+                                            <th>Session</th>
+                                            <th>Analisis</th>
+                                            <th>Result</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="mySheet2"></tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
-            <!--div class="iframepreview">
-                <iframe id="iframepreview" src="https://mega.nz/file/YckWEKDa#sDre54zcdy-J5on1cOqur69FMQqMSyLEcPLelMKhxBs" width="500px" height="300px" frameborder="0"></iframe>
-            </div-->
-            <div class="myrow">
-                <div class="card">
-                    <div class="card-body">
-                        <table>
-                            <thead>
-                                <tr class="generated-table">
-                                    <th>Date</th>
-                                    <th>W</th>
-                                    <th>L</th>
-                                    <th>PNL</th>
-                                    <th>Numb</th>
-                                    <th class="ellipsis">Screenshot</th>
-                                    <th>Note</th>
-                                    <th>Session</th>
-                                    <th>Analisis</th>
-                                    <th>Result</th>
-                                </tr>
-                            </thead>
-                            <tbody id="mySheet2"></tbody>
-                        </table>
+                    <div class="myrow">
+                        <div id="render2" width="100%" height="500px"></div>
                     </div>
-                </div>
-            </div>
-            <div class="myrow">
-                <div id="render2" width="100%" height="500px"></div>
-            </div>
-            <div class="myrow">
-                <div class="card">
-                    <div class="card-body">
-                        <div id="render1"></div>
+                    <div class="myrow">
+                        <div class="card">
+                            <div class="card-body">
+                                <div id="render1"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+        crossorigin="anonymous"></script>
 </body>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
-    integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
-    crossorigin="anonymous"></script>
 
 </html>

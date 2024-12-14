@@ -103,6 +103,13 @@ select:disabled:hover,
   margin-bottom: var(--padding);
 }
 
+pre code {
+  //background-color: var(--dark3);
+  color: #e83e8c;
+  //padding: var(--padding);
+  //border-radius: var(--border);
+}
+
 .h-btn {
   border-radius: var(--border);
   padding: var(--border) var(--padding-medium);

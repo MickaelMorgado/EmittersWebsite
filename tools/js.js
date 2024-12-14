@@ -15,6 +15,5 @@ $(document).ready(function () {
     render1: $('#render1')[0],
     render2: $('#render2')[0],
     resume: $('#resume')[0],
-    revenueChart: $('#revenueChart')[0],
   };
 });
