@@ -59,12 +59,12 @@ $(document).ready(function () {
 
       switch (rewardSign) {
         case -1:
-          elements.die.style.backgroundColor = 'red';
+          elements.die.style.color = 'red';
           elements.die.innerText = '-1';
           sumPool2 += risk;
           break;
         case 1:
-          elements.die.style.backgroundColor = 'green';
+          elements.die.style.color = 'green';
           elements.die.innerText = '1';
           sumPool1 += reward;
           break;
