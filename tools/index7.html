@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full">
+<html lang="en" class="h-full w-full">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="../assets/reusables.css">
   <link rel="icon" href="https://ui-avatars.com/api/?name=H&rounded=true&background=000000&color=ffffff" type="image/png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css" integrity="sha512-5Hs3dF2AEPkpNAR7UiOHba+lRSJNeM2ECkwxUIxC1Q/FLycGTbNapWXB4tP889k5T5Ju8fs4b1P5z/iB4nMfSQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Saira+Condensed:wght@100;200;300;400;500;600;700;800;900&family=Teko:wght@300..700&display=swap');</style>
@@ -31,13 +32,13 @@
           addComponents({
             'input': {
               background: 'transparent',
-              margin: '20px',
               color: 'currentColor',
               padding: '10px',
               border: '2px solid #222',
               borderRadius: '3px',
             },
             'button': {
+              lineHeight: '30px',
               background: 'transparent',
               color: 'currentColor',
               padding: '10px',
@@ -54,7 +55,7 @@
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" integrity="sha512-ZDSPMa/JM1D+7kdg2x3BsruQ6T/JpJo3jWDWkCZsP+5yVyp1KfESqLI+7RqB5k24F7p2cV7i2YHh/890y6P6Sw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
-<body class="font-saira bg-no-repeat h-full bg-gradient-to-br from-black via-black to-secondary text-grey bg-fixed">
+<body class="font-saira bg-no-repeat h-full w-full bg-gradient-to-br from-black via-black to-secondary text-grey bg-fixed">
   <a href="./" title="back" class="fixed top-10 left-10 w-10 h-10 transition-all bg-grey_dark p-2 rounded-full text-center leading-5 font-bold text-xl shadow-[0_0_70px_0_currentColor] cursor-pointer z-10 hover:no-underline hover:text-white"><</a>
   <div class="p-10">
     <div class="container m-auto">
@@ -65,7 +66,7 @@
             <div class="bg-dark rounded-xl p-4">
               <div><a href="./uploads/">files</a></div>
               <div><a target="_blank" href="https://app.pinata.cloud/">https://app.pinata.cloud/</a></div>
-              <div class="h-card">
+              <div>
                 <input type="file" id="fileInput" />
                 <button onclick="uploadFile()">Upload</button>
                 <button onclick="listFiles()">List Files</button>
@@ -74,7 +75,9 @@
             <div class="p-4">
               <div id="result"></div>
             </div>
-            <div id="fileList"></div>
+            <div id="fileList">
+              <div class="loader m-auto my-12 text-secondary"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -107,7 +110,7 @@
       formData.append('pinataOptions', pinataOptions);
 
       try {
-        $UploadStatus.innerHTML = 'Uploading...';
+        $UploadStatus.innerHTML = 'Uploading <span class="loader"></span>';
         const res = await axios.post(
           "https://api.pinata.cloud/pinning/pinFileToIPFS",
           formData,
@@ -174,7 +177,7 @@
               qr.make();
 
               const listItemHTML = `
-                <div class='flex gap-4 justify-between items-center bg-dark rounded-xl p-4 h-card h-padded-small h-flex h-flex--center'>
+                <div class='flex flex-wrap flex-col md:flex-row items-stretch md:items-center gap-4 justify-between items-center bg-dark rounded-xl p-4 break-words'>
                   <div class='flex items-center gap-12'>
                     <div>
                       <i class="fa fa-${iconByType(type)} text-4xl pl-6"></i>
@@ -186,7 +189,7 @@
                       <div>Size: ${size}</div>
                     </div>
                   </div>
-                  <span><a href="${hash}" target="_blank">${hash}</a></span>
+                  <span class="max-w-[100%] md:max-w-none"><a href="${hash}" target="_blank">${hash}</a></span>
                   <div class='flex flex-col text-right gap-4'>
                     <button onclick="deleteFile('${file.ipfs_pin_hash}')">Delete</button>
                     <div id="qrcode" class='invert'>${qr.createImgTag()}</div>
