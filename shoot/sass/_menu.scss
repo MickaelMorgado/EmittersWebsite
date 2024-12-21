@@ -1,0 +1,367 @@
+body{
+  background-color: #050505;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  font-size: 100%;
+  font-family: verdana, sans-serif;
+}
+.modal-content {
+  background-color: #050505;
+}
+.loginmodal .modal-content {
+  background-color: #111;
+}
+.nav-tabs > li > a {
+  border-radius: 0;
+  border: none;
+}
+.nav-tabs > li.active > a, .nav-tabs > li.active > a:focus, .nav-tabs > li.active > a:hover, .nav > li > a:hover {
+  color: #111;
+  cursor: default;
+  background-color: $red;
+}
+.tabs-content {
+  position: relative;
+  min-height: 175px;
+}
+.tab-pane { 
+  position: relative; 
+  left: 0;
+}
+.tab-pane form { 
+  height: 0;
+  overflow: hidden;
+}
+.tab-pane.active form { height: auto; }
+
+.block.armory img.ShopThumbnail { 
+  display: inline-block; 
+  width: 60px; 
+}
+.armorypopup .modal-lg {
+  width: 90%;
+}
+.preview-weapon {
+  display: block;
+  width: 150px;
+  height: 150px;
+  background-color: #222;
+}
+
+table a ,
+.panel a {  padding: 0; }
+h1, h2, h3, h4, h5, h6 {
+  font-family: verdana, sans-serif;
+  font-size: 35px;
+  font-weight: bold;
+  color: #FFF;
+}
+label {
+  display: block;
+  line-height: 3em;
+  text-transform: uppercase;
+  color: #555;
+}
+select{
+  background-color: #222;
+  background-image: url('http://megaicons.net/static/img/icons_sizes/16/1058/256/navigate-down-icon.png');
+  color: #FFF;
+  padding-left: 10px;
+  font-size: 1em;
+  text-transform: uppercase;
+  border: none;
+  -moz-appearance:none; /* Firefox */
+  -webkit-appearance:none; /* Safari and Chrome */
+  appearance:none;
+  background-position: top 8px right 10px;
+  background-size: 20px;
+  background-repeat: no-repeat;
+}
+
+
+select option {
+  padding: 10px;
+  border: none; 
+}
+
+.row.first{
+  height: 70%;
+  padding-top: 100px;
+  padding-bottom: 15px;
+}
+.row.second{
+  height: 30%;
+  padding-bottom: 100px;
+  padding-top: 15px;
+}
+.row.settings { 
+  padding-top: 100px;
+  padding-bottom: 100px;
+  height: 100%;
+}
+.row.first > div,
+.row.second > div,
+.row.settings > div{
+  height: 100%;
+}
+.block.settings { 
+  border-color: #0078A0;
+}
+.settings .left-block {
+  height: 100%;
+  color: #FFF;
+  padding: 20px;
+  background-color: #111;
+  width: 50%;
+  float: left;
+}
+.settings .right-block {
+  width: 50%;
+  height: 100%;
+  float: right;
+  position: relative;
+  overflow: hidden;
+}
+.settings img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.smoke{
+  background-image: url('../img/smoke.png');
+  background-size: 100%;
+  opacity: .3;
+  display: block;
+  position: absolute;
+  width: 200%;
+  height: 150%;
+  top: 0;
+  left: 0;
+  animation: smoke 100s infinite ease-in-out;
+  z-index: -1;
+}
+.menu_container {
+  padding: 70px;
+  width: 100%;
+  height: 85%;
+  display: block;
+  position: absolute;
+}
+h1,h2{
+  margin:0;
+}
+a{
+  display: block;
+  text-decoration: none;
+  color: #FFF;
+  text-transform: uppercase;
+  padding: 20px;
+}
+p{
+  padding: 20px;
+  color: #fff;
+}
+.scrollable{
+  height: 35%;
+  overflow-y: auto;
+}
+ul.list{
+  color: #fff;
+  padding: 0 40px;
+}
+b{
+  color: #059;
+  font-weight: normal; 
+}
+.search_friends{
+  background: #222;
+  height: 50px;
+  padding: 0 20px;
+  color: #fff;
+  width: 100%;
+  border-radius: 3px;
+}
+.leaderboardlistLeft,
+.leaderboardlistRight{
+  width: 50%;
+  display: inline-block;
+  color: #fff;
+  padding: 10px;
+  background-color: #151515;
+  border-bottom: 1px solid #555;
+  height: 45px;
+  vertical-align: top;
+  box-shadow: 0 0 4px 0px #000;
+}
+.leaderboardlistLeft {  width: 70%; }
+.leaderboardlistRight {  width: 30%; }
+.leaderboardlistRight{
+  text-align: right;
+}
+.list-unstyled {
+  list-style: none;
+  margin-left: 0;
+}
+.li-setting.active {
+  background-color: #059;
+}
+input[type="submit"] {
+  background: #111;
+  border: 2px solid #555;
+  padding: 10px;
+  color: #fff;
+  margin: 10px 0;
+  text-transform: uppercase;
+  cursor: pointer;
+  &.danger {
+    border-color: $red;
+    color: $red;
+  }
+}
+.notify {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: #111;
+  border: 3px solid #ccc;
+  color: #ccc;
+  font-size: 13px;
+  padding: 10px 30px;
+  &.back-button {
+    right: auto;
+    left: 0;
+    text-transform: lowercase;
+  }
+}
+.tracklist-player {
+  $w:300px;
+  $s:$w - 25;
+  @include transition(all, .25s, ease-in-out);
+  background-color: rgba(0,0,0,0.5);
+  padding: 20px 40px;
+  border: 2px solid gray; 
+  position: fixed;
+  width: $w;
+  bottom: 0;
+  left: -$s;
+  color: #fff;
+  opacity: 1;
+  animation: fadein 7s linear;
+  
+  @include keyframes(fadein) {
+    0%   {left:-$w;opacity:0;}
+    5%   {left:0;opacity:1;}
+    95%   {left:0;opacity:1;}
+    100% {left:-$s;opacity:0;}
+  }
+
+  &:hover {
+    left: 0;
+  }
+  
+}
+.preview-settings {
+  background-image:url('../img/onlyoneminute/landscape1.jpg');
+  background-position: center center;
+  -webkit-background-size: cover;
+  background-size: cover;
+  display: block;
+  height: 100%;
+}
+.settings .right-block .smoke {
+  z-index: 0;
+  opacity: .5;
+}
+.modal-backdrop {
+  background-color: #2F0000;
+}
+
+
+/*============================================================
+    ARMORY
+============================================================*/
+
+  /*============================================================
+      SCSS
+  ============================================================*/
+    
+    @mixin custom-radio(
+      $side : l
+      ){
+      visibility: hidden;
+      position: absolute;
+      & + label { cursor: pointer; }
+      @if($side!=l){
+        & + label:after {
+          position: relative;
+          right: 0;
+          display: inline-block;
+          margin-left: 5px;
+          width: 15px;
+          height: 15px;
+          content: '';
+          background-color: red;
+        }
+        &:checked + label:after { background-color: green; }
+        }@else{
+        & + label:before {
+          position: relative;
+          left: 0;
+          display: inline-block;
+          margin-right: 5px;
+          width: 15px;
+          height: 15px;
+          content: '';
+          background-color: red;
+        }
+        &:checked + label:before { background-color: green; }
+        }
+        @content;
+    }
+
+    .radio-weapons {
+      $cubicsz: 125px;
+      @include custom-radio(){
+        & + label {
+          border: 2px solid gray;
+          background-color: #111;
+          display: inline-block;
+          width: $cubicsz;
+          height: $cubicsz;
+          text-align: center;
+          overflow: hidden;
+        }
+        &:checked + label {
+          border: 2px solid purple;
+          color: purple;
+        }
+        & + label:before { display: none; }
+      };
+    }
+
+  /*============================================================
+      THUMBNAILS
+  ============================================================*/
+
+    .ShopThumbnail {
+      max-width: 100px;
+      max-height: 100px;
+    }  
+
+
+
+
+/*ANIMATION*/
+@-webkit-keyframes smoke{
+  0%   { top: 0; left: 0}
+  35%   { top: -50%; left: -50%}
+  50%   { top: 0; left: -100%}
+  100%   { top: 0; left: 0}
+}
+@-moz-keyframes smoke{
+  0%    { top: 0; left: 0}
+  35%   { top: -50%; left: -50%}
+  50%   { top: 0; left: -100%}
+  100%    { top: 0; left: 0}
+}
