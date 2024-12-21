@@ -1,9 +1,125 @@
-<!doctype html>
 <html>
-<head>
-    <script type="module" src="https://unpkg.com/@splinetool/viewer@1.1.1/build/spline-viewer.js"></script>
-</head>
-<body>
-    <spline-viewer url="https://prod.spline.design/LCeCOCuEMv70rDmP/scene.splinecode"></spline-viewer>
-</body>
+	<head>
+		<!-- Google Tag Manager -->
+		<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+		new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+		j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+		'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+		})(window,document,'script','dataLayer','GTM-K6QKDQ3');</script>
+		<!-- End Google Tag Manager -->
+
+  	<meta charset="UTF-8">
+  	<link rel="icon" href="./assets/images/favicon.png" sizes="64x64" type="image/png">
+		<meta name="theme-color" content="#000000">
+		<meta http-equiv="Content-Language" content="en">
+
+		<!-- HTML Meta Tags -->
+		<title>Emitters - Drone Invasions</title>
+		<meta name="description" content="A fast-paced, first-person experience set in a future taken over by deadly hi-tech drones. As humanity's only hope, it's your mission to identify this threat's origin and neutralize it. But are you ready to face an army whose single target is yourself?">
+		<meta name="keywords" content="drone, drones, invasion, invasions, war, game, fps, shooter, sci-fi, steam, ultra" />
+		
+		<!-- Facebook Meta Tags -->
+		<meta property="og:url" content="https://emittersgame.com/">
+		<meta property="og:type" content="website">
+		<meta property="og:title" content="Emitters - Drone Invasion">
+		<meta property="og:description" content="Play Emitters. The drone invasion pc game">
+		<meta property="og:image" content="https://emittersgame.com/assets/images/meta-logo.png">
+
+		<!-- Twitter Meta Tags -->
+		<meta name="twitter:card" content="summary_large_image">
+		<meta property="twitter:domain" content="emittersgame.com">
+		<meta property="twitter:url" content="https://emittersgame.com/">
+		<meta name="twitter:title" content="Emitters - Drone Invasion">
+		<meta name="twitter:description" content="Play Emitters. The drone invasion pc game">
+		<meta name="twitter:image" content="https://emittersgame.com/assets/images/meta-logo.png">
+
+		<!-- Meta Tags Generated via https://www.opengraph.xyz -->
+		      
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+		<link rel="preconnect" href="https://fonts.gstatic.com">
+		<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;600&display=swap" rel="stylesheet">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.9.0/slick-theme.min.css" integrity="sha512-17EgCFERpgZKcm0j0fEq1YCJuyAWdz9KUtv1EjVuaOz8pDnh/0nZxmU6BBXwaaxqoi9PQXnRWqlcDB027hgv9A==" crossorigin="anonymous" />
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.9.0/slick.min.css" integrity="sha512-yHknP1/AwR+yx26cB1y0cjvQUMvEa2PFzt1c9LlS4pRQ5NOTZFWbhBig+X9G9eYW/8m0/4OXNx8pxJ6z57x0dw==" crossorigin="anonymous" />
+		<link href="assets/fonts/css/all.css" rel="stylesheet"> <!--load all styles -->
+		<link rel="stylesheet" href="assets/css.css"></style>
+		<link rel="stylesheet" href="assets/desktop.css"></style>
+		<link rel="stylesheet" href="assets/tablet.css"></style>
+		<link rel="stylesheet" href="assets/mobile.css"></style>
+
+		<!-- js files -->
+		<script src="assets/js/jquery-3.5.1.min.js"></script>
+		<script src="assets/js/lozad.min.js"></script>
+		<script src="assets/js/jquery.waypoints.min.js"></script>
+		<script src="assets/js/slick.min.js"></script>
+		<script src="assets/js/jquery.scrollify.js"></script>
+		<script src="assets/js.js"></script>
+	</head>
+	<body>
+		<section id="PO">
+			<div class="flex-container">
+				<label for="current-balance">Current balance</label>
+				<input id="current-balance" type="number" value="100" onChange="calculate()">
+
+				<label for="average-lossing">Number of average losing trade</label>
+				<input id="average-lossing" type="number" value="6" onChange="calculate()">
+
+				<div class="col">
+					<ul class="list-unstyled">
+						<li>
+							<label for="max-drawdown">Max allowed daily drawdown</label>
+							<input id="max-drawdown" type="number" readonly>
+						</li>
+						<li>
+							<ul id="list"></ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</section>
+		<script>
+
+			//var admin = prompt('pass')
+		
+			//if (admin == 'Mickael') {
+				//alert('yey')
+			//}
+			function generateDynamicArray(averageLossingTrades) {
+				const dynamicArray = [];
+				let currentNumber = 1;
+
+				for (let i = 0; i < averageLossingTrades; i++) {
+					dynamicArray.push(currentNumber);
+					currentNumber *= 2;
+				}
+
+				return dynamicArray;
+			}
+
+			// Call the function and store the result
+
+			function calculate() {
+				let currentBalance = document.getElementById("current-balance").value;
+				let averageLossingTrades = document.getElementById("average-lossing").value;
+				let maxDrawdown = currentBalance * 30 / 100; // represents 30% of balance.
+				let resultArray = generateDynamicArray(averageLossingTrades);
+
+				document.getElementById("max-drawdown").value = maxDrawdown;
+
+				let tmp = (maxDrawdown / (averageLossingTrades)) / 1;
+				let dollarValue = tmp;
+
+				const ulElement = document.getElementById("list");
+				while (ulElement.firstChild) {
+  				ulElement.removeChild(ulElement.firstChild);
+				}
+
+				for (let i = 1; i <= document.getElementById("average-lossing").value; i++) {
+					const liElement = document.createElement("li");
+					liElement.textContent = `Trade #${i}: ${resultArray[i]} $ ${resultArray[i] > maxDrawdown ? '⚠️' : ''}`;
+					ulElement.appendChild(liElement);
+					dollarValue = (dollarValue * 2.2);
+				}
+			}
+		</script>
+	</body>		
 </html>
