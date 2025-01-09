@@ -247,14 +247,18 @@
       BEAR: 'BEAR',
     };
 
+    const getCandleDirection = (candle) => {
+      return candle.close > candle.open ? EnumDirection.BULL : EnumDirection.BEAR;
+    };
+
     const getCandleChartAxisLocationFromDate = (date) => {
-      return new Date(date).getTime(); // / 1000;
+      return new Date(date).getTime() / 1000;
     };
 
     // Window assignments:
     window.getCandleChartAxisLocationFromDate = getCandleChartAxisLocationFromDate;
 
-    function formatDate(date) {
+    function formatDateFromUnix(unixTime) {
       const options = {
         year: 'numeric',
         month: 'numeric',
@@ -264,7 +268,7 @@
         // second: '2-digit',
         hour12: false,
       };
-      return new Date(date).toLocaleDateString('en-GB', options);
+      return new Date(unixTime * 1000).toLocaleDateString('en-GB', options); // Multiply by 1000 to convert to milliseconds because JS Date works with milliseconds.
     }
 
     // Handy function to execute actions step by step:
@@ -273,8 +277,8 @@
     };
 
     const convertMT5DateToUnix = (candleTime) => {
-      const ct = candleTime.replace('.', '-').replace('.', '-');
-      return new Date(ct).getTime() / 1000;
+      const ct = candleTime.replaceAll('.','-');
+      return new Date(ct).getTime() / 1000; // divided by 1000 to convert from milliseconds to seconds as Unix time only accepts seconds, while JS Date is more precise as working with milliseconds.
     };
 
     document
@@ -402,6 +406,13 @@
           // sciChartSurface.xAxes.add(new NumericAxis(wasmContext, { axisTitle: "Time", growBy }));
           // sciChartSurface.yAxes.add(new NumericAxis(wasmContext, { axisTitle: "Price", growBy }));
 
+          const signalAnnotation = {
+            svgString: {
+              bullish: '<svg id="Capa_1" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10"><g transform="translate(-54.616083,-75.548914)"><path style="fill:#00FF00;" d="M 55,85 L 60,75 L 65,85 Z"/></g></svg>',
+              bearish: '<svg id="Capa_1" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10"><g transform="translate(-54.616083,-75.548914)"><path style="fill:#FF0000;" d="M 55,75 L 60,85 L 65,75 Z"/></g></svg>',
+            },
+          };
+
           const buildChartData = (data) => {
             const growBy = new NumberRange(0.1, 0.1);
             // Extract OHLC data from the response
@@ -435,34 +446,78 @@
 
             const minDate = new Date(ohlcData[0].time);
             const maxDate = new Date(ohlcData[ohlcData.length - 1].time);
+            const offsetCandleDateTimeStamp = (candleDateTimeStamp) => candleDateTimeStamp; // - 3600 * 1; // !! offseting candle position in X axis by -1h to match tradingView (The correct way would be to offset the axis labels, but dont know how to do it yet)
+
+            // First function to be executed as soon as the data is loaded, you can do anything you want here:
+            const onData = (ohlcData) => {
+              // console.log('ohlcData:', ohlcData);
+            }
+            // Second function to be executed after the candle is drawn, you can add annotations here:
+            const onCandleDrawn = (candle, index) => {
+                const FVGSignal = () => {
+                if (index < 3 || index > ohlcData.length - 2) return false;
+                const prevCandle = ohlcData[index - 1];
+                const nextCandle = ohlcData[index + 1];
+                const isBullishFVG = nextCandle.low > prevCandle.high;
+                const isBearishFVG = prevCandle.low > nextCandle.high;
+                return isBullishFVG || isBearishFVG;
+                };
+
+              if (FVGSignal()) {
+                const candlePosition = convertMT5DateToUnix(candle.time);
+                const positionOfAnnotation = {
+                  x1: candlePosition,
+                  y1: candle.high,
+                  verticalAnchorPoint: EVerticalAnchorPoint.Center,
+                  horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
+                  svgString: signalAnnotation.svgString.bullish,
+                }
+                sciChartSurface.annotations.add(
+
+                  new CustomAnnotation({
+                    /*
+                    stroke: '#999',
+                    axisLabelFill: '#999',
+                    strokeThickness: 1,
+                    showLabel: true,
+                    labelPlacement: ELabelPlacement.TopLeft,
+                    labelValue: `${candle.time}`,
+                    */
+                    ...positionOfAnnotation,
+                    y1: getCandleDirection(candle) == EnumDirection.BULL ? candle.low : candle.high,
+                    svgString: getCandleDirection(candle) == EnumDirection.BULL ? signalAnnotation.svgString.bullish : signalAnnotation.svgString.bearish,
+                  })
+                );
+              }
+            }
 
             // Create an OHLC data series
             const ohlcDataSeries = new OhlcDataSeries(wasmContext, {
               xValues: ohlcData.map((candle, index) => {
-                const firstDateOfData = new Date(ohlcData[0].time);
-                let candleTime = candle.time;
-                let unixTime = convertMT5DateToUnix(candleTime);
-                let time = candleTime.split(' ')[1];
+                
+                onData(candle);
 
-                var candleTimeStamp = getCandleChartAxisLocationFromDate(candleTime);
+                let candleDateTime = candle.time; // excepted format: "1970.01.01 00:00:00"
+                let unixTime = convertMT5DateToUnix(candleDateTime); // format: 1624982400 for 2021-06-29 00:00:00
 
-                let offsetCandleTimeStamp = (candleTimeStamp) => candleTimeStamp - 3600 * 1; // offset data to match -1h (matching tradingview time - actuall candle bar Y axis location)
+                let candleTime = candleDateTime.split(' ')[1]; // get the time from the date string (00:00:00)
+                let candleDateTimeStamp = getCandleChartAxisLocationFromDate(candleDateTime); // 1624982400
 
-                let offsetedCandleTime = offsetCandleTimeStamp(candleTimeStamp);
-                let dateOptionForSelect = candleTimeStamp;
-                let backTestTime = getCandleChartAxisLocationFromDate(candleTime) + 3600;
+                let offsetedCandleTime = offsetCandleDateTimeStamp(candleDateTimeStamp); // Not really important for now, has we aren't offsetting anything yet.
+                let dateOptionForSelect = candleDateTimeStamp;
+                let backTestTime = getCandleChartAxisLocationFromDate(candleDateTime); // + 3600; // Actually the same as above (candleDateTimeStamp)
 
-                var selectedHour = document.getElementById('backtesting-hour').value;
+                var selectedTime = document.getElementById('backtesting-hour').value;
 
-                if (time == selectedHour) {
-                  let btt = backTestTime * 1000;
-                  let formatedDate = formatDate(btt);
+                if (candleTime == selectedTime) {
+                  let btt = backTestTime; // * 1000;
+                  let formatedDate = formatDateFromUnix(btt);
 
                   // Display Backtesting dates on the select element:
                   document
                     .getElementById('NavigateTroughtDates')
                     .innerHTML += `<option value="${unixTime}">
-                      ${candleTime}</option>`;
+                      ${candleDateTime}</option>`;
 
                   // Backtesting line annotation:
                   sciChartSurface.annotations.add(
@@ -470,13 +525,15 @@
                       stroke: '#999',
                       axisLabelFill: '#999',
                       strokeThickness: 1,
-                      x1: unixTime + 3600,
+                      x1: unixTime,
                       showLabel: true,
                       labelPlacement: ELabelPlacement.TopLeft,
-                      labelValue: `${candleTime}`,
+                      labelValue: `${candleDateTime}`,
                     })
                   );
                 }
+
+                onCandleDrawn(candle, index);
 
                 // Add annotations for MSS:
                 /*
@@ -515,7 +572,7 @@
                   indicateCandle(candle, ohlcData, index);
                 */
 
-                return unixTime + 3600;
+                return unixTime; // + 3600;
               }),
               openValues: ohlcData.map((candle) => candle.open),
               highValues: ohlcData.map((candle) => candle.high),
@@ -524,9 +581,10 @@
             });
 
             const xAxis = new DateTimeNumericAxis(wasmContext, { growBy });
+            // Cursor labels:
             xAxis.labelProvider.formatCursorLabel = (dataValue) => {
-              const unixDateStamp = dataValue - 3600;
-              return formatDate(unixDateStamp * 1000);
+              const unixDateStamp = Math.floor(dataValue); // Flooring it to remove milliseconds from that cursor data, as it is too much precise // - 3600;
+              return formatDateFromUnix(unixDateStamp);
             };
             const yAxis = new NumericAxis(wasmContext, {
               labelPrecision: decimals,
@@ -571,7 +629,7 @@
               .addEventListener('change', function (event) {
                 const getCandleNumberByDay = (days) => 86400 * days; // Get the number of candles in a day (candle count for a entire day)
                 const selectedDate = event.target.value;
-                const rangeMinDate = parseInt(selectedDate) + 1800 // + half an hour
+                const rangeMinDate = parseInt(selectedDate) - 1800 // + half an hour
                 const rangeMaxDate = parseInt(selectedDate) + getCandleNumberByDay(0.1); // getCandleChartAxisLocationFromDate(selectedDate) + getCandleNumberByDay(0.1); // half of a day
                 const xAxis = sciChartSurface.xAxes.get(0);
                 const yAxis = sciChartSurface.yAxes.get(0);
