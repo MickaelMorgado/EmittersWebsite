@@ -247,6 +247,10 @@
       BEAR: 'BEAR',
     };
 
+    const getCandleDirection = (candle) => {
+      return candle.close > candle.open ? EnumDirection.BULL : EnumDirection.BEAR;
+    };
+
     const getCandleChartAxisLocationFromDate = (date) => {
       return new Date(date).getTime() / 1000;
     };
@@ -402,6 +406,13 @@
           // sciChartSurface.xAxes.add(new NumericAxis(wasmContext, { axisTitle: "Time", growBy }));
           // sciChartSurface.yAxes.add(new NumericAxis(wasmContext, { axisTitle: "Price", growBy }));
 
+          const signalAnnotation = {
+            svgString: {
+              bullish: '<svg id="Capa_1" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10"><g transform="translate(-54.616083,-75.548914)"><path style="fill:#00FF00;" d="M 55,85 L 60,75 L 65,85 Z"/></g></svg>',
+              bearish: '<svg id="Capa_1" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10"><g transform="translate(-54.616083,-75.548914)"><path style="fill:#FF0000;" d="M 55,75 L 60,85 L 65,75 Z"/></g></svg>',
+            },
+          };
+
           const buildChartData = (data) => {
             const growBy = new NumberRange(0.1, 0.1);
             // Extract OHLC data from the response
@@ -439,7 +450,45 @@
 
             // First function to be executed as soon as the data is loaded, you can do anything you want here:
             const onData = (ohlcData) => {
-              console.log('ohlcData:', ohlcData);
+              // console.log('ohlcData:', ohlcData);
+            }
+            // Second function to be executed after the candle is drawn, you can add annotations here:
+            const onCandleDrawn = (candle, index) => {
+                const FVGSignal = () => {
+                if (index < 3 || index > ohlcData.length - 2) return false;
+                const prevCandle = ohlcData[index - 1];
+                const nextCandle = ohlcData[index + 1];
+                const isBullishFVG = nextCandle.low > prevCandle.high;
+                const isBearishFVG = prevCandle.low > nextCandle.high;
+                return isBullishFVG || isBearishFVG;
+                };
+
+              if (FVGSignal()) {
+                const candlePosition = convertMT5DateToUnix(candle.time);
+                const positionOfAnnotation = {
+                  x1: candlePosition,
+                  y1: candle.high,
+                  verticalAnchorPoint: EVerticalAnchorPoint.Center,
+                  horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
+                  svgString: signalAnnotation.svgString.bullish,
+                }
+                sciChartSurface.annotations.add(
+
+                  new CustomAnnotation({
+                    /*
+                    stroke: '#999',
+                    axisLabelFill: '#999',
+                    strokeThickness: 1,
+                    showLabel: true,
+                    labelPlacement: ELabelPlacement.TopLeft,
+                    labelValue: `${candle.time}`,
+                    */
+                    ...positionOfAnnotation,
+                    y1: getCandleDirection(candle) == EnumDirection.BULL ? candle.low : candle.high,
+                    svgString: getCandleDirection(candle) == EnumDirection.BULL ? signalAnnotation.svgString.bullish : signalAnnotation.svgString.bearish,
+                  })
+                );
+              }
             }
 
             // Create an OHLC data series
@@ -483,6 +532,8 @@
                     })
                   );
                 }
+
+                onCandleDrawn(candle, index);
 
                 // Add annotations for MSS:
                 /*
