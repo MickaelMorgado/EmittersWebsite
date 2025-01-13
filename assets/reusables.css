@@ -19,6 +19,7 @@
 input,
 select,
 .mybutton,
+textarea,
 input[type='checkbox']::before {
   background: black;
   margin: 0;
@@ -26,6 +27,11 @@ input[type='checkbox']::before {
   padding: 10px;
   border: 2px solid #222;
   border-radius: 3px;
+}
+
+textarea {
+  box-sizing: border-box;
+  color: var(--grey2);
 }
 
 input[type='checkbox'] {
@@ -134,13 +140,6 @@ pre code {
   gap: var(--padding);
   display: flex;
   flex-direction: column;
-}
-
-.h-field {
-  border-radius: var(--border);
-  padding: var(--border) var(--padding-medium);
-  background-color: var(--dark3);
-  color: var(--grey2);
 }
 
 .h-btn-primary {
