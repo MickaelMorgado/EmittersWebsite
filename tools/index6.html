@@ -24,7 +24,7 @@
     #upload-section {
       position: fixed;
       height: 100%;
-      z-index: 1;
+      z-index: 2;
       background: rgba(0, 0, 0, 0.5);
       width: var(--main-width);
       overflow: hidden;
@@ -40,8 +40,58 @@
       transition: all 0.5s ease;
     }
 
-    #scichart-root {
+    .chart-section {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
       margin-left: var(--main-width);
+    }
+
+    #scichart-root {
+      flex-grow: 1;
+    }
+
+    .result-panel {
+      position: relative;
+      height: 60px;
+      background: black;
+      color: white;
+      overflow-y: auto;
+      z-index: 1;
+      transition: all .5s ease;
+    }
+
+    .result-panel-toolbar {
+      position: fixed;
+      display: flex;
+      left: var(--main-width);
+      right: 0;
+      gap: var(--padding);
+      padding: 10px;
+      background: var(--dark);
+      box-shadow: 0 10px 20px -5px var(--dark3);
+      box-sizing: border-box;
+    }
+
+    .result-panel-content {
+      padding: 20px;
+      padding-top: 90px;
+    }
+
+    .result-panel-toolbar-toggler {
+      span:first-child { display: inline; }
+      span:last-child { display: none; }
+    }
+
+    /* When the result panel is active: */
+    .result-panel.active {
+      height: 300px;
+    }
+
+    .active .result-panel-toolbar-toggler {
+      span:first-child { display: none; }
+      span:last-child { display: inline; }
     }
 
     #hidder {
@@ -70,6 +120,10 @@
       top: auto;
       bottom: 40px;
     }
+
+    .spacer {
+      flex-grow: 1;
+    }
   </style>
 </head>
 
@@ -79,7 +133,6 @@
       <div class="h-flex h-flex--column">
         <div>
           <h1>BackTesting</h1>
-          <h3>Upload and Read a CSV File</h3>
           <p>
             Export MT5 bars by using CTRL+U then go to Bars tab, filter the
             range and export, then upload it here:
@@ -91,10 +144,9 @@
           </p>
         </div>
         <hr class="h-hr" />
+        <label for="">Upload CSV bars</label>
         <input type="file" id="csvFileInput" accept=".csv" class="h-input-effects" />
         <hr class="h-hr" />
-        <label for="backtesting-hour">Backtesting Hour</label>
-        <input id="backtesting-hour" class="h-input-effects" type="text" value="08:00:00" />
         <div class="h-flex">
           <div class="h-form-group">
             <label for="prevDate">Prev</label>
@@ -104,15 +156,7 @@
           </div>
           <div class="h-form-group">
             <label for="NavigateTroughtDates">Navigate trought dates</label>
-            <select id="NavigateTroughtDates" class="h-input-effects">
-              <!--
-                  <option value="2024/6/29">2024/6/29</option>
-                  <option value="2024/7/1">2024/7/1</option>
-                  <option value="2024/7/2">2024/7/2</option>
-                  <option value="2024/7/3">2024/7/3</option>
-                  <option value="2024/7/4">2024/7/4</option>
-                -->
-            </select>
+            <select id="NavigateTroughtDates" class="h-input-effects"></select>
           </div>
           <div class="h-form-group">
             <label for="nextDate">Next</label>
@@ -121,7 +165,6 @@
             </button>
           </div>
         </div>
-
         <script>
           function changeDate(direction) {
             const select = document.getElementById('NavigateTroughtDates');
@@ -133,10 +176,6 @@
             }
           }
         </script>
-        <hr class="h-hr" />
-        <!-- Added input type number with default values -->
-        <input id="SLPips" type="number" value="0.0001" class="h-input-effects" />
-        <input id="TPPips" type="number" value="0.0003" class="h-input-effects" />
         <hr class="h-hr" />
         <label for="">Hidder</label>
         <div class="h-flex">
@@ -185,17 +224,14 @@
           }
         </script>
         <hr class="h-hr" />
-        <label for="backtesting-hour">Win Rate</label>
-        <input type="number" />
-        <input type="number" />
-        <hr class="h-hr" />
+        <label for="backtesting-hour">CSV Data</label>
         <div>
-          <textarea id="csvContent" rows="10" style="width: 100%" class="h-field"></textarea>
+          <textarea id="csvContent" rows="10" style="width: 100%"></textarea>
         </div>
         <hr class="h-hr" />
+        <label for="colorSettingsTutorial">Customize the colors by adding the following parameters to the URL</label>
         <div>
-          you can customize the colors by adding the following parameters to the URL:
-          <textarea style="width: 100%" class="h-field">?bullishColor=00FF00&bearishColor=00FFFF</textarea>
+          <textarea id="colorSettingsTutorial" style="width: 100%">?bullishColor=00FF00&bearishColor=FF0000</textarea>
         </div>
       </div>
     </div>
@@ -220,42 +256,77 @@
       <i class="fa-regular fa-square"></i>
     </button>
   </div>
-  <!--div class="rules">
-    <ol style="width: 300px; padding: 0;">
-      <li class="flex-container">
-        <input type="checkbox" id="rule1">
-        <label for="rule1">HLs / LHs</label>
-      </li>
-      <li class="flex-container">
-        <input type="checkbox" id="rule2">
-        <label for="rule2">Breakout MSS (closed)</label>
-      </li>
-      <li class="flex-container">
-        <input type="checkbox" id="rule4">
-        <label for="rule4">Has good RR FVG TP Target</label>
-      </li>
-      <li class="flex-container">
-        <input type="checkbox" id="rule3">
-        <label for="rule3">MSS Breaker has FVG (Displacement from a Liquidity)</label>
-      </li>
-      <li class="flex-container">
-        <input type="checkbox" id="rule4">
-        <label for="rule4">Pullback at FVG (50% above)</label>
-      </li>
-    </ol>
-  </div-->
   <div id="hidder"></div>
-  <div id="scichart-root" style="height: 100vh"></div>
+  <div class="chart-section">
+    <div id="scichart-root"></div>
+    <div id="result-panel" class="result-panel">
+      <div class="result-panel-toolbar">
+        <button id="result-panel-toolbar-content-toggler-algo" class="mybutton h-input-effects result-panel-toolbar-toggler">
+          Backtesting results (Algo)
+        </button>
+        <button disabled id="result-panel-toolbar-content-toggler-manual" class="mybutton h-input-effects result-panel-toolbar-toggler">
+          Backtesting results (Manual)
+        </button>
+        <button disabled id="result-panel-toolbar-content-toggler-algo-editor" class="mybutton h-input-effects result-panel-toolbar-toggler">
+          Algo Editor
+        </button>
+        <div class="spacer"></div>
+        <button id="result-panel-toolbar-toggler" class="mybutton h-input-effects result-panel-toolbar-toggler">
+          <span><i class="fas fa-arrow-up"></i></span>
+          <span><i class="fas fa-arrow-down"></i></span>
+        </button>
+      </div>
+      <div class="result-panel-content h-flex h-flex--column">
+        <h5 for="backtesting-hour">Backtesting Result (Algo)</h5>
+        <div class="h-flex h-flex--row">
+          <div class="h-flex h-flex--column">
+            <div class="h-flex h-flex--column">
+              <label for="backtesting-hour">Prefered Backtesting Hour</label>
+              <input id="backtesting-hour" class="h-input-effects" type="text" value="08:00:00" />
+            </div>
+            <div class="h-flex h-flex--column">
+              <label for="LotSize">Lot Size</label>
+              <input id="LotSize" type="number" value="1.0" class="h-input-effects" />
+              <label for="">RR (SL Points | TP Points)</label>
+              <input id="SLPoints" type="number" value="0.0001" class="h-input-effects" />
+              <input id="TPPoints" type="number" value="0.0003" class="h-input-effects" />
+            </div>
+          </div>
+          <textarea id="backtestingResult" rows="10" style="width: 100%" class="h-field"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/scichart/index.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script>
+    // Result Panel Related Actions / Triggers:
+    const resultPanel = document.querySelector('#result-panel');
+    const toolbarToggler = document.querySelector('#result-panel-toolbar-toggler');
+    function toggleHeight() {
+      resultPanel.classList.toggle('active');
+    }
+    toolbarToggler.addEventListener('click', toggleHeight);
+
+    document.getElementById('result-panel-toolbar-content-toggler-algo').addEventListener('click', () => {
+      resultPanel.classList.add('active');
+    });
+
+    /* ---- */
+
     const decimals = 5;
-    let slSize = parseFloat(document.getElementById('SLPips').value);
-    let tpSize = parseFloat(document.getElementById('TPPips').value);
+    let slSize = () => parseFloat(document.getElementById('SLPoints').value);
+    let tpSize = () => parseFloat(document.getElementById('TPPoints').value);
+    let lotSize = () => parseFloat(document.getElementById('LotSize').value);
     const EnumDirection = {
       BULL: 'BULL',
       BEAR: 'BEAR',
+    };
+    const EnumOrderStatus = {
+      PENDING: 'PENDING',
+      CLOSED_BY_TP: 'CLOSED_BY_TP',
+      CLOSED_BY_SL: 'CLOSED_BY_SL',
     };
 
     const getCandleDirection = (candle) => {
@@ -307,6 +378,11 @@
             document.getElementById('scichart-root').style.display = 'block';
           };
           reader.readAsText(file);
+          // Here we need to update select dates with the new data:
+          // buildChartData();
+
+          // Expand Backtesting panel:
+          document.getElementById('result-panel-toolbar-content-toggler-algo').click();
         } else {
           alert('No file selected');
         }
@@ -360,8 +436,9 @@
       })
         .then(({ sciChartSurface, wasmContext }) => {
 
-          let bullishColor = '#FFF';
-          let bearishColor = '#F00';
+          let bullishColor = '00FF00';
+          let bearishColor = 'FF0000';
+          let greyColor = '999999';
 
           // Extract URL parameters
           const urlParams = new URLSearchParams(window.location.search);
@@ -428,7 +505,9 @@
 
           const signalAnnotation = {
             svgString: {
+              buy: '<svg id="Capa_1" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10"><g transform="translate(-54.616083,-75.548914)"><path style="fill:#0000FF;" d="M 55,85 L 60,75 L 65,85 Z"/></g></svg>',
               bullish: '<svg id="Capa_1" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10"><g transform="translate(-54.616083,-75.548914)"><path style="fill:#00FF00;" d="M 55,85 L 60,75 L 65,85 Z"/></g></svg>',
+              sell: '<svg id="Capa_1" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10"><g transform="translate(-54.616083,-75.548914)"><path style="fill:#FF0000;" d="M 55,75 L 60,85 L 65,75 Z"/></g></svg>',
               bearish: '<svg id="Capa_1" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10"><g transform="translate(-54.616083,-75.548914)"><path style="fill:#FF0000;" d="M 55,75 L 60,85 L 65,75 Z"/></g></svg>',
             },
           };
@@ -464,6 +543,7 @@
               };
             });
 
+            let ordersHistory = [];
             const minDate = new Date(ohlcData[0].time);
             const maxDate = new Date(ohlcData[ohlcData.length - 1].time);
             const offsetCandleDateTimeStamp = (candleDateTimeStamp) => candleDateTimeStamp; // - 3600 * 1; // !! offseting candle position in X axis by -1h to match tradingView (The correct way would be to offset the axis labels, but dont know how to do it yet)
@@ -474,16 +554,85 @@
             }
             // Second function to be executed after the candle is drawn, you can add annotations here:
             const onCandleDrawn = (candle, index) => {
-                const FVGSignal = () => {
+              // Check for tp/sl hit:
+              ordersHistory.forEach((order) => {
+                if (candle.high >= order.tp && !order.closed) {
+
+                  order.closed = true;
+                  order.closedPrice = order.tp;
+                  order.closedTime = candle.time;
+                  order.orderStatus = EnumOrderStatus.CLOSED_BY_TP,
+
+                  sciChartSurface.annotations.add(
+                    new CustomAnnotation({
+                      x1: convertMT5DateToUnix(order.closedTime),
+                      y1: order.tp,
+                      verticalAnchorPoint: EVerticalAnchorPoint.Center,
+                      horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
+                      svgString: signalAnnotation.svgString.sell,
+                    })
+                  );
+                  sciChartSurface.annotations.add(
+                    new LineAnnotation({
+                      stroke: `#${greyColor}`,
+                      strokeThickness: 1,
+                      strokeDashArray: [5, 5],
+                      x1: convertMT5DateToUnix(order.time),
+                      x2: convertMT5DateToUnix(order.closedTime),
+                      y1: order.price,
+                      y2: order.closedPrice,
+                    })
+                  );
+                }
+                if (candle.low <= order.sl && !order.closed) {
+
+                  order.closed = true;
+                  order.closedPrice = order.sl;
+                  order.closedTime = candle.time;
+                  order.orderStatus = EnumOrderStatus.CLOSED_BY_SL,
+
+                  sciChartSurface.annotations.add(
+                    new CustomAnnotation({
+                      x1: convertMT5DateToUnix(order.closedTime),
+                      y1: order.sl,
+                      verticalAnchorPoint: EVerticalAnchorPoint.Center,
+                      horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
+                      svgString: signalAnnotation.svgString.sell,
+                    })
+                  );
+                  sciChartSurface.annotations.add(
+                    new LineAnnotation({
+                      stroke: `#${greyColor}`,
+                      strokeThickness: 1,
+                      strokeDashArray: [5, 5],
+                      x1: convertMT5DateToUnix(order.time),
+                      x2: convertMT5DateToUnix(order.closedTime),
+                      y1: order.price,
+                      y2: order.closedPrice,
+                    })
+                  );
+                }
+              });
+
+              // A FVG signal:
+              const SignalCondition1 = () => {
                 if (index < 3 || index > ohlcData.length - 2) return false;
                 const prevCandle = ohlcData[index - 1];
                 const nextCandle = ohlcData[index + 1];
                 const isBullishFVG = nextCandle.low > prevCandle.high;
                 const isBearishFVG = prevCandle.low > nextCandle.high;
-                return isBullishFVG || isBearishFVG;
-                };
 
-              if (FVGSignal()) {
+                return false;
+                //return isBullishFVG || isBearishFVG;
+              };
+              
+              // A test signal condition for taking trades on each 400th candle:
+              const SignalCondition2 = () => {
+                const hourMinutes = () => candle.time.split(' ')[1].slice(0, 5);
+                return hourMinutes() == '08:00'; // Take a trade at 08:00
+              }
+
+              if (SignalCondition1()) {
                 const candlePosition = convertMT5DateToUnix(candle.time);
                 const positionOfAnnotation = {
                   x1: candlePosition,
@@ -493,7 +642,6 @@
                   svgString: signalAnnotation.svgString.bullish,
                 }
                 sciChartSurface.annotations.add(
-
                   new CustomAnnotation({
                     /*
                     stroke: '#999',
@@ -508,6 +656,50 @@
                     svgString: getCandleDirection(candle) == EnumDirection.BULL ? signalAnnotation.svgString.bullish : signalAnnotation.svgString.bearish,
                   })
                 );
+              }
+
+              if (SignalCondition2()) {
+                const candlePosition = convertMT5DateToUnix(candle.time);
+                
+                // Add order to history:
+                ordersHistory.push({
+                  id: index,
+                  time: candle.time,
+                  price: candle.close,
+                  sl: candle.close - slSize(),
+                  tp: candle.close + tpSize(),
+                  direction: EnumDirection.BULL,
+                  orderStatus: EnumOrderStatus.PENDING,
+                });
+
+                // Add annotation from entry:
+                sciChartSurface.annotations.add(
+                  new CustomAnnotation({
+                    x1: candlePosition,
+                    y1: candle.close,
+                    verticalAnchorPoint: EVerticalAnchorPoint.Center,
+                    horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
+                    svgString: signalAnnotation.svgString.buy,
+                  })
+                );
+              }
+
+              if (index == ohlcData.length - 1) {
+                
+                const profitsInPoints = ordersHistory.reduce((acc, order) => {
+                  if (order.orderStatus == EnumOrderStatus.CLOSED_BY_TP) {
+                    return acc + tpSize();
+                  }
+                  if (order.orderStatus == EnumOrderStatus.CLOSED_BY_SL) {
+                    return acc - slSize();
+                  }
+                  return acc;
+                }, 0);
+
+                console.log('Orders History:', ordersHistory);
+                const winRate = ordersHistory.length > 0 ? (ordersHistory.filter((order) => order.orderStatus == EnumOrderStatus.CLOSED_BY_TP).length / ordersHistory.length * 100).toFixed(2) : 0;
+                const result = `Check console for orders history\n\nTrade Taken: ${ordersHistory.length}\nWin Rate: ${winRate}% \n\nProfits: \n Money: ${(profitsInPoints * lotSize())}$\n Points: ${profitsInPoints} \n Pips: ${(profitsInPoints / 10)}`;
+                document.getElementById('backtestingResult').value = result;
               }
             }
 
@@ -734,7 +926,7 @@
                   coords.yGraphValue,
                   {
                     fill: `#${bullishColor}${RRToolStyles.opacity}`,
-                    y2: coords.yGraphValue + tpSize,
+                    y2: coords.yGraphValue + tpSize(),
                   },
                 )
               )
@@ -744,7 +936,7 @@
                   coords.yGraphValue,
                   {
                     fill: `#${bearishColor}${RRToolStyles.opacity}`,
-                    y2: coords.yGraphValue - slSize,
+                    y2: coords.yGraphValue - slSize(),
                   },
                 )
               )
@@ -755,7 +947,7 @@
                   coords.yGraphValue,
                   {
                     fill: `#${bullishColor}${RRToolStyles.opacity}`,
-                    y2: coords.yGraphValue - tpSize,
+                    y2: coords.yGraphValue - tpSize(),
                   },
                 )
               )
@@ -765,7 +957,7 @@
                   coords.yGraphValue,
                   {
                     fill: `#${bearishColor}${RRToolStyles.opacity}`,
-                    y2: coords.yGraphValue + slSize,
+                    y2: coords.yGraphValue + slSize(),
                   },
                 )
               )
