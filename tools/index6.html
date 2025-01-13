@@ -86,7 +86,7 @@
 
     /* When the result panel is active: */
     .result-panel.active {
-      height: 300px;
+      height: 400px;
     }
 
     .active .result-panel-toolbar-toggler {
@@ -224,14 +224,17 @@
           }
         </script>
         <hr class="h-hr" />
-        <label for="backtesting-hour">CSV Data</label>
-        <div>
-          <textarea id="csvContent" rows="10" style="width: 100%"></textarea>
-        </div>
-        <hr class="h-hr" />
         <label for="colorSettingsTutorial">Customize the colors by adding the following parameters to the URL</label>
         <div>
           <textarea id="colorSettingsTutorial" style="width: 100%">?bullishColor=00FF00&bearishColor=FF0000</textarea>
+          <!--
+          ?bullishColor=FF5500&bearishColor=444444
+          -->
+        </div>
+        <hr class="h-hr" />
+        <label for="backtesting-hour">CSV Data</label>
+        <div>
+          <textarea id="csvContent" rows="10" style="width: 100%"></textarea>
         </div>
       </div>
     </div>
@@ -267,7 +270,7 @@
         <button disabled id="result-panel-toolbar-content-toggler-manual" class="mybutton h-input-effects result-panel-toolbar-toggler">
           Backtesting results (Manual)
         </button>
-        <button disabled id="result-panel-toolbar-content-toggler-algo-editor" class="mybutton h-input-effects result-panel-toolbar-toggler">
+        <button id="result-panel-toolbar-content-toggler-algo-editor" class="mybutton h-input-effects result-panel-toolbar-toggler">
           Algo Editor
         </button>
         <div class="spacer"></div>
@@ -292,8 +295,16 @@
               <input id="TPPoints" type="number" value="0.0003" class="h-input-effects" />
             </div>
           </div>
-          <textarea id="backtestingResult" rows="10" style="width: 100%" class="h-field"></textarea>
+          <textarea id="backtestingResult" rows="10" style="width:20%" class="h-field"></textarea>
+          <div id="backtestingResultOrderHistory" class="h-field"></div>
         </div>
+      </div>
+      <div class="result-panel-content h-hide h-flex h-flex--column">
+        <h5>Algo editor</h5>
+        <div>
+          This field is completely customisable. Make sure to return a boolean value (that's what makes the signal to take trade), You can set a debugger / pause execution near SignalCondition2() function to see how it works and debug all variables:
+        </div>
+        <textarea name="algoEditorTextarea" id="algoEditorTextarea" width="100%" rows="10">hourMinutes() == '08:15'; // Take a trade at 08:15</textarea>
       </div>
     </div>
   </div>
@@ -311,6 +322,14 @@
 
     document.getElementById('result-panel-toolbar-content-toggler-algo').addEventListener('click', () => {
       resultPanel.classList.add('active');
+      document.querySelectorAll('.result-panel-content')[0].classList.remove('h-hide');
+      document.querySelectorAll('.result-panel-content')[1].classList.add('h-hide');
+    });
+
+    document.getElementById('result-panel-toolbar-content-toggler-algo-editor').addEventListener('click', () => {
+      resultPanel.classList.add('active');
+      document.querySelectorAll('.result-panel-content')[0].classList.add('h-hide');
+      document.querySelectorAll('.result-panel-content')[1].classList.remove('h-hide');
     });
 
     /* ---- */
@@ -628,8 +647,9 @@
               
               // A test signal condition for taking trades on each 400th candle:
               const SignalCondition2 = () => {
+                const algoEditorTextarea = document.getElementById('algoEditorTextarea');
                 const hourMinutes = () => candle.time.split(' ')[1].slice(0, 5);
-                return hourMinutes() == '08:00'; // Take a trade at 08:00
+                return eval(algoEditorTextarea.value);
               }
 
               if (SignalCondition1()) {
@@ -698,8 +718,42 @@
 
                 console.log('Orders History:', ordersHistory);
                 const winRate = ordersHistory.length > 0 ? (ordersHistory.filter((order) => order.orderStatus == EnumOrderStatus.CLOSED_BY_TP).length / ordersHistory.length * 100).toFixed(2) : 0;
-                const result = `Check console for orders history\n\nTrade Taken: ${ordersHistory.length}\nWin Rate: ${winRate}% \n\nProfits: \n Money: ${(profitsInPoints * lotSize())}$\n Points: ${profitsInPoints} \n Pips: ${(profitsInPoints / 10)}`;
+                const moneyEquivalent = ((profitsInPoints * (lotSize() * 10)) * 10000).toFixed(2);
+                const result = `Check console for orders history\n\nTrade Taken: ${ordersHistory.length}\nWin Rate: ${winRate}% \n\nProfits: \n Money: ${moneyEquivalent}$\n Points: ${profitsInPoints.toFixed(5)} \n Pips: ${(profitsInPoints / 0.00010).toFixed(2)} \n Ticks: ${(profitsInPoints / 0.01).toFixed(2)}`;
+                //const result = `Check console for orders history\n\nTrade Taken: ${ordersHistory.length}\nWin Rate: ${winRate}% \n\nProfits: \n Money: ${moneyEquivalent}$\n Points: ${profitsInPoints} \n Pips: ${(profitsInPoints / 0.00010)}`;
                 document.getElementById('backtestingResult').value = result;
+                document.getElementById('backtestingResultOrderHistory').innerHTML = `
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>ID</th>
+                        <th>Time</th>
+                        <th>Price</th>
+                        <th>SL</th>
+                        <th>TP</th>
+                        <th>Direction</th>
+                        <th>Order Status</th>
+                        <th>Closed Price</th>
+                        <th>Closed Time</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${ordersHistory.map(order => `
+                        <tr>
+                          <td>${order.id}</td>
+                          <td>${order.time}</td>
+                          <td>${order.price.toFixed(5)}</td>
+                          <td>${order.sl.toFixed(5)}</td>
+                          <td>${order.tp.toFixed(5)}</td>
+                          <td>${order.direction}</td>
+                          <td>${order.orderStatus}</td>
+                          <td>${order.closedPrice || ''}</td>
+                          <td>${order.closedTime || ''}</td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                `;
               }
             }
 
@@ -917,7 +971,6 @@
               ...options,
             });
 
-
           const addRRAnnotationBox = (ed) => {
             if (ed === EnumDirection.BULL) {
               sciChartSurface.annotations.add(
@@ -981,8 +1034,8 @@
               'click',
               (event) => {
                 const rect = sciChartSurface.domCanvas2D.getBoundingClientRect();
-                const mouseX = event.clientX - rect.left;
-                const mouseY = event.clientY - rect.top - 10; // -10 to offset the canvas position
+                const mouseX = event.clientX - rect.left - 10 - 73; // -10 from left offset 'border/padding' of the canvas -73 because of the points legend/markers
+                const mouseY = event.clientY - rect.top - 10; // -10 from top offset 'border/padding' of the canvas
                 const xCoordCalc = sciChartSurface.xAxes.get(0).getCurrentCoordinateCalculator();
                 const yCoordCalc = sciChartSurface.yAxes.get(0).getCurrentCoordinateCalculator();
 
