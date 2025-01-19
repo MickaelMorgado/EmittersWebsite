@@ -176,7 +176,7 @@
             }
           }
         </script>
-        <hr class="h-hr" />
+        <!--hr class="h-hr" />
         <label for="">Hidder</label>
         <div class="h-flex">
           <button id="hidderReset" title="Restart" class="mybutton h-input-effects" onclick="hidderRestart()">
@@ -222,7 +222,7 @@
             }
             hidder.style.left = "800px";
           }
-        </script>
+        </script-->
         <hr class="h-hr" />
         <label for="colorSettingsTutorial">Customize the colors by adding the following parameters to the URL</label>
         <div>
@@ -264,14 +264,14 @@
     <div id="scichart-root"></div>
     <div id="result-panel" class="result-panel">
       <div class="result-panel-toolbar">
+        <button id="result-panel-toolbar-content-toggler-algo-editor" class="mybutton h-input-effects result-panel-toolbar-toggler">
+          Algo Editor
+        </button>
         <button id="result-panel-toolbar-content-toggler-algo" class="mybutton h-input-effects result-panel-toolbar-toggler">
           Backtesting results (Algo)
         </button>
         <button disabled id="result-panel-toolbar-content-toggler-manual" class="mybutton h-input-effects result-panel-toolbar-toggler">
           Backtesting results (Manual)
-        </button>
-        <button id="result-panel-toolbar-content-toggler-algo-editor" class="mybutton h-input-effects result-panel-toolbar-toggler">
-          Algo Editor
         </button>
         <div class="spacer"></div>
         <button id="result-panel-toolbar-toggler" class="mybutton h-input-effects result-panel-toolbar-toggler">
@@ -300,11 +300,38 @@
         </div>
       </div>
       <div class="result-panel-content h-hide h-flex h-flex--column">
-        <h5>Algo editor</h5>
-        <div>
-          This field is completely customisable. Make sure to return a boolean value (that's what makes the signal to take trade), You can set a debugger / pause execution near SignalCondition2() function to see how it works and debug all variables:
+        <h3>Algo editor</h3>
+        <div>These fields are completely customisable.</div>
+        <div class="h-flex h-flex--column">
+          <h5>Signal Condition 1:</h5>
+          <label for="signal-condition-1-code">Make sure to return a boolean value (that's what makes the signal to take trade), You can set a debugger / pause execution near SignalCondition2() function to see how it works and debug all variables:</label>
+          <textarea name="signal-condition-1-code" id="algoEditorTextarea" width="100%" rows="10">hourMinutes() == '08:15'; // Take a trade at 08:15</textarea>
+          <label for="signal-condition-1-annotation">Signal Display Type (Signal representation on chart after valid condition from above returned code):</label>
+          <select name="signal-condition-1-annotation" id="signalCondition1Annotation">
+            <option value="draw-a-circle">Draw a circle</option>
+            <option value="take-a-trade">Take a Trade</option>
+          </select>
         </div>
-        <textarea name="algoEditorTextarea" id="algoEditorTextarea" width="100%" rows="10">hourMinutes() == '08:15'; // Take a trade at 08:15</textarea>
+        <div class="h-flex h-flex--column">
+          <h5>Signal Condition 2:</h5>
+          <label for="signal-condition-2-code">Make sure to return a boolean value (that's what makes the signal to take trade), You can set a debugger / pause execution near SignalCondition2() function to see how it works and debug all variables:</label>
+          <textarea name="signal-condition-2-code" id="algoEditorTextarea2" width="100%" rows="10">hourMinutes() == '08:30' && true; // TODO: replace 'true' buy previous returned result</textarea>
+          <label for="signal-condition-2-annotation">Signal Display Type (Signal representation on chart after valid condition from above returned code):</label>
+          <select name="signal-condition-2-annotation" id="signalCondition2Annotation">
+            <option value="draw-a-circle">Draw a circle</option>
+            <option value="take-a-trade">Take a Trade</option>
+          </select>
+        </div>
+        <div class="h-flex h-flex--column">
+          <h5>Signal Condition 3:</h5>
+          <label for="signal-condition-3-code">Make sure to return a boolean value (that's what makes the signal to take trade), You can set a debugger / pause execution near SignalCondition2() function to see how it works and debug all variables:</label>
+          <textarea name="signal-condition-3-code" id="algoEditorTextarea3" width="100%" rows="10">hourMinutes() == '08:45' && true; // TODO: replace 'true' buy previous returned result</textarea>
+          <label for="signal-condition-3-annotation">Signal Display Type (Signal representation on chart after valid condition from above returned code):</label>
+          <select name="signal-condition-3-annotation" id="signalCondition3Annotation">
+            <option value="draw-a-circle">Draw a circle</option>
+            <option value="take-a-trade">Take a Trade</option>
+          </select>
+        </div>
       </div>
     </div>
   </div>
@@ -528,6 +555,7 @@
               bullish: '<svg id="Capa_1" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10"><g transform="translate(-54.616083,-75.548914)"><path style="fill:#00FF00;" d="M 55,85 L 60,75 L 65,85 Z"/></g></svg>',
               sell: '<svg id="Capa_1" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10"><g transform="translate(-54.616083,-75.548914)"><path style="fill:#FF0000;" d="M 55,75 L 60,85 L 65,75 Z"/></g></svg>',
               bearish: '<svg id="Capa_1" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10"><g transform="translate(-54.616083,-75.548914)"><path style="fill:#FF0000;" d="M 55,75 L 60,85 L 65,75 Z"/></g></svg>',
+              circle: `<svg id="Capa_1" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" style="fill:#${bullishColor};fill-opacity:0.34117647;stroke:#${bullishColor};stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" /></svg>`,
             },
           };
 
@@ -634,7 +662,7 @@
               });
 
               // A FVG signal:
-              const SignalCondition1 = () => {
+              const SignalConditionFVG = () => {
                 if (index < 3 || index > ohlcData.length - 2) return false;
                 const prevCandle = ohlcData[index - 1];
                 const nextCandle = ohlcData[index + 1];
@@ -644,15 +672,8 @@
                 return false;
                 //return isBullishFVG || isBearishFVG;
               };
-              
-              // A test signal condition for taking trades on each 400th candle:
-              const SignalCondition2 = () => {
-                const algoEditorTextarea = document.getElementById('algoEditorTextarea');
-                const hourMinutes = () => candle.time.split(' ')[1].slice(0, 5);
-                return eval(algoEditorTextarea.value);
-              }
 
-              if (SignalCondition1()) {
+              if (SignalConditionFVG()) {
                 const candlePosition = convertMT5DateToUnix(candle.time);
                 const positionOfAnnotation = {
                   x1: candlePosition,
@@ -678,30 +699,145 @@
                 );
               }
 
+              const SignalCondition1 = () => {
+                const algoEditorTextarea = document.getElementById('algoEditorTextarea');
+                const hourMinutes = () => candle.time.split(' ')[1].slice(0, 5);
+                return eval(algoEditorTextarea.value);
+              }
+
+              if (SignalCondition1()) {
+                const candlePosition = convertMT5DateToUnix(candle.time);
+
+                switch (document.getElementById('signalCondition1Annotation').value) {
+                  case 'draw-a-circle':
+                    sciChartSurface.annotations.add(
+                      new CustomAnnotation({
+                        x1: candlePosition,
+                        y1: candle.close,
+                        verticalAnchorPoint: EVerticalAnchorPoint.Center,
+                        horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
+                        svgString: signalAnnotation.svgString.circle,
+                      })
+                    );
+                    break;
+                  case 'take-a-trade':
+                    // Add order to history:
+                    ordersHistory.push({
+                      id: index,
+                      time: candle.time,
+                      price: candle.close,
+                      sl: candle.close - slSize(),
+                      tp: candle.close + tpSize(),
+                      direction: EnumDirection.BULL,
+                      orderStatus: EnumOrderStatus.PENDING,
+                    });
+
+                    // Add annotation from entry:
+                    sciChartSurface.annotations.add(
+                      new CustomAnnotation({
+                        x1: candlePosition,
+                        y1: candle.close,
+                        verticalAnchorPoint: EVerticalAnchorPoint.Center,
+                        horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
+                        svgString: signalAnnotation.svgString.buy,
+                      })
+                    );
+                    break;
+                }
+              }
+
+              const SignalCondition2 = () => {
+                const algoEditorTextarea = document.getElementById('algoEditorTextarea2');
+                const hourMinutes = () => candle.time.split(' ')[1].slice(0, 5);
+                return eval(algoEditorTextarea.value);
+              }
+
               if (SignalCondition2()) {
                 const candlePosition = convertMT5DateToUnix(candle.time);
-                
-                // Add order to history:
-                ordersHistory.push({
-                  id: index,
-                  time: candle.time,
-                  price: candle.close,
-                  sl: candle.close - slSize(),
-                  tp: candle.close + tpSize(),
-                  direction: EnumDirection.BULL,
-                  orderStatus: EnumOrderStatus.PENDING,
-                });
 
-                // Add annotation from entry:
-                sciChartSurface.annotations.add(
-                  new CustomAnnotation({
-                    x1: candlePosition,
-                    y1: candle.close,
-                    verticalAnchorPoint: EVerticalAnchorPoint.Center,
-                    horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
-                    svgString: signalAnnotation.svgString.buy,
-                  })
-                );
+                switch (document.getElementById('signalCondition2Annotation').value) {
+                  case 'draw-a-circle':
+                    sciChartSurface.annotations.add(
+                      new CustomAnnotation({
+                        x1: candlePosition,
+                        y1: candle.close,
+                        verticalAnchorPoint: EVerticalAnchorPoint.Center,
+                        horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
+                        svgString: signalAnnotation.svgString.circle,
+                      })
+                    );
+                    break;
+                  case 'take-a-trade':
+                    // Add order to history:
+                    ordersHistory.push({
+                      id: index,
+                      time: candle.time,
+                      price: candle.close,
+                      sl: candle.close - slSize(),
+                      tp: candle.close + tpSize(),
+                      direction: EnumDirection.BULL,
+                      orderStatus: EnumOrderStatus.PENDING,
+                    });
+
+                    // Add annotation from entry:
+                    sciChartSurface.annotations.add(
+                      new CustomAnnotation({
+                        x1: candlePosition,
+                        y1: candle.close,
+                        verticalAnchorPoint: EVerticalAnchorPoint.Center,
+                        horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
+                        svgString: signalAnnotation.svgString.buy,
+                      })
+                    );
+                    break;
+                }
+              }
+
+              const SignalCondition3 = () => {
+                const algoEditorTextarea = document.getElementById('algoEditorTextarea3');
+                const hourMinutes = () => candle.time.split(' ')[1].slice(0, 5);
+                return eval(algoEditorTextarea.value);
+              }
+
+              if (SignalCondition3()) {
+                const candlePosition = convertMT5DateToUnix(candle.time);
+
+                switch (document.getElementById('signalCondition3Annotation').value) {
+                  case 'draw-a-circle':
+                    sciChartSurface.annotations.add(
+                      new CustomAnnotation({
+                        x1: candlePosition,
+                        y1: candle.close,
+                        verticalAnchorPoint: EVerticalAnchorPoint.Center,
+                        horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
+                        svgString: signalAnnotation.svgString.circle,
+                      })
+                    );
+                    break;
+                  case 'take-a-trade':
+                    // Add order to history:
+                    ordersHistory.push({
+                      id: index,
+                      time: candle.time,
+                      price: candle.close,
+                      sl: candle.close - slSize(),
+                      tp: candle.close + tpSize(),
+                      direction: EnumDirection.BULL,
+                      orderStatus: EnumOrderStatus.PENDING,
+                    });
+
+                    // Add annotation from entry:
+                    sciChartSurface.annotations.add(
+                      new CustomAnnotation({
+                        x1: candlePosition,
+                        y1: candle.close,
+                        verticalAnchorPoint: EVerticalAnchorPoint.Center,
+                        horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
+                        svgString: signalAnnotation.svgString.buy,
+                      })
+                    );
+                    break;
+                }
               }
 
               if (index == ohlcData.length - 1) {
