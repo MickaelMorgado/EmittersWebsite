@@ -231,6 +231,7 @@
               <option value="?bullishColor=0000FF&bearishColor=FF00FF">Blue / Magenta</option>
               <option value="?bullishColor=FFFF00&bearishColor=00FFFF">Yellow / Cyan</option>
               <option value="?bullishColor=00cdff&bearishColor=555555">Light Blue / Grey</option>
+              <option value="?bullishColor=FF5500&bearishColor=444444">Volcanic</option>
             </select>
 
             <script>
@@ -241,9 +242,6 @@
               window.location.href = currentUrl + selectedTheme;
             }
             </script>
-          <!--
-          ?bullishColor=FF5500&bearishColor=444444
-          -->
         </div>
         <hr class="h-hr" />
         <label for="backtesting-hour">CSV Data</label>
@@ -316,36 +314,129 @@
       <div class="result-panel-content h-hide h-flex h-flex--column">
         <h3>Algo editor</h3>
         <div>These fields are completely customisable.</div>
-        <div class="h-flex h-flex--column">
-          <h5>Signal Condition 1:</h5>
-          <label for="signal-condition-1-code">Make sure to return a boolean value (that's what makes the signal to take trade), You can set a debugger / pause execution near SignalCondition2() function to see how it works and debug all variables:</label>
-          <textarea name="signal-condition-1-code" id="algoEditorTextarea" width="100%" rows="10">hourMinutes() == '08:15'; // Take a trade at 08:15</textarea>
-          <label for="signal-condition-1-annotation">Signal Display Type (Signal representation on chart after valid condition from above returned code):</label>
-          <select name="signal-condition-1-annotation" id="signalCondition1Annotation">
-            <option value="draw-a-circle">Draw a circle</option>
-            <option value="take-a-trade">Take a Trade</option>
-          </select>
+        <div class="accordion">
+          <div class="accordion-item">
+            <div class="accordion-header" id="headingOne">
+              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                Signal Condition 1
+              </button>
+            </div>
+            <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+              <div class="accordion-body">
+                <label for="signal-condition-1-code">Make sure to return a boolean value (that's what makes the signal to take trade), You can set a debugger / pause execution near SignalCondition2() function to see how it works and debug all variables:</label>
+                <textarea name="signal-condition-1-code" id="algoEditorTextarea" width="100%" rows="10">hourMinutes() == '08:15'; // Take a trade at 08:15</textarea>
+                <label for="signal-condition-1-annotation">Signal Display Type (Signal representation on chart after valid condition from above returned code):</label>
+                <select name="signal-condition-1-annotation" id="signalCondition1Annotation">
+                  <option value="draw-a-circle">Draw a circle</option>
+                  <option value="take-a-trade">Take a Trade</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="accordion-item">
+            <div class="accordion-header" id="headingTwo">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                Signal Condition 2
+              </button>
+            </div>
+            <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#accordionExample">
+              <div class="accordion-body">
+                <label for="signal-condition-2-code">Make sure to return a boolean value (that's what makes the signal to take trade), You can set a debugger / pause execution near SignalCondition2() function to see how it works and debug all variables:</label>
+                <textarea name="signal-condition-2-code" id="algoEditorTextarea2" width="100%" rows="10">hourMinutes() == '08:30' && true; // TODO: replace 'true' buy previous returned result</textarea>
+                <label for="signal-condition-2-annotation">Signal Display Type (Signal representation on chart after valid condition from above returned code):</label>
+                <select name="signal-condition-2-annotation" id="signalCondition2Annotation">
+                  <option value="draw-a-circle">Draw a circle</option>
+                  <option value="take-a-trade">Take a Trade</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="accordion-item">
+            <div class="accordion-header" id="headingThree">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                Signal Condition 3
+              </button>
+            </div>
+            <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#accordionExample">
+              <div class="accordion-body">
+                <label for="signal-condition-3-code">Make sure to return a boolean value (that's what makes the signal to take trade), You can set a debugger / pause execution near SignalCondition2() function to see how it works and debug all variables:</label>
+                <textarea name="signal-condition-3-code" id="algoEditorTextarea3" width="100%" rows="10">hourMinutes() == '08:45' && true; // TODO: replace 'true' buy previous returned result</textarea>
+                <label for="signal-condition-3-annotation">Signal Display Type (Signal representation on chart after valid condition from above returned code):</label>
+                <select name="signal-condition-3-annotation" id="signalCondition3Annotation">
+                  <option value="draw-a-circle">Draw a circle</option>
+                  <option value="take-a-trade">Take a Trade</option>
+                </select>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="h-flex h-flex--column">
-          <h5>Signal Condition 2:</h5>
-          <label for="signal-condition-2-code">Make sure to return a boolean value (that's what makes the signal to take trade), You can set a debugger / pause execution near SignalCondition2() function to see how it works and debug all variables:</label>
-          <textarea name="signal-condition-2-code" id="algoEditorTextarea2" width="100%" rows="10">hourMinutes() == '08:30' && true; // TODO: replace 'true' buy previous returned result</textarea>
-          <label for="signal-condition-2-annotation">Signal Display Type (Signal representation on chart after valid condition from above returned code):</label>
-          <select name="signal-condition-2-annotation" id="signalCondition2Annotation">
-            <option value="draw-a-circle">Draw a circle</option>
-            <option value="take-a-trade">Take a Trade</option>
-          </select>
-        </div>
-        <div class="h-flex h-flex--column">
-          <h5>Signal Condition 3:</h5>
-          <label for="signal-condition-3-code">Make sure to return a boolean value (that's what makes the signal to take trade), You can set a debugger / pause execution near SignalCondition2() function to see how it works and debug all variables:</label>
-          <textarea name="signal-condition-3-code" id="algoEditorTextarea3" width="100%" rows="10">hourMinutes() == '08:45' && true; // TODO: replace 'true' buy previous returned result</textarea>
-          <label for="signal-condition-3-annotation">Signal Display Type (Signal representation on chart after valid condition from above returned code):</label>
-          <select name="signal-condition-3-annotation" id="signalCondition3Annotation">
-            <option value="draw-a-circle">Draw a circle</option>
-            <option value="take-a-trade">Take a Trade</option>
-          </select>
-        </div>
+        <script>
+          document.querySelectorAll('.accordion-button').forEach(button => {
+            button.addEventListener('click', () => {
+              const accordionItem = button.closest('.accordion-item');
+              const collapseElement = accordionItem.querySelector('.accordion-collapse');
+
+              if (collapseElement.classList.contains('show')) {
+                collapseElement.classList.remove('show');
+              } else {
+                document.querySelectorAll('.accordion-collapse.show').forEach(openItem => {
+                  openItem.classList.remove('show');
+                });
+                collapseElement.classList.add('show');
+              }
+            });
+          });
+        </script>
+        <style>
+          .accordion {
+            width: 100%;
+            border: 1px solid var(--dark3);
+            border-radius: var(--radius);
+            overflow: hidden;
+          }
+
+          .accordion-item {
+            border-bottom: 1px solid var(--dark3);
+          }
+
+          .accordion-header {
+            background-color: var(--dark);
+            cursor: pointer;
+          }
+
+          .accordion-button {
+            background-color: var(--dark2);
+            border: none;
+            font-size: 16px;
+            text-align: left;
+            width: 100%;
+            padding: 10px;
+            cursor: pointer;
+            color: var(--grey1);
+            text-transform: uppercase;
+            font-weight: bold;
+          }
+
+          .accordion-button:focus {
+            outline: none;
+          }
+
+          .accordion-collapse {
+            display: none;
+          }
+
+          .accordion-collapse.show {
+            display: block;
+          }
+
+          .accordion-body {
+            padding: var(--padding);
+            background-color: var(--dark);
+            display: flex;
+            flex-direction: column;
+            gap: var(--padding);
+          }
+        </style>
       </div>
     </div>
   </div>
