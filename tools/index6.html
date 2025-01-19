@@ -224,9 +224,23 @@
           }
         </script-->
         <hr class="h-hr" />
-        <label for="colorSettingsTutorial">Customize the colors by adding the following parameters to the URL</label>
+        <label for="colorSettingsTutorial">Customize the chart colors theme</label>
         <div>
-          <textarea id="colorSettingsTutorial" style="width: 100%">?bullishColor=00FF00&bearishColor=FF0000</textarea>
+            <select id="themeSelector" class="h-input-effects" onchange="applyTheme()">
+              <option value="?bullishColor=00FF00&bearishColor=FF0000">Green / Red</option>
+              <option value="?bullishColor=0000FF&bearishColor=FF00FF">Blue / Magenta</option>
+              <option value="?bullishColor=FFFF00&bearishColor=00FFFF">Yellow / Cyan</option>
+              <option value="?bullishColor=00cdff&bearishColor=555555">Light Blue / Grey</option>
+            </select>
+
+            <script>
+            function applyTheme() {
+              const themeSelector = document.getElementById('themeSelector');
+              const selectedTheme = themeSelector.value;
+              const currentUrl = window.location.href.split('?')[0];
+              window.location.href = currentUrl + selectedTheme;
+            }
+            </script>
           <!--
           ?bullishColor=FF5500&bearishColor=444444
           -->
