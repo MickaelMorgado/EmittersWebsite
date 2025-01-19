@@ -124,6 +124,57 @@
     .spacer {
       flex-grow: 1;
     }
+
+    .accordion {
+      width: 100%;
+      border: 1px solid var(--dark3);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .accordion-item {
+      border-bottom: 1px solid var(--dark3);
+    }
+
+    .accordion-header {
+      background-color: var(--dark);
+      cursor: pointer;
+    }
+
+    .accordion-button {
+      background-color: var(--dark2);
+      border: none;
+      font-size: 16px;
+      text-align: left;
+      width: 100%;
+      padding: 10px;
+      cursor: pointer;
+      color: var(--grey1);
+      text-transform: uppercase;
+      font-weight: bold;
+    }
+
+    .accordion-button:focus {
+      outline: none;
+    }
+
+    .accordion-collapse {
+      height: 0;
+      overflow: hidden;
+      transition: height 0.3s ease;
+    }
+
+    .accordion-collapse.show {
+      height: auto;
+    }
+
+    .accordion-body {
+      padding: var(--padding);
+      background-color: var(--dark);
+      display: flex;
+      flex-direction: column;
+      gap: var(--padding);
+    }
   </style>
 </head>
 
@@ -393,58 +444,6 @@
             });
           });
         </script>
-        <style>
-          .accordion {
-            width: 100%;
-            border: 1px solid var(--dark3);
-            border-radius: var(--radius);
-            overflow: hidden;
-          }
-
-          .accordion-item {
-            border-bottom: 1px solid var(--dark3);
-          }
-
-          .accordion-header {
-            background-color: var(--dark);
-            cursor: pointer;
-          }
-
-          .accordion-button {
-            background-color: var(--dark2);
-            border: none;
-            font-size: 16px;
-            text-align: left;
-            width: 100%;
-            padding: 10px;
-            cursor: pointer;
-            color: var(--grey1);
-            text-transform: uppercase;
-            font-weight: bold;
-          }
-
-          .accordion-button:focus {
-            outline: none;
-          }
-
-          .accordion-collapse {
-            height: 0;
-            overflow: hidden;
-            transition: height 0.3s ease;
-          }
-
-          .accordion-collapse.show {
-            height: auto;
-          }
-
-          .accordion-body {
-            padding: var(--padding);
-            background-color: var(--dark);
-            display: flex;
-            flex-direction: column;
-            gap: var(--padding);
-          }
-        </style>
       </div>
     </div>
   </div>
@@ -714,6 +713,7 @@
             }
             // Second function to be executed after the candle is drawn, you can add annotations here:
             const onCandleDrawn = (candle, index) => {
+              const candlePosition = convertMT5DateToUnix(candle.time);
               // Check for tp/sl hit:
               ordersHistory.forEach((order) => {
                 if (candle.high >= order.tp && !order.closed) {
@@ -819,8 +819,6 @@
               }
 
               if (SignalCondition1()) {
-                const candlePosition = convertMT5DateToUnix(candle.time);
-
                 switch (document.getElementById('signalCondition1Annotation').value) {
                   case 'draw-a-circle':
                     sciChartSurface.annotations.add(
@@ -866,8 +864,6 @@
               }
 
               if (SignalCondition2()) {
-                const candlePosition = convertMT5DateToUnix(candle.time);
-
                 switch (document.getElementById('signalCondition2Annotation').value) {
                   case 'draw-a-circle':
                     sciChartSurface.annotations.add(
@@ -951,6 +947,31 @@
                     );
                     break;
                 }
+              }
+
+              let isSwingHigh = false;
+              let isSwingLow = false;
+
+              const SignalSwingHighLow = () => {
+                if (index < 3 || index > ohlcData.length - 2) return false;
+                const prevCandle = ohlcData[index - 1];
+                const nextCandle = ohlcData[index + 1];
+                isSwingHigh = prevCandle.high < candle.high && nextCandle.high < candle.high; // && getCandleDirection(prevCandle) == 'BULL' && getCandleDirection(nextCandle) == 'BEAR'; // red
+                isSwingLow = prevCandle.low > candle.low && nextCandle.low > candle.low; // && getCandleDirection(prevCandle) == 'BEAR' && getCandleDirection(nextCandle) == 'BULL'; // green
+
+                return isSwingLow || isSwingHigh;
+              }
+
+              if (SignalSwingHighLow()) {
+                sciChartSurface.annotations.add(
+                  new CustomAnnotation({
+                    x1: candlePosition,
+                    y1: isSwingHigh ? candle.high : candle.low,
+                    verticalAnchorPoint: EVerticalAnchorPoint.Center,
+                    horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
+                    svgString: isSwingHigh ? signalAnnotation.svgString.bearish : signalAnnotation.svgString.bullish,
+                  })
+                );
               }
 
               if (index == ohlcData.length - 1) {
