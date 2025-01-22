@@ -369,54 +369,57 @@
           <div class="accordion-item">
             <div class="accordion-header" id="headingOne">
               <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-          Signal Condition 1
+                Signal Condition 1
               </button>
             </div>
             <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
               <div class="accordion-body">
-          <label for="signal-condition-1-code">Make sure to return a boolean value (that's what makes the signal to take trade), You can set a debugger / pause execution near SignalCondition2() function to see how it works and debug all variables:</label>
-          <textarea name="signal-condition-1-code" id="algoEditorTextarea" width="100%" rows="10">hourMinutes() == '08:15'; // Take a trade at 08:15</textarea>
-          <label for="signal-condition-1-annotation">Signal Display Type (Signal representation on chart after valid condition from above returned code):</label>
-          <select name="signal-condition-1-annotation" id="signalCondition1Annotation">
-            <option value="draw-a-circle">Draw a circle</option>
-            <option value="take-a-trade">Take a Trade</option>
-          </select>
+                <label for="signal-condition-1-code">Make sure to return a boolean value (that's what makes the signal to take trade), You can set a debugger / pause execution near SignalCondition2() function to see how it works and debug all variables:</label>
+                <textarea name="signal-condition-1-code" id="algoEditorTextarea" width="100%" rows="10">hourMinutes() == '08:10';</textarea>
+                <label for="signal-condition-1-annotation">Signal Display Type (Signal representation on chart after valid condition from above returned code):</label>
+                <select name="signal-condition-1-annotation" id="signalCondition1Annotation">
+                  <option value="vertical-line">Vertical Line</option>
+                  <option value="draw-a-circle">Draw a circle</option>
+                  <option value="take-a-trade">Take a Trade</option>
+                </select>
               </div>
             </div>
           </div>
           <div class="accordion-item">
             <div class="accordion-header" id="headingTwo">
               <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-          Signal Condition 2
+                Signal Condition 2
               </button>
             </div>
             <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#accordionExample">
               <div class="accordion-body">
-          <label for="signal-condition-2-code">Make sure to return a boolean value (that's what makes the signal to take trade), You can set a debugger / pause execution near SignalCondition2() function to see how it works and debug all variables:</label>
-          <textarea name="signal-condition-2-code" id="algoEditorTextarea2" width="100%" rows="10">hourMinutes() == '08:30' && true; // TODO: replace 'true' buy previous returned result</textarea>
-          <label for="signal-condition-2-annotation">Signal Display Type (Signal representation on chart after valid condition from above returned code):</label>
-          <select name="signal-condition-2-annotation" id="signalCondition2Annotation">
-            <option value="draw-a-circle">Draw a circle</option>
-            <option value="take-a-trade">Take a Trade</option>
-          </select>
+                <label for="signal-condition-2-code">Make sure to return a boolean value (that's what makes the signal to take trade), You can set a debugger / pause execution near SignalCondition2() function to see how it works and debug all variables:</label>
+                <textarea name="signal-condition-2-code" id="algoEditorTextarea2" width="100%" rows="10">hourMinutes() == '08:45' && true; // TODO: replace 'true' buy previous returned result</textarea>
+                <label for="signal-condition-2-annotation">Signal Display Type (Signal representation on chart after valid condition from above returned code):</label>
+                <select name="signal-condition-2-annotation" id="signalCondition2Annotation">
+                  <option value="vertical-line">Vertical Line</option>
+                  <option value="draw-a-circle">Draw a circle</option>
+                  <option value="take-a-trade">Take a Trade</option>
+                </select>
               </div>
             </div>
           </div>
           <div class="accordion-item">
             <div class="accordion-header" id="headingThree">
               <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-          Signal Condition 3
+                Signal Condition 3
               </button>
             </div>
             <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#accordionExample">
               <div class="accordion-body">
-          <label for="signal-condition-3-code">Make sure to return a boolean value (that's what makes the signal to take trade), You can set a debugger / pause execution near SignalCondition2() function to see how it works and debug all variables:</label>
-          <textarea name="signal-condition-3-code" id="algoEditorTextarea3" width="100%" rows="10">hourMinutes() == '08:45' && true; // TODO: replace 'true' buy previous returned result</textarea>
-          <label for="signal-condition-3-annotation">Signal Display Type (Signal representation on chart after valid condition from above returned code):</label>
-          <select name="signal-condition-3-annotation" id="signalCondition3Annotation">
-            <option value="draw-a-circle">Draw a circle</option>
-            <option value="take-a-trade">Take a Trade</option>
-          </select>
+                <label for="signal-condition-3-code">Make sure to return a boolean value (that's what makes the signal to take trade), You can set a debugger / pause execution near SignalCondition2() function to see how it works and debug all variables:</label>
+                <textarea name="signal-condition-3-code" id="algoEditorTextarea3" width="100%" rows="10">hourMinutes() == '08:45' && true; // TODO: replace 'true' buy previous returned result</textarea>
+                <label for="signal-condition-3-annotation">Signal Display Type (Signal representation on chart after valid condition from above returned code):</label>
+                <select name="signal-condition-3-annotation" id="signalCondition3Annotation">
+                  <option value="vertical-line">Vertical Line</option>
+                  <option value="draw-a-circle">Draw a circle</option>
+                  <option value="take-a-trade">Take a Trade</option>
+                </select>
               </div>
             </div>
           </div>
@@ -671,6 +674,14 @@
             },
           };
 
+          const RRToolStyles = {
+            strokeThickness: 0,
+            xCoordinateMode: ECoordinateMode.DataValue,
+            yCoordinateMode: ECoordinateMode.DataValue,
+            annotationLayer: EAnnotationLayer.AboveChart,
+            opacity: '15',
+          };
+
           const buildChartData = (data) => {
             const growBy = new NumberRange(0.1, 0.1);
             // Extract OHLC data from the response
@@ -714,6 +725,9 @@
             // Second function to be executed after the candle is drawn, you can add annotations here:
             const onCandleDrawn = (candle, index) => {
               const candlePosition = convertMT5DateToUnix(candle.time);
+              const prevCandle = ohlcData[index - 1];
+              const nextCandle = ohlcData[index + 1];
+
               // Check for tp/sl hit:
               ordersHistory.forEach((order) => {
                 if (candle.high >= order.tp && !order.closed) {
@@ -775,39 +789,26 @@
               });
 
               // A FVG signal:
+              const fvgExtent = 8;
               const SignalConditionFVG = () => {
-                if (index < 3 || index > ohlcData.length - 2) return false;
-                const prevCandle = ohlcData[index - 1];
-                const nextCandle = ohlcData[index + 1];
+                if (index < 3 || index > ohlcData.length - (fvgExtent + 1)) return false;
                 const isBullishFVG = nextCandle.low > prevCandle.high;
                 const isBearishFVG = prevCandle.low > nextCandle.high;
 
-                return false;
-                //return isBullishFVG || isBearishFVG;
+                return isBullishFVG || isBearishFVG;
               };
 
               if (SignalConditionFVG()) {
-                const candlePosition = convertMT5DateToUnix(candle.time);
-                const positionOfAnnotation = {
-                  x1: candlePosition,
-                  y1: candle.high,
-                  verticalAnchorPoint: EVerticalAnchorPoint.Center,
-                  horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
-                  svgString: signalAnnotation.svgString.bullish,
-                }
                 sciChartSurface.annotations.add(
-                  new CustomAnnotation({
-                    /*
-                    stroke: '#999',
-                    axisLabelFill: '#999',
+                  new BoxAnnotation({
+                    x1: convertMT5DateToUnix(prevCandle.time),
+                    x2: convertMT5DateToUnix(ohlcData[index + fvgExtent].time),
+                    y1: getCandleDirection(candle) == 'BULL' ? prevCandle.high : prevCandle.low,
+                    y2: getCandleDirection(candle) == 'BULL' ? nextCandle.low : nextCandle.high,
+                    fill: `#${getCandleDirection(candle) == 'BULL' ? bullishColor : bearishColor}${RRToolStyles.opacity}`,
+                    stroke: `#${getCandleDirection(candle) == 'BULL' ? bullishColor : bearishColor}`,
                     strokeThickness: 1,
-                    showLabel: true,
-                    labelPlacement: ELabelPlacement.TopLeft,
-                    labelValue: `${candle.time}`,
-                    */
-                    ...positionOfAnnotation,
-                    y1: getCandleDirection(candle) == EnumDirection.BULL ? candle.low : candle.high,
-                    svgString: getCandleDirection(candle) == EnumDirection.BULL ? signalAnnotation.svgString.bullish : signalAnnotation.svgString.bearish,
+                    opacity: 0.5,
                   })
                 );
               }
@@ -820,6 +821,15 @@
 
               if (SignalCondition1()) {
                 switch (document.getElementById('signalCondition1Annotation').value) {
+                  case 'vertical-line':
+                    sciChartSurface.annotations.add(
+                      new VerticalLineAnnotation({
+                        x1: candlePosition,
+                        stroke: `#${bullishColor}`,
+                        strokeThickness: 1,
+                      })
+                    );
+                    break;
                   case 'draw-a-circle':
                     sciChartSurface.annotations.add(
                       new CustomAnnotation({
@@ -865,6 +875,15 @@
 
               if (SignalCondition2()) {
                 switch (document.getElementById('signalCondition2Annotation').value) {
+                  case 'vertical-line':
+                    sciChartSurface.annotations.add(
+                      new VerticalLineAnnotation({
+                        x1: candlePosition,
+                        stroke: `#${bullishColor}`,
+                        strokeThickness: 1,
+                      })
+                    );
+                    break;
                   case 'draw-a-circle':
                     sciChartSurface.annotations.add(
                       new CustomAnnotation({
@@ -909,9 +928,16 @@
               }
 
               if (SignalCondition3()) {
-                const candlePosition = convertMT5DateToUnix(candle.time);
-
                 switch (document.getElementById('signalCondition3Annotation').value) {
+                  case 'vertical-line':
+                    sciChartSurface.annotations.add(
+                      new VerticalLineAnnotation({
+                        x1: candlePosition,
+                        stroke: `#${bullishColor}`,
+                        strokeThickness: 1,
+                      })
+                    );
+                    break;
                   case 'draw-a-circle':
                     sciChartSurface.annotations.add(
                       new CustomAnnotation({
@@ -953,11 +979,13 @@
               let isSwingLow = false;
 
               const SignalSwingHighLow = () => {
-                if (index < 3 || index > ohlcData.length - 2) return false;
+                if (index < 4 || index > ohlcData.length - 3) return false;
                 const prevCandle = ohlcData[index - 1];
+                const prevCandle2 = ohlcData[index - 2];
                 const nextCandle = ohlcData[index + 1];
-                isSwingHigh = prevCandle.high < candle.high && nextCandle.high < candle.high; // && getCandleDirection(prevCandle) == 'BULL' && getCandleDirection(nextCandle) == 'BEAR'; // red
-                isSwingLow = prevCandle.low > candle.low && nextCandle.low > candle.low; // && getCandleDirection(prevCandle) == 'BEAR' && getCandleDirection(nextCandle) == 'BULL'; // green
+                const nextCandle2 = ohlcData[index + 2];
+                isSwingHigh = prevCandle.high <= candle.high && nextCandle.high <= candle.high && nextCandle2.high <= nextCandle.high && prevCandle.high <= candle.high && getCandleDirection(candle) == 'BEAR'; // && getCandleDirection(prevCandle) == 'BULL' && getCandleDirection(nextCandle) == 'BEAR'; // red
+                isSwingLow = prevCandle.low >= candle.low && nextCandle.low >= candle.low && nextCandle2.low >= nextCandle.low && prevCandle.low >= candle.low && getCandleDirection(candle) == 'BULL'; // && getCandleDirection(prevCandle) == 'BEAR' && getCandleDirection(nextCandle) == 'BULL'; // green
 
                 return isSwingLow || isSwingHigh;
               }
@@ -1218,14 +1246,6 @@
                 .map((a) => JSON.stringify(a))
                 .join('\n');*/
             });
-          };
-
-          const RRToolStyles = {
-            strokeThickness: 0,
-            xCoordinateMode: ECoordinateMode.DataValue,
-            yCoordinateMode: ECoordinateMode.DataValue,
-            annotationLayer: EAnnotationLayer.AboveChart,
-            opacity: '15',
           };
 
           const RRToolBoxAnnotation = (
