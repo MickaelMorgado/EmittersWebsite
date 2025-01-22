@@ -14,6 +14,7 @@
   --padding-medium: calc(var(--padding) + var(--border));
   --padding-large: calc(var(--padding-medium) + var(--padding-medium));
   --bold: 700;
+  --radius: 5px;
 }
 
 /* test */
