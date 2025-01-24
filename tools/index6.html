@@ -682,6 +682,11 @@
             opacity: '15',
           };
 
+          function ceilToDecimalPlaces(num, decimalPlaces) {
+            const factor = Math.pow(10, decimalPlaces); // Calculate 10^decimalPlaces
+            return Math.ceil(num * factor) / factor; // Ceil and then divide
+          }
+
           const buildChartData = (data) => {
             const growBy = new NumberRange(0.1, 0.1);
             // Extract OHLC data from the response
@@ -715,6 +720,7 @@
 
             let ordersHistory = [];
             let swingHighLowHistory = [];
+            let fvgHistory = [];
             const minDate = new Date(ohlcData[0].time);
             const maxDate = new Date(ohlcData[ohlcData.length - 1].time);
             const offsetCandleDateTimeStamp = (candleDateTimeStamp) => candleDateTimeStamp; // - 3600 * 1; // !! offseting candle position in X axis by -1h to match tradingView (The correct way would be to offset the axis labels, but dont know how to do it yet)
@@ -789,17 +795,45 @@
                 }
               });
 
+              // Check for FVG filled:
+              fvgHistory.forEach((fvg) => {
+                if (fvg.filled) return;
+                if (candle.high >= fvg.middlePrice && candle.low <= fvg.middlePrice) {
+                  fvg.filled = true; // TODO check if this is working
+                }
+              });
+
               // A FVG signal:
               const fvgExtent = 8;
+              let isBullishFVG = false;
+              let isBearishFVG = false;
+
               const SignalConditionFVG = () => {
                 if (index < 3 || index > ohlcData.length - (fvgExtent + 1)) return false;
-                const isBullishFVG = nextCandle.low > prevCandle.high;
-                const isBearishFVG = prevCandle.low > nextCandle.high;
+                isBullishFVG = nextCandle.low > prevCandle.high;
+                isBearishFVG = prevCandle.low > nextCandle.high;
 
                 return isBullishFVG || isBearishFVG;
               };
 
               if (SignalConditionFVG()) {
+                const initialPrice = isBullishFVG ? prevCandle.high : prevCandle.low;
+                const gapFinalPrice = isBullishFVG ? nextCandle.low : nextCandle.high;
+                const differencial = Math.abs(nextCandle.low - prevCandle.high) / 2;
+
+                // Calculate the middle price and round it to 5 decimal places
+                const middlePrice = ceilToDecimalPlaces(initialPrice + differencial, 5);
+
+                fvgHistory.push({
+                  id: index,
+                  time: candle.time,
+                  initialPrice: initialPrice,
+                  gapFinalPrice: gapFinalPrice,
+                  middlePrice: middlePrice,
+                  direction: getCandleDirection(candle) == 'BULL' ? EnumDirection.BULL : EnumDirection.BEAR,
+                  filled: false,
+                });
+
                 sciChartSurface.annotations.add(
                   new BoxAnnotation({
                     x1: convertMT5DateToUnix(prevCandle.time),
@@ -1063,6 +1097,7 @@
             }
 
             console.log('Swing HighLow:', swingHighLowHistory);
+            console.log('FVG History:', fvgHistory);
 
             // Create an OHLC data series
             const ohlcDataSeries = new OhlcDataSeries(wasmContext, {
