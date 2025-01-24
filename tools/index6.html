@@ -714,6 +714,7 @@
             });
 
             let ordersHistory = [];
+            let swingHighLowHistory = [];
             const minDate = new Date(ohlcData[0].time);
             const maxDate = new Date(ohlcData[ohlcData.length - 1].time);
             const offsetCandleDateTimeStamp = (candleDateTimeStamp) => candleDateTimeStamp; // - 3600 * 1; // !! offseting candle position in X axis by -1h to match tradingView (The correct way would be to offset the axis labels, but dont know how to do it yet)
@@ -991,6 +992,12 @@
               }
 
               if (SignalSwingHighLow()) {
+                swingHighLowHistory.push({
+                  time: candle.time,
+                  maxReachedPrice: isSwingHigh ? candle.high : candle.low, // Represents the highest/lowest price that was reached.
+                  type: isSwingHigh ? 'HIGH' : 'LOW', // Represents the type of the swing (HIGH or LOW) its the position and NOT the candle direction.
+                });
+
                 sciChartSurface.annotations.add(
                   new CustomAnnotation({
                     x1: candlePosition,
@@ -1054,6 +1061,8 @@
                 `;
               }
             }
+
+            console.log('Swing HighLow:', swingHighLowHistory);
 
             // Create an OHLC data series
             const ohlcDataSeries = new OhlcDataSeries(wasmContext, {
