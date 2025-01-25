@@ -364,7 +364,57 @@
       </div>
       <div class="result-panel-content h-hide h-flex h-flex--column">
         <h3>Algo editor</h3>
-        <div>These fields are completely customisable.</div>
+        <div>
+          The code below is completely customisable and runs on each candles draw, you can use multiple already made functions/variables and set debuggers in strategic spots. <br/>
+          let arrayOfSignals = [false, false]; <br/>
+        </div>
+        <div class="h-flex">
+          <textarea name="signal-condition-1-code" id="algoEditorTextareaMain" width="100%" rows="10" style="width: 80%; white-space: nowrap;">
+if (hourMinutes() >= '08:10') {
+  if (hourMinutes() == '08:10') { AddActionOnChart('SignalConditionMainAnnotation1'); } // Add a signal annotation on chart
+  if (hourMinutes() == '08:45') { 
+    arrayOfSignals[1] = true; // set 2nd signal to true for next steps
+    AddActionOnChart('SignalConditionMainAnnotation2');
+  }
+  arrayOfSignals[0] = true; // In range
+} else {
+  arrayOfSignals[0] = false;
+}
+
+// Check if all signals are true:
+let allTrue = arrayOfSignals.every(item => item === true);
+if (allTrue) {
+  console.log('All signals are true, run 3rd action (last select) like a trade for example', arrayOfSignals);
+  AddActionOnChart('SignalConditionMainAnnotation3');
+};
+          </textarea>
+          <ul style="list-style: none; padding: 0;">
+            <li>
+              <label for="signal-condition-main-annotation-1">SignalConditionMainAnnotation1</label>
+              <select name="signal-condition-main-annotation-1" id="SignalConditionMainAnnotation1">
+                <option value="vertical-line">Vertical Line</option>
+                <option value="draw-a-circle">Draw a circle</option>
+                <option value="take-a-trade">Take a Trade</option>
+              </select>
+            </li>
+            <li>
+              <label for="signal-condition-main-annotation-2">SignalConditionMainAnnotation2</label>
+              <select name="signal-condition-main-annotation-2" id="SignalConditionMainAnnotation2">
+                <option value="vertical-line">Vertical Line</option>
+                <option value="draw-a-circle">Draw a circle</option>
+                <option value="take-a-trade">Take a Trade</option>
+              </select>
+            </li>
+            <li>
+              <label for="signal-condition-main-annotation-3">SignalConditionMainAnnotation3</label>
+              <select name="signal-condition-main-annotation-3" id="SignalConditionMainAnnotation3">
+                <option value="vertical-line">Vertical Line</option>
+                <option value="draw-a-circle">Draw a circle</option>
+                <option value="take-a-trade">Take a Trade</option>
+              </select>
+            </li>
+          </ul>
+        </div>
         <div class="accordion">
           <div class="accordion-item">
             <div class="accordion-header" id="headingOne">
@@ -394,7 +444,7 @@
             <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#accordionExample">
               <div class="accordion-body">
                 <label for="signal-condition-2-code">Make sure to return a boolean value (that's what makes the signal to take trade), You can set a debugger / pause execution near SignalCondition2() function to see how it works and debug all variables:</label>
-                <textarea name="signal-condition-2-code" id="algoEditorTextarea2" width="100%" rows="10">hourMinutes() == '08:45' && true; // TODO: replace 'true' buy previous returned result</textarea>
+                <textarea name="signal-condition-2-code" id="algoEditorTextarea2" width="100%" rows="10">hourMinutes() == '08:45' && hourMinutes() >= '08:10'; // TODO: replace 'true' buy previous returned result</textarea>
                 <label for="signal-condition-2-annotation">Signal Display Type (Signal representation on chart after valid condition from above returned code):</label>
                 <select name="signal-condition-2-annotation" id="signalCondition2Annotation">
                   <option value="vertical-line">Vertical Line</option>
@@ -413,7 +463,7 @@
             <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#accordionExample">
               <div class="accordion-body">
                 <label for="signal-condition-3-code">Make sure to return a boolean value (that's what makes the signal to take trade), You can set a debugger / pause execution near SignalCondition2() function to see how it works and debug all variables:</label>
-                <textarea name="signal-condition-3-code" id="algoEditorTextarea3" width="100%" rows="10">hourMinutes() == '08:45' && true; // TODO: replace 'true' buy previous returned result</textarea>
+                <textarea name="signal-condition-3-code" id="algoEditorTextarea3" width="100%" rows="10">hourMinutes() == '08:45' && SignalCondition2(); // TODO: replace 'true' buy previous returned result</textarea>
                 <label for="signal-condition-3-annotation">Signal Display Type (Signal representation on chart after valid condition from above returned code):</label>
                 <select name="signal-condition-3-annotation" id="signalCondition3Annotation">
                   <option value="vertical-line">Vertical Line</option>
@@ -620,8 +670,8 @@
             cursorLineBrush: '#111',
             downBandSeriesFillColor: '#52CC5490',
             downBandSeriesLineColor: '#E26565FF',
-            downBodyBrush: bearishColor,
-            downWickColor: bearishColor,
+            downBodyBrush: bearishColor, // candle
+            downWickColor: bearishColor, // candle
             gridBackgroundBrush: 'white',
             gridBorderBrush: 'white',
             labelForegroundBrush: '#EEEEEE',
@@ -638,7 +688,7 @@
             rolloverLineBrush: '#FD9F2533',
             rubberBandFillBrush: '#99999933',
             rubberBandStrokeBrush: '#99999977',
-            sciChartBackground: '#000',
+            sciChartBackground: '#000', // Chart background color
             scrollbarBackgroundBrush: 'white',
             scrollbarBorderBrush: 'white',
             scrollbarGripsBackgroundBrush: 'white',
@@ -650,8 +700,8 @@
             tickTextBrush: '#333',
             upBandSeriesFillColor: 'white',
             upBandSeriesLineColor: 'white',
-            upBodyBrush: bullishColor,
-            upWickColor: bullishColor,
+            upBodyBrush: bullishColor, // candle
+            upWickColor: bullishColor, // candle
           };
 
           // customTheme = new SciChartJsNavyTheme();
@@ -679,7 +729,7 @@
             xCoordinateMode: ECoordinateMode.DataValue,
             yCoordinateMode: ECoordinateMode.DataValue,
             annotationLayer: EAnnotationLayer.AboveChart,
-            opacity: '15',
+            opacity: '50',
           };
 
           function ceilToDecimalPlaces(num, decimalPlaces) {
@@ -795,11 +845,15 @@
                 }
               });
 
-              // Check for FVG filled:
+              // Check for FVG tested:
               fvgHistory.forEach((fvg) => {
-                if (fvg.filled) return;
-                if (candle.high >= fvg.middlePrice && candle.low <= fvg.middlePrice) {
-                  fvg.filled = true; // TODO check if this is working
+                if (fvg.tested) return;
+                // Check if wick candle is within the FVG range (currently too much perfectionism here it might reduce the quantity of signals):
+                const testBullishFVG = candle.low > fvg.initialPrice && candle.low < fvg.gapFinalPrice;
+                const testBearishFVG = candle.high < fvg.initialPrice && candle.high > fvg.gapFinalPrice;
+                if ((testBullishFVG || testBearishFVG) && !fvg.tested) { // At this point we confirmly tested the FVG
+                  fvg.tested = true;
+                  // console.log('FVG / Candle', fvg, candle);
                 }
               });
 
@@ -831,7 +885,7 @@
                   gapFinalPrice: gapFinalPrice,
                   middlePrice: middlePrice,
                   direction: getCandleDirection(candle) == 'BULL' ? EnumDirection.BULL : EnumDirection.BEAR,
-                  filled: false,
+                  tested: false,
                 });
 
                 sciChartSurface.annotations.add(
@@ -843,171 +897,90 @@
                     fill: `#${getCandleDirection(candle) == 'BULL' ? bullishColor : bearishColor}${RRToolStyles.opacity}`,
                     stroke: `#${getCandleDirection(candle) == 'BULL' ? bullishColor : bearishColor}`,
                     strokeThickness: 1,
-                    opacity: 0.5,
+                    opacity: 0.3,
                   })
                 );
               }
 
+              // Function to create annotations or take actions on the chart, based on UI selected options:
+              const AddActionOnChart = (htmlIdSelect) => {
+                  switch (document.getElementById(htmlIdSelect).value) {
+                  case 'vertical-line':
+                    sciChartSurface.annotations.add(
+                      new VerticalLineAnnotation({
+                        x1: candlePosition,
+                        stroke: `#${bullishColor}`,
+                        strokeThickness: 1,
+                      })
+                    );
+                    break;
+                  case 'draw-a-circle':
+                    sciChartSurface.annotations.add(
+                      new CustomAnnotation({
+                        x1: candlePosition,
+                        y1: candle.close,
+                        verticalAnchorPoint: EVerticalAnchorPoint.Center,
+                        horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
+                        svgString: signalAnnotation.svgString.circle,
+                      })
+                    );
+                    break;
+                  case 'take-a-trade':
+                    // Add order to history:
+                    ordersHistory.push({
+                      id: index,
+                      time: candle.time,
+                      price: candle.close,
+                      sl: candle.close - slSize(),
+                      tp: candle.close + tpSize(),
+                      direction: EnumDirection.BULL,
+                      orderStatus: EnumOrderStatus.PENDING,
+                    });
+
+                    // Add annotation from entry:
+                    sciChartSurface.annotations.add(
+                      new CustomAnnotation({
+                        x1: candlePosition,
+                        y1: candle.close,
+                        verticalAnchorPoint: EVerticalAnchorPoint.Center,
+                        horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
+                        svgString: signalAnnotation.svgString.buy,
+                      })
+                    );
+                    break;
+                }
+              }
+
+              /* Global variables and functions */
+              const algoEditorTextareaMain = document.getElementById('algoEditorTextareaMain');
+              const hourMinutes = () => candle.time.split(' ')[1].slice(0, 5);
+              let arrayOfSignals = [false, false]; // TODO: this should be dynamic based on the number of signals user might want to use
+
               const SignalCondition1 = () => {
                 const algoEditorTextarea = document.getElementById('algoEditorTextarea');
-                const hourMinutes = () => candle.time.split(' ')[1].slice(0, 5);
                 return eval(algoEditorTextarea.value);
               }
 
               if (SignalCondition1()) {
-                switch (document.getElementById('signalCondition1Annotation').value) {
-                  case 'vertical-line':
-                    sciChartSurface.annotations.add(
-                      new VerticalLineAnnotation({
-                        x1: candlePosition,
-                        stroke: `#${bullishColor}`,
-                        strokeThickness: 1,
-                      })
-                    );
-                    break;
-                  case 'draw-a-circle':
-                    sciChartSurface.annotations.add(
-                      new CustomAnnotation({
-                        x1: candlePosition,
-                        y1: candle.close,
-                        verticalAnchorPoint: EVerticalAnchorPoint.Center,
-                        horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
-                        svgString: signalAnnotation.svgString.circle,
-                      })
-                    );
-                    break;
-                  case 'take-a-trade':
-                    // Add order to history:
-                    ordersHistory.push({
-                      id: index,
-                      time: candle.time,
-                      price: candle.close,
-                      sl: candle.close - slSize(),
-                      tp: candle.close + tpSize(),
-                      direction: EnumDirection.BULL,
-                      orderStatus: EnumOrderStatus.PENDING,
-                    });
-
-                    // Add annotation from entry:
-                    sciChartSurface.annotations.add(
-                      new CustomAnnotation({
-                        x1: candlePosition,
-                        y1: candle.close,
-                        verticalAnchorPoint: EVerticalAnchorPoint.Center,
-                        horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
-                        svgString: signalAnnotation.svgString.buy,
-                      })
-                    );
-                    break;
-                }
+                AddActionOnChart('signalCondition1Annotation');
               }
 
               const SignalCondition2 = () => {
                 const algoEditorTextarea = document.getElementById('algoEditorTextarea2');
-                const hourMinutes = () => candle.time.split(' ')[1].slice(0, 5);
                 return eval(algoEditorTextarea.value);
               }
 
               if (SignalCondition2()) {
-                switch (document.getElementById('signalCondition2Annotation').value) {
-                  case 'vertical-line':
-                    sciChartSurface.annotations.add(
-                      new VerticalLineAnnotation({
-                        x1: candlePosition,
-                        stroke: `#${bullishColor}`,
-                        strokeThickness: 1,
-                      })
-                    );
-                    break;
-                  case 'draw-a-circle':
-                    sciChartSurface.annotations.add(
-                      new CustomAnnotation({
-                        x1: candlePosition,
-                        y1: candle.close,
-                        verticalAnchorPoint: EVerticalAnchorPoint.Center,
-                        horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
-                        svgString: signalAnnotation.svgString.circle,
-                      })
-                    );
-                    break;
-                  case 'take-a-trade':
-                    // Add order to history:
-                    ordersHistory.push({
-                      id: index,
-                      time: candle.time,
-                      price: candle.close,
-                      sl: candle.close - slSize(),
-                      tp: candle.close + tpSize(),
-                      direction: EnumDirection.BULL,
-                      orderStatus: EnumOrderStatus.PENDING,
-                    });
-
-                    // Add annotation from entry:
-                    sciChartSurface.annotations.add(
-                      new CustomAnnotation({
-                        x1: candlePosition,
-                        y1: candle.close,
-                        verticalAnchorPoint: EVerticalAnchorPoint.Center,
-                        horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
-                        svgString: signalAnnotation.svgString.buy,
-                      })
-                    );
-                    break;
-                }
+                AddActionOnChart('signalCondition2Annotation');
               }
 
               const SignalCondition3 = () => {
                 const algoEditorTextarea = document.getElementById('algoEditorTextarea3');
-                const hourMinutes = () => candle.time.split(' ')[1].slice(0, 5);
                 return eval(algoEditorTextarea.value);
               }
 
               if (SignalCondition3()) {
-                switch (document.getElementById('signalCondition3Annotation').value) {
-                  case 'vertical-line':
-                    sciChartSurface.annotations.add(
-                      new VerticalLineAnnotation({
-                        x1: candlePosition,
-                        stroke: `#${bullishColor}`,
-                        strokeThickness: 1,
-                      })
-                    );
-                    break;
-                  case 'draw-a-circle':
-                    sciChartSurface.annotations.add(
-                      new CustomAnnotation({
-                        x1: candlePosition,
-                        y1: candle.close,
-                        verticalAnchorPoint: EVerticalAnchorPoint.Center,
-                        horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
-                        svgString: signalAnnotation.svgString.circle,
-                      })
-                    );
-                    break;
-                  case 'take-a-trade':
-                    // Add order to history:
-                    ordersHistory.push({
-                      id: index,
-                      time: candle.time,
-                      price: candle.close,
-                      sl: candle.close - slSize(),
-                      tp: candle.close + tpSize(),
-                      direction: EnumDirection.BULL,
-                      orderStatus: EnumOrderStatus.PENDING,
-                    });
-
-                    // Add annotation from entry:
-                    sciChartSurface.annotations.add(
-                      new CustomAnnotation({
-                        x1: candlePosition,
-                        y1: candle.close,
-                        verticalAnchorPoint: EVerticalAnchorPoint.Center,
-                        horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
-                        svgString: signalAnnotation.svgString.buy,
-                      })
-                    );
-                    break;
-                }
+                AddActionOnChart('signalCondition3Annotation');
               }
 
               let isSwingHigh = false;
@@ -1042,6 +1015,8 @@
                   })
                 );
               }
+
+              eval(algoEditorTextareaMain.value);
 
               if (index == ohlcData.length - 1) {
                 
