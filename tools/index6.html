@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="../assets/reusables.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
   <link rel="icon" href="https://ui-avatars.com/api/?name=H&rounded=true&background=000000&color=ffffff" type="image/png">
+  <script src="../assets/reusables.js"></script>
   <script>document.addEventListener('DOMContentLoaded', function() { document.title = `HYTEK - ${document.getElementsByTagName("h1")[0].innerText}` });</script>
   <style>
     :root {
@@ -175,6 +176,25 @@
       flex-direction: column;
       gap: var(--padding);
     }
+
+    #chatGPTFloatingIconButtonForModal {
+      background: var(--dark);
+      color: var(--grey1);
+      border: none;
+      position: absolute;
+      box-shadow: 0 0 60px 5px grey;
+      border: 10px solid black;
+      bottom: 20px;
+      right: 20px;
+      width: 50px;
+      height: 50px;
+      padding: 10px;
+      border-radius: 100%;
+      cursor: pointer;
+      background-image: url('../assets/images/icons/chatGPT.png');
+      background-size: 100%;
+      background-repeat: no-repeat;
+    }
   </style>
 </head>
 
@@ -278,6 +298,7 @@
         <label for="colorSettingsTutorial">Customize the chart colors theme</label>
         <div>
             <select id="themeSelector" class="h-input-effects" onchange="applyTheme()">
+              <option value="">-</option>
               <option value="?bullishColor=00FF00&bearishColor=FF0000">Green / Red</option>
               <option value="?bullishColor=0000FF&bearishColor=FF00FF">Blue / Magenta</option>
               <option value="?bullishColor=FFFF00&bearishColor=00FFFF">Yellow / Cyan</option>
@@ -365,57 +386,109 @@
       <div class="result-panel-content h-hide h-flex h-flex--column">
         <h3>Algo editor</h3>
         <div>
-          The code below is completely customisable and runs on each candles draw, you can use multiple already made functions/variables and set debuggers in strategic spots. <br/>
-          let arrayOfSignals = [false, false]; <br/>
+          The code field (textarea) below is completely customisable and runs on each candles draw, <br/>
+          you can use multiple already made functions/variables and set debuggers in strategic spots. <br/>
+          Your code below must require the following structure: <br/>
+          <pre>
+            <code>
+// Some variables you can use:
+let arrayOfSignals = [false, false]; // Represents 2 signals
+
+... // Your code here
+
+EnumActionType
+  .VERTICAL_LINE
+  .DRAW_A_CIRCLE
+  .TAKE_A_TRADE
+            </code>
+          </pre>
         </div>
         <div class="h-flex">
-          <textarea name="signal-condition-1-code" id="algoEditorTextareaMain" width="100%" rows="10" style="width: 80%; white-space: nowrap;">
-if (hourMinutes() >= '08:10') {
-  if (hourMinutes() == '08:10') { AddActionOnChart('SignalConditionMainAnnotation1'); } // Add a signal annotation on chart
-  if (hourMinutes() == '08:45') { 
-    arrayOfSignals[1] = true; // set 2nd signal to true for next steps
-    AddActionOnChart('SignalConditionMainAnnotation2');
+          <textarea name="signal-condition" id="algoEditorTextareaMain0" width="100%" rows="3" style="width: 100%; white-space: nowrap;">
+// Represents 2 signals:
+arrayOfSignals.push(false);
+arrayOfSignals.push(false);
+          </textarea>
+        </div>
+        <div class="h-flex">
+          <textarea name="signal-condition-1-code" id="algoEditorTextareaMain1" width="100%" rows="10" style="width: 100%; white-space: nowrap;">
+const currentTime = hourMinutes();
+
+// Check if the current time is within the trading window
+if (currentTime >= '08:10' && currentTime <= '08:45') {
+  arrayOfSignals[0] = true;
+  // Ensure SignalSwingHighLow runs and updates the swingHighLowHistory
+  if (SignalSwingHighLow()) {
+    const swingHistory = swingHighLowHistory.slice(-2); // Get the last two swings
+    
+    if (swingHistory.length === 2) {
+      const [firstSwing, secondSwing] = swingHistory;
+
+      // Check if both swings are LOW (bullish) or HIGH (bearish)
+      if (
+        (firstSwing.type === 'LOW' && secondSwing.type === 'LOW') ||
+        (firstSwing.type === 'HIGH' && secondSwing.type === 'HIGH')
+      ) {
+        arrayOfSignals[0] = true; // Mark swing point detection signal as valid
+        AddActionOnChart(EnumActionType.TAKE_A_TRADE);
+      } else {
+        arrayOfSignals[0] = false; // Reset signal if conditions are not met
+      }
+    }
   }
-  arrayOfSignals[0] = true; // In range
+  
+  // Add an additional time-based signal for the end of the trading window
+  if (currentTime === '08:10') {
+    AddActionOnChart(EnumActionType.VERTICAL_LINE);
+  }
+  if (currentTime === '08:45') {
+    AddActionOnChart(EnumActionType.VERTICAL_LINE);
+  }
 } else {
+  // Reset signals outside the time range
   arrayOfSignals[0] = false;
+  arrayOfSignals[1] = false;
 }
 
-// Check if all signals are true:
-let allTrue = arrayOfSignals.every(item => item === true);
-if (allTrue) {
-  console.log('All signals are true, run 3rd action (last select) like a trade for example', arrayOfSignals);
-  AddActionOnChart('SignalConditionMainAnnotation3');
-};
+// Check if all signals are valid and take the trade
+if (arrayOfSignals.every(signal => signal === true)) {
+  AddActionOnChart(EnumActionType.TAKE_A_TRADE); // Trigger the trade
+}
           </textarea>
-          <ul style="list-style: none; padding: 0;">
-            <li>
-              <label for="signal-condition-main-annotation-1">SignalConditionMainAnnotation1</label>
-              <select name="signal-condition-main-annotation-1" id="SignalConditionMainAnnotation1">
-                <option value="vertical-line">Vertical Line</option>
-                <option value="draw-a-circle">Draw a circle</option>
-                <option value="take-a-trade">Take a Trade</option>
-              </select>
-            </li>
-            <li>
-              <label for="signal-condition-main-annotation-2">SignalConditionMainAnnotation2</label>
-              <select name="signal-condition-main-annotation-2" id="SignalConditionMainAnnotation2">
-                <option value="vertical-line">Vertical Line</option>
-                <option value="draw-a-circle">Draw a circle</option>
-                <option value="take-a-trade">Take a Trade</option>
-              </select>
-            </li>
-            <li>
-              <label for="signal-condition-main-annotation-3">SignalConditionMainAnnotation3</label>
-              <select name="signal-condition-main-annotation-3" id="SignalConditionMainAnnotation3">
-                <option value="vertical-line">Vertical Line</option>
-                <option value="draw-a-circle">Draw a circle</option>
-                <option value="take-a-trade">Take a Trade</option>
-              </select>
-            </li>
-          </ul>
         </div>
-        <div class="accordion">
+        <div>
+          <hr class="h-hr">
+        </div>
+        <div class="h-flex" style="position: relative;">
+          <pre><code data="chatGPT-container"></code></pre>
+          <textarea width="100%" rows="5" style="width: 100%; white-space: nowrap;" name="promptAI" id="promptAI" placeholder="ASK AI to build a strategy and click on button ->"></textarea>
+          <button id="chatGPTFloatingIconButtonForModal"></button>
+          <script>
+            document.getElementById('chatGPTFloatingIconButtonForModal').addEventListener('click', () => {
+              const providedCode = document.getElementById('algoEditorTextareaMain1').value;
+              const userInput = document.getElementById('promptAI').value;
+              const prompt = `
+                ${providedCode}
+
+                The code I provided to you runs on each new candle drawn on chart, and the code will be user inserted (via textarea) to make different trading strategies.
+
+                Some variables and functions already created / defined so no need to redefine them:
+                arrayOfSignals is simply an array of boolean that represents a trading plan validation
+                EnumActionType will be mostly used with AddActionOnChart(EnumActionType), it has the following values: VERTICAL_LINE, DRAW_A_CIRCLE, TAKE_A_TRADE.
+                AddActionOnChart will run function to add anotations on chart or event actions like taking a trade (annotations and other logics for the app backtesting system I already made)
+                hourMinutes() will return a string based on the current candle.time (candle is always available on each candle drawn)
+                SignalSwingHighLow() this function detect a swing and add data on swingHighLowHistory object, here is the example of its object structure: {time: string, maxReachedPrice: number, type: string}
+                SignalConditionFVG() this function detect fvgs and add data on fvgHistory object, here is the example of its object structure: {id: index, time: string, initialPrice: number, gapFinalPrice: number, middlePrice: number, direction: string, tested: boolean}
+
+                Using some of my functions and variables I already created make a strategy based on the following (just show me the code):
+
+                ${userInput}
+              `;
+              chatGPTRequest(prompt);
+            });
+          </script>
+        </div>
+        <!--div class="accordion">
           <div class="accordion-item">
             <div class="accordion-header" id="headingOne">
               <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
@@ -481,22 +554,22 @@ if (allTrue) {
               const collapseElement = accordionItem.querySelector('.accordion-collapse');
 
               if (collapseElement.classList.contains('show')) {
-          collapseElement.style.height = `${collapseElement.scrollHeight}px`;
-          setTimeout(() => {
-            collapseElement.style.height = '0';
-          }, 0);
-          collapseElement.classList.remove('show');
+                collapseElement.style.height = `${collapseElement.scrollHeight}px`;
+                setTimeout(() => {
+                  collapseElement.style.height = '0';
+                }, 0);
+                collapseElement.classList.remove('show');
               } else {
-          document.querySelectorAll('.accordion-collapse.show').forEach(openItem => {
-            openItem.style.height = '0';
-            openItem.classList.remove('show');
-          });
-          collapseElement.classList.add('show');
-          collapseElement.style.height = `${collapseElement.scrollHeight}px`;
+                document.querySelectorAll('.accordion-collapse.show').forEach(openItem => {
+                  openItem.style.height = '0';
+                  openItem.classList.remove('show');
+                });
+                collapseElement.classList.add('show');
+                collapseElement.style.height = `${collapseElement.scrollHeight}px`;
               }
             });
           });
-        </script>
+        </script-->
       </div>
     </div>
   </div>
@@ -538,6 +611,11 @@ if (allTrue) {
       PENDING: 'PENDING',
       CLOSED_BY_TP: 'CLOSED_BY_TP',
       CLOSED_BY_SL: 'CLOSED_BY_SL',
+    };
+    const EnumActionType = {
+      VERTICAL_LINE: 'VERTICAL_LINE',
+      DRAW_A_CIRCLE: 'DRAW_A_CIRCLE',
+      TAKE_A_TRADE: 'TAKE_A_TRADE',
     };
 
     const getCandleDirection = (candle) => {
@@ -636,6 +714,8 @@ if (allTrue) {
         ENumericFormat,
         EDateFormatter,
         Point,
+        // GlowEffect,
+        // ShadowEffect,
       } = SciChart;
 
       // Tell SciChart where to get webassembly files from.
@@ -903,9 +983,9 @@ if (allTrue) {
               }
 
               // Function to create annotations or take actions on the chart, based on UI selected options:
-              const AddActionOnChart = (htmlIdSelect) => {
-                  switch (document.getElementById(htmlIdSelect).value) {
-                  case 'vertical-line':
+              const AddActionOnChart = (EnumActionType) => {
+                  switch (EnumActionType) {
+                  case 'VERTICAL_LINE':
                     sciChartSurface.annotations.add(
                       new VerticalLineAnnotation({
                         x1: candlePosition,
@@ -914,7 +994,7 @@ if (allTrue) {
                       })
                     );
                     break;
-                  case 'draw-a-circle':
+                  case 'DRAW_A_CIRCLE':
                     sciChartSurface.annotations.add(
                       new CustomAnnotation({
                         x1: candlePosition,
@@ -925,7 +1005,7 @@ if (allTrue) {
                       })
                     );
                     break;
-                  case 'take-a-trade':
+                  case 'TAKE_A_TRADE':
                     // Add order to history:
                     ordersHistory.push({
                       id: index,
@@ -952,36 +1032,40 @@ if (allTrue) {
               }
 
               /* Global variables and functions */
-              const algoEditorTextareaMain = document.getElementById('algoEditorTextareaMain');
+              const algoEditorTextareaMain0 = document.getElementById('algoEditorTextareaMain0');
+              const algoEditorTextareaMain1 = document.getElementById('algoEditorTextareaMain1');
               const hourMinutes = () => candle.time.split(' ')[1].slice(0, 5);
-              let arrayOfSignals = [false, false]; // TODO: this should be dynamic based on the number of signals user might want to use
+              let arrayOfSignals = [];
+              eval(algoEditorTextareaMain0.value);
 
-              const SignalCondition1 = () => {
-                const algoEditorTextarea = document.getElementById('algoEditorTextarea');
-                return eval(algoEditorTextarea.value);
-              }
+              /*
+                const SignalCondition1 = () => {
+                  const algoEditorTextarea = document.getElementById('algoEditorTextarea');
+                  return eval(algoEditorTextarea.value);
+                }
 
-              if (SignalCondition1()) {
-                AddActionOnChart('signalCondition1Annotation');
-              }
+                if (SignalCondition1()) {
+                  AddActionOnChart('signalCondition1Annotation');
+                }
 
-              const SignalCondition2 = () => {
-                const algoEditorTextarea = document.getElementById('algoEditorTextarea2');
-                return eval(algoEditorTextarea.value);
-              }
+                const SignalCondition2 = () => {
+                  const algoEditorTextarea = document.getElementById('algoEditorTextarea2');
+                  return eval(algoEditorTextarea.value);
+                }
 
-              if (SignalCondition2()) {
-                AddActionOnChart('signalCondition2Annotation');
-              }
+                if (SignalCondition2()) {
+                  AddActionOnChart('signalCondition2Annotation');
+                }
 
-              const SignalCondition3 = () => {
-                const algoEditorTextarea = document.getElementById('algoEditorTextarea3');
-                return eval(algoEditorTextarea.value);
-              }
+                const SignalCondition3 = () => {
+                  const algoEditorTextarea = document.getElementById('algoEditorTextarea3');
+                  return eval(algoEditorTextarea.value);
+                }
 
-              if (SignalCondition3()) {
-                AddActionOnChart('signalCondition3Annotation');
-              }
+                if (SignalCondition3()) {
+                  AddActionOnChart('signalCondition3Annotation');
+                }
+              */
 
               let isSwingHigh = false;
               let isSwingLow = false;
@@ -1016,7 +1100,7 @@ if (allTrue) {
                 );
               }
 
-              eval(algoEditorTextareaMain.value);
+              eval(algoEditorTextareaMain1.value);
 
               if (index == ohlcData.length - 1) {
                 
@@ -1183,6 +1267,20 @@ if (allTrue) {
               new FastCandlestickRenderableSeries(wasmContext, {
                 dataSeries: ohlcDataSeries,
                 strokeThickness: 1,
+                /*
+                  effect: new GlowEffect(wasmContext, {
+                    range: 10,
+                    intensity: 1,
+                    color: "#666666",
+                    offset: new Point(0, 0),
+                  }),
+                  effect: new ShadowEffect(wasmContext, {
+                    range: 10,
+                    brightness: 100,
+                    color: '#ffffff',
+                    offset: new Point(10, 10)
+                  })
+                */
               })
             );
 

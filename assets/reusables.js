@@ -56,3 +56,37 @@ getGoogleSheetData(
 const extractArrayFromRows = (rowData, selectedIndex) => {
   return rowData.map((row) => row[selectedIndex]);
 };
+
+const chatGPTRequest = async (message) => {
+  const appendMessage = (message) => {
+    const chatContainer = document.querySelector("[data='chatGPT-container']");
+    if (!chatContainer) {
+      throw new Error('Chat container not found. [data-chatGPT-container]');
+    }
+    chatContainer.innerHTML += `${message}`;
+  };
+
+  const apiKey = '';
+  try {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: 'gpt-3.5-turbo',
+        messages: [{ role: 'user', content: message }],
+      }),
+    });
+
+    if (!response.ok) throw new Error('Error with the API request.');
+
+    const data = await response.json();
+    const reply = data.choices[0].message.content;
+    appendMessage(reply, 'bot');
+  } catch (error) {
+    appendMessage('Error: Unable to fetch response.', 'bot');
+    console.error(error);
+  }
+};
