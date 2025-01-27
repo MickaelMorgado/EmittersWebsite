@@ -24,34 +24,46 @@
 <body class="style-trade">
     <div class="container">
         <div class="col padded">
-            <h1>test</h1>
+            <div id="chat-container">
+                <div id="messages"></div>
+                <div id="input-container">
+                <input type="text" id="input" placeholder="Type your message here">
+                <button id="send">Send</button>
+                </div>
+            </div>
         </div>
     </div>
 </body>
 
 <script>
-    document.ready = function() {
-        console.log('ready');
-        const ffmpeg = window.ffmpeg;
-        console.log(ffmpeg);
+    const messagesContainer = document.getElementById('messages');
+    const inputField = document.getElementById('input');
+    const sendButton = document.getElementById('send');
+
+    // Append message to chat window
+    function appendMessage(text, sender) {
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message ${sender}`;
+      messageDiv.textContent = text;
+      messagesContainer.appendChild(messageDiv);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight; // Auto-scroll to the bottom
     }
 
-    async function loadFFmpeg() {
-        
-      if (window.FFmpegWASM) {
-        const { createFFmpeg, fetchFile } = window.FFmpegWASM;
-        debugger
-        const ffmpeg = createFFmpeg({ log: true });
-
-        await ffmpeg.load();
-        console.log('FFmpegWASM loaded successfully!');
-        // Add additional FFmpeg operations here
-      } else {
-        console.error('FFmpegWASM is not available in window.');
+    // Event listener for the send button
+    sendButton.addEventListener('click', () => {
+      const message = inputField.value.trim();
+      if (message) {
+        inputField.value = '';
+        chatGPTRequest(message);
       }
-    }
+    });
 
-    loadFFmpeg()
-</script>
+    // Send message on Enter key press
+    inputField.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        sendButton.click();
+      }
+    });
+  </script>
 
 </html>
