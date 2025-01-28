@@ -216,7 +216,12 @@
         </div>
         <hr class="h-hr" />
         <label for="">Upload CSV bars</label>
-        <input type="file" id="csvFileInput" accept=".csv" class="h-input-effects" />
+        <div class="h-flex">
+          <input type="file" id="csvFileInput" accept=".csv" class="h-input-effects" style="width: 80%"/>
+          <button id="csvRefresh" title="Refresh" class="mybutton h-input-effects">
+            <i class="fas fa-repeat"></i>
+          </button>
+        </div>
         <hr class="h-hr" />
         <div class="h-flex">
           <div class="h-form-group">
@@ -417,6 +422,7 @@ const currentTime = hourMinutes();
 // Check if the current time is within the trading window
 if (currentTime >= '08:10' && currentTime <= '08:45') {
   arrayOfSignals[0] = true;
+  
   // Ensure SignalSwingHighLow runs and updates the swingHighLowHistory
   if (SignalSwingHighLow()) {
     const swingHistory = swingHighLowHistory.slice(-2); // Get the last two swings
@@ -426,11 +432,15 @@ if (currentTime >= '08:10' && currentTime <= '08:45') {
 
       // Check if both swings are LOW (bullish) or HIGH (bearish)
       if (
-        (firstSwing.type === 'LOW' && secondSwing.type === 'LOW') ||
-        (firstSwing.type === 'HIGH' && secondSwing.type === 'HIGH')
+        (firstSwing.type === 'LOW' && secondSwing.type === 'LOW' && firstSwing.maxReachedPrice < secondSwing.maxReachedPrice) ||
+        (firstSwing.type === 'HIGH' && secondSwing.type === 'HIGH' && firstSwing.maxReachedPrice > secondSwing.maxReachedPrice)
       ) {
         arrayOfSignals[0] = true; // Mark swing point detection signal as valid
-        AddActionOnChart(EnumActionType.TAKE_A_TRADE);
+        // Limit to one trade per trading window
+        if (!arrayOfSignals[1]) {
+          arrayOfSignals[1] = true;
+          AddActionOnChart(EnumActionType.TAKE_A_TRADE);
+        }
       } else {
         arrayOfSignals[0] = false; // Reset signal if conditions are not met
       }
@@ -579,6 +589,7 @@ if (arrayOfSignals.every(signal => signal === true)) {
   <script>
     // Result Panel Related Actions / Triggers:
     const resultPanel = document.querySelector('#result-panel');
+    const csvRefresh = document.querySelector('#csvRefresh');
     const toolbarToggler = document.querySelector('#result-panel-toolbar-toggler');
     function toggleHeight() {
       resultPanel.classList.toggle('active');
@@ -595,6 +606,10 @@ if (arrayOfSignals.every(signal => signal === true)) {
       resultPanel.classList.add('active');
       document.querySelectorAll('.result-panel-content')[0].classList.add('h-hide');
       document.querySelectorAll('.result-panel-content')[1].classList.remove('h-hide');
+    });
+
+    csvRefresh.addEventListener('click', () => {
+      loadcsv();
     });
 
     /* ---- */
@@ -654,7 +669,7 @@ if (arrayOfSignals.every(signal => signal === true)) {
 
     document
       .getElementById('csvFileInput')
-      .addEventListener('change', function (event) {
+      .addEventListener('change', function loadcsv (event) {
         const file = event.target.files[0];
         if (file) {
           const reader = new FileReader();
