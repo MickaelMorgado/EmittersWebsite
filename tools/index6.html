@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="../assets/reusables.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
   <link rel="icon" href="https://ui-avatars.com/api/?name=H&rounded=true&background=000000&color=ffffff" type="image/png">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="../assets/reusables.js"></script>
   <script>document.addEventListener('DOMContentLoaded', function() { document.title = `HYTEK - ${document.getElementsByTagName("h1")[0].innerText}` });</script>
   <style>
@@ -384,7 +385,10 @@
               <input id="TPPoints" type="number" value="0.0003" class="h-input-effects" />
             </div>
           </div>
-          <textarea id="backtestingResult" rows="10" style="width:20%" class="h-field"></textarea>
+          <textarea id="backtestingResult" rows="10" style="flex-grow: 1; min-width: 20%" class="h-field"></textarea>
+          <canvas id="myChart" width="1000px" height="300px"></canvas>
+        </div>
+        <div>
           <div id="backtestingResultOrderHistory" class="h-field"></div>
         </div>
       </div>
@@ -703,7 +707,7 @@ if (currentTime >= '08:10' && currentTime <= '08:45') {
           // Expand Backtesting panel:
           document.getElementById('result-panel-toolbar-content-toggler-algo').click();
         } else {
-          alert('No file selected');
+          // alert('No file selected');
         }
       });
 
@@ -848,6 +852,7 @@ if (currentTime >= '08:10' && currentTime <= '08:45') {
           }
 
           const buildChartData = (data) => {
+            let numbDays = 0;
             const growBy = new NumberRange(0.1, 0.1);
             // Extract OHLC data from the response
 
@@ -1222,9 +1227,89 @@ if (currentTime >= '08:10' && currentTime <= '08:45') {
                 console.log('Orders History:', ordersHistory);
                 const winRate = ordersHistory.length > 0 ? (ordersHistory.filter((order) => order.orderStatus == EnumOrderStatus.CLOSED_BY_TP).length / ordersHistory.length * 100).toFixed(2) : 0;
                 const moneyEquivalent = ((profitsInPoints * (lotSize() * 10)) * 10000).toFixed(2);
-                const result = `Check console for orders history\n\nTrade Taken: ${ordersHistory.length}\nWin Rate: ${winRate}% \n\nProfits: \n Money: ${moneyEquivalent}$\n Points: ${profitsInPoints.toFixed(5)} \n Pips: ${(profitsInPoints / 0.00010).toFixed(2)} \n Ticks: ${(profitsInPoints / 0.01).toFixed(2)}`;
+                const result = `Check console for orders history\n\nTrade Taken: ${ordersHistory.length} (in ${numbDays} days)\nWin Rate: ${winRate}% \n\nProfits: \n Money: ${moneyEquivalent}$\n Points: ${profitsInPoints.toFixed(5)} \n Pips: ${(profitsInPoints / 0.00010).toFixed(2)} \n Ticks: ${(profitsInPoints / 0.01).toFixed(2)}`;
                 //const result = `Check console for orders history\n\nTrade Taken: ${ordersHistory.length}\nWin Rate: ${winRate}% \n\nProfits: \n Money: ${moneyEquivalent}$\n Points: ${profitsInPoints} \n Pips: ${(profitsInPoints / 0.00010)}`;
                 document.getElementById('backtestingResult').value = result;
+     
+                // Create a bar chart
+                let myChart = document.getElementById('myChart');
+                var ctx = myChart.getContext('2d');
+                var datasets = [];
+                var values = ordersHistory.map((order) => {
+                  const pnlvar = order.orderStatus == EnumOrderStatus.CLOSED_BY_TP ? tpSize() : -slSize();
+                  return [pnlvar];
+                });
+
+                const pnlsum = () => {
+                  let sum = 0;
+                  return values.map((value) => {
+                    var a = (sum += parseFloat(value));
+                    return a;
+                  });
+                };
+
+                gradient = ctx.createLinearGradient(0, 25, 0, 300);
+                gradient.addColorStop(0, `#${bullishColor}${RRToolStyles.opacity}`);
+                gradient.addColorStop(1, `#${bearishColor}${RRToolStyles.opacity}`);
+
+                datasets.push({
+                  type: 'line',
+                  label: 'Equity',
+                  data: pnlsum(),
+                  //backgroundColor: `#${bullishColor}`,
+                  borderColor: `#${bullishColor}`,
+                  backgroundColor: gradient,
+                  borderWidth: 1,
+                  order: 0,
+                  fill: true,
+                });
+                
+                // Check if there is an existing chart instance and destroy it
+                if (myChart instanceof Chart) {
+                  myChart.destroy();
+                }
+                
+                // Create profitability chart:
+                var options = {
+                  //animation,
+                  responsive: false,
+                  elements: {
+                    point: {
+                      radius: 1,
+                    },
+                  },
+                  scales: {
+                    y: {
+                      beginAtZero: false,
+                    },
+                    /*
+                      scales: {
+                          myScale: {
+                          type: 'logarithmic',
+                          position: 'right',
+                          },
+                      },
+                    */
+                  },
+                };
+
+                // Set maximum and minimum values for y-axis if provided
+                /*if (minValue) {
+                  options.scales.y.min = minValue;
+                }
+                if (maxValue) {
+                  options.scales.y.max = maxValue;
+                }*/
+                
+                myChart = new Chart(ctx, {
+                  type: 'line',
+                  data: {
+                    labels: values,	
+                    datasets: datasets,
+                  },
+                  options: options,
+                });
+                
                 document.getElementById('backtestingResultOrderHistory').innerHTML = `
                   <table>
                     <thead>
@@ -1287,6 +1372,7 @@ if (currentTime >= '08:10' && currentTime <= '08:45') {
                 var selectedTime = document.getElementById('backtesting-hour').value;
 
                 if (candleTime == selectedTime) {
+                  numbDays = numbDays + 1;
                   let btt = backTestTime; // * 1000;
                   let formatedDate = formatDateFromUnix(btt);
 
