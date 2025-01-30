@@ -429,17 +429,26 @@ if (currentTime >= '08:10' && currentTime <= '08:45') {
     
     if (swingHistory.length === 2) {
       const [firstSwing, secondSwing] = swingHistory;
+      let tradeDirection = EnumDirection.BULL;
 
-      // Check if both swings are LOW (bullish) or HIGH (bearish)
       if (
         (firstSwing.type === 'LOW' && secondSwing.type === 'LOW' && firstSwing.maxReachedPrice < secondSwing.maxReachedPrice) ||
         (firstSwing.type === 'HIGH' && secondSwing.type === 'HIGH' && firstSwing.maxReachedPrice > secondSwing.maxReachedPrice)
       ) {
+        if (firstSwing.maxReachedPrice < secondSwing.maxReachedPrice) {
+          tradeDirection = EnumDirection.BULL;
+        }
+        else if (firstSwing.maxReachedPrice > secondSwing.maxReachedPrice) {
+          tradeDirection = EnumDirection.BEAR;
+        }
         arrayOfSignals[0] = true; // Mark swing point detection signal as valid
         // Limit to one trade per trading window
         if (!arrayOfSignals[1]) {
           arrayOfSignals[1] = true;
-          AddActionOnChart(EnumActionType.TAKE_A_TRADE);
+          AddActionOnChart(
+            EnumActionType.TAKE_A_TRADE,
+            tradeDirection,
+          );
         }
       } else {
         arrayOfSignals[0] = false; // Reset signal if conditions are not met
@@ -458,11 +467,6 @@ if (currentTime >= '08:10' && currentTime <= '08:45') {
   // Reset signals outside the time range
   arrayOfSignals[0] = false;
   arrayOfSignals[1] = false;
-}
-
-// Check if all signals are valid and take the trade
-if (arrayOfSignals.every(signal => signal === true)) {
-  AddActionOnChart(EnumActionType.TAKE_A_TRADE); // Trigger the trade
 }
           </textarea>
         </div>
@@ -609,7 +613,18 @@ if (arrayOfSignals.every(signal => signal === true)) {
     });
 
     csvRefresh.addEventListener('click', () => {
-      loadcsv();
+      const file = document.getElementById('csvFileInput').files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.readAsText(file);
+        reader.onload = function (e) {
+          const content = e.target.result;
+
+          document.getElementById('csvContent').value = content;
+
+          initSciChart(content);
+        } 
+      }
     });
 
     /* ---- */
@@ -882,61 +897,123 @@ if (arrayOfSignals.every(signal => signal === true)) {
 
               // Check for tp/sl hit:
               ordersHistory.forEach((order) => {
-                if (candle.high >= order.tp && !order.closed) {
+                switch (order.direction) {
+                  case EnumDirection.BULL:
+                    if (candle.high >= order.tp && !order.closed) {
 
-                  order.closed = true;
-                  order.closedPrice = order.tp;
-                  order.closedTime = candle.time;
-                  order.orderStatus = EnumOrderStatus.CLOSED_BY_TP,
+                      order.closed = true;
+                      order.closedPrice = order.tp;
+                      order.closedTime = candle.time;
+                      order.orderStatus = EnumOrderStatus.CLOSED_BY_TP,
 
-                  sciChartSurface.annotations.add(
-                    new CustomAnnotation({
-                      x1: convertMT5DateToUnix(order.closedTime),
-                      y1: order.tp,
-                      verticalAnchorPoint: EVerticalAnchorPoint.Center,
-                      horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
-                      svgString: signalAnnotation.svgString.sell,
-                    })
-                  );
-                  sciChartSurface.annotations.add(
-                    new LineAnnotation({
-                      stroke: `#${greyColor}`,
-                      strokeThickness: 1,
-                      strokeDashArray: [5, 5],
-                      x1: convertMT5DateToUnix(order.time),
-                      x2: convertMT5DateToUnix(order.closedTime),
-                      y1: order.price,
-                      y2: order.closedPrice,
-                    })
-                  );
-                }
-                if (candle.low <= order.sl && !order.closed) {
+                      sciChartSurface.annotations.add(
+                        new CustomAnnotation({
+                          x1: convertMT5DateToUnix(order.closedTime),
+                          y1: order.tp,
+                          verticalAnchorPoint: EVerticalAnchorPoint.Center,
+                          horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
+                          svgString: signalAnnotation.svgString.sell,
+                        })
+                      );
+                      sciChartSurface.annotations.add(
+                        new LineAnnotation({
+                          stroke: `#${greyColor}`,
+                          strokeThickness: 1,
+                          strokeDashArray: [5, 5],
+                          x1: convertMT5DateToUnix(order.time),
+                          x2: convertMT5DateToUnix(order.closedTime),
+                          y1: order.price,
+                          y2: order.closedPrice,
+                        })
+                      );
+                    }
+                    if (candle.low <= order.sl && !order.closed) {
 
-                  order.closed = true;
-                  order.closedPrice = order.sl;
-                  order.closedTime = candle.time;
-                  order.orderStatus = EnumOrderStatus.CLOSED_BY_SL,
+                      order.closed = true;
+                      order.closedPrice = order.sl;
+                      order.closedTime = candle.time;
+                      order.orderStatus = EnumOrderStatus.CLOSED_BY_SL,
 
-                  sciChartSurface.annotations.add(
-                    new CustomAnnotation({
-                      x1: convertMT5DateToUnix(order.closedTime),
-                      y1: order.sl,
-                      verticalAnchorPoint: EVerticalAnchorPoint.Center,
-                      horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
-                      svgString: signalAnnotation.svgString.sell,
-                    })
-                  );
-                  sciChartSurface.annotations.add(
-                    new LineAnnotation({
-                      stroke: `#${greyColor}`,
-                      strokeThickness: 1,
-                      strokeDashArray: [5, 5],
-                      x1: convertMT5DateToUnix(order.time),
-                      x2: convertMT5DateToUnix(order.closedTime),
-                      y1: order.price,
-                      y2: order.closedPrice,
-                    })
-                  );
+                      sciChartSurface.annotations.add(
+                        new CustomAnnotation({
+                          x1: convertMT5DateToUnix(order.closedTime),
+                          y1: order.sl,
+                          verticalAnchorPoint: EVerticalAnchorPoint.Center,
+                          horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
+                          svgString: signalAnnotation.svgString.sell,
+                        })
+                      );
+                      sciChartSurface.annotations.add(
+                        new LineAnnotation({
+                          stroke: `#${greyColor}`,
+                          strokeThickness: 1,
+                          strokeDashArray: [5, 5],
+                          x1: convertMT5DateToUnix(order.time),
+                          x2: convertMT5DateToUnix(order.closedTime),
+                          y1: order.price,
+                          y2: order.closedPrice,
+                        })
+                      );
+                    }
+                    break;
+                  case EnumDirection.BEAR:
+                    if (candle.low <= order.tp && !order.closed) {
+
+                      order.closed = true;
+                      order.closedPrice = order.tp;
+                      order.closedTime = candle.time;
+                      order.orderStatus = EnumOrderStatus.CLOSED_BY_TP,
+
+                      sciChartSurface.annotations.add(
+                        new CustomAnnotation({
+                          x1: convertMT5DateToUnix(order.closedTime),
+                          y1: order.tp,
+                          verticalAnchorPoint: EVerticalAnchorPoint.Center,
+                          horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
+                          svgString: signalAnnotation.svgString.sell,
+                        })
+                      );
+                      sciChartSurface.annotations.add(
+                        new LineAnnotation({
+                          stroke: `#${greyColor}`,
+                          strokeThickness: 1,
+                          strokeDashArray: [5, 5],
+                          x1: convertMT5DateToUnix(order.time),
+                          x2: convertMT5DateToUnix(order.closedTime),
+                          y1: order.price,
+                          y2: order.closedPrice,
+                        })
+                      );
+                    }
+                    if (candle.high >= order.sl && !order.closed) {
+
+                      order.closed = true;
+                      order.closedPrice = order.sl;
+                      order.closedTime = candle.time;
+                      order.orderStatus = EnumOrderStatus.CLOSED_BY_SL,
+
+                      sciChartSurface.annotations.add(
+                        new CustomAnnotation({
+                          x1: convertMT5DateToUnix(order.closedTime),
+                          y1: order.sl,
+                          verticalAnchorPoint: EVerticalAnchorPoint.Center,
+                          horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
+                          svgString: signalAnnotation.svgString.sell,
+                        })
+                      );
+                      sciChartSurface.annotations.add(
+                        new LineAnnotation({
+                          stroke: `#${greyColor}`,
+                          strokeThickness: 1,
+                          strokeDashArray: [5, 5],
+                          x1: convertMT5DateToUnix(order.time),
+                          x2: convertMT5DateToUnix(order.closedTime),
+                          y1: order.price,
+                          y2: order.closedPrice,
+                        })
+                      );
+                    }
+                    break;
                 }
               });
 
@@ -998,7 +1075,7 @@ if (arrayOfSignals.every(signal => signal === true)) {
               }
 
               // Function to create annotations or take actions on the chart, based on UI selected options:
-              const AddActionOnChart = (EnumActionType) => {
+              const AddActionOnChart = (EnumActionType, tradeDirection = EnumDirection.BULL) => {
                   switch (EnumActionType) {
                   case 'VERTICAL_LINE':
                     sciChartSurface.annotations.add(
@@ -1021,15 +1098,28 @@ if (arrayOfSignals.every(signal => signal === true)) {
                     );
                     break;
                   case 'TAKE_A_TRADE':
+                    const orderOptionsBasedDirection = (tradeDirection) => {
+                      if (tradeDirection == EnumDirection.BULL) {
+                        return {
+                          sl: candle.close - slSize(),
+                          tp: candle.close + tpSize(),
+                          direction: EnumDirection.BULL,
+                        };
+                      } else {
+                        return {
+                          sl: candle.close + slSize(),
+                          tp: candle.close - tpSize(),
+                          direction: EnumDirection.BEAR,
+                        };
+                      }
+                    };
                     // Add order to history:
                     ordersHistory.push({
                       id: index,
                       time: candle.time,
                       price: candle.close,
-                      sl: candle.close - slSize(),
-                      tp: candle.close + tpSize(),
-                      direction: EnumDirection.BULL,
                       orderStatus: EnumOrderStatus.PENDING,
+                      ...orderOptionsBasedDirection(tradeDirection),
                     });
 
                     // Add annotation from entry:
@@ -1172,6 +1262,11 @@ if (arrayOfSignals.every(signal => signal === true)) {
 
             console.log('Swing HighLow:', swingHighLowHistory);
             console.log('FVG History:', fvgHistory);
+
+            // Clear the select element:
+            document
+              .getElementById('NavigateTroughtDates')
+              .innerHTML = "";
 
             // Create an OHLC data series
             const ohlcDataSeries = new OhlcDataSeries(wasmContext, {
