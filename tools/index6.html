@@ -213,6 +213,7 @@
             More info:
             <a target="_blank" href="https://myforex.com/en/mt5guide/export-historicaldata.html">Export Historical
               Data</a>
+            <a target="_blank" href="https://www.mql5.com/en/forum/356227">Limited History Issue</a>
           </p>
         </div>
         <hr class="h-hr" />
@@ -386,7 +387,9 @@
             </div>
           </div>
           <textarea id="backtestingResult" rows="10" style="flex-grow: 1; min-width: 20%" class="h-field"></textarea>
-          <canvas id="myChart" width="1000px" height="300px"></canvas>
+          <div id="myChartContainer" styles="width: 1000px; height: 300px;">
+            <canvas id="myChart" width="1000px" height="300px"></canvas>
+          </div>
         </div>
         <div>
           <div id="backtestingResultOrderHistory" class="h-field"></div>
@@ -1231,7 +1234,7 @@ if (currentTime >= '08:10' && currentTime <= '08:45') {
                 //const result = `Check console for orders history\n\nTrade Taken: ${ordersHistory.length}\nWin Rate: ${winRate}% \n\nProfits: \n Money: ${moneyEquivalent}$\n Points: ${profitsInPoints} \n Pips: ${(profitsInPoints / 0.00010)}`;
                 document.getElementById('backtestingResult').value = result;
      
-                // Create a bar chart
+                // Create a line chart:
                 let myChart = document.getElementById('myChart');
                 var ctx = myChart.getContext('2d');
                 var datasets = [];
@@ -1239,6 +1242,8 @@ if (currentTime >= '08:10' && currentTime <= '08:45') {
                   const pnlvar = order.orderStatus == EnumOrderStatus.CLOSED_BY_TP ? tpSize() : -slSize();
                   return [pnlvar];
                 });
+                
+                console.log('creating equity chart')
 
                 const pnlsum = () => {
                   let sum = 0;
@@ -1247,6 +1252,19 @@ if (currentTime >= '08:10' && currentTime <= '08:45') {
                     return a;
                   });
                 };
+
+                // Check if there is an existing chart instance and destroy it:
+                if (typeof myChart !== 'undefined' && myChart !== null) {
+                  myChart.remove();
+                  const newCanvas = document.createElement('canvas');
+                  newCanvas.id = 'myChart';
+                  newCanvas.width = 1000;
+                  newCanvas.height = 300;
+                  document.getElementById('myChartContainer').appendChild(newCanvas);
+                  myChart = document.getElementById('myChart');
+                  ctx = myChart.getContext('2d');
+                  //myChart.destroy();
+                }
 
                 gradient = ctx.createLinearGradient(0, 25, 0, 300);
                 gradient.addColorStop(0, `#${bullishColor}${RRToolStyles.opacity}`);
@@ -1263,11 +1281,6 @@ if (currentTime >= '08:10' && currentTime <= '08:45') {
                   order: 0,
                   fill: true,
                 });
-                
-                // Check if there is an existing chart instance and destroy it
-                if (myChart instanceof Chart) {
-                  myChart.destroy();
-                }
                 
                 // Create profitability chart:
                 var options = {
@@ -1300,7 +1313,7 @@ if (currentTime >= '08:10' && currentTime <= '08:45') {
                 if (maxValue) {
                   options.scales.y.max = maxValue;
                 }*/
-                
+
                 myChart = new Chart(ctx, {
                   type: 'line',
                   data: {
