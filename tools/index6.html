@@ -375,8 +375,8 @@
         <div class="h-flex h-flex--row">
           <div class="h-flex h-flex--column">
             <div class="h-flex h-flex--column">
-              <label for="backtesting-hour">Prefered Backtesting Hour</label>
-              <input id="backtesting-hour" class="h-input-effects" type="text" value="08:00:00" />
+              <label for="backtesting-hour">Prefered Backtesting Hour (add 2h to match MT5 data)</label>
+              <input id="backtesting-hour" class="h-input-effects" type="text" value="10:00:00" />
             </div>
             <div class="h-flex h-flex--column">
               <label for="LotSize">Lot Size</label>
@@ -387,8 +387,8 @@
             </div>
           </div>
           <textarea id="backtestingResult" rows="10" style="flex-grow: 1; min-width: 20%" class="h-field"></textarea>
-          <div id="myChartContainer" styles="width: 800px; height: 300px;">
-            <canvas id="myChart" width="800px" height="300px"></canvas>
+          <div id="myChartContainer" styles="flex-grow: 3; width: 700px">
+            <canvas id="myChart" width="700px" height="300px"></canvas>
           </div>
         </div>
         <div>
@@ -427,7 +427,7 @@ arrayOfSignals.push(false);
 const currentTime = hourMinutes();
 
 // Check if the current time is within the trading window
-if (currentTime >= '08:10' && currentTime <= '08:45') {
+if (currentTime >= '10:10' && currentTime <= '10:45') {
   arrayOfSignals[0] = true;
   
   // Ensure SignalSwingHighLow runs and updates the swingHighLowHistory
@@ -464,10 +464,10 @@ if (currentTime >= '08:10' && currentTime <= '08:45') {
   }
   
   // Add an additional time-based signal for the end of the trading window
-  if (currentTime === '08:10') {
+  if (currentTime === '10:10') {
     AddActionOnChart(EnumActionType.VERTICAL_LINE);
   }
-  if (currentTime === '08:45') {
+  if (currentTime === '10:45') {
     AddActionOnChart(EnumActionType.VERTICAL_LINE);
   }
 } else {
@@ -519,7 +519,7 @@ if (currentTime >= '08:10' && currentTime <= '08:45') {
             <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
               <div class="accordion-body">
                 <label for="signal-condition-1-code">Make sure to return a boolean value (that's what makes the signal to take trade), You can set a debugger / pause execution near SignalCondition2() function to see how it works and debug all variables:</label>
-                <textarea name="signal-condition-1-code" id="algoEditorTextarea" width="100%" rows="10">hourMinutes() == '08:10';</textarea>
+                <textarea name="signal-condition-1-code" id="algoEditorTextarea" width="100%" rows="10">hourMinutes() == '10:10';</textarea>
                 <label for="signal-condition-1-annotation">Signal Display Type (Signal representation on chart after valid condition from above returned code):</label>
                 <select name="signal-condition-1-annotation" id="signalCondition1Annotation">
                   <option value="vertical-line">Vertical Line</option>
@@ -538,7 +538,7 @@ if (currentTime >= '08:10' && currentTime <= '08:45') {
             <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#accordionExample">
               <div class="accordion-body">
                 <label for="signal-condition-2-code">Make sure to return a boolean value (that's what makes the signal to take trade), You can set a debugger / pause execution near SignalCondition2() function to see how it works and debug all variables:</label>
-                <textarea name="signal-condition-2-code" id="algoEditorTextarea2" width="100%" rows="10">hourMinutes() == '08:45' && hourMinutes() >= '08:10'; // TODO: replace 'true' buy previous returned result</textarea>
+                <textarea name="signal-condition-2-code" id="algoEditorTextarea2" width="100%" rows="10">hourMinutes() == '10:45' && hourMinutes() >= '10:10'; // TODO: replace 'true' buy previous returned result</textarea>
                 <label for="signal-condition-2-annotation">Signal Display Type (Signal representation on chart after valid condition from above returned code):</label>
                 <select name="signal-condition-2-annotation" id="signalCondition2Annotation">
                   <option value="vertical-line">Vertical Line</option>
@@ -557,7 +557,7 @@ if (currentTime >= '08:10' && currentTime <= '08:45') {
             <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#accordionExample">
               <div class="accordion-body">
                 <label for="signal-condition-3-code">Make sure to return a boolean value (that's what makes the signal to take trade), You can set a debugger / pause execution near SignalCondition2() function to see how it works and debug all variables:</label>
-                <textarea name="signal-condition-3-code" id="algoEditorTextarea3" width="100%" rows="10">hourMinutes() == '08:45' && SignalCondition2(); // TODO: replace 'true' buy previous returned result</textarea>
+                <textarea name="signal-condition-3-code" id="algoEditorTextarea3" width="100%" rows="10">hourMinutes() == '10:45' && SignalCondition2(); // TODO: replace 'true' buy previous returned result</textarea>
                 <label for="signal-condition-3-annotation">Signal Display Type (Signal representation on chart after valid condition from above returned code):</label>
                 <select name="signal-condition-3-annotation" id="signalCondition3Annotation">
                   <option value="vertical-line">Vertical Line</option>
@@ -687,7 +687,7 @@ if (currentTime >= '08:10' && currentTime <= '08:45') {
 
     const convertMT5DateToUnix = (candleTime) => {
       const ct = candleTime.replaceAll('.','-');
-      return new Date(ct).getTime() / 1000; // divided by 1000 to convert from milliseconds to seconds as Unix time only accepts seconds, while JS Date is more precise as working with milliseconds.
+      return new Date(ct).getTime() / 1000; // - 3600 * 2; // divided by 1000 to convert from milliseconds to seconds as Unix time only accepts seconds, while JS Date is more precise as working with milliseconds.
     };
 
     document
@@ -892,6 +892,8 @@ if (currentTime >= '08:10' && currentTime <= '08:45') {
             let ordersHistory = [];
             let swingHighLowHistory = [];
             let fvgHistory = [];
+            let rollingHighestHighDataSeries = null;
+            let rollingLowestLowDataSeries = null;
             const minDate = new Date(ohlcData[0].time);
             const maxDate = new Date(ohlcData[ohlcData.length - 1].time);
             const offsetCandleDateTimeStamp = (candleDateTimeStamp) => candleDateTimeStamp; // - 3600 * 1; // !! offseting candle position in X axis by -1h to match tradingView (The correct way would be to offset the axis labels, but dont know how to do it yet)
@@ -1146,6 +1148,45 @@ if (currentTime >= '08:10' && currentTime <= '08:45') {
                     break;
                 }
               }
+              /*
+              // MSS Detection:
+              function calculateRollingHighLow(highPrices, lowPrices, lookbackPeriod) {
+                const rollingHighestHigh = [];
+                const rollingLowestLow = [];
+                for (let i = lookbackPeriod - 1; i < highPrices.length; i++) {
+                  const highest = Math.max(...highPrices.slice(i - lookbackPeriod + 1, i + 1));
+                  const lowest = Math.min(...lowPrices.slice(i - lookbackPeriod + 1, i + 1));
+                  rollingHighestHigh.push(highest);
+                  rollingLowestLow.push(lowest);
+                }
+                return { rollingHighestHigh, rollingLowestLow };
+              }
+
+              const lookbackPeriod = 8; // Adjust as needed
+              const times = ohlcData.map(data => convertMT5DateToUnix(data.time));
+              const highPrices = ohlcData.map(data => data.high);
+              const lowPrices = ohlcData.map(data => data.low);
+              const { rollingHighestHigh, rollingLowestLow } = calculateRollingHighLow(highPrices, lowPrices, lookbackPeriod);
+              let mssDetected = false;
+
+              if (candle.close >= rollingHighestHigh[index - lookbackPeriod + 1]) {
+                AddActionOnChart(EnumActionType.DRAW_A_CIRCLE);
+                AddActionOnChart(EnumActionType.TAKE_A_TRADE, EnumDirection.BULL);
+                mssDetected = true;
+              } else {
+                mssDetected = false;
+              }
+
+              // Create data series for rolling highest high and lowest low
+              rollingHighestHighDataSeries = new XyDataSeries(wasmContext, {
+                xValues: times.slice(lookbackPeriod - 1),
+                yValues: rollingHighestHigh,
+              });
+              rollingLowestLowDataSeries = new XyDataSeries(wasmContext, {
+                xValues: times.slice(lookbackPeriod - 1),
+                yValues: rollingLowestLow,
+              });
+              */
 
               /* Global variables and functions */
               const algoEditorTextareaMain0 = document.getElementById('algoEditorTextareaMain0');
@@ -1205,7 +1246,7 @@ if (currentTime >= '08:10' && currentTime <= '08:45') {
                   type: isSwingHigh ? 'HIGH' : 'LOW', // Represents the type of the swing (HIGH or LOW) its the position and NOT the candle direction.
                 });
 
-                sciChartSurface.annotations.add(
+                /*sciChartSurface.annotations.add(
                   new CustomAnnotation({
                     x1: candlePosition,
                     y1: isSwingHigh ? candle.high : candle.low,
@@ -1213,7 +1254,7 @@ if (currentTime >= '08:10' && currentTime <= '08:45') {
                     horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
                     svgString: isSwingHigh ? signalAnnotation.svgString.bearish : signalAnnotation.svgString.bullish,
                   })
-                );
+                );*/
               }
 
               eval(algoEditorTextareaMain1.value);
@@ -1261,7 +1302,7 @@ if (currentTime >= '08:10' && currentTime <= '08:45') {
                   myChart.remove();
                   const newCanvas = document.createElement('canvas');
                   newCanvas.id = 'myChart';
-                  newCanvas.width = 800;
+                  newCanvas.width = 700;
                   newCanvas.height = 300;
                   document.getElementById('myChartContainer').appendChild(newCanvas);
                   myChart = document.getElementById('myChart');
@@ -1298,14 +1339,6 @@ if (currentTime >= '08:10' && currentTime <= '08:45') {
                     y: {
                       beginAtZero: false,
                     },
-                    /*
-                      scales: {
-                          myScale: {
-                          type: 'logarithmic',
-                          position: 'right',
-                          },
-                      },
-                    */
                   },
                 };
 
@@ -1381,7 +1414,7 @@ if (currentTime >= '08:10' && currentTime <= '08:45') {
                 let candleTime = candleDateTime.split(' ')[1]; // get the time from the date string (00:00:00)
                 let candleDateTimeStamp = getCandleChartAxisLocationFromDate(candleDateTime); // 1624982400
 
-                let offsetedCandleTime = offsetCandleDateTimeStamp(candleDateTimeStamp); // Not really important for now, has we aren't offsetting anything yet.
+                // let offsetedCandleTime = offsetCandleDateTimeStamp(candleDateTimeStamp); // Not really important for now, has we aren't offsetting anything yet.
                 let dateOptionForSelect = candleDateTimeStamp;
                 let backTestTime = getCandleChartAxisLocationFromDate(candleDateTime); // + 3600; // Actually the same as above (candleDateTimeStamp)
 
@@ -1451,7 +1484,7 @@ if (currentTime >= '08:10' && currentTime <= '08:45') {
                   indicateCandle(candle, ohlcData, index);
                 */
 
-                return unixTime; // + 3600;
+                return unixTime; // - 3600 * 2; // broker time offset compensation (2 hours)
               }),
               openValues: ohlcData.map((candle) => candle.open),
               highValues: ohlcData.map((candle) => candle.high),
@@ -1496,34 +1529,6 @@ if (currentTime >= '08:10' && currentTime <= '08:45') {
               })
             );
 
-            // MSS Detection:
-            function calculateRollingHighLow(highPrices, lowPrices, lookbackPeriod) {
-              const rollingHighestHigh = [];
-              const rollingLowestLow = [];
-              for (let i = lookbackPeriod - 1; i < highPrices.length; i++) {
-                const highest = Math.max(...highPrices.slice(i - lookbackPeriod + 1, i + 1));
-                const lowest = Math.min(...lowPrices.slice(i - lookbackPeriod + 1, i + 1));
-                rollingHighestHigh.push(highest);
-                rollingLowestLow.push(lowest);
-              }
-              return { rollingHighestHigh, rollingLowestLow };
-            }
-
-            const lookbackPeriod = 15; // Adjust as needed
-            const times = ohlcData.map(data => convertMT5DateToUnix(data.time));
-            const highPrices = ohlcData.map(data => data.high);
-            const lowPrices = ohlcData.map(data => data.low);
-            const { rollingHighestHigh, rollingLowestLow } = calculateRollingHighLow(highPrices, lowPrices, lookbackPeriod);
-
-            // Create data series for rolling highest high and lowest low
-            const rollingHighestHighDataSeries = new XyDataSeries(wasmContext, {
-              xValues: times.slice(lookbackPeriod - 1), // Adjust xValues to match the rolling window
-              yValues: rollingHighestHigh,
-            });
-            const rollingLowestLowDataSeries = new XyDataSeries(wasmContext, {
-              xValues: times.slice(lookbackPeriod - 1), // Adjust xValues to match the rolling window
-              yValues: rollingLowestLow,
-            });
 
             // Plot the rolling highest high and lowest low lines
             const rollingHighestHighLine = new FastLineRenderableSeries(wasmContext, {
