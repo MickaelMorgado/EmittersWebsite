@@ -387,8 +387,8 @@
             </div>
           </div>
           <textarea id="backtestingResult" rows="10" style="flex-grow: 1; min-width: 20%" class="h-field"></textarea>
-          <div id="myChartContainer" styles="width: 1000px; height: 300px;">
-            <canvas id="myChart" width="1000px" height="300px"></canvas>
+          <div id="myChartContainer" styles="width: 800px; height: 300px;">
+            <canvas id="myChart" width="800px" height="300px"></canvas>
           </div>
         </div>
         <div>
@@ -630,7 +630,8 @@ if (currentTime >= '08:10' && currentTime <= '08:45') {
           document.getElementById('csvContent').value = content;
 
           initSciChart(content);
-        } 
+        }
+        document.getElementById('result-panel-toolbar-content-toggler-algo').click();
       }
     });
 
@@ -1258,7 +1259,7 @@ if (currentTime >= '08:10' && currentTime <= '08:45') {
                   myChart.remove();
                   const newCanvas = document.createElement('canvas');
                   newCanvas.id = 'myChart';
-                  newCanvas.width = 1000;
+                  newCanvas.width = 800;
                   newCanvas.height = 300;
                   document.getElementById('myChartContainer').appendChild(newCanvas);
                   myChart = document.getElementById('myChart');
