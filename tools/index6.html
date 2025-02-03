@@ -752,6 +752,8 @@ if (currentTime >= '08:10' && currentTime <= '08:45') {
         ENumericFormat,
         EDateFormatter,
         Point,
+        FastLineRenderableSeries,
+        XyDataSeries,
         // GlowEffect,
         // ShadowEffect,
       } = SciChart;
@@ -1493,6 +1495,50 @@ if (currentTime >= '08:10' && currentTime <= '08:45') {
                 */
               })
             );
+
+            // MSS Detection:
+            function calculateRollingHighLow(highPrices, lowPrices, lookbackPeriod) {
+              const rollingHighestHigh = [];
+              const rollingLowestLow = [];
+              for (let i = lookbackPeriod - 1; i < highPrices.length; i++) {
+                const highest = Math.max(...highPrices.slice(i - lookbackPeriod + 1, i + 1));
+                const lowest = Math.min(...lowPrices.slice(i - lookbackPeriod + 1, i + 1));
+                rollingHighestHigh.push(highest);
+                rollingLowestLow.push(lowest);
+              }
+              return { rollingHighestHigh, rollingLowestLow };
+            }
+
+            const lookbackPeriod = 15; // Adjust as needed
+            const times = ohlcData.map(data => convertMT5DateToUnix(data.time));
+            const highPrices = ohlcData.map(data => data.high);
+            const lowPrices = ohlcData.map(data => data.low);
+            const { rollingHighestHigh, rollingLowestLow } = calculateRollingHighLow(highPrices, lowPrices, lookbackPeriod);
+
+            // Create data series for rolling highest high and lowest low
+            const rollingHighestHighDataSeries = new XyDataSeries(wasmContext, {
+              xValues: times.slice(lookbackPeriod - 1), // Adjust xValues to match the rolling window
+              yValues: rollingHighestHigh,
+            });
+            const rollingLowestLowDataSeries = new XyDataSeries(wasmContext, {
+              xValues: times.slice(lookbackPeriod - 1), // Adjust xValues to match the rolling window
+              yValues: rollingLowestLow,
+            });
+
+            // Plot the rolling highest high and lowest low lines
+            const rollingHighestHighLine = new FastLineRenderableSeries(wasmContext, {
+              dataSeries: rollingHighestHighDataSeries,
+              stroke: "#333333", // Orange for rolling highest high
+              strokeThickness: 1,
+            });
+            const rollingLowestLowLine = new FastLineRenderableSeries(wasmContext, {
+              dataSeries: rollingLowestLowDataSeries,
+              stroke: "#333333", // Blue for rolling lowest low
+              strokeThickness: 1,
+            });
+
+            sciChartSurface.renderableSeries.add(rollingHighestHighLine);
+            sciChartSurface.renderableSeries.add(rollingLowestLowLine);
 
             // Add CursorModifier for crosshair
             sciChartSurface.chartModifiers.add(
