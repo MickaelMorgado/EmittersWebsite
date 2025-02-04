@@ -452,10 +452,10 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
         // Limit to one trade per trading window
         if (!arrayOfSignals[1]) {
           arrayOfSignals[1] = true;
-          AddActionOnChart(
+          /*AddActionOnChart(
             EnumActionType.TAKE_A_TRADE,
             tradeDirection,
-          );
+          );*/
         }
       } else {
         arrayOfSignals[0] = false; // Reset signal if conditions are not met
@@ -889,6 +889,8 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
               };
             });
 
+            let canTakeATrade = true;
+            let inRange = false;
             let ordersHistory = [];
             let swingHighLowHistory = [];
             let fvgHistory = [];
@@ -904,6 +906,10 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
             }
             // Second function to be executed after the candle is drawn, you can add annotations here:
             const onCandleDrawn = (candle, index) => {
+              const algoEditorTextareaMain0 = document.getElementById('algoEditorTextareaMain0');
+              const algoEditorTextareaMain1 = document.getElementById('algoEditorTextareaMain1');
+              const hourMinutes = () => candle.time.split(' ')[1].slice(0, 5);
+              let arrayOfSignals = [];
               const candlePosition = convertMT5DateToUnix(candle.time);
               const prevCandle = ohlcData[index - 1];
               const nextCandle = ohlcData[index + 1];
@@ -1148,7 +1154,7 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
                     break;
                 }
               }
-              /*
+              
               // MSS Detection:
               function calculateRollingHighLow(highPrices, lowPrices, lookbackPeriod) {
                 const rollingHighestHigh = [];
@@ -1162,13 +1168,68 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
                 return { rollingHighestHigh, rollingLowestLow };
               }
 
-              const lookbackPeriod = 8; // Adjust as needed
+              const signalCooldown = 4;
+              const lookbackPeriod = 8;
+              const slopeThreshold = 0.5;
               const times = ohlcData.map(data => convertMT5DateToUnix(data.time));
-              const highPrices = ohlcData.map(data => data.high);
-              const lowPrices = ohlcData.map(data => data.low);
+              const highPrices = ohlcData.map(data => data.high); // data.high
+              const lowPrices = ohlcData.map(data => data.low); // data.low
               const { rollingHighestHigh, rollingLowestLow } = calculateRollingHighLow(highPrices, lowPrices, lookbackPeriod);
               let mssDetected = false;
+              let newSignalAvailable = false;
+              let bullishMSS = false;
+              let bearishMSS = false;
+              let highestHighLong = 0;
+              let lowestLowShort = 0;
+              let slopeHighestHighLong = 0;
+              let slopeLowestLowShort = 0;
 
+              // Calculate highest high and lowest low
+              highestHighLong = rollingHighestHigh
+              lowestLowShort = rollingLowestLow
+    
+              // Calculate slope
+              slopeHighestHighLong = highestHighLong[index - lookbackPeriod]; //(highestHighLong - highestHighLong[lookbackPeriod]) / lookbackPeriod
+              slopeLowestLowShort = lowestLowShort[index - lookbackPeriod]; //(lowestLowShort - lowestLowShort[lookbackPeriod]) / lookbackPeriod
+
+              // MSS conditions
+              bullishMSS = candle.close > highestHighLong[index - lookbackPeriod] // && math.abs(slopeHighestHighLong) < slopeThreshold
+              bearishMSS = candle.close < lowestLowShort[index - lookbackPeriod] // && math.abs(slopeLowestLowShort) < slopeThreshold
+
+              // Cooldown logic
+              let lastSignalBar = null;
+              signalTriggered = bullishMSS || bearishMSS
+              newSignalAvailable = !lastSignalBar || (index - lastSignalBar >= signalCooldown)
+
+              if (signalTriggered && newSignalAvailable) {
+                lastSignalBar = index
+              }
+
+              showBullish = (bullishMSS && newSignalAvailable) ? true : false
+              showBearish = (bearishMSS && newSignalAvailable) ? true : false
+
+              if (hourMinutes() >= '10:10' && hourMinutes() <= '10:45') {
+                inRange = true;
+              } else {
+                inRange = false;
+                canTakeATrade = true;
+              }
+
+              if (showBullish) {
+                //AddActionOnChart(EnumActionType.DRAW_A_CIRCLE);
+                if (inRange && canTakeATrade) {
+                  AddActionOnChart(EnumActionType.TAKE_A_TRADE, EnumDirection.BULL);
+                  canTakeATrade = false;
+                }
+              } else if (showBearish) {
+                //AddActionOnChart(EnumActionType.DRAW_A_CIRCLE);
+                if (inRange && canTakeATrade) {
+                  AddActionOnChart(EnumActionType.TAKE_A_TRADE, EnumDirection.BEAR);
+                  canTakeATrade = false;
+                }
+              }
+              
+              /*
               if (candle.close >= rollingHighestHigh[index - lookbackPeriod + 1]) {
                 AddActionOnChart(EnumActionType.DRAW_A_CIRCLE);
                 AddActionOnChart(EnumActionType.TAKE_A_TRADE, EnumDirection.BULL);
@@ -1176,6 +1237,7 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
               } else {
                 mssDetected = false;
               }
+              */
 
               // Create data series for rolling highest high and lowest low
               rollingHighestHighDataSeries = new XyDataSeries(wasmContext, {
@@ -1186,13 +1248,7 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
                 xValues: times.slice(lookbackPeriod - 1),
                 yValues: rollingLowestLow,
               });
-              */
 
-              /* Global variables and functions */
-              const algoEditorTextareaMain0 = document.getElementById('algoEditorTextareaMain0');
-              const algoEditorTextareaMain1 = document.getElementById('algoEditorTextareaMain1');
-              const hourMinutes = () => candle.time.split(' ')[1].slice(0, 5);
-              let arrayOfSignals = [];
               eval(algoEditorTextareaMain0.value);
 
               /*
@@ -1394,7 +1450,7 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
               }
             }
 
-            console.log('Swing HighLow:', swingHighLowHistory);
+            // console.log('Swing HighLow:', swingHighLowHistory);
             console.log('FVG History:', fvgHistory);
 
             // Clear the select element:
