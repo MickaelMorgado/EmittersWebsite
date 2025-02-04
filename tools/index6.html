@@ -1079,7 +1079,7 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
                   tested: false,
                 });
 
-                sciChartSurface.annotations.add(
+                /*sciChartSurface.annotations.add(
                   new BoxAnnotation({
                     x1: convertMT5DateToUnix(prevCandle.time),
                     x2: convertMT5DateToUnix(ohlcData[index + fvgExtent].time),
@@ -1090,7 +1090,7 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
                     strokeThickness: 1,
                     opacity: 0.3,
                   })
-                );
+                );*/
               }
 
               // Function to create annotations or take actions on the chart, based on UI selected options:
@@ -1155,8 +1155,10 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
                 }
               }
               
-              // MSS Detection:
-              function calculateRollingHighLow(highPrices, lowPrices, lookbackPeriod) {
+              // MSS Line Logic:
+              function calculateRollingHighLow(ohlcData, lookbackPeriod) {
+                const highPrices = ohlcData.map(data => data.close); // data.high
+                const lowPrices = ohlcData.map(data => data.close); // data.low
                 const rollingHighestHigh = [];
                 const rollingLowestLow = [];
                 for (let i = lookbackPeriod - 1; i < highPrices.length; i++) {
@@ -1172,60 +1174,67 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
               const lookbackPeriod = 8;
               const slopeThreshold = 0.5;
               const times = ohlcData.map(data => convertMT5DateToUnix(data.time));
-              const highPrices = ohlcData.map(data => data.high); // data.high
-              const lowPrices = ohlcData.map(data => data.low); // data.low
-              const { rollingHighestHigh, rollingLowestLow } = calculateRollingHighLow(highPrices, lowPrices, lookbackPeriod);
+              const { rollingHighestHigh, rollingLowestLow } = calculateRollingHighLow(ohlcData, lookbackPeriod);
               let mssDetected = false;
               let newSignalAvailable = false;
               let bullishMSS = false;
               let bearishMSS = false;
-              let highestHighLong = 0;
-              let lowestLowShort = 0;
+              const highestHighLong = [];
+              const lowestLowShort = [];
               let slopeHighestHighLong = 0;
               let slopeLowestLowShort = 0;
+    
+              // MSS Logic:
 
               // Calculate highest high and lowest low
-              highestHighLong = rollingHighestHigh
-              lowestLowShort = rollingLowestLow
-    
-              // Calculate slope
-              slopeHighestHighLong = highestHighLong[index - lookbackPeriod]; //(highestHighLong - highestHighLong[lookbackPeriod]) / lookbackPeriod
-              slopeLowestLowShort = lowestLowShort[index - lookbackPeriod]; //(lowestLowShort - lowestLowShort[lookbackPeriod]) / lookbackPeriod
+              if (index >= lookbackPeriod) {
+                const highPrices = ohlcData.slice(index - lookbackPeriod, index).map(candle => candle.close); // candle.high
+                highestHighLong.push(Math.max(...highPrices));
+                
+                const lowPrices = ohlcData.slice(index - lookbackPeriod, index).map(candle => candle.close); // candle.low
+                lowestLowShort.push(Math.min(...lowPrices));
 
-              // MSS conditions
-              bullishMSS = candle.close > highestHighLong[index - lookbackPeriod] // && math.abs(slopeHighestHighLong) < slopeThreshold
-              bearishMSS = candle.close < lowestLowShort[index - lookbackPeriod] // && math.abs(slopeLowestLowShort) < slopeThreshold
+                // Calculate slope:
+                slopeHighestHighLong = (highestHighLong - highestHighLong[lookbackPeriod]) / lookbackPeriod
+                slopeLowestLowShort = (lowestLowShort - lowestLowShort[lookbackPeriod]) / lookbackPeriod
 
-              // Cooldown logic
-              let lastSignalBar = null;
-              signalTriggered = bullishMSS || bearishMSS
-              newSignalAvailable = !lastSignalBar || (index - lastSignalBar >= signalCooldown)
+                // Check for MSS breakout conditions (breakout of the highest high or lowest low && slope is less than threshold (consistency))
+                bullishMSS = candle.close > highestHighLong[0]// && Math.abs(slopeHighestHighLong) < slopeThreshold
+                bearishMSS = candle.close < lowestLowShort[0]// && Math.abs(slopeLowestLowShort) < slopeThreshold
 
-              if (signalTriggered && newSignalAvailable) {
-                lastSignalBar = index
-              }
+                // console.log('-> ', candle.close , highestHighLong[0], bullishMSS,);
 
-              showBullish = (bullishMSS && newSignalAvailable) ? true : false
-              showBearish = (bearishMSS && newSignalAvailable) ? true : false
+                // Cooldown logic
+                let lastSignalBar = null;
+                signalTriggered = bullishMSS || bearishMSS
+                newSignalAvailable = !lastSignalBar || (index - lastSignalBar >= signalCooldown)
 
-              if (hourMinutes() >= '10:10' && hourMinutes() <= '10:45') {
-                inRange = true;
-              } else {
-                inRange = false;
-                canTakeATrade = true;
-              }
-
-              if (showBullish) {
-                //AddActionOnChart(EnumActionType.DRAW_A_CIRCLE);
-                if (inRange && canTakeATrade) {
-                  AddActionOnChart(EnumActionType.TAKE_A_TRADE, EnumDirection.BULL);
-                  canTakeATrade = false;
+                if (signalTriggered && newSignalAvailable) {
+                  lastSignalBar = index
                 }
-              } else if (showBearish) {
-                //AddActionOnChart(EnumActionType.DRAW_A_CIRCLE);
-                if (inRange && canTakeATrade) {
-                  AddActionOnChart(EnumActionType.TAKE_A_TRADE, EnumDirection.BEAR);
-                  canTakeATrade = false;
+
+                showBullish = (bullishMSS && newSignalAvailable) ? true : false
+                showBearish = (bearishMSS && newSignalAvailable) ? true : false
+
+                if (hourMinutes() >= '10:10' && hourMinutes() <= '10:45') {
+                  inRange = true;
+                } else {
+                  inRange = false;
+                  canTakeATrade = true;
+                }
+
+                if (showBullish) {
+                  //AddActionOnChart(EnumActionType.DRAW_A_CIRCLE);
+                  if (inRange && canTakeATrade) {
+                    AddActionOnChart(EnumActionType.TAKE_A_TRADE, EnumDirection.BULL);
+                    canTakeATrade = false;
+                  }
+                } else if (showBearish) {
+                  //AddActionOnChart(EnumActionType.DRAW_A_CIRCLE);
+                  if (inRange && canTakeATrade) {
+                    AddActionOnChart(EnumActionType.TAKE_A_TRADE, EnumDirection.BEAR);
+                    canTakeATrade = false;
+                  }
                 }
               }
               
@@ -1342,8 +1351,6 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
                   const pnlvar = order.orderStatus == EnumOrderStatus.CLOSED_BY_TP ? tpSize() : -slSize();
                   return [pnlvar];
                 });
-                
-                console.log('creating equity chart')
 
                 const pnlsum = () => {
                   let sum = 0;
