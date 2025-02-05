@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="../assets/reusables.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
   <link rel="icon" href="https://ui-avatars.com/api/?name=H&rounded=true&background=000000&color=ffffff" type="image/png">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="../assets/reusables.js"></script>
   <script>document.addEventListener('DOMContentLoaded', function() { document.title = `HYTEK - ${document.getElementsByTagName("h1")[0].innerText}` });</script>
@@ -621,7 +622,8 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
 
     csvRefresh.addEventListener('click', () => {
       const file = document.getElementById('csvFileInput').files[0];
-      if (file) {
+      handleFileAndInitGraph(file);
+      /*if (file) {
         const reader = new FileReader();
         reader.readAsText(file);
         reader.onload = function (e) {
@@ -632,7 +634,7 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
           initSciChart(content);
         }
         document.getElementById('result-panel-toolbar-content-toggler-algo').click();
-      }
+      }*/
     });
 
     /* ---- */
@@ -690,11 +692,39 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
       return new Date(ct).getTime() / 1000; // - 3600 * 2; // divided by 1000 to convert from milliseconds to seconds as Unix time only accepts seconds, while JS Date is more precise as working with milliseconds.
     };
 
+    const csvData = [];
+    const handleFileAndInitGraph = (file) => {
+      if (file) {
+        Papa.parse(file, {
+          header: true,
+          dynamicTyping: true,
+          worker: true,
+          step: function (results, parser) {
+            // Process each row here
+            const row = results.data;
+            csvData.push(row);
+            // You can add logic to process the row and update the chart incrementally
+          },
+          complete: function (results) {
+            // All rows are processed
+            //const content = csvData;
+            document.getElementById('csvContent').value = JSON.stringify(csvData, null, 2);
+            initSciChart(csvData);
+          },
+          error: function (error) {
+            console.error('Error parsing CSV:', error);
+          }
+        });
+        document.getElementById('result-panel-toolbar-content-toggler-algo').click();
+      }
+    };
+
     document
       .getElementById('csvFileInput')
       .addEventListener('change', function loadcsv (event) {
         const file = event.target.files[0];
-        if (file) {
+        handleFileAndInitGraph(file);
+        /*if (file) {
           const reader = new FileReader();
           reader.onload = function (e) {
             const content = e.target.result;
@@ -712,7 +742,7 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
           document.getElementById('result-panel-toolbar-content-toggler-algo').click();
         } else {
           // alert('No file selected');
-        }
+        }*/
       });
 
     // Define the initSciChart function
@@ -863,9 +893,9 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
             // Extract OHLC data from the response
 
             // Parse CSV content
-            const rows = data.trim().split('\r\n'); // Split by lines
-            const header = rows[0].split('\t'); // Extract headers
-            const rdata = rows.slice(1).map((row) => row.split('\t')); // Split rows into fields
+            //const rows = data;// data.trim().split('\r\n'); // Split by lines
+            // const header = rows[0].split('\t'); // Extract headers
+            const rdata = data;// rows.slice(1).map((row) => row.split('\t')); // Split rows into fields
             const rdataLast = rdata[rdata.length - 1];
             const tradingSessionStart = '10:00:00';
             const tradingSessionEnd = '11:00:00';
@@ -886,15 +916,14 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
                   close: parseFloat(row[4])
                 }
               */
-
               /* MT5 exported CSV format: */
-              if (inTradingSessionRange(`${row[1]}`)) { // Optimizing the data to only show the trading session (Performance)
+              if (inTradingSessionRange(`${row["<TIME>"]}`)) { // Optimizing the data to only show the trading session (Performance)
                 ohlcData.push({
-                  time: `${row[0]} ${row[1]}`,
-                  open: parseFloat(row[2]),
-                  high: parseFloat(row[3]),
-                  low: parseFloat(row[4]),
-                  close: parseFloat(row[5]),
+                  time: `${row["<DATE>"]} ${row["<TIME>"]}`,
+                  open: parseFloat(row["<OPEN>"]),
+                  high: parseFloat(row["<HIGH>"]),
+                  low: parseFloat(row["<LOW>"]),
+                  close: parseFloat(row["<CLOSE>"]),
                 });
               }
             });
