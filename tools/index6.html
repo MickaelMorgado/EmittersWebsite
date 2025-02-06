@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="../assets/reusables.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
   <link rel="icon" href="https://ui-avatars.com/api/?name=H&rounded=true&background=000000&color=ffffff" type="image/png">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="../assets/reusables.js"></script>
   <script>document.addEventListener('DOMContentLoaded', function() { document.title = `HYTEK - ${document.getElementsByTagName("h1")[0].innerText}` });</script>
@@ -621,6 +622,8 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
 
     csvRefresh.addEventListener('click', () => {
       const file = document.getElementById('csvFileInput').files[0];
+      handleFileAndInitGraph(file);
+      /*
       if (file) {
         const reader = new FileReader();
         reader.readAsText(file);
@@ -633,6 +636,7 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
         }
         document.getElementById('result-panel-toolbar-content-toggler-algo').click();
       }
+      */
     });
 
     /* ---- */
@@ -690,10 +694,44 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
       return new Date(ct).getTime() / 1000; // - 3600 * 2; // divided by 1000 to convert from milliseconds to seconds as Unix time only accepts seconds, while JS Date is more precise as working with milliseconds.
     };
 
+    initSciChart();
+
+    const csvData = [];
+    const handleFileAndInitGraph = (file) => {
+      const chunkSize = 1000;
+      let chunkIndex = 0;
+      if (file) {
+        Papa.parse(file, {
+          header: true,
+          dynamicTyping: true,
+          worker: true,
+          step: function (results, parser) {
+            // Process each row here
+            const row = results.data;
+            //csvData.push(row);
+            appendDataToChart(results.data);
+            // You can add logic to process the row and update the chart incrementally
+          },
+          complete: function (results) {
+            // All rows are processed
+            //const content = csvData;
+            //document.getElementById('csvContent').value = JSON.stringify(csvData, null, 2);
+            //initSciChart(csvData);
+          },
+          error: function (error) {
+            console.error('Error parsing CSV:', error);
+          }
+        });
+        document.getElementById('result-panel-toolbar-content-toggler-algo').click();
+      }
+    };
+
     document
       .getElementById('csvFileInput')
       .addEventListener('change', function loadcsv (event) {
         const file = event.target.files[0];
+        handleFileAndInitGraph(file);
+        /*
         if (file) {
           const reader = new FileReader();
           reader.onload = function (e) {
@@ -713,6 +751,7 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
         } else {
           // alert('No file selected');
         }
+        */
       });
 
     // Define the initSciChart function
@@ -862,11 +901,27 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
             const growBy = new NumberRange(0.1, 0.1);
             // Extract OHLC data from the response
 
-            // Parse CSV content
-            const rows = data.trim().split('\r\n'); // Split by lines
-            const header = rows[0].split('\t'); // Extract headers
-            const rdata = rows.slice(1).map((row) => row.split('\t')); // Split rows into fields
+            const rdata = [
+              ['2021.06.29', '00:00:00', 1.23456, 1.23456, 1.23456, 1.23456],
+              ['2021.06.29', '00:01:00', 1.23456, 1.23456, 1.23456, 1.23456],
+              ['2021.06.29', '00:02:00', 1.23456, 1.23456, 1.23456, 1.23456],
+              ['2021.06.29', '00:03:00', 1.23456, 1.23456, 1.23456, 1.23456],
+              ['2021.06.29', '00:04:00', 1.23456, 1.23456, 1.23456, 1.23456],
+              ['2021.06.29', '00:05:00', 1.23456, 1.23456, 1.23456, 1.23456],
+              ['2021.06.29', '00:06:00', 1.23456, 1.23456, 1.23456, 1.23456],
+              ['2021.06.29', '00:07:00', 1.23456, 1.23456, 1.23456, 1.23456],
+              ['2021.06.29', '00:08:00', 1.23456, 1.23456, 1.23456, 1.23456],
+              ['2021.06.29', '00:09:00', 1.23456, 1.23456, 1.23456, 1.23456],
+              ['2021.06.29', '00:10:00', 1.23456, 1.23456, 1.23456, 1.23456],
+              ['2021.06.29', '00:11:00', 1.23456, 1.23456, 1.23456, 1.23456],
+            ];
 
+            // Parse CSV content
+            const rows = null; //data.trim().split('\r\n'); // Split by lines
+            //const header = rows[0].split('\t'); // Extract headers
+            //const rdata = rows.slice(1).map((row) => row.split('\t')); // Split rows into fields
+
+            
             const ohlcData = rdata.map((row) => {
               /*https://developers.binance.com/docs/binance-spot-api-docs/rest-api#klinecandlestick-data*/
               /*
@@ -888,6 +943,7 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
                 close: parseFloat(row[5]),
               };
             });
+            
 
             let canTakeATrade = true;
             let inRange = false;
@@ -1508,7 +1564,7 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
                   );
                 }
 
-                onCandleDrawn(candle, index);
+                //onCandleDrawn(candle, index);
 
                 // Add annotations for MSS:
                 /*
@@ -1570,10 +1626,30 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
             sciChartSurface.xAxes.add(xAxis);
             sciChartSurface.yAxes.add(yAxis);
 
+
+            const ohlcData2 = rdata.map((row) => {
+              return {
+                time: `${row[0]} ${row[1]}`,
+                open: parseFloat(row[2]),
+                high: parseFloat(row[3]),
+                low: parseFloat(row[4]),
+                close: parseFloat(row[5]),
+              };
+            });
+
+
+            const testOfOhlcDataSerie = new OhlcDataSeries(wasmContext, {
+              xValues: ohlcData2.map((candle) => convertMT5DateToUnix(candle.time)),
+              openValues: ohlcData2.map((candle) => candle.open),
+              highValues: ohlcData2.map((candle) => candle.high),
+              lowValues: ohlcData2.map((candle) => candle.low),
+              closeValues: ohlcData2.map((candle) => candle.close),
+            });
+
             // Create an OHLC series
             sciChartSurface.renderableSeries.add(
               new FastCandlestickRenderableSeries(wasmContext, {
-                dataSeries: ohlcDataSeries,
+                dataSeries: testOfOhlcDataSerie, // ohlcDataSeries,
                 strokeThickness: 1,
                 /*
                   effect: new GlowEffect(wasmContext, {
@@ -1959,6 +2035,12 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
           console.error('Error initializing SciChart:', error);
         });
     }
+
+    const appendDataToChart = () => {
+      // SciChartSurface.append()
+    }
+
+    appendDataToChart()
 
     // Add some interaction modifiers to show zooming and panning
     // sciChartSurface.chartModifiers.add(new MouseWheelZoomModifier(), new ZoomPanModifier(), new ZoomExtentsModifier());
