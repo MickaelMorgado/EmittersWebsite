@@ -1730,12 +1730,8 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
             new MouseWheelZoomModifier(),
             new ZoomPanModifier(),
             new ZoomExtentsModifier(),
-            new YAxisDragModifier({
-              dragMode: EDragMode.Scaling,
-            }),
-            new XAxisDragModifier({
-              dragMode: EDragMode.Scaling,
-            })
+            new YAxisDragModifier({ dragMode: EDragMode.Scaling }),
+            new XAxisDragModifier({ dragMode: EDragMode.Scaling })
           );
 
           
