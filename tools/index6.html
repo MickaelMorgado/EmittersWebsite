@@ -2021,7 +2021,6 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
     }
 
     const appendDataToChart = (d) => {
-      console.log('Appending data to chart:', d);
       //$csvDataField.value += JSON.stringify(d);
       addNewCandleToChart([
         convertMT5DateToUnix(`${d["<DATE>"]} ${d["<TIME>"]}`),
