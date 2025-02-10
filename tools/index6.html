@@ -689,6 +689,7 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
     initSciChart();
 
     const csvData = [];
+    let csvDataIndex = 0;
     const handleFileAndInitGraph = (file) => {
       if (file) {
         clearAndDeleteChart();
@@ -699,7 +700,8 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
           //worker: true,
           step: function (results, parser) {
             const row = results.data;
-            appendDataToChart(results.data);
+            csvDataIndex += 1;
+            appendDataToChart(results.data, csvDataIndex);
           },
           complete: function (results, file) {
             //console.log("Parsing complete:", results, file);
@@ -854,6 +856,71 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
             return Math.ceil(num * factor) / factor; // Ceil and then divide
           }
 
+          // AddActionOnChart: ========================================
+            // Function to create annotations or take actions on the chart, based on UI selected options:
+            const AddActionOnChart = (candle, EnumActionType, tradeDirection = EnumDirection.BULL) => {
+              const candlePosition = convertMT5DateToUnix(candle[0]);
+              switch (EnumActionType) {
+                case 'VERTICAL_LINE':
+                  sciChartSurface.annotations.add(
+                    new VerticalLineAnnotation({
+                      x1: candlePosition,
+                      stroke: `#${bullishColor}`,
+                      strokeThickness: 1,
+                    })
+                  );
+                  break;
+                case 'DRAW_A_CIRCLE':
+                  sciChartSurface.annotations.add(
+                    new CustomAnnotation({
+                      x1: candlePosition,
+                      y1: candle.close,
+                      verticalAnchorPoint: EVerticalAnchorPoint.Center,
+                      horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
+                      svgString: signalAnnotation.svgString.circle,
+                    })
+                  );
+                  break;
+                case 'TAKE_A_TRADE':
+                  const orderOptionsBasedDirection = (tradeDirection) => {
+                    if (tradeDirection == EnumDirection.BULL) {
+                      return {
+                        sl: candle.close - slSize(),
+                        tp: candle.close + tpSize(),
+                        direction: EnumDirection.BULL,
+                      };
+                    } else {
+                      return {
+                        sl: candle.close + slSize(),
+                        tp: candle.close - tpSize(),
+                        direction: EnumDirection.BEAR,
+                      };
+                    }
+                  };
+                  // Add order to history:
+                  ordersHistory.push({
+                    id: index,
+                    time: candle[0],
+                    price: candle.close,
+                    orderStatus: EnumOrderStatus.PENDING,
+                    ...orderOptionsBasedDirection(tradeDirection),
+                  });
+
+                  // Add annotation from entry:
+                  sciChartSurface.annotations.add(
+                    new CustomAnnotation({
+                      x1: candlePosition,
+                      y1: candle.close,
+                      verticalAnchorPoint: EVerticalAnchorPoint.Center,
+                      horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
+                      svgString: signalAnnotation.svgString.buy,
+                    })
+                  );
+                  break;
+              }
+            }
+          // End of AddActionOnChart ========================================
+
           let numbDays = 0;
           const growBy = new NumberRange(0.1, 0.1);
           // Extract OHLC data from the response
@@ -878,7 +945,6 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
           //const header = rows[0].split('\t'); // Extract headers
           //const rdata = rows.slice(1).map((row) => row.split('\t')); // Split rows into fields
 
-          
           const ohlcData = rdata.map((row) => {
             /*https://developers.binance.com/docs/binance-spot-api-docs/rest-api#klinecandlestick-data*/
             /*
@@ -922,14 +988,17 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
           const onCandleDrawn = (candle, index) => {
             const algoEditorTextareaMain0 = document.getElementById('algoEditorTextareaMain0');
             const algoEditorTextareaMain1 = document.getElementById('algoEditorTextareaMain1');
-            const hourMinutes = () => candle.time.split(' ')[1].slice(0, 5);
+            const hourMinutes = () => candle[0].split(' ')[1].slice(0, 5);
             let arrayOfSignals = [];
-            const candlePosition = convertMT5DateToUnix(candle.time);
+            const candlePosition = convertMT5DateToUnix(candle[0]);
             const prevCandle = ohlcData[index - 1];
             const nextCandle = ohlcData[index + 1];
 
+            candle[0] === "2025.01.10 21:10:00" && AddActionOnChart(candle, EnumActionType.VERTICAL_LINE);
+
             // TP/SL Calculation: ========================================
               // Check for tp/sl hit:
+              /*
               ordersHistory.forEach((order) => {
                 switch (order.direction) {
                   case EnumDirection.BULL:
@@ -937,7 +1006,7 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
 
                       order.closed = true;
                       order.closedPrice = order.tp;
-                      order.closedTime = candle.time;
+                      order.closedTime = candle[0];
                       order.orderStatus = EnumOrderStatus.CLOSED_BY_TP,
 
                       sciChartSurface.annotations.add(
@@ -965,7 +1034,7 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
 
                       order.closed = true;
                       order.closedPrice = order.sl;
-                      order.closedTime = candle.time;
+                      order.closedTime = candle[0];
                       order.orderStatus = EnumOrderStatus.CLOSED_BY_SL,
 
                       sciChartSurface.annotations.add(
@@ -995,7 +1064,7 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
 
                       order.closed = true;
                       order.closedPrice = order.tp;
-                      order.closedTime = candle.time;
+                      order.closedTime = candle[0];
                       order.orderStatus = EnumOrderStatus.CLOSED_BY_TP,
 
                       sciChartSurface.annotations.add(
@@ -1023,7 +1092,7 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
 
                       order.closed = true;
                       order.closedPrice = order.sl;
-                      order.closedTime = candle.time;
+                      order.closedTime = candle[0];
                       order.orderStatus = EnumOrderStatus.CLOSED_BY_SL,
 
                       sciChartSurface.annotations.add(
@@ -1050,6 +1119,7 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
                     break;
                 }
               });
+              */
             // End of TP/SL Calculation ========================================
 
             // FVG Related: ========================================
@@ -1066,6 +1136,7 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
               });
 
               // A FVG signal:
+              /*
               const fvgExtent = 8;
               let isBullishFVG = false;
               let isBearishFVG = false;
@@ -1088,7 +1159,7 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
 
                 fvgHistory.push({
                   id: index,
-                  time: candle.time,
+                  time: candle[0],
                   initialPrice: initialPrice,
                   gapFinalPrice: gapFinalPrice,
                   middlePrice: middlePrice,
@@ -1107,75 +1178,13 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
                     strokeThickness: 1,
                     opacity: 0.3,
                   })
-                );*/
+                );
               }
+              */
             // End of FVG Related ========================================
-
-            // AddActionOnChart: ========================================
-              // Function to create annotations or take actions on the chart, based on UI selected options:
-              const AddActionOnChart = (EnumActionType, tradeDirection = EnumDirection.BULL) => {
-                switch (EnumActionType) {
-                  case 'VERTICAL_LINE':
-                    sciChartSurface.annotations.add(
-                      new VerticalLineAnnotation({
-                        x1: candlePosition,
-                        stroke: `#${bullishColor}`,
-                        strokeThickness: 1,
-                      })
-                    );
-                    break;
-                  case 'DRAW_A_CIRCLE':
-                    sciChartSurface.annotations.add(
-                      new CustomAnnotation({
-                        x1: candlePosition,
-                        y1: candle.close,
-                        verticalAnchorPoint: EVerticalAnchorPoint.Center,
-                        horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
-                        svgString: signalAnnotation.svgString.circle,
-                      })
-                    );
-                    break;
-                  case 'TAKE_A_TRADE':
-                    const orderOptionsBasedDirection = (tradeDirection) => {
-                      if (tradeDirection == EnumDirection.BULL) {
-                        return {
-                          sl: candle.close - slSize(),
-                          tp: candle.close + tpSize(),
-                          direction: EnumDirection.BULL,
-                        };
-                      } else {
-                        return {
-                          sl: candle.close + slSize(),
-                          tp: candle.close - tpSize(),
-                          direction: EnumDirection.BEAR,
-                        };
-                      }
-                    };
-                    // Add order to history:
-                    ordersHistory.push({
-                      id: index,
-                      time: candle.time,
-                      price: candle.close,
-                      orderStatus: EnumOrderStatus.PENDING,
-                      ...orderOptionsBasedDirection(tradeDirection),
-                    });
-
-                    // Add annotation from entry:
-                    sciChartSurface.annotations.add(
-                      new CustomAnnotation({
-                        x1: candlePosition,
-                        y1: candle.close,
-                        verticalAnchorPoint: EVerticalAnchorPoint.Center,
-                        horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
-                        svgString: signalAnnotation.svgString.buy,
-                      })
-                    );
-                    break;
-                }
-              }
-            // End of AddActionOnChart ========================================
             
             // MSS Line Logic: ========================================
+              /*
               function calculateRollingHighLow(ohlcData, lookbackPeriod) {
                 const highPrices = ohlcData.map(data => data.close); // data.high
                 const lowPrices = ohlcData.map(data => data.close); // data.low
@@ -1193,7 +1202,7 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
               const signalCooldown = 4;
               const lookbackPeriod = 8;
               const slopeThreshold = 0.5;
-              const times = ohlcData.map(data => convertMT5DateToUnix(data.time));
+              const times = ohlcData.map(data => convertMT5DateToUnix(data[0]));
               const { rollingHighestHigh, rollingLowestLow } = calculateRollingHighLow(ohlcData, lookbackPeriod);
               let mssDetected = false;
               let newSignalAvailable = false;
@@ -1267,6 +1276,7 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
               */
 
               // Create data series for rolling highest high and lowest low
+              /*
               rollingHighestHighDataSeries = new XyDataSeries(wasmContext, {
                 xValues: times.slice(lookbackPeriod - 1),
                 yValues: rollingHighestHigh,
@@ -1275,9 +1285,10 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
                 xValues: times.slice(lookbackPeriod - 1),
                 yValues: rollingLowestLow,
               });
+              */
             // End of MSS Line Logic ========================================
 
-            eval(algoEditorTextareaMain0.value);
+            //eval(algoEditorTextareaMain0.value);
 
             /*
               const SignalCondition1 = () => {
@@ -1325,7 +1336,7 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
 
             if (SignalSwingHighLow()) {
               swingHighLowHistory.push({
-                time: candle.time,
+                time: candle[0],
                 maxReachedPrice: isSwingHigh ? candle.high : candle.low, // Represents the highest/lowest price that was reached.
                 type: isSwingHigh ? 'HIGH' : 'LOW', // Represents the type of the swing (HIGH or LOW) its the position and NOT the candle direction.
               });
@@ -1341,7 +1352,7 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
               );*/
             }
 
-            eval(algoEditorTextareaMain1.value);
+            //eval(algoEditorTextareaMain1.value);
 
             if (index == ohlcData.length - 1) {
               
@@ -1469,12 +1480,13 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
           $navigateTroughtDates.innerHTML = "";
 
           // Deprecated - Create an OHLC data series
+          /*
           const old_ohlcDataSeries = new OhlcDataSeries(wasmContext, {
             xValues: ohlcData.map((candle, index) => {
               
               onData(candle);
 
-              let candleDateTime = candle.time; // excepted format: "1970.01.01 00:00:00"
+              let candleDateTime = candle[0]; // excepted format: "1970.01.01 00:00:00"
               let unixTime = convertMT5DateToUnix(candleDateTime); // format: 1624982400 for 2021-06-29 00:00:00
 
               let candleTime = candleDateTime.split(' ')[1]; // get the time from the date string (00:00:00)
@@ -1548,7 +1560,7 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
                 };
 
                 indicateCandle(candle, ohlcData, index);
-              */
+              
 
               return unixTime; // - 3600 * 2; // broker time offset compensation (2 hours)
             }),
@@ -1557,6 +1569,7 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
             lowValues: ohlcData.map((candle) => candle.low),
             closeValues: ohlcData.map((candle) => candle.close),
           });
+          */
 
           // Cursor labels:
           const xAxis = new DateTimeNumericAxis(wasmContext, { growBy });
@@ -1595,9 +1608,11 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
             */
           })
           sciChartSurface.renderableSeries.add(FCRS);
-          const addNewCandleToChart = (ohlcDataRow) => {            
+          const addNewCandleToChart = (ohlcDataRow, dataIndex) => {     
+            onCandleDrawn(ohlcDataRow, dataIndex);
+
             ohlcDataSeries.append(
-              ohlcDataRow[0],
+              convertMT5DateToUnix(ohlcDataRow[0]),
               ohlcDataRow[1],
               ohlcDataRow[2],
               ohlcDataRow[3],
@@ -1955,15 +1970,15 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
         });
     }
 
-    const appendDataToChart = (d) => {
+    const appendDataToChart = (d, dataIndex) => {
       //$csvDataField.value += JSON.stringify(d);
       addNewCandleToChart([
-        convertMT5DateToUnix(`${d["<DATE>"]} ${d["<TIME>"]}`),
+        `${d["<DATE>"]} ${d["<TIME>"]}`,
         d["<OPEN>"],
         d["<HIGH>"],
         d["<LOW>"],
         d["<CLOSE>"],
-      ]);
+      ], dataIndex);
     }
   </script>
 </body>
