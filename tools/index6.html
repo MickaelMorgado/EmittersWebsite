@@ -1657,6 +1657,7 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
           const clearAndDeleteChart = () => {
             if (ohlcDataSeries) {
               ohlcDataSeries.clear();
+              sciChartSurface.annotations.clear();
             }
           };
           window.clearAndDeleteChart = clearAndDeleteChart;
