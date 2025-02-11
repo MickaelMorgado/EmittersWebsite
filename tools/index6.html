@@ -856,6 +856,14 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
             return Math.ceil(num * factor) / factor; // Ceil and then divide
           }
 
+          // Function to update Y-axis range dynamically
+          function updateYAxisRange() {
+            const yMin = 1.02; // ohlcDataSeries.getNativeYMin();
+            const yMax = 1.04; // ohlcDataSeries.getNativeYMax();
+
+            sciChartSurface.yAxes.get(0).visibleRange = new NumberRange(yMin, yMax);
+          }
+
           // AddActionOnChart: ========================================
             // Function to create annotations or take actions on the chart, based on UI selected options:
             const AddActionOnChart = (candle, EnumActionType, tradeDirection = EnumDirection.BULL) => {
@@ -1609,7 +1617,7 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
           };
           const yAxis = new NumericAxis(wasmContext, {
             labelPrecision: decimals,
-            autoRange: EAutoRange.Always,
+            autoRange: EAutoRange.Once,
             growBy,
           });
 
@@ -1717,11 +1725,14 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
                 const xAxis = sciChartSurface.xAxes.get(0);
                 const yAxis = sciChartSurface.yAxes.get(0);
 
+                // Graph Zooming:
                 xAxis.visibleRange = new NumberRange(
                   rangeMinDate,
                   rangeMaxDate
                 );
+
                 // yAxis.visibleRange = new NumberRange(1.07, 1.084);
+                updateYAxisRange();
                 // sciChartSurface.zoomExtents();
               });
           // End of Navigate Trought Dates ========================================
