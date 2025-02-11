@@ -978,6 +978,9 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
           const minDate = new Date(ohlcData[0].time);
           const maxDate = new Date(ohlcData[ohlcData.length - 1].time);
           const offsetCandleDateTimeStamp = (candleDateTimeStamp) => candleDateTimeStamp; // - 3600 * 1; // !! offseting candle position in X axis by -1h to match tradingView (The correct way would be to offset the axis labels, but dont know how to do it yet)
+          
+          // Clear the select element:
+          $navigateTroughtDates.innerHTML = "";
 
           // First function to be executed as soon as the data is loaded, you can do anything you want here:
           const onData = (ohlcData) => {
@@ -1319,38 +1322,40 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
               }
             */
 
-            let isSwingHigh = false;
-            let isSwingLow = false;
+            // Swing High/Low Logic: ========================================
+              let isSwingHigh = false;
+              let isSwingLow = false;
 
-            const SignalSwingHighLow = () => {
-              if (index < 4 || index > ohlcData.length - 3) return false;
-              const prevCandle = ohlcData[index - 1];
-              const prevCandle2 = ohlcData[index - 2];
-              const nextCandle = ohlcData[index + 1];
-              const nextCandle2 = ohlcData[index + 2];
-              isSwingHigh = prevCandle.high <= candle.high && nextCandle.high <= candle.high && nextCandle2.high <= nextCandle.high && prevCandle.high <= candle.high && getCandleDirection(candle) == 'BEAR'; // && getCandleDirection(prevCandle) == 'BULL' && getCandleDirection(nextCandle) == 'BEAR'; // red
-              isSwingLow = prevCandle.low >= candle.low && nextCandle.low >= candle.low && nextCandle2.low >= nextCandle.low && prevCandle.low >= candle.low && getCandleDirection(candle) == 'BULL'; // && getCandleDirection(prevCandle) == 'BEAR' && getCandleDirection(nextCandle) == 'BULL'; // green
+              const SignalSwingHighLow = () => {
+                if (index < 4 || index > ohlcData.length - 3) return false;
+                const prevCandle = ohlcData[index - 1];
+                const prevCandle2 = ohlcData[index - 2];
+                const nextCandle = ohlcData[index + 1];
+                const nextCandle2 = ohlcData[index + 2];
+                isSwingHigh = prevCandle[2] <= candle[2] && nextCandle[2] <= candle[2] && nextCandle2[2] <= nextCandle[2] && prevCandle[2] <= candle[2] && getCandleDirection(candle) == 'BEAR'; // && getCandleDirection(prevCandle) == 'BULL' && getCandleDirection(nextCandle) == 'BEAR'; // red
+                isSwingLow = prevCandle[3] >= candle[3] && nextCandle[3] >= candle[3] && nextCandle2[3] >= nextCandle[3] && prevCandle[3] >= candle[3] && getCandleDirection(candle) == 'BULL'; // && getCandleDirection(prevCandle) == 'BEAR' && getCandleDirection(nextCandle) == 'BULL'; // green
 
-              return isSwingLow || isSwingHigh;
-            }
+                return isSwingLow || isSwingHigh;
+              }
 
-            if (SignalSwingHighLow()) {
-              swingHighLowHistory.push({
-                time: candle[0],
-                maxReachedPrice: isSwingHigh ? candle.high : candle.low, // Represents the highest/lowest price that was reached.
-                type: isSwingHigh ? 'HIGH' : 'LOW', // Represents the type of the swing (HIGH or LOW) its the position and NOT the candle direction.
-              });
+              if (SignalSwingHighLow()) {
+                swingHighLowHistory.push({
+                  time: candle[0],
+                  maxReachedPrice: isSwingHigh ? candle[2] : candle[3], // Represents the highest/lowest price that was reached.
+                  type: isSwingHigh ? 'HIGH' : 'LOW', // Represents the type of the swing (HIGH or LOW) its the position and NOT the candle direction.
+                });
 
-              /*sciChartSurface.annotations.add(
-                new CustomAnnotation({
-                  x1: candlePosition,
-                  y1: isSwingHigh ? candle.high : candle.low,
-                  verticalAnchorPoint: EVerticalAnchorPoint.Center,
-                  horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
-                  svgString: isSwingHigh ? signalAnnotation.svgString.bearish : signalAnnotation.svgString.bullish,
-                })
-              );*/
-            }
+                sciChartSurface.annotations.add(
+                  new CustomAnnotation({
+                    x1: candlePosition,
+                    y1: isSwingHigh ? candle[2] : candle[3],
+                    verticalAnchorPoint: EVerticalAnchorPoint.Center,
+                    horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
+                    svgString: isSwingHigh ? signalAnnotation.svgString.bearish : signalAnnotation.svgString.bullish,
+                  })
+                );
+              }
+            // End of Swing High/Low Logic: ========================================
 
             //eval(algoEditorTextareaMain1.value);
 
@@ -1471,13 +1476,41 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
                 `;
               // End of Profitability Chart ========================================
             }
+
+            // Backtesting dates ====================================
+              let candleDateTime = candle[0]; // excepted format: "1970.01.01 00:00:00"
+              let unixTime = convertMT5DateToUnix(candleDateTime); // format: 1624982400 for 2021-06-29 00:00:00
+              let candleTime = candleDateTime.split(' ')[1]; // get the time from the date string (00:00:00)
+              let backTestTime = getCandleChartAxisLocationFromDate(candleDateTime); // + 3600; // Actually the same as above (candleDateTimeStamp)
+
+              var selectedTime = document.getElementById('backtesting-hour').value;
+
+              if (candleTime == selectedTime) {
+                numbDays = numbDays + 1;
+                let btt = backTestTime; // * 1000;
+                let formatedDate = formatDateFromUnix(btt);
+
+                // Display Backtesting dates on the select element:
+                $navigateTroughtDates.innerHTML += `<option value="${unixTime}">${candleDateTime}</option>`;
+
+                // Backtesting line annotation:
+                sciChartSurface.annotations.add(
+                  new VerticalLineAnnotation({
+                    stroke: '#999',
+                    axisLabelFill: '#999',
+                    strokeThickness: 1,
+                    x1: unixTime,
+                    showLabel: true,
+                    labelPlacement: ELabelPlacement.TopLeft,
+                    labelValue: `${candleDateTime}`,
+                  })
+                );
+              }
+            // End of Backtesting dates ====================================
           }
 
           // console.log('Swing HighLow:', swingHighLowHistory);
           // console.log('FVG History:', fvgHistory);
-
-          // Clear the select element:
-          $navigateTroughtDates.innerHTML = "";
 
           // Deprecated - Create an OHLC data series
           /*
