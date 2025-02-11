@@ -978,9 +978,6 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
           const minDate = new Date(ohlcData[0].time);
           const maxDate = new Date(ohlcData[ohlcData.length - 1].time);
           const offsetCandleDateTimeStamp = (candleDateTimeStamp) => candleDateTimeStamp; // - 3600 * 1; // !! offseting candle position in X axis by -1h to match tradingView (The correct way would be to offset the axis labels, but dont know how to do it yet)
-          
-          // Clear the select element:
-          $navigateTroughtDates.innerHTML = "";
 
           // First function to be executed as soon as the data is loaded, you can do anything you want here:
           const onData = (ohlcData) => {
@@ -1655,6 +1652,9 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
           window.addNewCandleToChart = addNewCandleToChart;
 
           const clearAndDeleteChart = () => {
+            // Clear the select element:
+            $navigateTroughtDates.innerHTML = "";
+
             if (ohlcDataSeries) {
               ohlcDataSeries.clear();
               sciChartSurface.annotations.clear();
@@ -1709,9 +1709,7 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
           );
 
           // Navigate Trought Dates: ========================================
-            document
-              .getElementById('NavigateTroughtDates')
-              .addEventListener('change', function (event) {
+            $navigateTroughtDates.addEventListener('change', function (event) {
                 const getCandleNumberByDay = (days) => 86400 * days; // Get the number of candles in a day (candle count for a entire day)
                 const selectedDate = event.target.value;
                 const rangeMinDate = parseInt(selectedDate) - 1800 // + half an hour
