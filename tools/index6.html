@@ -830,7 +830,7 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
           window.sciChartSurface = sciChartSurface;
 
           // Cursor labels:
-          const growBy = new NumberRange(0.1, 0.1);
+          const growBy = new NumberRange(0.2, 0.2);
           const xAxis = new DateTimeNumericAxis(wasmContext, { growBy });
           xAxis.labelProvider.formatCursorLabel = (dataValue) => {
             const unixDateStamp = Math.floor(dataValue); // Flooring it to remove milliseconds from that cursor data, as it is too much precise // - 3600;
@@ -838,7 +838,7 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
           };
           const yAxis = new NumericAxis(wasmContext, {
             labelPrecision: decimals,
-            autoRange: EAutoRange.Always,
+            autoRange: EAutoRange.Once,
             // visibleRangeLimit: new NumberRange(1.02, 1.03),
             growBy,
           });
