@@ -631,6 +631,8 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
     /* ---- */
 
     const decimals = 5;
+    let candlesFromBuffer = [];
+    const MAX_BUFFER_SIZE = 10;
     let slSize = () => parseFloat(document.getElementById('SLPoints').value);
     let tpSize = () => parseFloat(document.getElementById('TPPoints').value);
     let lotSize = () => parseFloat(document.getElementById('LotSize').value);
@@ -949,8 +951,8 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
           // End of AddActionOnChart ========================================
 
           let numbDays = 0;
-          // Extract OHLC data from the response
 
+          // For testing purposes:
           const rdata = [
             ['2021.06.29', '00:00:00', 1.23456, 1.23456, 1.23456, 1.23456],
             ['2021.06.29', '00:01:00', 1.23456, 1.23456, 1.23456, 1.23456],
@@ -967,7 +969,7 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
           ];
 
           // Parse CSV content
-          const rows = null; //data.trim().split('\r\n'); // Split by lines
+          //const rows = null; //data.trim().split('\r\n'); // Split by lines
           //const header = rows[0].split('\t'); // Extract headers
           //const rdata = rows.slice(1).map((row) => row.split('\t')); // Split rows into fields
 
@@ -1011,7 +1013,7 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
           }
 
           // Second function to be executed after the candle is drawn, you can add annotations here:
-          const onCandleDrawn = (candle, index) => {
+          const onCandleDrawn = (candle, index, candlesFromBuffer) => {
             const algoEditorTextareaMain0 = document.getElementById('algoEditorTextareaMain0');
             const algoEditorTextareaMain1 = document.getElementById('algoEditorTextareaMain1');
             const hourMinutes = () => candle[0].split(' ')[1].slice(0, 5);
@@ -1314,7 +1316,7 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
               */
             // End of MSS Line Logic ========================================
 
-            //eval(algoEditorTextareaMain0.value);
+            eval(algoEditorTextareaMain0.value);
 
             /*
               const SignalCondition1 = () => {
@@ -1350,14 +1352,17 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
               let isSwingLow = false;
 
               const SignalSwingHighLow = () => {
-                if (index < 4 || index > ohlcData.length - 3) return false;
-                const prevCandle = ohlcData[index - 1];
-                const prevCandle2 = ohlcData[index - 2];
-                const nextCandle = ohlcData[index + 1];
-                const nextCandle2 = ohlcData[index + 2];
+                if (index < 4 /*|| index > candlesFromBuffer.length - 3*/) return false;
+                
+                const penultimateCandleIndexFromBuffer = candlesFromBuffer.length - 1; // delay indicator by 1 candle to get nextCandle 2 candles ahead
+
+                const prevCandle = candlesFromBuffer[penultimateCandleIndexFromBuffer - 2];
+                const prevCandle2 = candlesFromBuffer[penultimateCandleIndexFromBuffer - 3];
+                const nextCandle = candlesFromBuffer[penultimateCandleIndexFromBuffer - 1];
+                const nextCandle2 = candlesFromBuffer[penultimateCandleIndexFromBuffer];
                 isSwingHigh = prevCandle[2] <= candle[2] && nextCandle[2] <= candle[2] && nextCandle2[2] <= nextCandle[2] && prevCandle[2] <= candle[2] && getCandleDirection(candle) == 'BEAR'; // && getCandleDirection(prevCandle) == 'BULL' && getCandleDirection(nextCandle) == 'BEAR'; // red
                 isSwingLow = prevCandle[3] >= candle[3] && nextCandle[3] >= candle[3] && nextCandle2[3] >= nextCandle[3] && prevCandle[3] >= candle[3] && getCandleDirection(candle) == 'BULL'; // && getCandleDirection(prevCandle) == 'BEAR' && getCandleDirection(nextCandle) == 'BULL'; // green
-
+                
                 return isSwingLow || isSwingHigh;
               }
 
@@ -1380,7 +1385,7 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
               }
             // End of Swing High/Low Logic: ========================================
 
-            //eval(algoEditorTextareaMain1.value);
+            eval(algoEditorTextareaMain1.value);
 
             if (index == ohlcData.length - 1) {
               
@@ -1649,8 +1654,14 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
             */
           })
           sciChartSurface.renderableSeries.add(FCRS);
-          const addNewCandleToChart = (ohlcDataRow, dataIndex) => {     
-            onCandleDrawn(ohlcDataRow, dataIndex);
+          
+          const addNewCandleToChart = (ohlcDataRow, dataIndex) => {
+            if (candlesFromBuffer.length >= MAX_BUFFER_SIZE) {
+              candlesFromBuffer.shift(); // Remove the oldest element if the buffer is full to save memory
+            }
+            candlesFromBuffer.push(ohlcDataRow);
+
+            onCandleDrawn(ohlcDataRow, dataIndex, candlesFromBuffer);
 
             ohlcDataSeries.append(
               convertMT5DateToUnix(ohlcDataRow[0]),
