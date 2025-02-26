@@ -1353,16 +1353,15 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
 
               const SignalSwingHighLow = () => {
                 if (index < 4 /*|| index > candlesFromBuffer.length - 3*/) return false;
-                
-                const penultimateCandleIndexFromBuffer = candlesFromBuffer.length - 1; // delay indicator by 1 candle to get nextCandle 2 candles ahead
+                const penultimateCandleIndexFromBuffer = candlesFromBuffer.length - 2; // delay indicator by 1 candle to get nextCandle 2 candles ahead
 
-                const prevCandle = candlesFromBuffer[penultimateCandleIndexFromBuffer - 2];
-                const prevCandle2 = candlesFromBuffer[penultimateCandleIndexFromBuffer - 3];
-                const nextCandle = candlesFromBuffer[penultimateCandleIndexFromBuffer - 1];
-                const nextCandle2 = candlesFromBuffer[penultimateCandleIndexFromBuffer];
-                isSwingHigh = prevCandle[2] <= candle[2] && nextCandle[2] <= candle[2] && nextCandle2[2] <= nextCandle[2] && prevCandle[2] <= candle[2] && getCandleDirection(candle) == 'BEAR'; // && getCandleDirection(prevCandle) == 'BULL' && getCandleDirection(nextCandle) == 'BEAR'; // red
-                isSwingLow = prevCandle[3] >= candle[3] && nextCandle[3] >= candle[3] && nextCandle2[3] >= nextCandle[3] && prevCandle[3] >= candle[3] && getCandleDirection(candle) == 'BULL'; // && getCandleDirection(prevCandle) == 'BEAR' && getCandleDirection(nextCandle) == 'BULL'; // green
-                
+                const prevCandle = candlesFromBuffer[penultimateCandleIndexFromBuffer - 1];
+                const prevCandle2 = candlesFromBuffer[penultimateCandleIndexFromBuffer - 2];
+                const nextCandle = candlesFromBuffer[penultimateCandleIndexFromBuffer];
+                const nextCandle2 = candlesFromBuffer[penultimateCandleIndexFromBuffer + 1];
+                isSwingLow = prevCandle[2] >= nextCandle[2] // && nextCandle[2] >= nextCandle[2] && nextCandle2[2] >= nextCandle[2] && prevCandle[2] >= nextCandle[2] && getCandleDirection(candle) == 'BULL'; // && getCandleDirection(prevCandle) == 'BEAR' && getCandleDirection(nextCandle) == 'BULL'; // green
+                isSwingHigh = prevCandle[3] <= nextCandle[3] // && getCandleDirection(candle) == 'BEAR'; // && getCandleDirection(prevCandle) == 'BULL' && getCandleDirection(nextCandle) == 'BEAR'; // red
+                debugger; // TODO: problem with candle and NextCandle they are the same, not sure that it what I want here
                 return isSwingLow || isSwingHigh;
               }
 
