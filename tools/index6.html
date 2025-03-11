@@ -653,6 +653,13 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
       DRAW_A_CIRCLE: 'DRAW_A_CIRCLE',
       TAKE_A_TRADE: 'TAKE_A_TRADE',
     };
+    const EnumOHLC = {
+      TIME: 0,
+      OPEN: 1,
+      HIGH: 2,
+      LOW: 3,
+      CLOSE: 4,
+    };
 
     const getCandleDirection = (candle) => {
       return candle[4] > candle[1] ? EnumDirection.BULL : EnumDirection.BEAR;
@@ -1352,33 +1359,36 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
               let isSwingLow = false;
 
               // Get 4 candles for swing analysis:
-              const penultimateCandleIndexFromBuffer = candlesFromBuffer.length - 2; // delay indicator by 1 candle to get nextCandle 2 candles ahead
-
-              const swhlPrevCandle = candlesFromBuffer[penultimateCandleIndexFromBuffer - 1];
-              const swhlPrevCandle2 = candlesFromBuffer[penultimateCandleIndexFromBuffer - 2];
-              const swhlNextCandle = candlesFromBuffer[penultimateCandleIndexFromBuffer];
-              const swhlNextCandle2 = candlesFromBuffer[penultimateCandleIndexFromBuffer + 1];
+              const candleBufferForAnalisis = candlesFromBuffer.slice(-4);
+              const selectedIndexForSelectedCandleForAnalisis = candlesFromBuffer.length - 2;
+              
+              const swhlPrevCandle2 = candlesFromBuffer[selectedIndexForSelectedCandleForAnalisis - 2];
+              const swhlPrevCandle = candlesFromBuffer[selectedIndexForSelectedCandleForAnalisis - 1];
+              const selectedCandleForAnalisis = candlesFromBuffer[selectedIndexForSelectedCandleForAnalisis]; // selected candle for analysis is the 2nd last candle from the buffer, because the last candle is the current candle and we will analize the next candle
+              const swhlNextCandle = candlesFromBuffer[selectedIndexForSelectedCandleForAnalisis + 1];
 
               const SignalSwingHighLow = () => {
                 if (index < 4 /*|| index > candlesFromBuffer.length - 3*/) return false;
-                isSwingLow = swhlNextCandle[3] >= swhlPrevCandle[3] && swhlPrevCandle2[4] > swhlPrevCandle[3] && getCandleDirection(swhlNextCandle) == 'BULL'; // && swhlPrevCandle[2] >= swhlNextCandle[2]
-                isSwingHigh = swhlNextCandle[2] <= swhlPrevCandle[2] && swhlPrevCandle2[1] < swhlPrevCandle[2] && getCandleDirection(swhlNextCandle) == 'BEAR';
+
+                // For swing high, current candle high is less than or equal to the previous candle high and the previous candle high is greater than the previous candle open:
+                isSwingHigh = selectedCandleForAnalisis[EnumOHLC.HIGH] <= swhlPrevCandle[EnumOHLC.HIGH] && swhlPrevCandle2[EnumOHLC.OPEN] < swhlPrevCandle[EnumOHLC.OPEN] && selectedCandleForAnalisis[EnumOHLC.HIGH] >= swhlNextCandle[EnumOHLC.HIGH] && getCandleDirection(selectedCandleForAnalisis) == 'BEAR';
+                // For swing low, current candle low is greater than or equal to the previous candle low and the previous candle low is less than the previous candle close:
+                isSwingLow = selectedCandleForAnalisis[EnumOHLC.LOW] >= swhlPrevCandle[EnumOHLC.LOW] && swhlPrevCandle2[EnumOHLC.CLOSE] > swhlPrevCandle[EnumOHLC.CLOSE] && selectedCandleForAnalisis[EnumOHLC.LOW] <= swhlNextCandle[EnumOHLC.LOW] && getCandleDirection(selectedCandleForAnalisis) == 'BULL';
+                
                 return isSwingLow || isSwingHigh;
               }
 
               if (SignalSwingHighLow()) {
                 swingHighLowHistory.push({
                   time: swhlPrevCandle[0],
-                  maxReachedPrice: isSwingHigh ? swhlNextCandle[2] : swhlNextCandle[3], // Represents the highest/lowest price that was reached.
+                  maxReachedPrice: isSwingHigh ? selectedCandleForAnalisis[EnumOHLC.HIGH] : selectedCandleForAnalisis[EnumOHLC.LOW], // Represents the highest/lowest price that was reached.
                   type: isSwingHigh ? 'HIGH' : 'LOW', // Represents the type of the swing (HIGH or LOW) its the position and NOT the candle direction.
                 });
 
-                const swhlCandlePosition = convertMT5DateToUnix(swhlNextCandle[0]);
-
                 sciChartSurface.annotations.add(
                   new CustomAnnotation({
-                    x1: swhlCandlePosition,
-                    y1: isSwingHigh ? swhlNextCandle[2] : swhlNextCandle[3],
+                    x1: convertMT5DateToUnix(selectedCandleForAnalisis[EnumOHLC.TIME]),
+                    y1: isSwingHigh ? selectedCandleForAnalisis[EnumOHLC.HIGH] : selectedCandleForAnalisis[EnumOHLC.LOW],
                     verticalAnchorPoint: EVerticalAnchorPoint.Center,
                     horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
                     svgString: isSwingHigh ? signalAnnotation.svgString.bearish : signalAnnotation.svgString.bullish,
