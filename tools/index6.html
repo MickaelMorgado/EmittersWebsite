@@ -453,10 +453,11 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
         // Limit to one trade per trading window
         if (!arrayOfSignals[1]) {
           arrayOfSignals[1] = true;
-          /*AddActionOnChart(
+          AddActionOnChart(
+            candlesFromBuffer[selectedIndexForSelectedCandleForAnalisis],
             EnumActionType.TAKE_A_TRADE,
             tradeDirection,
-          );*/
+          );
         }
       } else {
         arrayOfSignals[0] = false; // Reset signal if conditions are not met
@@ -895,7 +896,7 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
           // AddActionOnChart: ========================================
             // Function to create annotations or take actions on the chart, based on UI selected options:
             const AddActionOnChart = (candle, EnumActionType, tradeDirection = EnumDirection.BULL) => {
-              const candlePosition = convertMT5DateToUnix(candle[0]);
+              const candlePosition = convertMT5DateToUnix(candle[EnumOHLC.TIME]);
               switch (EnumActionType) {
                 case 'VERTICAL_LINE':
                   sciChartSurface.annotations.add(
@@ -935,8 +936,8 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
                   };
                   // Add order to history:
                   ordersHistory.push({
-                    id: index,
-                    time: candle[0],
+                    id: ordersHistory.length + 1,
+                    time: candle[EnumOHLC.TIME],
                     price: candle.close,
                     orderStatus: EnumOrderStatus.PENDING,
                     ...orderOptionsBasedDirection(tradeDirection),
@@ -946,7 +947,7 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
                   sciChartSurface.annotations.add(
                     new CustomAnnotation({
                       x1: candlePosition,
-                      y1: candle.close,
+                      y1: candle[EnumOHLC.CLOSE],
                       verticalAnchorPoint: EVerticalAnchorPoint.Center,
                       horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
                       svgString: signalAnnotation.svgString.buy,
@@ -1359,7 +1360,7 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
               let isSwingLow = false;
 
               // Get 4 candles for swing analysis:
-              const candleBufferForAnalisis = candlesFromBuffer.slice(-4);
+              // let candleBufferForAnalisis = candlesFromBuffer.slice(-4);
               const selectedIndexForSelectedCandleForAnalisis = candlesFromBuffer.length - 2;
               
               const swhlPrevCandle2 = candlesFromBuffer[selectedIndexForSelectedCandleForAnalisis - 2];
