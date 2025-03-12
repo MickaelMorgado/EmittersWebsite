@@ -725,6 +725,7 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
             //const content = csvData;
             //document.getElementById('csvContent').value = JSON.stringify(csvData, null, 2);
             //initSciChart(csvData);
+            profitabilityCalculation();
           },
           error: function (error) {
             console.error('Error parsing CSV:', error);
@@ -1408,125 +1409,8 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
 
             eval(algoEditorTextareaMain1.value);
 
-            if (index == ohlcData.length - 1) {
-              const profitsInPoints = ordersHistory.reduce((acc, order) => {
-                if (order.orderStatus == EnumOrderStatus.CLOSED_BY_TP) { return acc + tpSize(); }
-                if (order.orderStatus == EnumOrderStatus.CLOSED_BY_SL) { return acc - slSize(); }
-                return acc;
-              }, 0);
-
-              console.log('Orders History:', ordersHistory);
-              const winRate = ordersHistory.length > 0 ? (ordersHistory.filter((order) => order.orderStatus == EnumOrderStatus.CLOSED_BY_TP).length / ordersHistory.length * 100).toFixed(2) : 0;
-              const moneyEquivalent = ((profitsInPoints * (lotSize() * 10)) * 10000).toFixed(2);
-              const result = `Check console for orders history\n\nTrade Taken: ${ordersHistory.length} (in ${numbDays} days)\nWin Rate: ${winRate}% \n\nProfits: \n Money: ${moneyEquivalent}$\n Points: ${profitsInPoints.toFixed(5)} \n Pips: ${(profitsInPoints / 0.00010).toFixed(2)} \n Ticks: ${(profitsInPoints / 0.01).toFixed(2)}`;
-              document.getElementById('backtestingResult').value = result;
-    
-              // Profitability Chart: ========================================
-                let myChart = document.getElementById('myChart');
-                var ctx = myChart.getContext('2d');
-                var datasets = [];
-                var values = ordersHistory.map((order) => {
-                  const pnlvar = order.orderStatus == EnumOrderStatus.CLOSED_BY_TP ? tpSize() : -slSize();
-                  return [pnlvar];
-                });
-
-                const pnlsum = () => {
-                  let sum = 0;
-                  return values.map((value) => {
-                    var a = (sum += parseFloat(value));
-                    return a;
-                  });
-                };
-
-                // Check if there is an existing chart instance and destroy it:
-                if (typeof myChart !== 'undefined' && myChart !== null) {
-                  myChart.remove();
-                  const newCanvas = document.createElement('canvas');
-                  newCanvas.id = 'myChart';
-                  newCanvas.width = 700;
-                  newCanvas.height = 300;
-                  document.getElementById('myChartContainer').appendChild(newCanvas);
-                  myChart = document.getElementById('myChart');
-                  ctx = myChart.getContext('2d');
-                  //myChart.destroy();
-                }
-
-                gradient = ctx.createLinearGradient(0, 25, 0, 300);
-                gradient.addColorStop(0, `#${bullishColor}${RRToolStyles.opacity}`);
-                gradient.addColorStop(1, `#${bearishColor}${RRToolStyles.opacity}`);
-
-                datasets.push({
-                  type: 'line',
-                  label: 'Equity',
-                  data: pnlsum(),
-                  borderColor: `#${bullishColor}`,
-                  backgroundColor: gradient,
-                  borderWidth: 1,
-                  order: 0,
-                  fill: true,
-                });
-                
-                const profitabilityChartOptions = {
-                  //animation,
-                  responsive: false,
-                  elements: {
-                    point: {
-                      radius: 1,
-                    },
-                  },
-                  scales: {
-                    y: {
-                      beginAtZero: false,
-                    },
-                  },
-                };
-
-                myChart = new Chart(ctx, {
-                  type: 'line',
-                  data: {
-                    labels: values,	
-                    datasets: datasets,
-                  },
-                  options: profitabilityChartOptions,
-                });
-                
-                document.getElementById('backtestingResultOrderHistory').innerHTML = `
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>ID</th>
-                        <th>Time</th>
-                        <th>Price</th>
-                        <th>SL</th>
-                        <th>TP</th>
-                        <th>Direction</th>
-                        <th>Order Status</th>
-                        <th>Closed Price</th>
-                        <th>Closed Time</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      ${ordersHistory.map(order => `
-                        <tr>
-                          <td>${order.id}</td>
-                          <td>${order.time}</td>
-                          <td>${order.price.toFixed(5)}</td>
-                          <td>${order.sl.toFixed(5)}</td>
-                          <td>${order.tp.toFixed(5)}</td>
-                          <td>${order.direction}</td>
-                          <td>${order.orderStatus}</td>
-                          <td>${order.closedPrice || ''}</td>
-                          <td>${order.closedTime || ''}</td>
-                        </tr>
-                      `).join('')}
-                    </tbody>
-                  </table>
-                `;
-              // End of Profitability Chart ========================================
-            }
-
             // Backtesting dates ====================================
-              let candleDateTime = candle[0]; // excepted format: "1970.01.01 00:00:00"
+              let candleDateTime = candle[EnumOHLC.TIME]; // excepted format: "1970.01.01 00:00:00"
               let unixTime = convertMT5DateToUnix(candleDateTime); // format: 1624982400 for 2021-06-29 00:00:00
               let candleTime = candleDateTime.split(' ')[1]; // get the time from the date string (00:00:00)
               let backTestTime = getCandleChartAxisLocationFromDate(candleDateTime); // + 3600; // Actually the same as above (candleDateTimeStamp)
@@ -1556,6 +1440,124 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
               }
             // End of Backtesting dates ====================================
           }
+
+          const profitabilityCalculation = () => {
+            const profitsInPoints = ordersHistory.reduce((acc, order) => {
+              if (order.orderStatus == EnumOrderStatus.CLOSED_BY_TP) { return acc + tpSize(); }
+              if (order.orderStatus == EnumOrderStatus.CLOSED_BY_SL) { return acc - slSize(); }
+              return acc;
+            }, 0);
+
+            console.log('Orders History:', ordersHistory);
+            const winRate = ordersHistory.length > 0 ? (ordersHistory.filter((order) => order.orderStatus == EnumOrderStatus.CLOSED_BY_TP).length / ordersHistory.length * 100).toFixed(2) : 0;
+            const moneyEquivalent = ((profitsInPoints * (lotSize() * 10)) * 10000).toFixed(2);
+            const result = `Check console for orders history\n\nTrade Taken: ${ordersHistory.length} (in ${numbDays} days)\nWin Rate: ${winRate}% \n\nProfits: \n Money: ${moneyEquivalent}$\n Points: ${profitsInPoints.toFixed(5)} \n Pips: ${(profitsInPoints / 0.00010).toFixed(2)} \n Ticks: ${(profitsInPoints / 0.01).toFixed(2)}`;
+            document.getElementById('backtestingResult').value = result;
+  
+            // Profitability Chart: ========================================
+              let myChart = document.getElementById('myChart');
+              var ctx = myChart.getContext('2d');
+              var datasets = [];
+              var values = ordersHistory.map((order) => {
+                const pnlvar = order.orderStatus == EnumOrderStatus.CLOSED_BY_TP ? tpSize() : -slSize();
+                return [pnlvar];
+              });
+
+              const pnlsum = () => {
+                let sum = 0;
+                return values.map((value) => {
+                  var a = (sum += parseFloat(value));
+                  return a;
+                });
+              };
+
+              // Check if there is an existing chart instance and destroy it:
+              if (typeof myChart !== 'undefined' && myChart !== null) {
+                myChart.remove();
+                const newCanvas = document.createElement('canvas');
+                newCanvas.id = 'myChart';
+                newCanvas.width = 700;
+                newCanvas.height = 300;
+                document.getElementById('myChartContainer').appendChild(newCanvas);
+                myChart = document.getElementById('myChart');
+                ctx = myChart.getContext('2d');
+                //myChart.destroy();
+              }
+
+              gradient = ctx.createLinearGradient(0, 25, 0, 300);
+              gradient.addColorStop(0, `#${bullishColor}${RRToolStyles.opacity}`);
+              gradient.addColorStop(1, `#${bearishColor}${RRToolStyles.opacity}`);
+
+              datasets.push({
+                type: 'line',
+                label: 'Equity',
+                data: pnlsum(),
+                borderColor: `#${bullishColor}`,
+                backgroundColor: gradient,
+                borderWidth: 1,
+                order: 0,
+                fill: true,
+              });
+              
+              const profitabilityChartOptions = {
+                //animation,
+                responsive: false,
+                elements: {
+                  point: {
+                    radius: 1,
+                  },
+                },
+                scales: {
+                  y: {
+                    beginAtZero: false,
+                  },
+                },
+              };
+
+              myChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                  labels: values,	
+                  datasets: datasets,
+                },
+                options: profitabilityChartOptions,
+              });
+              
+              document.getElementById('backtestingResultOrderHistory').innerHTML = `
+                <table>
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Time</th>
+                      <th>Price</th>
+                      <th>SL</th>
+                      <th>TP</th>
+                      <th>Direction</th>
+                      <th>Order Status</th>
+                      <th>Closed Price</th>
+                      <th>Closed Time</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${ordersHistory.map(order => `
+                      <tr>
+                        <td>${order.id}</td>
+                        <td>${order.time}</td>
+                        <td>${order.price.toFixed(5)}</td>
+                        <td>${order.sl.toFixed(5)}</td>
+                        <td>${order.tp.toFixed(5)}</td>
+                        <td>${order.direction}</td>
+                        <td>${order.orderStatus}</td>
+                        <td>${order.closedPrice || ''}</td>
+                        <td>${order.closedTime || ''}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              `;
+            // End of Profitability Chart ========================================
+          }
+          window.profitabilityCalculation = profitabilityCalculation;
 
           // console.log('Swing HighLow:', swingHighLowHistory);
           // console.log('FVG History:', fvgHistory);
