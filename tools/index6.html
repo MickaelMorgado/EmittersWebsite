@@ -700,6 +700,7 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
 
     const csvData = [];
     let csvDataIndex = 0;
+    const applyTimeout = false;
     const handleFileAndInitGraph = (file) => {
       if (file) {
         clearAndDeleteChart();
@@ -708,11 +709,17 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
           header: true,
           dynamicTyping: true,
           //worker: true,
-          step: function (results, parser) {
-            const row = results.data;
-            csvDataIndex += 1;
-            appendDataToChart(results.data, csvDataIndex);
-          },
+            step: function (results, parser) {
+              const row = results.data;
+              csvDataIndex += 1;
+              if (applyTimeout) {
+                setTimeout(() => {
+                appendDataToChart(results.data, csvDataIndex);
+                }, csvDataIndex * 1000); // Adjust the delay as needed (1000ms per step)
+              } else {
+                appendDataToChart(results.data, csvDataIndex);
+              }
+            },
           complete: function (results, file) {
             //console.log("Parsing complete:", results, file);
             //const content = csvData;
@@ -858,6 +865,10 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
 
           console.log("scichart yaxis started");
 
+          // Variables initialization:
+          let annotations = [];
+          let ordersHistory = [];
+
           // Create an XAxis and YAxis with growBy padding
           // sciChartSurface.xAxes.add(new NumericAxis(wasmContext, { axisTitle: "Time", growBy }));
           // sciChartSurface.yAxes.add(new NumericAxis(wasmContext, { axisTitle: "Price", growBy }));
@@ -911,7 +922,7 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
                   sciChartSurface.annotations.add(
                     new CustomAnnotation({
                       x1: candlePosition,
-                      y1: candle.close,
+                      y1: candle[EnumOHLC.CLOSE],
                       verticalAnchorPoint: EVerticalAnchorPoint.Center,
                       horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
                       svgString: signalAnnotation.svgString.circle,
@@ -922,14 +933,14 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
                   const orderOptionsBasedDirection = (tradeDirection) => {
                     if (tradeDirection == EnumDirection.BULL) {
                       return {
-                        sl: candle.close - slSize(),
-                        tp: candle.close + tpSize(),
+                        sl: candle[EnumOHLC.CLOSE] - slSize(),
+                        tp: candle[EnumOHLC.CLOSE] + tpSize(),
                         direction: EnumDirection.BULL,
                       };
                     } else {
                       return {
-                        sl: candle.close + slSize(),
-                        tp: candle.close - tpSize(),
+                        sl: candle[EnumOHLC.CLOSE] + slSize(),
+                        tp: candle[EnumOHLC.CLOSE] - tpSize(),
                         direction: EnumDirection.BEAR,
                       };
                     }
@@ -938,10 +949,12 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
                   ordersHistory.push({
                     id: ordersHistory.length + 1,
                     time: candle[EnumOHLC.TIME],
-                    price: candle.close,
+                    price: candle[EnumOHLC.CLOSE],
                     orderStatus: EnumOrderStatus.PENDING,
                     ...orderOptionsBasedDirection(tradeDirection),
                   });
+
+                  window.ordersHistory = ordersHistory;
 
                   // Add annotation from entry:
                   sciChartSurface.annotations.add(
@@ -957,7 +970,6 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
               }
             }
           // End of AddActionOnChart ========================================
-
           let numbDays = 0;
 
           // For testing purposes:
@@ -1005,8 +1017,6 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
           
           let canTakeATrade = true;
           let inRange = false;
-          let annotations = [];
-          let ordersHistory = [];
           let swingHighLowHistory = [];
           let fvgHistory = [];
           let rollingHighestHighDataSeries = null;
@@ -1032,17 +1042,16 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
 
             // candle[0] === "2025.01.10 21:10:00" && AddActionOnChart(candle, EnumActionType.VERTICAL_LINE);
 
-            // TP/SL Calculation: ========================================
+            // TP/SL Validation: ========================================
               // Check for tp/sl hit:
-              /*
               ordersHistory.forEach((order) => {
                 switch (order.direction) {
                   case EnumDirection.BULL:
-                    if (candle.high >= order.tp && !order.closed) {
+                    if (candle[EnumOHLC.HIGH] >= order.tp && !order.closed) {
 
                       order.closed = true;
                       order.closedPrice = order.tp;
-                      order.closedTime = candle[0];
+                      order.closedTime = candle[EnumOHLC.TIME];
                       order.orderStatus = EnumOrderStatus.CLOSED_BY_TP,
 
                       sciChartSurface.annotations.add(
@@ -1066,11 +1075,11 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
                         })
                       );
                     }
-                    if (candle.low <= order.sl && !order.closed) {
+                    if (candle[EnumOHLC.LOW] <= order.sl && !order.closed) {
 
                       order.closed = true;
                       order.closedPrice = order.sl;
-                      order.closedTime = candle[0];
+                      order.closedTime = candle[EnumOHLC.TIME];
                       order.orderStatus = EnumOrderStatus.CLOSED_BY_SL,
 
                       sciChartSurface.annotations.add(
@@ -1096,11 +1105,11 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
                     }
                     break;
                   case EnumDirection.BEAR:
-                    if (candle.low <= order.tp && !order.closed) {
+                    if (candle[EnumOHLC.LOW] <= order.tp && !order.closed) {
 
                       order.closed = true;
                       order.closedPrice = order.tp;
-                      order.closedTime = candle[0];
+                      order.closedTime = candle[EnumOHLC.TIME];
                       order.orderStatus = EnumOrderStatus.CLOSED_BY_TP,
 
                       sciChartSurface.annotations.add(
@@ -1124,11 +1133,11 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
                         })
                       );
                     }
-                    if (candle.high >= order.sl && !order.closed) {
+                    if (candle[EnumOHLC.HIGH] >= order.sl && !order.closed) {
 
                       order.closed = true;
                       order.closedPrice = order.sl;
-                      order.closedTime = candle[0];
+                      order.closedTime = candle[EnumOHLC.TIME];
                       order.orderStatus = EnumOrderStatus.CLOSED_BY_SL,
 
                       sciChartSurface.annotations.add(
@@ -1155,8 +1164,7 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
                     break;
                 }
               });
-              */
-            // End of TP/SL Calculation ========================================
+            // End of TP/SL Validation ========================================
 
             // FVG Related: ========================================
               // Check for FVG tested:
@@ -1401,7 +1409,6 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
             eval(algoEditorTextareaMain1.value);
 
             if (index == ohlcData.length - 1) {
-              
               const profitsInPoints = ordersHistory.reduce((acc, order) => {
                 if (order.orderStatus == EnumOrderStatus.CLOSED_BY_TP) { return acc + tpSize(); }
                 if (order.orderStatus == EnumOrderStatus.CLOSED_BY_SL) { return acc - slSize(); }
