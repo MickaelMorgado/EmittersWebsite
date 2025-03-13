@@ -197,6 +197,58 @@
       background-size: 100%;
       background-repeat: no-repeat;
     }
+
+    .loading-element {
+      position: absolute;
+      top: 0;
+      background: rgba(0, 0, 0, 0.7);
+      border-radius: 10px;
+      padding: 20px 20px 20px 60px;
+      z-index: 1;
+      opacity: 0;
+      transition: opacity 1s ease;
+      color: red;
+    }
+
+    .loading-element.visible {
+      opacity: 1;
+    }
+
+    .loading-element .spinner {
+      position: absolute;
+      top: 0;
+      left: 10px;
+      border: 1px solid rgba(255, 0, 0, 1);
+      box-shadow: 0 0 10px red;
+      border-left-color: black;
+      border-radius: 50%;
+      width: 10px;
+      height: 10px;
+      animation: scaletrans .6s ease-out infinite alternate;
+      transform: scale(1);
+      margin: 20px;
+    }
+
+    @keyframes scaletrans {
+      0% {
+      transform: scale(1) rotate(0deg);
+      }
+
+      100% {
+      transform: scale(2) rotate(590deg);
+      }
+    }
+
+    @-webkit-keyframes scaletrans {
+      0% {
+      transform: scale(1) rotate(0deg);
+      }
+
+      100% {
+      transform: scale(2) rotate(590deg);
+      }
+    }
+    }
   </style>
 </head>
 
@@ -353,6 +405,10 @@
   </div>
   <div id="hidder"></div>
   <div class="chart-section">
+    <div id="loading-element" class="loading-element">
+      <span class="spinner"></span>
+      Backtesting is loading ...
+    </div>
     <div id="scichart-root"></div>
     <div id="result-panel" class="result-panel">
       <div class="result-panel-toolbar">
@@ -698,12 +754,28 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
 
     initSciChart();
 
+    const applyTimeout = false; // TODO: Currenlty not working as expected, need to fix it
+    
     const csvData = [];
     let csvDataIndex = 0;
-    const applyTimeout = false;
+    let numbDays = 0;
+    let ordersHistory = [];
+    window.ordersHistory = ordersHistory;
+
     const handleFileAndInitGraph = (file) => {
       if (file) {
         clearAndDeleteChart();
+
+        // Clear orders history
+        ordersHistory = [];
+        numbDays = 0;
+
+        // Reset portfolio graph and order history display
+        document.getElementById('backtestingResult').value = '';
+        document.getElementById('backtestingResultOrderHistory').innerHTML = '';
+
+        // add visible class to loading element
+        document.getElementById('loading-element').classList.add('visible');
         
         Papa.parse(file, {
           header: true,
@@ -726,6 +798,8 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
             //document.getElementById('csvContent').value = JSON.stringify(csvData, null, 2);
             //initSciChart(csvData);
             profitabilityCalculation();
+            // remove visible class to loading element
+            document.getElementById('loading-element').classList.remove('visible');
           },
           error: function (error) {
             console.error('Error parsing CSV:', error);
@@ -868,7 +942,6 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
 
           // Variables initialization:
           let annotations = [];
-          let ordersHistory = [];
 
           // Create an XAxis and YAxis with growBy padding
           // sciChartSurface.xAxes.add(new NumericAxis(wasmContext, { axisTitle: "Time", growBy }));
@@ -971,7 +1044,6 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
               }
             }
           // End of AddActionOnChart ========================================
-          let numbDays = 0;
 
           // For testing purposes:
           const rdata = [
@@ -1399,7 +1471,7 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
                   new CustomAnnotation({
                     x1: convertMT5DateToUnix(selectedCandleForAnalisis[EnumOHLC.TIME]),
                     y1: isSwingHigh ? selectedCandleForAnalisis[EnumOHLC.HIGH] : selectedCandleForAnalisis[EnumOHLC.LOW],
-                    verticalAnchorPoint: EVerticalAnchorPoint.Center,
+                    verticalAnchorPoint: isSwingHigh ? EVerticalAnchorPoint.Bottom : EVerticalAnchorPoint.Top,
                     horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
                     svgString: isSwingHigh ? signalAnnotation.svgString.bearish : signalAnnotation.svgString.bullish,
                   })
