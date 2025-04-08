@@ -85,6 +85,7 @@ const chatGPTRequest = async (message) => {
     const data = await response.json();
     const reply = data.choices[0].message.content;
     appendMessage(reply, 'bot');
+    return `${reply}`;
   } catch (error) {
     appendMessage('Error: Unable to fetch response.', 'bot');
     console.error(error);

@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="../assets/reusables.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
   <link rel="icon" href="https://ui-avatars.com/api/?name=H&rounded=true&background=000000&color=ffffff" type="image/png">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="../assets/reusables.js"></script>
   <script>document.addEventListener('DOMContentLoaded', function() { document.title = `HYTEK - ${document.getElementsByTagName("h1")[0].innerText}` });</script>
@@ -88,7 +89,7 @@
 
     /* When the result panel is active: */
     .result-panel.active {
-      height: 400px;
+      height: 500px;
     }
 
     .active .result-panel-toolbar-toggler {
@@ -195,6 +196,58 @@
       background-image: url('../assets/images/icons/chatGPT.png');
       background-size: 100%;
       background-repeat: no-repeat;
+    }
+
+    .loading-element {
+      position: absolute;
+      top: 0;
+      background: rgba(0, 0, 0, 0.7);
+      border-radius: 10px;
+      padding: 20px 20px 20px 60px;
+      z-index: 1;
+      opacity: 0;
+      transition: opacity 1s ease;
+      color: red;
+    }
+
+    .loading-element.visible {
+      opacity: 1;
+    }
+
+    .loading-element .spinner {
+      position: absolute;
+      top: 0;
+      left: 10px;
+      border: 1px solid rgba(255, 0, 0, 1);
+      box-shadow: 0 0 10px red;
+      border-left-color: black;
+      border-radius: 50%;
+      width: 10px;
+      height: 10px;
+      animation: scaletrans .6s ease-out infinite alternate;
+      transform: scale(1);
+      margin: 20px;
+    }
+
+    @keyframes scaletrans {
+      0% {
+      transform: scale(1) rotate(0deg);
+      }
+
+      100% {
+      transform: scale(2) rotate(590deg);
+      }
+    }
+
+    @-webkit-keyframes scaletrans {
+      0% {
+      transform: scale(1) rotate(0deg);
+      }
+
+      100% {
+      transform: scale(2) rotate(590deg);
+      }
+    }
     }
   </style>
 </head>
@@ -352,6 +405,10 @@
   </div>
   <div id="hidder"></div>
   <div class="chart-section">
+    <div id="loading-element" class="loading-element">
+      <span class="spinner"></span>
+      Backtesting is loading ...
+    </div>
     <div id="scichart-root"></div>
     <div id="result-panel" class="result-panel">
       <div class="result-panel-toolbar">
@@ -425,9 +482,11 @@ arrayOfSignals.push(false);
         <div class="h-flex">
           <textarea name="signal-condition-1-code" id="algoEditorTextareaMain1" width="100%" rows="10" style="width: 100%; white-space: nowrap;">
 const currentTime = hourMinutes();
+const time1 = '10:10'
+const time2 = '10:45'
 
 // Check if the current time is within the trading window
-if (currentTime >= '10:10' && currentTime <= '10:45') {
+if (currentTime >= time1 && currentTime <= time2) {
   arrayOfSignals[0] = true;
   
   // Ensure SignalSwingHighLow runs and updates the swingHighLowHistory
@@ -453,6 +512,7 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
         if (!arrayOfSignals[1]) {
           arrayOfSignals[1] = true;
           AddActionOnChart(
+            candlesFromBuffer[selectedIndexForSelectedCandleForAnalisis],
             EnumActionType.TAKE_A_TRADE,
             tradeDirection,
           );
@@ -464,10 +524,10 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
   }
   
   // Add an additional time-based signal for the end of the trading window
-  if (currentTime === '10:10') {
+  if (currentTime === time1) {
     AddActionOnChart(EnumActionType.VERTICAL_LINE);
   }
-  if (currentTime === '10:45') {
+  if (currentTime === time2) {
     AddActionOnChart(EnumActionType.VERTICAL_LINE);
   }
 } else {
@@ -475,6 +535,7 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
   arrayOfSignals[0] = false;
   arrayOfSignals[1] = false;
 }
+          
           </textarea>
         </div>
         <div>
@@ -519,7 +580,7 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
             <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
               <div class="accordion-body">
                 <label for="signal-condition-1-code">Make sure to return a boolean value (that's what makes the signal to take trade), You can set a debugger / pause execution near SignalCondition2() function to see how it works and debug all variables:</label>
-                <textarea name="signal-condition-1-code" id="algoEditorTextarea" width="100%" rows="10">hourMinutes() == '08:10';</textarea>
+                <textarea name="signal-condition-1-code" id="algoEditorTextarea" width="100%" rows="10">hourMinutes() == '10:10';</textarea>
                 <label for="signal-condition-1-annotation">Signal Display Type (Signal representation on chart after valid condition from above returned code):</label>
                 <select name="signal-condition-1-annotation" id="signalCondition1Annotation">
                   <option value="vertical-line">Vertical Line</option>
@@ -538,7 +599,7 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
             <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#accordionExample">
               <div class="accordion-body">
                 <label for="signal-condition-2-code">Make sure to return a boolean value (that's what makes the signal to take trade), You can set a debugger / pause execution near SignalCondition2() function to see how it works and debug all variables:</label>
-                <textarea name="signal-condition-2-code" id="algoEditorTextarea2" width="100%" rows="10">hourMinutes() == '08:45' && hourMinutes() >= '08:10'; // TODO: replace 'true' buy previous returned result</textarea>
+                <textarea name="signal-condition-2-code" id="algoEditorTextarea2" width="100%" rows="10">hourMinutes() == '10:45' && hourMinutes() >= '10:10'; // TODO: replace 'true' buy previous returned result</textarea>
                 <label for="signal-condition-2-annotation">Signal Display Type (Signal representation on chart after valid condition from above returned code):</label>
                 <select name="signal-condition-2-annotation" id="signalCondition2Annotation">
                   <option value="vertical-line">Vertical Line</option>
@@ -557,7 +618,7 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
             <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#accordionExample">
               <div class="accordion-body">
                 <label for="signal-condition-3-code">Make sure to return a boolean value (that's what makes the signal to take trade), You can set a debugger / pause execution near SignalCondition2() function to see how it works and debug all variables:</label>
-                <textarea name="signal-condition-3-code" id="algoEditorTextarea3" width="100%" rows="10">hourMinutes() == '08:45' && SignalCondition2(); // TODO: replace 'true' buy previous returned result</textarea>
+                <textarea name="signal-condition-3-code" id="algoEditorTextarea3" width="100%" rows="10">hourMinutes() == '10:45' && SignalCondition2(); // TODO: replace 'true' buy previous returned result</textarea>
                 <label for="signal-condition-3-annotation">Signal Display Type (Signal representation on chart after valid condition from above returned code):</label>
                 <select name="signal-condition-3-annotation" id="signalCondition3Annotation">
                   <option value="vertical-line">Vertical Line</option>
@@ -600,8 +661,11 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
   <script>
     // Result Panel Related Actions / Triggers:
     const resultPanel = document.querySelector('#result-panel');
-    const csvRefresh = document.querySelector('#csvRefresh');
+    const $csvRefresh = document.querySelector('#csvRefresh');
+    const $csvDataField = document.getElementById('csvContent');
+    const $csvFileInput = document.getElementById('csvFileInput');
     const toolbarToggler = document.querySelector('#result-panel-toolbar-toggler');
+    const $navigateTroughtDates = document.getElementById('NavigateTroughtDates');
     function toggleHeight() {
       resultPanel.classList.toggle('active');
     }
@@ -619,28 +683,22 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
       document.querySelectorAll('.result-panel-content')[1].classList.remove('h-hide');
     });
 
-    csvRefresh.addEventListener('click', () => {
-      const file = document.getElementById('csvFileInput').files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.readAsText(file);
-        reader.onload = function (e) {
-          const content = e.target.result;
-
-          document.getElementById('csvContent').value = content;
-
-          initSciChart(content);
-        }
-        document.getElementById('result-panel-toolbar-content-toggler-algo').click();
-      }
+    $csvRefresh.addEventListener('click', () => {
+      const file = $csvFileInput.files[0];
+      handleFileAndInitGraph(file);
     });
 
     /* ---- */
 
     const decimals = 5;
+    let candlesFromBuffer = [];
+    const MAX_BUFFER_SIZE = 10;
     let slSize = () => parseFloat(document.getElementById('SLPoints').value);
     let tpSize = () => parseFloat(document.getElementById('TPPoints').value);
     let lotSize = () => parseFloat(document.getElementById('LotSize').value);
+    let bullishColor = '00FF00';
+    let bearishColor = 'FF0000';
+    let greyColor = '999999';
     const EnumDirection = {
       BULL: 'BULL',
       BEAR: 'BEAR',
@@ -655,9 +713,16 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
       DRAW_A_CIRCLE: 'DRAW_A_CIRCLE',
       TAKE_A_TRADE: 'TAKE_A_TRADE',
     };
+    const EnumOHLC = {
+      TIME: 0,
+      OPEN: 1,
+      HIGH: 2,
+      LOW: 3,
+      CLOSE: 4,
+    };
 
     const getCandleDirection = (candle) => {
-      return candle.close > candle.open ? EnumDirection.BULL : EnumDirection.BEAR;
+      return candle[4] > candle[1] ? EnumDirection.BULL : EnumDirection.BEAR;
     };
 
     const getCandleChartAxisLocationFromDate = (date) => {
@@ -690,30 +755,67 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
       return new Date(ct).getTime() / 1000; // - 3600 * 2; // divided by 1000 to convert from milliseconds to seconds as Unix time only accepts seconds, while JS Date is more precise as working with milliseconds.
     };
 
-    document
-      .getElementById('csvFileInput')
-      .addEventListener('change', function loadcsv (event) {
-        const file = event.target.files[0];
-        if (file) {
-          const reader = new FileReader();
-          reader.onload = function (e) {
-            const content = e.target.result;
+    initSciChart();
 
-            document.getElementById('csvContent').value = content;
+    const applyTimeout = false; // TODO: Currenlty not working as expected, need to fix it
+    
+    const csvData = [];
+    let csvDataIndex = 0;
+    let numbDays = 0;
+    let ordersHistory = [];
+    window.ordersHistory = ordersHistory;
 
-            initSciChart(content);
-            document.getElementById('scichart-root').style.display = 'block';
-          };
-          reader.readAsText(file);
-          // Here we need to update select dates with the new data:
-          // buildChartData();
+    const handleFileAndInitGraph = (file) => {
+      if (file) {
+        clearAndDeleteChart();
 
-          // Expand Backtesting panel:
-          document.getElementById('result-panel-toolbar-content-toggler-algo').click();
-        } else {
-          // alert('No file selected');
-        }
-      });
+        // Clear orders history
+        ordersHistory = [];
+        numbDays = 0;
+
+        // Reset portfolio graph and order history display
+        document.getElementById('backtestingResult').value = '';
+        document.getElementById('backtestingResultOrderHistory').innerHTML = '';
+
+        // add visible class to loading element
+        document.getElementById('loading-element').classList.add('visible');
+        
+        Papa.parse(file, {
+          header: true,
+          dynamicTyping: true,
+          //worker: true,
+            step: function (results, parser) {
+              const row = results.data;
+              csvDataIndex += 1;
+              if (applyTimeout) {
+                setTimeout(() => {
+                appendDataToChart(results.data, csvDataIndex);
+                }, csvDataIndex * 1000); // Adjust the delay as needed (1000ms per step)
+              } else {
+                appendDataToChart(results.data, csvDataIndex);
+              }
+            },
+          complete: function (results, file) {
+            //console.log("Parsing complete:", results, file);
+            //const content = csvData;
+            //document.getElementById('csvContent').value = JSON.stringify(csvData, null, 2);
+            //initSciChart(csvData);
+            profitabilityCalculation();
+            // remove visible class to loading element
+            document.getElementById('loading-element').classList.remove('visible');
+          },
+          error: function (error) {
+            console.error('Error parsing CSV:', error);
+          }
+        });
+        document.getElementById('result-panel-toolbar-content-toggler-algo').click();
+      }
+    };
+
+    $csvFileInput.addEventListener('change', function loadcsv (event) {
+      const file = event.target.files[0];
+      handleFileAndInitGraph(file);
+    });
 
     // Define the initSciChart function
     function initSciChart(data) {
@@ -766,11 +868,6 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
         theme: new SciChartJsNavyTheme(),
       })
         .then(({ sciChartSurface, wasmContext }) => {
-
-          let bullishColor = '00FF00';
-          let bearishColor = 'FF0000';
-          let greyColor = '999999';
-
           // Extract URL parameters
           const urlParams = new URLSearchParams(window.location.search);
           bullishColor = decodeURIComponent(urlParams.get('bullishColor') || bullishColor);
@@ -823,12 +920,31 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
             upBodyBrush: bullishColor, // candle
             upWickColor: bullishColor, // candle
           };
-
-          // customTheme = new SciChartJsNavyTheme();
-
           sciChartSurface.applyTheme(customTheme);
 
           window.sciChartSurface = sciChartSurface;
+
+          // Cursor labels:
+          const growBy = new NumberRange(0.2, 0.2);
+          const xAxis = new DateTimeNumericAxis(wasmContext, { growBy });
+          xAxis.labelProvider.formatCursorLabel = (dataValue) => {
+            const unixDateStamp = Math.floor(dataValue); // Flooring it to remove milliseconds from that cursor data, as it is too much precise // - 3600;
+            return formatDateFromUnix(unixDateStamp);
+          };
+          const yAxis = new NumericAxis(wasmContext, {
+            labelPrecision: decimals,
+            autoRange: EAutoRange.Once,
+            // visibleRangeLimit: new NumberRange(1.02, 1.03),
+            growBy,
+          });
+
+          sciChartSurface.xAxes.add(xAxis);
+          sciChartSurface.yAxes.add(yAxis);
+
+          console.log("scichart yaxis started");
+
+          // Variables initialization:
+          let annotations = [];
 
           // Create an XAxis and YAxis with growBy padding
           // sciChartSurface.xAxes.add(new NumericAxis(wasmContext, { axisTitle: "Time", growBy }));
@@ -857,64 +973,161 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
             return Math.ceil(num * factor) / factor; // Ceil and then divide
           }
 
-          const buildChartData = (data) => {
-            let numbDays = 0;
-            const growBy = new NumberRange(0.1, 0.1);
-            // Extract OHLC data from the response
+          // Function to update Y-axis range dynamically
+          function updateYAxisRange() {
+            const yMin = 1.034; // ohlcDataSeries.getNativeYMin();
+            const yMax = 1.042; // ohlcDataSeries.getNativeYMax();
 
-            // Parse CSV content
-            const rows = data.trim().split('\r\n'); // Split by lines
-            const header = rows[0].split('\t'); // Extract headers
-            const rdata = rows.slice(1).map((row) => row.split('\t')); // Split rows into fields
+            sciChartSurface.yAxes.get(0).visibleRangeLimit = new NumberRange(yMin, yMax);
+          }
 
-            const ohlcData = rdata.map((row) => {
-              /*https://developers.binance.com/docs/binance-spot-api-docs/rest-api#klinecandlestick-data*/
-              /*
-                return {
-                  time: row[0],
-                  open: parseFloat(row[1]),
-                  high: parseFloat(row[2]),
-                  low: parseFloat(row[3]),
-                  close: parseFloat(row[4])
-                }
-              */
+          // AddActionOnChart: ========================================
+            // Function to create annotations or take actions on the chart, based on UI selected options:
+            const AddActionOnChart = (candle, EnumActionType, tradeDirection = EnumDirection.BULL) => {
+              const candlePosition = convertMT5DateToUnix(candle[EnumOHLC.TIME]);
+              switch (EnumActionType) {
+                case 'VERTICAL_LINE':
+                  sciChartSurface.annotations.add(
+                    new VerticalLineAnnotation({
+                      x1: candlePosition,
+                      stroke: `#${bullishColor}`,
+                      strokeThickness: 1,
+                    })
+                  );
+                  break;
+                case 'DRAW_A_CIRCLE':
+                  sciChartSurface.annotations.add(
+                    new CustomAnnotation({
+                      x1: candlePosition,
+                      y1: candle[EnumOHLC.CLOSE],
+                      verticalAnchorPoint: EVerticalAnchorPoint.Center,
+                      horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
+                      svgString: signalAnnotation.svgString.circle,
+                    })
+                  );
+                  break;
+                case 'TAKE_A_TRADE':
+                  const orderOptionsBasedDirection = (tradeDirection) => {
+                    if (tradeDirection == EnumDirection.BULL) {
+                      return {
+                        sl: candle[EnumOHLC.CLOSE] - slSize(),
+                        tp: candle[EnumOHLC.CLOSE] + tpSize(),
+                        direction: EnumDirection.BULL,
+                      };
+                    } else {
+                      return {
+                        sl: candle[EnumOHLC.CLOSE] + slSize(),
+                        tp: candle[EnumOHLC.CLOSE] - tpSize(),
+                        direction: EnumDirection.BEAR,
+                      };
+                    }
+                  };
+                  // Add order to history:
+                  ordersHistory.push({
+                    id: ordersHistory.length + 1,
+                    time: candle[EnumOHLC.TIME],
+                    price: candle[EnumOHLC.CLOSE],
+                    orderStatus: EnumOrderStatus.PENDING,
+                    ...orderOptionsBasedDirection(tradeDirection),
+                  });
 
-              /* MT5 exported CSV format: */
-              return {
-                time: `${row[0]} ${row[1]}`,
-                open: parseFloat(row[2]),
-                high: parseFloat(row[3]),
-                low: parseFloat(row[4]),
-                close: parseFloat(row[5]),
-              };
-            });
+                  window.ordersHistory = ordersHistory;
 
-            let ordersHistory = [];
-            let swingHighLowHistory = [];
-            let fvgHistory = [];
-            const minDate = new Date(ohlcData[0].time);
-            const maxDate = new Date(ohlcData[ohlcData.length - 1].time);
-            const offsetCandleDateTimeStamp = (candleDateTimeStamp) => candleDateTimeStamp; // - 3600 * 1; // !! offseting candle position in X axis by -1h to match tradingView (The correct way would be to offset the axis labels, but dont know how to do it yet)
-
-            // First function to be executed as soon as the data is loaded, you can do anything you want here:
-            const onData = (ohlcData) => {
-              // console.log('ohlcData:', ohlcData);
+                  // Add annotation from entry:
+                  sciChartSurface.annotations.add(
+                    new CustomAnnotation({
+                      x1: candlePosition,
+                      y1: candle[EnumOHLC.CLOSE],
+                      verticalAnchorPoint: EVerticalAnchorPoint.Center,
+                      horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
+                      svgString: signalAnnotation.svgString.buy,
+                    })
+                  );
+                  break;
+              }
             }
-            // Second function to be executed after the candle is drawn, you can add annotations here:
-            const onCandleDrawn = (candle, index) => {
-              const candlePosition = convertMT5DateToUnix(candle.time);
-              const prevCandle = ohlcData[index - 1];
-              const nextCandle = ohlcData[index + 1];
+          // End of AddActionOnChart ========================================
 
+          // For testing purposes:
+          const rdata = [
+            ['2021.06.29', '00:00:00', 1.23456, 1.23456, 1.23456, 1.23456],
+            ['2021.06.29', '00:01:00', 1.23456, 1.23456, 1.23456, 1.23456],
+            ['2021.06.29', '00:02:00', 1.23456, 1.23456, 1.23456, 1.23456],
+            ['2021.06.29', '00:03:00', 1.23456, 1.23456, 1.23456, 1.23456],
+            ['2021.06.29', '00:04:00', 1.23456, 1.23456, 1.23456, 1.23456],
+            ['2021.06.29', '00:05:00', 1.23456, 1.23456, 1.23456, 1.23456],
+            ['2021.06.29', '00:06:00', 1.23456, 1.23456, 1.23456, 1.23456],
+            ['2021.06.29', '00:07:00', 1.23456, 1.23456, 1.23456, 1.23456],
+            ['2021.06.29', '00:08:00', 1.23456, 1.23456, 1.23456, 1.23456],
+            ['2021.06.29', '00:09:00', 1.23456, 1.23456, 1.23456, 1.23456],
+            ['2021.06.29', '00:10:00', 1.23456, 1.23456, 1.23456, 1.23456],
+            ['2021.06.29', '00:11:00', 1.23456, 1.23456, 1.23456, 1.23456],
+          ];
+
+          // Parse CSV content
+          //const rows = null; //data.trim().split('\r\n'); // Split by lines
+          //const header = rows[0].split('\t'); // Extract headers
+          //const rdata = rows.slice(1).map((row) => row.split('\t')); // Split rows into fields
+
+          const ohlcData = rdata.map((row) => {
+            /*https://developers.binance.com/docs/binance-spot-api-docs/rest-api#klinecandlestick-data*/
+            /*
+              return {
+                time: row[0],
+                open: parseFloat(row[1]),
+                high: parseFloat(row[2]),
+                low: parseFloat(row[3]),
+                close: parseFloat(row[4])
+              }
+            */
+
+            /* MT5 exported CSV format: */
+            return {
+              time: `${row[0]} ${row[1]}`,
+              open: parseFloat(row[2]),
+              high: parseFloat(row[3]),
+              low: parseFloat(row[4]),
+              close: parseFloat(row[5]),
+            };
+          });
+          
+          let canTakeATrade = true;
+          let inRange = false;
+          let swingHighLowHistory = [];
+          let fvgHistory = [];
+          let rollingHighestHighDataSeries = null;
+          let rollingLowestLowDataSeries = null;
+          const minDate = new Date(ohlcData[0].time);
+          const maxDate = new Date(ohlcData[ohlcData.length - 1].time);
+          const offsetCandleDateTimeStamp = (candleDateTimeStamp) => candleDateTimeStamp; // - 3600 * 1; // !! offseting candle position in X axis by -1h to match tradingView (The correct way would be to offset the axis labels, but dont know how to do it yet)
+
+          // First function to be executed as soon as the data is loaded, you can do anything you want here:
+          const onData = (ohlcData) => {
+            // console.log('ohlcData:', ohlcData);
+          }
+
+          // Second function to be executed after the candle is drawn, you can add annotations here:
+          const onCandleDrawn = (candle, index, candlesFromBuffer) => {
+            const algoEditorTextareaMain0 = document.getElementById('algoEditorTextareaMain0');
+            const algoEditorTextareaMain1 = document.getElementById('algoEditorTextareaMain1');
+            const hourMinutes = () => candle[0].split(' ')[1].slice(0, 5);
+            let arrayOfSignals = [];
+            const candlePosition = convertMT5DateToUnix(candle[0]);
+            const prevCandle = ohlcData[index - 1];
+            const nextCandle = ohlcData[index + 1];
+
+            // candle[0] === "2025.01.10 21:10:00" && AddActionOnChart(candle, EnumActionType.VERTICAL_LINE);
+
+            // TP/SL Validation: ========================================
               // Check for tp/sl hit:
               ordersHistory.forEach((order) => {
                 switch (order.direction) {
                   case EnumDirection.BULL:
-                    if (candle.high >= order.tp && !order.closed) {
+                    if (candle[EnumOHLC.HIGH] >= order.tp && !order.closed) {
 
                       order.closed = true;
                       order.closedPrice = order.tp;
-                      order.closedTime = candle.time;
+                      order.closedTime = candle[EnumOHLC.TIME];
                       order.orderStatus = EnumOrderStatus.CLOSED_BY_TP,
 
                       sciChartSurface.annotations.add(
@@ -938,11 +1151,11 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
                         })
                       );
                     }
-                    if (candle.low <= order.sl && !order.closed) {
+                    if (candle[EnumOHLC.LOW] <= order.sl && !order.closed) {
 
                       order.closed = true;
                       order.closedPrice = order.sl;
-                      order.closedTime = candle.time;
+                      order.closedTime = candle[EnumOHLC.TIME];
                       order.orderStatus = EnumOrderStatus.CLOSED_BY_SL,
 
                       sciChartSurface.annotations.add(
@@ -968,11 +1181,11 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
                     }
                     break;
                   case EnumDirection.BEAR:
-                    if (candle.low <= order.tp && !order.closed) {
+                    if (candle[EnumOHLC.LOW] <= order.tp && !order.closed) {
 
                       order.closed = true;
                       order.closedPrice = order.tp;
-                      order.closedTime = candle.time;
+                      order.closedTime = candle[EnumOHLC.TIME];
                       order.orderStatus = EnumOrderStatus.CLOSED_BY_TP,
 
                       sciChartSurface.annotations.add(
@@ -996,11 +1209,11 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
                         })
                       );
                     }
-                    if (candle.high >= order.sl && !order.closed) {
+                    if (candle[EnumOHLC.HIGH] >= order.sl && !order.closed) {
 
                       order.closed = true;
                       order.closedPrice = order.sl;
-                      order.closedTime = candle.time;
+                      order.closedTime = candle[EnumOHLC.TIME];
                       order.orderStatus = EnumOrderStatus.CLOSED_BY_SL,
 
                       sciChartSurface.annotations.add(
@@ -1027,7 +1240,9 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
                     break;
                 }
               });
+            // End of TP/SL Validation ========================================
 
+            // FVG Related: ========================================
               // Check for FVG tested:
               fvgHistory.forEach((fvg) => {
                 if (fvg.tested) return;
@@ -1041,6 +1256,7 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
               });
 
               // A FVG signal:
+              /*
               const fvgExtent = 8;
               let isBullishFVG = false;
               let isBearishFVG = false;
@@ -1063,7 +1279,7 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
 
                 fvgHistory.push({
                   id: index,
-                  time: candle.time,
+                  time: candle[0],
                   initialPrice: initialPrice,
                   gapFinalPrice: gapFinalPrice,
                   middlePrice: middlePrice,
@@ -1071,7 +1287,7 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
                   tested: false,
                 });
 
-                sciChartSurface.annotations.add(
+                /*sciChartSurface.annotations.add(
                   new BoxAnnotation({
                     x1: convertMT5DateToUnix(prevCandle.time),
                     x2: convertMT5DateToUnix(ohlcData[index + fvgExtent].time),
@@ -1084,439 +1300,511 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
                   })
                 );
               }
-
-              // Function to create annotations or take actions on the chart, based on UI selected options:
-              const AddActionOnChart = (EnumActionType, tradeDirection = EnumDirection.BULL) => {
-                  switch (EnumActionType) {
-                  case 'VERTICAL_LINE':
-                    sciChartSurface.annotations.add(
-                      new VerticalLineAnnotation({
-                        x1: candlePosition,
-                        stroke: `#${bullishColor}`,
-                        strokeThickness: 1,
-                      })
-                    );
-                    break;
-                  case 'DRAW_A_CIRCLE':
-                    sciChartSurface.annotations.add(
-                      new CustomAnnotation({
-                        x1: candlePosition,
-                        y1: candle.close,
-                        verticalAnchorPoint: EVerticalAnchorPoint.Center,
-                        horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
-                        svgString: signalAnnotation.svgString.circle,
-                      })
-                    );
-                    break;
-                  case 'TAKE_A_TRADE':
-                    const orderOptionsBasedDirection = (tradeDirection) => {
-                      if (tradeDirection == EnumDirection.BULL) {
-                        return {
-                          sl: candle.close - slSize(),
-                          tp: candle.close + tpSize(),
-                          direction: EnumDirection.BULL,
-                        };
-                      } else {
-                        return {
-                          sl: candle.close + slSize(),
-                          tp: candle.close - tpSize(),
-                          direction: EnumDirection.BEAR,
-                        };
-                      }
-                    };
-                    // Add order to history:
-                    ordersHistory.push({
-                      id: index,
-                      time: candle.time,
-                      price: candle.close,
-                      orderStatus: EnumOrderStatus.PENDING,
-                      ...orderOptionsBasedDirection(tradeDirection),
-                    });
-
-                    // Add annotation from entry:
-                    sciChartSurface.annotations.add(
-                      new CustomAnnotation({
-                        x1: candlePosition,
-                        y1: candle.close,
-                        verticalAnchorPoint: EVerticalAnchorPoint.Center,
-                        horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
-                        svgString: signalAnnotation.svgString.buy,
-                      })
-                    );
-                    break;
+              */
+            // End of FVG Related ========================================
+            
+            // MSS Line Logic: ========================================
+              /*
+              function calculateRollingHighLow(ohlcData, lookbackPeriod) {
+                const highPrices = ohlcData.map(data => data.close); // data.high
+                const lowPrices = ohlcData.map(data => data.close); // data.low
+                const rollingHighestHigh = [];
+                const rollingLowestLow = [];
+                for (let i = lookbackPeriod - 1; i < highPrices.length; i++) {
+                  const highest = Math.max(...highPrices.slice(i - lookbackPeriod + 1, i + 1));
+                  const lowest = Math.min(...lowPrices.slice(i - lookbackPeriod + 1, i + 1));
+                  rollingHighestHigh.push(highest);
+                  rollingLowestLow.push(lowest);
                 }
+                return { rollingHighestHigh, rollingLowestLow };
               }
 
-              /* Global variables and functions */
-              const algoEditorTextareaMain0 = document.getElementById('algoEditorTextareaMain0');
-              const algoEditorTextareaMain1 = document.getElementById('algoEditorTextareaMain1');
-              const hourMinutes = () => candle.time.split(' ')[1].slice(0, 5);
-              let arrayOfSignals = [];
-              eval(algoEditorTextareaMain0.value);
+              const signalCooldown = 4;
+              const lookbackPeriod = 8;
+              const slopeThreshold = 0.5;
+              const times = ohlcData.map(data => convertMT5DateToUnix(data[0]));
+              const { rollingHighestHigh, rollingLowestLow } = calculateRollingHighLow(ohlcData, lookbackPeriod);
+              let mssDetected = false;
+              let newSignalAvailable = false;
+              let bullishMSS = false;
+              let bearishMSS = false;
+              const highestHighLong = [];
+              const lowestLowShort = [];
+              let slopeHighestHighLong = 0;
+              let slopeLowestLowShort = 0;
 
+              // Calculate highest high and lowest low
+              if (index >= lookbackPeriod) {
+                const highPrices = ohlcData.slice(index - lookbackPeriod, index).map(candle => candle.close); // candle.high
+                highestHighLong.push(Math.max(...highPrices));
+                
+                const lowPrices = ohlcData.slice(index - lookbackPeriod, index).map(candle => candle.close); // candle.low
+                lowestLowShort.push(Math.min(...lowPrices));
+
+                // Calculate slope:
+                slopeHighestHighLong = (highestHighLong - highestHighLong[lookbackPeriod]) / lookbackPeriod
+                slopeLowestLowShort = (lowestLowShort - lowestLowShort[lookbackPeriod]) / lookbackPeriod
+
+                // Check for MSS breakout conditions (breakout of the highest high or lowest low && slope is less than threshold (consistency))
+                bullishMSS = candle.close > highestHighLong[0]// && Math.abs(slopeHighestHighLong) < slopeThreshold
+                bearishMSS = candle.close < lowestLowShort[0]// && Math.abs(slopeLowestLowShort) < slopeThreshold
+
+                // console.log('-> ', candle.close , highestHighLong[0], bullishMSS,);
+
+                // Cooldown logic
+                let lastSignalBar = null;
+                signalTriggered = bullishMSS || bearishMSS
+                newSignalAvailable = !lastSignalBar || (index - lastSignalBar >= signalCooldown)
+
+                if (signalTriggered && newSignalAvailable) {
+                  lastSignalBar = index
+                }
+
+                showBullish = (bullishMSS && newSignalAvailable) ? true : false
+                showBearish = (bearishMSS && newSignalAvailable) ? true : false
+
+                if (hourMinutes() >= '10:10' && hourMinutes() <= '10:45') {
+                  inRange = true;
+                } else {
+                  inRange = false;
+                  canTakeATrade = true;
+                }
+
+                if (showBullish) {
+                  //AddActionOnChart(EnumActionType.DRAW_A_CIRCLE);
+                  if (inRange && canTakeATrade) {
+                    AddActionOnChart(EnumActionType.TAKE_A_TRADE, EnumDirection.BULL);
+                    canTakeATrade = false;
+                  }
+                } else if (showBearish) {
+                  //AddActionOnChart(EnumActionType.DRAW_A_CIRCLE);
+                  if (inRange && canTakeATrade) {
+                    AddActionOnChart(EnumActionType.TAKE_A_TRADE, EnumDirection.BEAR);
+                    canTakeATrade = false;
+                  }
+                }
+              }
+              
               /*
-                const SignalCondition1 = () => {
-                  const algoEditorTextarea = document.getElementById('algoEditorTextarea');
-                  return eval(algoEditorTextarea.value);
-                }
-
-                if (SignalCondition1()) {
-                  AddActionOnChart('signalCondition1Annotation');
-                }
-
-                const SignalCondition2 = () => {
-                  const algoEditorTextarea = document.getElementById('algoEditorTextarea2');
-                  return eval(algoEditorTextarea.value);
-                }
-
-                if (SignalCondition2()) {
-                  AddActionOnChart('signalCondition2Annotation');
-                }
-
-                const SignalCondition3 = () => {
-                  const algoEditorTextarea = document.getElementById('algoEditorTextarea3');
-                  return eval(algoEditorTextarea.value);
-                }
-
-                if (SignalCondition3()) {
-                  AddActionOnChart('signalCondition3Annotation');
-                }
+              if (candle.close >= rollingHighestHigh[index - lookbackPeriod + 1]) {
+                AddActionOnChart(EnumActionType.DRAW_A_CIRCLE);
+                AddActionOnChart(EnumActionType.TAKE_A_TRADE, EnumDirection.BULL);
+                mssDetected = true;
+              } else {
+                mssDetected = false;
+              }
               */
 
+              // Create data series for rolling highest high and lowest low
+              /*
+              rollingHighestHighDataSeries = new XyDataSeries(wasmContext, {
+                xValues: times.slice(lookbackPeriod - 1),
+                yValues: rollingHighestHigh,
+              });
+              rollingLowestLowDataSeries = new XyDataSeries(wasmContext, {
+                xValues: times.slice(lookbackPeriod - 1),
+                yValues: rollingLowestLow,
+              });
+              */
+            // End of MSS Line Logic ========================================
+
+            eval(algoEditorTextareaMain0.value);
+
+            /*
+              const SignalCondition1 = () => {
+                const algoEditorTextarea = document.getElementById('algoEditorTextarea');
+                return eval(algoEditorTextarea.value);
+              }
+
+              if (SignalCondition1()) {
+                AddActionOnChart('signalCondition1Annotation');
+              }
+
+              const SignalCondition2 = () => {
+                const algoEditorTextarea = document.getElementById('algoEditorTextarea2');
+                return eval(algoEditorTextarea.value);
+              }
+
+              if (SignalCondition2()) {
+                AddActionOnChart('signalCondition2Annotation');
+              }
+
+              const SignalCondition3 = () => {
+                const algoEditorTextarea = document.getElementById('algoEditorTextarea3');
+                return eval(algoEditorTextarea.value);
+              }
+
+              if (SignalCondition3()) {
+                AddActionOnChart('signalCondition3Annotation');
+              }
+            */
+
+            // Swing High/Low Logic: ========================================
               let isSwingHigh = false;
               let isSwingLow = false;
 
-              const SignalSwingHighLow = () => {
-                if (index < 4 || index > ohlcData.length - 3) return false;
-                const prevCandle = ohlcData[index - 1];
-                const prevCandle2 = ohlcData[index - 2];
-                const nextCandle = ohlcData[index + 1];
-                const nextCandle2 = ohlcData[index + 2];
-                isSwingHigh = prevCandle.high <= candle.high && nextCandle.high <= candle.high && nextCandle2.high <= nextCandle.high && prevCandle.high <= candle.high && getCandleDirection(candle) == 'BEAR'; // && getCandleDirection(prevCandle) == 'BULL' && getCandleDirection(nextCandle) == 'BEAR'; // red
-                isSwingLow = prevCandle.low >= candle.low && nextCandle.low >= candle.low && nextCandle2.low >= nextCandle.low && prevCandle.low >= candle.low && getCandleDirection(candle) == 'BULL'; // && getCandleDirection(prevCandle) == 'BEAR' && getCandleDirection(nextCandle) == 'BULL'; // green
+              // Get 4 candles for swing analysis:
+              // let candleBufferForAnalisis = candlesFromBuffer.slice(-4);
+              const selectedIndexForSelectedCandleForAnalisis = candlesFromBuffer.length - 2;
+              
+              const swhlPrevCandle2 = candlesFromBuffer[selectedIndexForSelectedCandleForAnalisis - 2];
+              const swhlPrevCandle = candlesFromBuffer[selectedIndexForSelectedCandleForAnalisis - 1];
+              const selectedCandleForAnalisis = candlesFromBuffer[selectedIndexForSelectedCandleForAnalisis]; // selected candle for analysis is the 2nd last candle from the buffer, because the last candle is the current candle and we will analize the next candle
+              const swhlNextCandle = candlesFromBuffer[selectedIndexForSelectedCandleForAnalisis + 1];
 
+              const SignalSwingHighLow = () => {
+                if (index < 4 /*|| index > candlesFromBuffer.length - 3*/) return false;
+
+                // For swing high, current candle high is less than or equal to the previous candle high and the previous candle high is greater than the previous candle open:
+                isSwingHigh = selectedCandleForAnalisis[EnumOHLC.HIGH] <= swhlPrevCandle[EnumOHLC.HIGH] && swhlPrevCandle2[EnumOHLC.OPEN] < swhlPrevCandle[EnumOHLC.OPEN] && selectedCandleForAnalisis[EnumOHLC.HIGH] >= swhlNextCandle[EnumOHLC.HIGH] && getCandleDirection(selectedCandleForAnalisis) == 'BEAR';
+                // For swing low, current candle low is greater than or equal to the previous candle low and the previous candle low is less than the previous candle close:
+                isSwingLow = selectedCandleForAnalisis[EnumOHLC.LOW] >= swhlPrevCandle[EnumOHLC.LOW] && swhlPrevCandle2[EnumOHLC.CLOSE] > swhlPrevCandle[EnumOHLC.CLOSE] && selectedCandleForAnalisis[EnumOHLC.LOW] <= swhlNextCandle[EnumOHLC.LOW] && getCandleDirection(selectedCandleForAnalisis) == 'BULL';
+                
                 return isSwingLow || isSwingHigh;
               }
 
               if (SignalSwingHighLow()) {
                 swingHighLowHistory.push({
-                  time: candle.time,
-                  maxReachedPrice: isSwingHigh ? candle.high : candle.low, // Represents the highest/lowest price that was reached.
+                  time: swhlPrevCandle[0],
+                  maxReachedPrice: isSwingHigh ? selectedCandleForAnalisis[EnumOHLC.HIGH] : selectedCandleForAnalisis[EnumOHLC.LOW], // Represents the highest/lowest price that was reached.
                   type: isSwingHigh ? 'HIGH' : 'LOW', // Represents the type of the swing (HIGH or LOW) its the position and NOT the candle direction.
                 });
 
                 sciChartSurface.annotations.add(
                   new CustomAnnotation({
-                    x1: candlePosition,
-                    y1: isSwingHigh ? candle.high : candle.low,
-                    verticalAnchorPoint: EVerticalAnchorPoint.Center,
+                    x1: convertMT5DateToUnix(selectedCandleForAnalisis[EnumOHLC.TIME]),
+                    y1: isSwingHigh ? selectedCandleForAnalisis[EnumOHLC.HIGH] : selectedCandleForAnalisis[EnumOHLC.LOW],
+                    verticalAnchorPoint: isSwingHigh ? EVerticalAnchorPoint.Bottom : EVerticalAnchorPoint.Top,
                     horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
                     svgString: isSwingHigh ? signalAnnotation.svgString.bearish : signalAnnotation.svgString.bullish,
                   })
                 );
               }
+            // End of Swing High/Low Logic: ========================================
 
-              eval(algoEditorTextareaMain1.value);
+            eval(algoEditorTextareaMain1.value);
 
-              if (index == ohlcData.length - 1) {
-                
-                const profitsInPoints = ordersHistory.reduce((acc, order) => {
-                  if (order.orderStatus == EnumOrderStatus.CLOSED_BY_TP) {
-                    return acc + tpSize();
-                  }
-                  if (order.orderStatus == EnumOrderStatus.CLOSED_BY_SL) {
-                    return acc - slSize();
-                  }
-                  return acc;
-                }, 0);
+            // Backtesting dates ====================================
+              let candleDateTime = candle[EnumOHLC.TIME]; // excepted format: "1970.01.01 00:00:00"
+              let unixTime = convertMT5DateToUnix(candleDateTime); // format: 1624982400 for 2021-06-29 00:00:00
+              let candleTime = candleDateTime.split(' ')[1]; // get the time from the date string (00:00:00)
+              let backTestTime = getCandleChartAxisLocationFromDate(candleDateTime); // + 3600; // Actually the same as above (candleDateTimeStamp)
 
-                console.log('Orders History:', ordersHistory);
-                const winRate = ordersHistory.length > 0 ? (ordersHistory.filter((order) => order.orderStatus == EnumOrderStatus.CLOSED_BY_TP).length / ordersHistory.length * 100).toFixed(2) : 0;
-                const moneyEquivalent = ((profitsInPoints * (lotSize() * 10)) * 10000).toFixed(2);
-                const result = `Check console for orders history\n\nTrade Taken: ${ordersHistory.length} (in ${numbDays} days)\nWin Rate: ${winRate}% \n\nProfits: \n Money: ${moneyEquivalent}$\n Points: ${profitsInPoints.toFixed(5)} \n Pips: ${(profitsInPoints / 0.00010).toFixed(2)} \n Ticks: ${(profitsInPoints / 0.01).toFixed(2)}`;
-                //const result = `Check console for orders history\n\nTrade Taken: ${ordersHistory.length}\nWin Rate: ${winRate}% \n\nProfits: \n Money: ${moneyEquivalent}$\n Points: ${profitsInPoints} \n Pips: ${(profitsInPoints / 0.00010)}`;
-                document.getElementById('backtestingResult').value = result;
-     
-                // Create a line chart:
-                let myChart = document.getElementById('myChart');
-                var ctx = myChart.getContext('2d');
-                var datasets = [];
-                var values = ordersHistory.map((order) => {
-                  const pnlvar = order.orderStatus == EnumOrderStatus.CLOSED_BY_TP ? tpSize() : -slSize();
-                  return [pnlvar];
-                });
-                
-                console.log('creating equity chart')
+              var selectedTime = document.getElementById('backtesting-hour').value;
 
-                const pnlsum = () => {
-                  let sum = 0;
-                  return values.map((value) => {
-                    var a = (sum += parseFloat(value));
-                    return a;
-                  });
-                };
+              if (candleTime == selectedTime) {
+                numbDays = numbDays + 1;
+                let btt = backTestTime; // * 1000;
+                let formatedDate = formatDateFromUnix(btt);
 
-                // Check if there is an existing chart instance and destroy it:
-                if (typeof myChart !== 'undefined' && myChart !== null) {
-                  myChart.remove();
-                  const newCanvas = document.createElement('canvas');
-                  newCanvas.id = 'myChart';
-                  newCanvas.width = 700;
-                  newCanvas.height = 300;
-                  document.getElementById('myChartContainer').appendChild(newCanvas);
-                  myChart = document.getElementById('myChart');
-                  ctx = myChart.getContext('2d');
-                  //myChart.destroy();
-                }
+                // Display Backtesting dates on the select element:
+                $navigateTroughtDates.innerHTML += `<option value="${unixTime}">${candleDateTime}</option>`;
 
-                gradient = ctx.createLinearGradient(0, 25, 0, 300);
-                gradient.addColorStop(0, `#${bullishColor}${RRToolStyles.opacity}`);
-                gradient.addColorStop(1, `#${bearishColor}${RRToolStyles.opacity}`);
-
-                datasets.push({
-                  type: 'line',
-                  label: 'Equity',
-                  data: pnlsum(),
-                  //backgroundColor: `#${bullishColor}`,
-                  borderColor: `#${bullishColor}`,
-                  backgroundColor: gradient,
-                  borderWidth: 1,
-                  order: 0,
-                  fill: true,
-                });
-                
-                // Create profitability chart:
-                var options = {
-                  //animation,
-                  responsive: false,
-                  elements: {
-                    point: {
-                      radius: 1,
-                    },
-                  },
-                  scales: {
-                    y: {
-                      beginAtZero: false,
-                    },
-                  },
-                };
-
-                // Set maximum and minimum values for y-axis if provided
-                /*if (minValue) {
-                  options.scales.y.min = minValue;
-                }
-                if (maxValue) {
-                  options.scales.y.max = maxValue;
-                }*/
-
-                myChart = new Chart(ctx, {
-                  type: 'line',
-                  data: {
-                    labels: values,	
-                    datasets: datasets,
-                  },
-                  options: options,
-                });
-                
-                document.getElementById('backtestingResultOrderHistory').innerHTML = `
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>ID</th>
-                        <th>Time</th>
-                        <th>Price</th>
-                        <th>SL</th>
-                        <th>TP</th>
-                        <th>Direction</th>
-                        <th>Order Status</th>
-                        <th>Closed Price</th>
-                        <th>Closed Time</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      ${ordersHistory.map(order => `
-                        <tr>
-                          <td>${order.id}</td>
-                          <td>${order.time}</td>
-                          <td>${order.price.toFixed(5)}</td>
-                          <td>${order.sl.toFixed(5)}</td>
-                          <td>${order.tp.toFixed(5)}</td>
-                          <td>${order.direction}</td>
-                          <td>${order.orderStatus}</td>
-                          <td>${order.closedPrice || ''}</td>
-                          <td>${order.closedTime || ''}</td>
-                        </tr>
-                      `).join('')}
-                    </tbody>
-                  </table>
-                `;
-              }
-            }
-
-            console.log('Swing HighLow:', swingHighLowHistory);
-            console.log('FVG History:', fvgHistory);
-
-            // Clear the select element:
-            document
-              .getElementById('NavigateTroughtDates')
-              .innerHTML = "";
-
-            // Create an OHLC data series
-            const ohlcDataSeries = new OhlcDataSeries(wasmContext, {
-              xValues: ohlcData.map((candle, index) => {
-                
-                onData(candle);
-
-                let candleDateTime = candle.time; // excepted format: "1970.01.01 00:00:00"
-                let unixTime = convertMT5DateToUnix(candleDateTime); // format: 1624982400 for 2021-06-29 00:00:00
-
-                let candleTime = candleDateTime.split(' ')[1]; // get the time from the date string (00:00:00)
-                let candleDateTimeStamp = getCandleChartAxisLocationFromDate(candleDateTime); // 1624982400
-
-                // let offsetedCandleTime = offsetCandleDateTimeStamp(candleDateTimeStamp); // Not really important for now, has we aren't offsetting anything yet.
-                let dateOptionForSelect = candleDateTimeStamp;
-                let backTestTime = getCandleChartAxisLocationFromDate(candleDateTime); // + 3600; // Actually the same as above (candleDateTimeStamp)
-
-                var selectedTime = document.getElementById('backtesting-hour').value;
-
-                if (candleTime == selectedTime) {
-                  numbDays = numbDays + 1;
-                  let btt = backTestTime; // * 1000;
-                  let formatedDate = formatDateFromUnix(btt);
-
-                  // Display Backtesting dates on the select element:
-                  document
-                    .getElementById('NavigateTroughtDates')
-                    .innerHTML += `<option value="${unixTime}">
-                      ${candleDateTime}</option>`;
-
-                  // Backtesting line annotation:
-                  sciChartSurface.annotations.add(
-                    new VerticalLineAnnotation({
-                      stroke: '#999',
-                      axisLabelFill: '#999',
-                      strokeThickness: 1,
-                      x1: unixTime,
-                      showLabel: true,
-                      labelPlacement: ELabelPlacement.TopLeft,
-                      labelValue: `${candleDateTime}`,
-                    })
-                  );
-                }
-
-                onCandleDrawn(candle, index);
-
-                // Add annotations for MSS:
-                /*
-                  const indicateCandle = (candle, ohlcData, index) => {
-                    const analysisRange = 1;
-                    const currentCandleLocation = offsetedCandleTime(getCandleChartAxisLocationFromDate(candle.time));
-                    const currentCandleLocationOffseted = offsetedCandleTime(getCandleChartAxisLocationFromDate(candle.time)) - 3600 * analysisRange;
-
-                    if (index - analysisRange >= analysisRange && index - analysisRange < ohlcData.length && ohlcData[index - analysisRange] !== undefined) {
-                      const x1 = currentCandleLocationOffseted;
-                      const y1 = ohlcData[index - analysisRange].close;
-                      const midCandleIndex = index - analysisRange;
-                      const farLeftIndex = index - analysisRange - analysisRange;
-
-                      isAfterPriceLower = ohlcData[index].high < ohlcData[midCandleIndex].high
-                      isBeforePriceLower = ohlcData[farLeftIndex].high < ohlcData[midCandleIndex].high
-                      if (isAfterPriceLower && isBeforePriceLower) {
-                        const middleCandle = ohlcData[midCandleIndex];
-                        //debugger
-                        const middleCandleLocation = offsetedCandleTime(getCandleChartAxisLocationFromDate(middleCandle.time));
-                        //console.log(x, a);
-                        sciChartSurface.annotations.add(
-                          new CustomAnnotation({
-                            x1,
-                            y1,
-                            verticalAnchorPoint: EVerticalAnchorPoint.Top,
-                            horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
-                            svgString:
-                              '<svg id="Capa_1" xmlns="http://www.w3.org/2000/svg"><g transform="translate(-53.867218,-5.091687)"><path style="fill:#1cb61c;fill-opacity:0.34117647;stroke:#00b400;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" d="m 55.47431,83.481251 c 7.158904,-7.408333 7.158904,-7.408333 7.158904,-7.408333 l 7.158906,7.408333 H 66.212668 V 94.593756 H 59.053761 V 83.481251 Z"/></g></svg>',
-                          })
-                        );
-                      }
-                    }
-                  };
-
-                  indicateCandle(candle, ohlcData, index);
-                */
-
-                return unixTime; // - 3600 * 2; // broker time offset compensation (2 hours)
-              }),
-              openValues: ohlcData.map((candle) => candle.open),
-              highValues: ohlcData.map((candle) => candle.high),
-              lowValues: ohlcData.map((candle) => candle.low),
-              closeValues: ohlcData.map((candle) => candle.close),
-            });
-
-            const xAxis = new DateTimeNumericAxis(wasmContext, { growBy });
-            // Cursor labels:
-            xAxis.labelProvider.formatCursorLabel = (dataValue) => {
-              const unixDateStamp = Math.floor(dataValue); // Flooring it to remove milliseconds from that cursor data, as it is too much precise // - 3600;
-              return formatDateFromUnix(unixDateStamp);
-            };
-            const yAxis = new NumericAxis(wasmContext, {
-              labelPrecision: decimals,
-              autoRange: EAutoRange.Always,
-              growBy,
-            });
-
-            sciChartSurface.xAxes.add(xAxis);
-            sciChartSurface.yAxes.add(yAxis);
-
-            // Create an OHLC series
-            sciChartSurface.renderableSeries.add(
-              new FastCandlestickRenderableSeries(wasmContext, {
-                dataSeries: ohlcDataSeries,
-                strokeThickness: 1,
-                /*
-                  effect: new GlowEffect(wasmContext, {
-                    range: 10,
-                    intensity: 1,
-                    color: "#666666",
-                    offset: new Point(0, 0),
-                  }),
-                  effect: new ShadowEffect(wasmContext, {
-                    range: 10,
-                    brightness: 100,
-                    color: '#ffffff',
-                    offset: new Point(10, 10)
+                // Backtesting line annotation:
+                sciChartSurface.annotations.add(
+                  new VerticalLineAnnotation({
+                    stroke: '#999',
+                    axisLabelFill: '#999',
+                    strokeThickness: 1,
+                    x1: unixTime,
+                    showLabel: true,
+                    labelPlacement: ELabelPlacement.TopLeft,
+                    labelValue: `${candleDateTime}`,
                   })
-                */
-              })
-            );
-
-            // MSS Detection:
-            function calculateRollingHighLow(highPrices, lowPrices, lookbackPeriod) {
-              const rollingHighestHigh = [];
-              const rollingLowestLow = [];
-              for (let i = lookbackPeriod - 1; i < highPrices.length; i++) {
-                const highest = Math.max(...highPrices.slice(i - lookbackPeriod + 1, i + 1));
-                const lowest = Math.min(...lowPrices.slice(i - lookbackPeriod + 1, i + 1));
-                rollingHighestHigh.push(highest);
-                rollingLowestLow.push(lowest);
+                );
               }
-              return { rollingHighestHigh, rollingLowestLow };
+            // End of Backtesting dates ====================================
+          }
+
+          const profitabilityCalculation = () => {
+            const profitsInPoints = ordersHistory.reduce((acc, order) => {
+              if (order.orderStatus == EnumOrderStatus.CLOSED_BY_TP) { return acc + tpSize(); }
+              if (order.orderStatus == EnumOrderStatus.CLOSED_BY_SL) { return acc - slSize(); }
+              return acc;
+            }, 0);
+
+            console.log('Orders History:', ordersHistory);
+            const winRate = ordersHistory.length > 0 ? (ordersHistory.filter((order) => order.orderStatus == EnumOrderStatus.CLOSED_BY_TP).length / ordersHistory.length * 100).toFixed(2) : 0;
+            const moneyEquivalent = ((profitsInPoints * (lotSize() * 10)) * 10000).toFixed(2);
+            const result = `Check console for orders history\n\nTrade Taken: ${ordersHistory.length} (in ${numbDays} days)\nWin Rate: ${winRate}% \n\nProfits: \n Money: ${moneyEquivalent}$\n Points: ${profitsInPoints.toFixed(5)} \n Pips: ${(profitsInPoints / 0.00010).toFixed(2)} \n Ticks: ${(profitsInPoints / 0.01).toFixed(2)}`;
+            document.getElementById('backtestingResult').value = result;
+  
+            // Profitability Chart: ========================================
+              let myChart = document.getElementById('myChart');
+              var ctx = myChart.getContext('2d');
+              var datasets = [];
+              var values = ordersHistory.map((order) => {
+                const pnlvar = order.orderStatus == EnumOrderStatus.CLOSED_BY_TP ? tpSize() : -slSize();
+                return [pnlvar];
+              });
+              var labels = ordersHistory.map((order) => order.id);
+
+              const pnlsum = () => {
+                let sum = 0;
+                return values.map((value) => {
+                  var a = (sum += parseFloat(value));
+                  return a;
+                });
+              };
+
+              const equityPnL = () => {
+                let equitySum = 0;
+                const commission = 0.00005; // TODO: Currently high for testing and handicap the results
+                return values.map((value) => {
+                  var a = (equitySum += parseFloat(value - commission));
+                  return a;
+                });
+              };
+
+              // Check if there is an existing chart instance and destroy it:
+              if (typeof myChart !== 'undefined' && myChart !== null) {
+                myChart.remove();
+                const newCanvas = document.createElement('canvas');
+                newCanvas.id = 'myChart';
+                newCanvas.width = 700;
+                newCanvas.height = 300;
+                document.getElementById('myChartContainer').appendChild(newCanvas);
+                myChart = document.getElementById('myChart');
+                ctx = myChart.getContext('2d');
+                //myChart.destroy();
+              }
+
+              gradient = ctx.createLinearGradient(0, 25, 0, 300);
+              gradient.addColorStop(0, `#${bullishColor}${RRToolStyles.opacity}`);
+              gradient.addColorStop(1, `#${bearishColor}${RRToolStyles.opacity}`);
+
+              datasets.push({
+                type: 'line',
+                label: 'Strategy Performance (Accumulated Points)',
+                data: pnlsum(),
+                borderColor: `#${bullishColor}`,
+                backgroundColor: gradient,
+                borderWidth: 1,
+                order: 0,
+                fill: true,
+              });
+
+              datasets.push({
+                type: 'line',
+                label: 'Portfolio Performance (Equity Curve)',
+                data: equityPnL(),
+                borderColor: `#${bearishColor}`,
+                borderWidth: 1,
+                order: 1,
+                fill: false,
+                tension: .5,
+                pointStyle: false,
+              });
+              
+              const profitabilityChartOptions = {
+                //animation,
+                responsive: false,
+                elements: {
+                  point: {
+                    radius: 1,
+                  },
+                },
+                scales: {
+                  y: {
+                    beginAtZero: false,
+                  },
+                },
+              };
+
+              myChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                  labels: labels,	
+                  datasets: datasets,
+                },
+                options: profitabilityChartOptions,
+              });
+              
+              document.getElementById('backtestingResultOrderHistory').innerHTML = `
+                <table>
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Time</th>
+                      <th>Price</th>
+                      <th>SL</th>
+                      <th>TP</th>
+                      <th>Direction</th>
+                      <th>Order Status</th>
+                      <th>Closed Price</th>
+                      <th>Closed Time</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${ordersHistory.map(order => `
+                      <tr>
+                        <td>${order.id}</td>
+                        <td>${order.time}</td>
+                        <td>${order.price.toFixed(5)}</td>
+                        <td>${order.sl.toFixed(5)}</td>
+                        <td>${order.tp.toFixed(5)}</td>
+                        <td>${order.direction}</td>
+                        <td>${order.orderStatus}</td>
+                        <td>${order.closedPrice || ''}</td>
+                        <td>${order.closedTime || ''}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              `;
+            // End of Profitability Chart ========================================
+          }
+          window.profitabilityCalculation = profitabilityCalculation;
+
+          // console.log('Swing HighLow:', swingHighLowHistory);
+          // console.log('FVG History:', fvgHistory);
+
+          // Deprecated - Create an OHLC data series
+          /*
+          const old_ohlcDataSeries = new OhlcDataSeries(wasmContext, {
+            xValues: ohlcData.map((candle, index) => {
+              
+              onData(candle);
+
+              let candleDateTime = candle[0]; // excepted format: "1970.01.01 00:00:00"
+              let unixTime = convertMT5DateToUnix(candleDateTime); // format: 1624982400 for 2021-06-29 00:00:00
+
+              let candleTime = candleDateTime.split(' ')[1]; // get the time from the date string (00:00:00)
+              let candleDateTimeStamp = getCandleChartAxisLocationFromDate(candleDateTime); // 1624982400
+
+              // let offsetedCandleTime = offsetCandleDateTimeStamp(candleDateTimeStamp); // Not really important for now, has we aren't offsetting anything yet.
+              let dateOptionForSelect = candleDateTimeStamp;
+              let backTestTime = getCandleChartAxisLocationFromDate(candleDateTime); // + 3600; // Actually the same as above (candleDateTimeStamp)
+
+              var selectedTime = document.getElementById('backtesting-hour').value;
+
+              if (candleTime == selectedTime) {
+                numbDays = numbDays + 1;
+                let btt = backTestTime; // * 1000;
+                let formatedDate = formatDateFromUnix(btt);
+
+                // Display Backtesting dates on the select element:
+                document
+                  .getElementById('NavigateTroughtDates')
+                  .innerHTML += `<option value="${unixTime}">
+                    ${candleDateTime}</option>`;
+
+                // Backtesting line annotation:
+                sciChartSurface.annotations.add(
+                  new VerticalLineAnnotation({
+                    stroke: '#999',
+                    axisLabelFill: '#999',
+                    strokeThickness: 1,
+                    x1: unixTime,
+                    showLabel: true,
+                    labelPlacement: ELabelPlacement.TopLeft,
+                    labelValue: `${candleDateTime}`,
+                  })
+                );
+              }
+
+              //onCandleDrawn(candle, index);
+
+              // Add annotations for MSS:
+              /*
+                const indicateCandle = (candle, ohlcData, index) => {
+                  const analysisRange = 1;
+                  const currentCandleLocation = offsetedCandleTime(getCandleChartAxisLocationFromDate(candle.time));
+                  const currentCandleLocationOffseted = offsetedCandleTime(getCandleChartAxisLocationFromDate(candle.time)) - 3600 * analysisRange;
+
+                  if (index - analysisRange >= analysisRange && index - analysisRange < ohlcData.length && ohlcData[index - analysisRange] !== undefined) {
+                    const x1 = currentCandleLocationOffseted;
+                    const y1 = ohlcData[index - analysisRange].close;
+                    const midCandleIndex = index - analysisRange;
+                    const farLeftIndex = index - analysisRange - analysisRange;
+
+                    isAfterPriceLower = ohlcData[index].high < ohlcData[midCandleIndex].high
+                    isBeforePriceLower = ohlcData[farLeftIndex].high < ohlcData[midCandleIndex].high
+                    if (isAfterPriceLower && isBeforePriceLower) {
+                      const middleCandle = ohlcData[midCandleIndex];
+                      //debugger
+                      const middleCandleLocation = offsetedCandleTime(getCandleChartAxisLocationFromDate(middleCandle.time));
+                      //console.log(x, a);
+                      sciChartSurface.annotations.add(
+                        new CustomAnnotation({
+                          x1,
+                          y1,
+                          verticalAnchorPoint: EVerticalAnchorPoint.Top,
+                          horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
+                          svgString:
+                            '<svg id="Capa_1" xmlns="http://www.w3.org/2000/svg"><g transform="translate(-53.867218,-5.091687)"><path style="fill:#1cb61c;fill-opacity:0.34117647;stroke:#00b400;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" d="m 55.47431,83.481251 c 7.158904,-7.408333 7.158904,-7.408333 7.158904,-7.408333 l 7.158906,7.408333 H 66.212668 V 94.593756 H 59.053761 V 83.481251 Z"/></g></svg>',
+                        })
+                      );
+                    }
+                  }
+                };
+
+                indicateCandle(candle, ohlcData, index);
+              
+
+              return unixTime; // - 3600 * 2; // broker time offset compensation (2 hours)
+            }),
+            openValues: ohlcData.map((candle) => candle.open),
+            highValues: ohlcData.map((candle) => candle.high),
+            lowValues: ohlcData.map((candle) => candle.low),
+            closeValues: ohlcData.map((candle) => candle.close),
+          });
+          */
+
+          const ohlcDataSeries = new OhlcDataSeries(wasmContext);
+
+          // Create an OHLC series
+          const FCRS = new FastCandlestickRenderableSeries(wasmContext, {
+            dataSeries: ohlcDataSeries,
+            strokeThickness: 1,
+            /*
+              effect: new GlowEffect(wasmContext, {
+                range: 10,
+                intensity: 1,
+                color: "#666666",
+                offset: new Point(0, 0),
+              }),
+              effect: new ShadowEffect(wasmContext, {
+                range: 10,
+                brightness: 100,
+                color: '#ffffff',
+                offset: new Point(10, 10)
+              })
+            */
+          })
+          sciChartSurface.renderableSeries.add(FCRS);
+          
+          const addNewCandleToChart = (ohlcDataRow, dataIndex) => {
+            if (candlesFromBuffer.length >= MAX_BUFFER_SIZE) {
+              candlesFromBuffer.shift(); // Remove the oldest element if the buffer is full to save memory
             }
+            candlesFromBuffer.push(ohlcDataRow);
 
-            const lookbackPeriod = 15; // Adjust as needed
-            const times = ohlcData.map(data => convertMT5DateToUnix(data.time));
-            const highPrices = ohlcData.map(data => data.high);
-            const lowPrices = ohlcData.map(data => data.low);
-            const { rollingHighestHigh, rollingLowestLow } = calculateRollingHighLow(highPrices, lowPrices, lookbackPeriod);
+            onCandleDrawn(ohlcDataRow, dataIndex, candlesFromBuffer);
 
-            // Create data series for rolling highest high and lowest low
-            const rollingHighestHighDataSeries = new XyDataSeries(wasmContext, {
-              xValues: times.slice(lookbackPeriod - 1), // Adjust xValues to match the rolling window
-              yValues: rollingHighestHigh,
-            });
-            const rollingLowestLowDataSeries = new XyDataSeries(wasmContext, {
-              xValues: times.slice(lookbackPeriod - 1), // Adjust xValues to match the rolling window
-              yValues: rollingLowestLow,
-            });
+            ohlcDataSeries.append(
+              convertMT5DateToUnix(ohlcDataRow[0]),
+              ohlcDataRow[1],
+              ohlcDataRow[2],
+              ohlcDataRow[3],
+              ohlcDataRow[4]
+            );
+          };
+          window.addNewCandleToChart = addNewCandleToChart;
 
+          const clearAndDeleteChart = () => {
+            // Clear the select element:
+            $navigateTroughtDates.innerHTML = "";
+
+            if (ohlcDataSeries) {
+              ohlcDataSeries.clear();
+              sciChartSurface.annotations.clear();
+            }
+          };
+          window.clearAndDeleteChart = clearAndDeleteChart;
+
+          /*
+          // MSS Graph Related Annotations: ========================================
             // Plot the rolling highest high and lowest low lines
             const rollingHighestHighLine = new FastLineRenderableSeries(wasmContext, {
               dataSeries: rollingHighestHighDataSeries,
@@ -1531,31 +1819,40 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
 
             sciChartSurface.renderableSeries.add(rollingHighestHighLine);
             sciChartSurface.renderableSeries.add(rollingLowestLowLine);
+          // End of MSS Graph Related Annotations ========================================
+          */
 
-            // Add CursorModifier for crosshair
-            sciChartSurface.chartModifiers.add(
-              new CursorModifier({
-                // Optional properties to configure what parts are shown
-                showTooltip: false,
-                showAxisLabels: true,
-                showXLine: true,
-                showYLine: true,
-                // How close to a datapoint to show the tooltip? 10 = 10 pixels. 0 means always
-                // hitTestRadius: 10,
-                // Optional properties to configure the axis labels
-                axisLabelFill: '#555',
-                axisLabelStroke: '#ccc',
-                // Optional properties to configure line and tooltip style
-                crosshairStroke: '#555',
-                crosshairStrokeThickness: 1,
-                tooltipContainerBackground: '#000',
-                // tooltipTextStroke: "#ff6600",
-              })
-            );
+          // Add CursorModifier for crosshair
+          sciChartSurface.chartModifiers.add(
+            new CursorModifier({
+              // Optional properties to configure what parts are shown
+              showTooltip: false,
+              showAxisLabels: true,
+              showXLine: true,
+              showYLine: true,
+              // How close to a datapoint to show the tooltip? 10 = 10 pixels. 0 means always
+              // hitTestRadius: 10,
+              // Optional properties to configure the axis labels
+              axisLabelFill: '#555',
+              axisLabelStroke: '#ccc',
+              // Optional properties to configure line and tooltip style
+              crosshairStroke: '#555',
+              crosshairStrokeThickness: 1,
+              tooltipContainerBackground: '#000',
+              // tooltipTextStroke: "#ff6600",
+            })
+          );
 
-            document
-              .getElementById('NavigateTroughtDates')
-              .addEventListener('change', function (event) {
+          sciChartSurface.chartModifiers.add(
+            new MouseWheelZoomModifier(),
+            new ZoomPanModifier(),
+            new ZoomExtentsModifier(),
+            new YAxisDragModifier({ dragMode: EDragMode.Scaling }),
+            new XAxisDragModifier({ dragMode: EDragMode.Scaling })
+          );
+
+          // Navigate Trought Dates: ========================================
+            $navigateTroughtDates.addEventListener('change', function (event) {
                 const getCandleNumberByDay = (days) => 86400 * days; // Get the number of candles in a day (candle count for a entire day)
                 const selectedDate = event.target.value;
                 const rangeMinDate = parseInt(selectedDate) - 1800 // + half an hour
@@ -1563,332 +1860,304 @@ if (currentTime >= '10:10' && currentTime <= '10:45') {
                 const xAxis = sciChartSurface.xAxes.get(0);
                 const yAxis = sciChartSurface.yAxes.get(0);
 
+                // Graph Zooming:
                 xAxis.visibleRange = new NumberRange(
                   rangeMinDate,
                   rangeMaxDate
                 );
-                // yAxis.visibleRange = new NumberRange(1.07, 1.084);
+
+                // yAxis.visibleRange = new NumberRange(1, 3);
+                // updateYAxisRange();
                 // sciChartSurface.zoomExtents();
               });
+          // End of Navigate Trought Dates ========================================
 
-            sciChartSurface.chartModifiers.add(
-              new MouseWheelZoomModifier(),
-              new ZoomPanModifier(),
-              new ZoomExtentsModifier(),
-              new YAxisDragModifier({
-                dragMode: EDragMode.Scaling,
-              }),
-              new XAxisDragModifier({
-                dragMode: EDragMode.Scaling,
-              })
-            );
-          };
-
-          buildChartData(data);
-          // Axios code to fetch data
-          /*
-            axios.get('https://api.binance.com/api/v3/klines?symbol=LTCBTC&interval=1m').then(response => {
-              const data = response.data;
-              // buildChartData(data);
-            }).catch(error => {
-              console.error('Error fetching data:', error);
-            });
-          */
-
-          /*
-            sciChartSurface.domCanvas2D.addEventListener('click', (event) => {
-              //const coords = getCanvasCoordinatesFromEvent(sciChartSurface.domCanvas2D, event);
-              //console.log(coords);
-            });
-          */
-
-          let annotations = [];
-
-          const refreshAnnotations = () => {
-            annotations.forEach((annotation) => {
-              console.log(annotation);
-              /*document.getElementById('annotations').value = annotations
-                .map((a) => JSON.stringify(a))
-                .join('\n');*/
-            });
-          };
-
-          const RRToolBoxAnnotation = (
-            xGraphValue,
-            yGraphValue,
-            options,
-          ) =>
-            new BoxAnnotation({
-              ...RRToolStyles,
-              x1: xGraphValue - 50,
-              x2: xGraphValue + 300,
-              y1: yGraphValue,
-              ...options,
-            });
-
-          const addRRAnnotationBox = (ed) => {
-            if (ed === EnumDirection.BULL) {
-              sciChartSurface.annotations.add(
-                RRToolBoxAnnotation(
-                  coords.xGraphValue,
-                  coords.yGraphValue,
-                  {
-                    fill: `#${bullishColor}${RRToolStyles.opacity}`,
-                    y2: coords.yGraphValue + tpSize(),
-                  },
-                )
-              )
-              sciChartSurface.annotations.add(
-                RRToolBoxAnnotation(
-                  coords.xGraphValue,
-                  coords.yGraphValue,
-                  {
-                    fill: `#${bearishColor}${RRToolStyles.opacity}`,
-                    y2: coords.yGraphValue - slSize(),
-                  },
-                )
-              )
-            } else {
-              sciChartSurface.annotations.add(
-                RRToolBoxAnnotation(
-                  coords.xGraphValue,
-                  coords.yGraphValue,
-                  {
-                    fill: `#${bullishColor}${RRToolStyles.opacity}`,
-                    y2: coords.yGraphValue - tpSize(),
-                  },
-                )
-              )
-              sciChartSurface.annotations.add(
-                RRToolBoxAnnotation(
-                  coords.xGraphValue,
-                  coords.yGraphValue,
-                  {
-                    fill: `#${bearishColor}${RRToolStyles.opacity}`,
-                    y2: coords.yGraphValue + slSize(),
-                  },
-                )
-              )
+          // Tools: ========================================
+            const refreshAnnotations = () => {
+              annotations.forEach((annotation) => {
+                console.log(annotation);
+                /*document.getElementById('annotations').value = annotations
+                  .map((a) => JSON.stringify(a))
+                  .join('\n');*/
+              });
             };
-          };
+            const RRToolBoxAnnotation = (
+              xGraphValue,
+              yGraphValue,
+              options,
+            ) =>
+              new BoxAnnotation({
+                ...RRToolStyles,
+                x1: xGraphValue - 50,
+                x2: xGraphValue + 300,
+                y1: yGraphValue,
+                ...options,
+              });
 
-          // Tools:
+            const addRRAnnotationBox = (ed) => {
+              if (ed === EnumDirection.BULL) {
+                sciChartSurface.annotations.add(
+                  RRToolBoxAnnotation(
+                    coords.xGraphValue,
+                    coords.yGraphValue,
+                    {
+                      fill: `#${bullishColor}${RRToolStyles.opacity}`,
+                      y2: coords.yGraphValue + tpSize(),
+                    },
+                  )
+                )
+                sciChartSurface.annotations.add(
+                  RRToolBoxAnnotation(
+                    coords.xGraphValue,
+                    coords.yGraphValue,
+                    {
+                      fill: `#${bearishColor}${RRToolStyles.opacity}`,
+                      y2: coords.yGraphValue - slSize(),
+                    },
+                  )
+                )
+              } else {
+                sciChartSurface.annotations.add(
+                  RRToolBoxAnnotation(
+                    coords.xGraphValue,
+                    coords.yGraphValue,
+                    {
+                      fill: `#${bullishColor}${RRToolStyles.opacity}`,
+                      y2: coords.yGraphValue - tpSize(),
+                    },
+                  )
+                )
+                sciChartSurface.annotations.add(
+                  RRToolBoxAnnotation(
+                    coords.xGraphValue,
+                    coords.yGraphValue,
+                    {
+                      fill: `#${bearishColor}${RRToolStyles.opacity}`,
+                      y2: coords.yGraphValue + slSize(),
+                    },
+                  )
+                )
+              };
+            };
 
-          let coords = null;
-          let selectedTool = null;
-          let clickCount = 0;
+            let coords = null;
+            let selectedTool = null;
+            let clickCount = 0;
 
-          let lineToolFirstPoint = null;
-          let lineToolSecondPoint = null;
-          let rectangleToolFirstPoint = null;
-          let rectangleToolSecondPoint = null;
+            let lineToolFirstPoint = null;
+            let lineToolSecondPoint = null;
+            let rectangleToolFirstPoint = null;
+            let rectangleToolSecondPoint = null;
 
-          sciChartSurface
-            .domCanvas2D
-            .addEventListener(
-              'click',
-              (event) => {
+            sciChartSurface
+              .domCanvas2D
+              .addEventListener(
+                'click',
+                (event) => {
+                  const rect = sciChartSurface.domCanvas2D.getBoundingClientRect();
+                  const mouseX = event.clientX - rect.left - 10 - 73; // -10 from left offset 'border/padding' of the canvas -73 because of the points legend/markers
+                  const mouseY = event.clientY - rect.top - 10; // -10 from top offset 'border/padding' of the canvas
+                  const xCoordCalc = sciChartSurface.xAxes.get(0).getCurrentCoordinateCalculator();
+                  const yCoordCalc = sciChartSurface.yAxes.get(0).getCurrentCoordinateCalculator();
+
+                  coords = {
+                    xPosition: xCoordCalc.getDataValue(event.clientX),
+                    yPosition: yCoordCalc.getDataValue(event.clientY),
+                    xGraphValue: parseFloat(xCoordCalc.getDataValue(mouseX).toFixed(0)),
+                    yGraphValue: parseFloat(yCoordCalc.getDataValue(mouseY).toFixed(decimals)),
+                    x: xCoordCalc,
+                    y: yCoordCalc,
+                  };
+
+                  // console.log(coords);
+
+                  /*if (isListeningForToolActions) {
+                    addRRAnnotationBox(EnumDirection.BULL);
+                    isListeningForToolActions = false;
+                  }*/
+
+                  if (selectedTool != null) {
+                    clickCount++;
+                  } else {
+                    clickCount = 0;
+                  }
+
+                  // console.log(clickCount);
+
+                  const lineToolActions = [
+                    () => {
+                      lineToolFirstPoint = coords;
+                    },
+                    () => {
+                      lineToolSecondPoint = coords;
+                      sciChartSurface.annotations.add(
+                        new LineAnnotation({
+                          stroke: `#${bullishColor}`,
+                          strokeThickness: 1,
+                          x1: lineToolFirstPoint.xGraphValue,
+                          x2: lineToolSecondPoint.xGraphValue,
+                          y1: lineToolFirstPoint.yGraphValue,
+                          y2: lineToolSecondPoint.yGraphValue,
+                        })
+                      );
+                      clickCount = 0;
+                      selectedTool = null;
+                    },
+                  ]
+
+                  const BOSActions = [
+                    () => {
+                      lineToolFirstPoint = coords;
+                    },
+                    () => {
+                      lineToolSecondPoint = {
+                        ...coords,
+                        yGraphValue: lineToolFirstPoint.yGraphValue, 
+                      };
+                      sciChartSurface.annotations.add(
+                        new LineAnnotation({
+                          stroke: `#${bullishColor}`,
+                          strokeThickness: 1,
+                          x1: lineToolFirstPoint.xGraphValue,
+                          x2: lineToolSecondPoint.xGraphValue,
+                          y1: lineToolFirstPoint.yGraphValue,
+                          y2: lineToolSecondPoint.yGraphValue,
+                        })
+                      );
+                      clickCount = 0;
+                      selectedTool = null;
+                    },
+                  ]
+
+                  const CircleActions = [
+                    () => {
+                      lineToolFirstPoint = coords;
+                      sciChartSurface.annotations.add(
+                        new CustomAnnotation({
+                          x1: lineToolFirstPoint.xGraphValue,
+                          y1: lineToolFirstPoint.yGraphValue,
+                          verticalAnchorPoint: EVerticalAnchorPoint.Center,
+                          horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
+                          svgString: '<svg id="Capa_1" xmlns="http://www.w3.org/2000/svg">' +
+                                    `<circle cx="10" cy="10" r="8" style="fill:#${bullishColor};fill-opacity:0.34117647;stroke:#${bullishColor};stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />` +
+                                    '</svg>',
+  
+                        })
+                      );
+                      clickCount = 0;
+                      selectedTool = null;
+                    },
+                    /*() => {
+                      lineToolSecondPoint = {
+                        ...coords,
+                        yGraphValue: lineToolFirstPoint.yGraphValue, 
+                      };
+                    },*/
+                  ]
+
+                  const rectangleToolActions = [
+                    () => {
+                      rectangleToolFirstPoint = coords;
+                    },
+                    () => {
+                      rectangleToolSecondPoint = coords;
+                      sciChartSurface.annotations.add(
+                        new BoxAnnotation({
+                          x1: rectangleToolFirstPoint.xGraphValue,
+                          x2: rectangleToolSecondPoint.xGraphValue,
+                          y1: rectangleToolFirstPoint.yGraphValue,
+                          y2: rectangleToolSecondPoint.yGraphValue,
+                          fill: `#${bullishColor}${RRToolStyles.opacity}`,
+                          stroke: `#${bullishColor}`,
+                          strokeThickness: 1,
+                          opacity: 0.5,
+                        })
+                      );
+                      clickCount = 0;
+                      selectedTool = null;
+                    },
+                  ]
+
+                  switch (selectedTool) {
+                    case 'RRBuy':
+                      addRRAnnotationBox(EnumDirection.BULL);
+                      clickCount = 0;
+                      selectedTool = null;
+                      break;
+                    case 'RRSell':
+                      addRRAnnotationBox(EnumDirection.SELL);
+                      clickCount = 0;
+                      selectedTool = null;
+                      break;
+                    case 'line':
+                      stepByStep(clickCount, lineToolActions);
+                      break;
+                    case 'BOS':
+                      stepByStep(clickCount, BOSActions);
+                      break;
+                    case 'Circle':
+                      stepByStep(clickCount, CircleActions);
+                      break;
+                    case 'rectangle':
+                      stepByStep(clickCount, rectangleToolActions);
+                      break;
+                    default: return;
+                  }
+                },
+              );
+
+            document.querySelectorAll('[data-anotation]').forEach((button) => {
+              button.removeAttribute('disabled');
+              button.addEventListener('click', function () {
+                let isListeningForToolActions = true;
+                var anotationType = this.dataset.anotation;
                 const rect = sciChartSurface.domCanvas2D.getBoundingClientRect();
-                const mouseX = event.clientX - rect.left - 10 - 73; // -10 from left offset 'border/padding' of the canvas -73 because of the points legend/markers
-                const mouseY = event.clientY - rect.top - 10; // -10 from top offset 'border/padding' of the canvas
-                const xCoordCalc = sciChartSurface.xAxes.get(0).getCurrentCoordinateCalculator();
-                const yCoordCalc = sciChartSurface.yAxes.get(0).getCurrentCoordinateCalculator();
 
-                coords = {
-                  xPosition: xCoordCalc.getDataValue(event.clientX),
-                  yPosition: yCoordCalc.getDataValue(event.clientY),
-                  xGraphValue: parseFloat(xCoordCalc.getDataValue(mouseX).toFixed(0)),
-                  yGraphValue: parseFloat(yCoordCalc.getDataValue(mouseY).toFixed(decimals)),
-                  x: xCoordCalc,
-                  y: yCoordCalc,
+                const rrTool = (enumDirection) => {
+                  isListeningForToolActions = true;
                 };
 
-                // console.log(coords);
-
-                /*if (isListeningForToolActions) {
-                  addRRAnnotationBox(EnumDirection.BULL);
-                  isListeningForToolActions = false;
-                }*/
-
-                if (selectedTool != null) {
-                  clickCount++;
-                } else {
-                  clickCount = 0;
-                }
-
-                // console.log(clickCount);
-
-                const lineToolActions = [
-                  () => {
-                    lineToolFirstPoint = coords;
-                  },
-                  () => {
-                    lineToolSecondPoint = coords;
-                    sciChartSurface.annotations.add(
-                      new LineAnnotation({
-                        stroke: `#${bullishColor}`,
-                        strokeThickness: 1,
-                        x1: lineToolFirstPoint.xGraphValue,
-                        x2: lineToolSecondPoint.xGraphValue,
-                        y1: lineToolFirstPoint.yGraphValue,
-                        y2: lineToolSecondPoint.yGraphValue,
-                      })
-                    );
-                    clickCount = 0;
-                    selectedTool = null;
-                  },
-                ]
-
-                const BOSActions = [
-                  () => {
-                    lineToolFirstPoint = coords;
-                  },
-                  () => {
-                    lineToolSecondPoint = {
-                      ...coords,
-                      yGraphValue: lineToolFirstPoint.yGraphValue, 
-                    };
-                    sciChartSurface.annotations.add(
-                      new LineAnnotation({
-                        stroke: `#${bullishColor}`,
-                        strokeThickness: 1,
-                        x1: lineToolFirstPoint.xGraphValue,
-                        x2: lineToolSecondPoint.xGraphValue,
-                        y1: lineToolFirstPoint.yGraphValue,
-                        y2: lineToolSecondPoint.yGraphValue,
-                      })
-                    );
-                    clickCount = 0;
-                    selectedTool = null;
-                  },
-                ]
-
-                const CircleActions = [
-                  () => {
-                    lineToolFirstPoint = coords;
-                    sciChartSurface.annotations.add(
-                      new CustomAnnotation({
-                        x1: lineToolFirstPoint.xGraphValue,
-                        y1: lineToolFirstPoint.yGraphValue,
-                        verticalAnchorPoint: EVerticalAnchorPoint.Center,
-                        horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
-                        svgString: '<svg id="Capa_1" xmlns="http://www.w3.org/2000/svg">' +
-                                   `<circle cx="10" cy="10" r="8" style="fill:#${bullishColor};fill-opacity:0.34117647;stroke:#${bullishColor};stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />` +
-                                   '</svg>',
- 
-                      })
-                    );
-                    clickCount = 0;
-                    selectedTool = null;
-                  },
-                  /*() => {
-                    lineToolSecondPoint = {
-                      ...coords,
-                      yGraphValue: lineToolFirstPoint.yGraphValue, 
-                    };
-                  },*/
-                ]
-
-                const rectangleToolActions = [
-                  () => {
-                    rectangleToolFirstPoint = coords;
-                  },
-                  () => {
-                    rectangleToolSecondPoint = coords;
-                    sciChartSurface.annotations.add(
-                      new BoxAnnotation({
-                        x1: rectangleToolFirstPoint.xGraphValue,
-                        x2: rectangleToolSecondPoint.xGraphValue,
-                        y1: rectangleToolFirstPoint.yGraphValue,
-                        y2: rectangleToolSecondPoint.yGraphValue,
-                        fill: `#${bullishColor}${RRToolStyles.opacity}`,
-                        stroke: `#${bullishColor}`,
-                        strokeThickness: 1,
-                        opacity: 0.5,
-                      })
-                    );
-                    clickCount = 0;
-                    selectedTool = null;
-                  },
-                ]
-
-                switch (selectedTool) {
+                switch (anotationType) {
                   case 'RRBuy':
-                    addRRAnnotationBox(EnumDirection.BULL);
-                    clickCount = 0;
-                    selectedTool = null;
+                    selectedTool = 'RRBuy';
                     break;
                   case 'RRSell':
-                    addRRAnnotationBox(EnumDirection.SELL);
-                    clickCount = 0;
-                    selectedTool = null;
+                    selectedTool = 'RRSell';
                     break;
                   case 'line':
-                    stepByStep(clickCount, lineToolActions);
+                    selectedTool = 'line';
                     break;
                   case 'BOS':
-                    stepByStep(clickCount, BOSActions);
+                    selectedTool = 'BOS';
                     break;
                   case 'Circle':
-                    stepByStep(clickCount, CircleActions);
+                    selectedTool = 'Circle';
                     break;
                   case 'rectangle':
-                    stepByStep(clickCount, rectangleToolActions);
+                    selectedTool = 'rectangle';
                     break;
-                  default: return;
+                  default:
+                    console.log('No type');
                 }
-              },
-            );
-
-          document.querySelectorAll('[data-anotation]').forEach((button) => {
-            button.removeAttribute('disabled');
-            button.addEventListener('click', function () {
-              let isListeningForToolActions = true;
-              var anotationType = this.dataset.anotation;
-              const rect = sciChartSurface.domCanvas2D.getBoundingClientRect();
-
-              const rrTool = (enumDirection) => {
-                isListeningForToolActions = true;
-              };
-
-              switch (anotationType) {
-                case 'RRBuy':
-                  selectedTool = 'RRBuy';
-                  break;
-                case 'RRSell':
-                  selectedTool = 'RRSell';
-                  break;
-                case 'line':
-                  selectedTool = 'line';
-                  break;
-                case 'BOS':
-                  selectedTool = 'BOS';
-                  break;
-                case 'Circle':
-                  selectedTool = 'Circle';
-                  break;
-                case 'rectangle':
-                  selectedTool = 'rectangle';
-                  break;
-                default:
-                  console.log('No type');
-              }
+              });
             });
-          });
-
-          // Add some interaction modifiers to show zooming and panning
-          // sciChartSurface.chartModifiers.add(new MouseWheelZoomModifier(), new ZoomPanModifier(), new ZoomExtentsModifier());
+          // End of Tools ========================================
         })
         .catch((error) => {
           console.error('Error initializing SciChart:', error);
         });
     }
 
-    // Add some interaction modifiers to show zooming and panning
-    // sciChartSurface.chartModifiers.add(new MouseWheelZoomModifier(), new ZoomPanModifier(), new ZoomExtentsModifier());
-
-    // Call initSciChart after the window has finished loading
-    // window.onload = initSciChart;
+    const appendDataToChart = (d, dataIndex) => {
+      //$csvDataField.value += JSON.stringify(d);
+      addNewCandleToChart([
+        `${d["<DATE>"]} ${d["<TIME>"]}`,
+        d["<OPEN>"],
+        d["<HIGH>"],
+        d["<LOW>"],
+        d["<CLOSE>"],
+      ], dataIndex);
+    }
   </script>
 </body>
 
