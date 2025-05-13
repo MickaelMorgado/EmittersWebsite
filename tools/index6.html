@@ -418,6 +418,9 @@
         <button id="result-panel-toolbar-content-toggler-algo" class="mybutton h-input-effects result-panel-toolbar-toggler">
           Backtesting results (Algo)
         </button>
+        <button id="result-panel-toolbar-content-toggler-review" class="mybutton h-input-effects result-panel-toolbar-toggler">
+          Review From Historical Trades
+        </button>
         <button disabled id="result-panel-toolbar-content-toggler-manual" class="mybutton h-input-effects result-panel-toolbar-toggler">
           Backtesting results (Manual)
         </button>
@@ -426,31 +429,6 @@
           <span><i class="fas fa-arrow-up"></i></span>
           <span><i class="fas fa-arrow-down"></i></span>
         </button>
-      </div>
-      <div class="result-panel-content h-flex h-flex--column">
-        <h5 for="backtesting-hour">Backtesting Result (Algo)</h5>
-        <div class="h-flex h-flex--row">
-          <div class="h-flex h-flex--column">
-            <div class="h-flex h-flex--column">
-              <label for="backtesting-hour">Prefered Backtesting Hour (add 2h to match MT5 data)</label>
-              <input id="backtesting-hour" class="h-input-effects" type="text" value="10:00:00" />
-            </div>
-            <div class="h-flex h-flex--column">
-              <label for="LotSize">Lot Size</label>
-              <input id="LotSize" type="number" value="1.0" class="h-input-effects" />
-              <label for="">RR (SL Points | TP Points)</label>
-              <input id="SLPoints" type="number" value="0.0001" class="h-input-effects" />
-              <input id="TPPoints" type="number" value="0.0003" class="h-input-effects" />
-            </div>
-          </div>
-          <textarea id="backtestingResult" rows="10" style="flex-grow: 1; min-width: 20%" class="h-field"></textarea>
-          <div id="myChartContainer" styles="flex-grow: 3; width: 700px">
-            <canvas id="myChart" width="700px" height="300px"></canvas>
-          </div>
-        </div>
-        <div>
-          <div id="backtestingResultOrderHistory" class="h-field"></div>
-        </div>
       </div>
       <div class="result-panel-content h-hide h-flex h-flex--column">
         <h3>Algo editor</h3>
@@ -653,6 +631,43 @@ if (currentTime >= time1 && currentTime <= time2) {
           });
         </script-->
       </div>
+      <div class="result-panel-content h-flex h-flex--column">
+        <h5 for="backtesting-hour">Backtesting Result (Algo)</h5>
+        <div class="h-flex h-flex--row">
+          <div class="h-flex h-flex--column">
+            <div class="h-flex h-flex--column">
+              <label for="backtesting-hour">Prefered Backtesting Hour (add 2h to match MT5 data)</label>
+              <input id="backtesting-hour" class="h-input-effects" type="text" value="10:00:00" />
+            </div>
+            <div class="h-flex h-flex--column">
+              <label for="LotSize">Lot Size</label>
+              <input id="LotSize" type="number" value="1.0" class="h-input-effects" />
+              <label for="">RR (SL Points | TP Points)</label>
+              <input id="SLPoints" type="number" value="0.0001" class="h-input-effects" />
+              <input id="TPPoints" type="number" value="0.0003" class="h-input-effects" />
+            </div>
+          </div>
+          <textarea id="backtestingResult" rows="10" style="flex-grow: 1; min-width: 20%" class="h-field"></textarea>
+          <div id="myChartContainer" styles="flex-grow: 3; width: 700px">
+            <canvas id="myChart" width="700px" height="300px"></canvas>
+          </div>
+        </div>
+        <div>
+          <div id="backtestingResultOrderHistory" class="h-field"></div>
+        </div>
+      </div>
+      <div class="result-panel-content h-flex h-flex--column">
+        <h5 for="backtesting-hour">Review Historical Trade</h5>
+        <div class="h-flex h-flex--row">
+          <div class="h-flex h-flex--column">
+            <label for="textareaHistoricalTradesLines">Paste your historical lines (myfxbook for now)</label>
+            <textarea id="textareaHistoricalTradesLines" rows="10" style="flex-grow: 1; min-width: 600px" class="h-field">05.13.2025 10:17	05.13.2025 10:18	EURUSD	Sell	1.00	1.11078	-	1.11064	1.11078	-1.4	-16.60	1m	-0.03%	-4.0000</textarea>
+          </div>
+        </div>
+        <div>
+          <div id="backtestingResultOrderHistory" class="h-field"></div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -666,27 +681,69 @@ if (currentTime >= time1 && currentTime <= time2) {
     const $csvFileInput = document.getElementById('csvFileInput');
     const toolbarToggler = document.querySelector('#result-panel-toolbar-toggler');
     const $navigateTroughtDates = document.getElementById('NavigateTroughtDates');
+    const $textareaHistoricalTradesLines = document.getElementById('textareaHistoricalTradesLines');
     function toggleHeight() {
       resultPanel.classList.toggle('active');
     }
     toolbarToggler.addEventListener('click', toggleHeight);
 
-    document.getElementById('result-panel-toolbar-content-toggler-algo').addEventListener('click', () => {
+    document.getElementById('result-panel-toolbar-content-toggler-algo-editor').addEventListener('click', () => {
       resultPanel.classList.add('active');
       document.querySelectorAll('.result-panel-content')[0].classList.remove('h-hide');
       document.querySelectorAll('.result-panel-content')[1].classList.add('h-hide');
+      document.querySelectorAll('.result-panel-content')[2].classList.add('h-hide');
     });
 
-    document.getElementById('result-panel-toolbar-content-toggler-algo-editor').addEventListener('click', () => {
+    document.getElementById('result-panel-toolbar-content-toggler-algo').addEventListener('click', () => {
       resultPanel.classList.add('active');
       document.querySelectorAll('.result-panel-content')[0].classList.add('h-hide');
       document.querySelectorAll('.result-panel-content')[1].classList.remove('h-hide');
+      document.querySelectorAll('.result-panel-content')[2].classList.add('h-hide');
+    });
+
+    document.getElementById('result-panel-toolbar-content-toggler-review').addEventListener('click', () => {
+      resultPanel.classList.add('active');
+      document.querySelectorAll('.result-panel-content')[0].classList.add('h-hide');
+      document.querySelectorAll('.result-panel-content')[1].classList.add('h-hide');
+      document.querySelectorAll('.result-panel-content')[2].classList.remove('h-hide');
     });
 
     $csvRefresh.addEventListener('click', () => {
       const file = $csvFileInput.files[0];
       handleFileAndInitGraph(file);
     });
+
+    $textareaHistoricalTradesLines.addEventListener('change', () => {
+      const lines = $textareaHistoricalTradesLines.value.split(',');
+      const trades = lines.map(line => {
+        const parts = line.split('\t');
+
+        /*  Actual example format :
+            Open Date	Close date	Symbol	Action	Lots	SL (Price)	TP (Price)	Open Price	Close Price	Pips	Net Profit	Duration	Gain	Commissions
+            05.13.2025 10:17	05.13.2025 10:18	EURUSD	Sell	1.00	1.11078	-	1.11064	1.11078	-1.4	-16.60	1m	-0.03%	-4.0000		
+        */
+
+        return {
+            openedTradeDateTime: parts[0],
+            closedTradeDateTime: parts[1],
+            symbol: parts[2],
+            orderDirection: parts[3],
+            lotSize: parseFloat(parts[4]),
+            slPrice: parts[5] === '-' ? null : parseFloat(parts[5]),
+            tpPrice: parts[6] === '-' ? null : parseFloat(parts[6]),
+            entryPrice: parseFloat(parts[7]),
+            closePrice: parseFloat(parts[8]),
+            pnlPips: parseFloat(parts[9]),
+            pnlPrice: parseFloat(parts[10]),
+            tradeDuration: parts[11],
+            pnlPercent: parseFloat(parts[12]),
+            commission: parseFloat(parts[13]),
+        };
+      });
+      
+      
+    });
+
 
     /* ---- */
 
