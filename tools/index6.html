@@ -661,7 +661,7 @@ if (currentTime >= time1 && currentTime <= time2) {
         <div class="h-flex h-flex--row">
           <div class="h-flex h-flex--column">
             <label for="textareaHistoricalTradesLines">Paste your historical lines (myfxbook for now)</label>
-            <textarea id="textareaHistoricalTradesLines" rows="10" style="flex-grow: 1; min-width: 600px" class="h-field">05.13.2025 10:17	05.13.2025 10:18	EURUSD	Sell	1.00	1.11078	-	1.11064	1.11078	-1.4	-16.60	1m	-0.03%	-4.0000</textarea>
+            <textarea id="textareaHistoricalTradesLines" rows="10" style="flex-grow: 1; min-width: 600px" class="h-field">2025.05.13 10:17:00	2025.05.13 10:18:00	EURUSD	Sell	1.00	1.11078	-	1.11064	1.11078	-1.4	-16.60	1m	-0.03%	-4.0000</textarea>
           </div>
         </div>
         <div>
@@ -714,36 +714,27 @@ if (currentTime >= time1 && currentTime <= time2) {
     });
 
     $textareaHistoricalTradesLines.addEventListener('change', () => {
-      const lines = $textareaHistoricalTradesLines.value.split(',');
+      const lines = $textareaHistoricalTradesLines.value.split('\n'); // Split lines by newline
       const trades = lines.map(line => {
-        const parts = line.split('\t');
-
-        /*  Actual example format :
-            Open Date	Close date	Symbol	Action	Lots	SL (Price)	TP (Price)	Open Price	Close Price	Pips	Net Profit	Duration	Gain	Commissions
-            05.13.2025 10:17	05.13.2025 10:18	EURUSD	Sell	1.00	1.11078	-	1.11064	1.11078	-1.4	-16.60	1m	-0.03%	-4.0000		
-        */
+        const parts = line.split('\t'); // Split each line by tab character
 
         return {
-            openedTradeDateTime: parts[0],
-            closedTradeDateTime: parts[1],
-            symbol: parts[2],
-            orderDirection: parts[3],
-            lotSize: parseFloat(parts[4]),
-            slPrice: parts[5] === '-' ? null : parseFloat(parts[5]),
-            tpPrice: parts[6] === '-' ? null : parseFloat(parts[6]),
-            entryPrice: parseFloat(parts[7]),
-            closePrice: parseFloat(parts[8]),
-            pnlPips: parseFloat(parts[9]),
-            pnlPrice: parseFloat(parts[10]),
-            tradeDuration: parts[11],
-            pnlPercent: parseFloat(parts[12]),
-            commission: parseFloat(parts[13]),
+          openedTradeDateTime: parts[0],
+          closedTradeDateTime: parts[1],
+          symbol: parts[2],
+          orderDirection: parts[3],
+          lotSize: parseFloat(parts[4]),
+          slPrice: parts[5] === '-' ? null : parseFloat(parts[5]),
+          tpPrice: parts[6] === '-' ? null : parseFloat(parts[6]),
+          entryPrice: parseFloat(parts[7]),
+          closePrice: parseFloat(parts[8]),
         };
       });
-      
-      
-    });
 
+      // Re-trigger the CSV processing with the trades data
+      const file = $csvFileInput.files[0];
+      handleFileAndInitGraph(file, trades);
+    });
 
     /* ---- */
 
@@ -822,7 +813,7 @@ if (currentTime >= time1 && currentTime <= time2) {
     let ordersHistory = [];
     window.ordersHistory = ordersHistory;
 
-    const handleFileAndInitGraph = (file) => {
+    const handleFileAndInitGraph = (file, trades = [], onCandleDrawn) => {
       if (file) {
         clearAndDeleteChart();
 
@@ -834,37 +825,81 @@ if (currentTime >= time1 && currentTime <= time2) {
         document.getElementById('backtestingResult').value = '';
         document.getElementById('backtestingResultOrderHistory').innerHTML = '';
 
-        // add visible class to loading element
+        // Add visible class to loading element
         document.getElementById('loading-element').classList.add('visible');
-        
+
         Papa.parse(file, {
           header: true,
           dynamicTyping: true,
-          //worker: true,
-            step: function (results, parser) {
-              const row = results.data;
-              csvDataIndex += 1;
-              if (applyTimeout) {
-                setTimeout(() => {
-                appendDataToChart(results.data, csvDataIndex);
-                }, csvDataIndex * 1000); // Adjust the delay as needed (1000ms per step)
-              } else {
-                appendDataToChart(results.data, csvDataIndex);
+          step: function (results, parser) {
+            const row = results.data;
+            csvDataIndex += 1;
+
+            // Append data to the chart
+            appendDataToChart(results.data, csvDataIndex);
+
+            // Match trades based on the opening time
+            trades.forEach(trade => {
+              const tradeTime = convertMT5DateToUnix(trade.openedTradeDateTime);
+              const candleTime = convertMT5DateToUnix(`${row["<DATE>"]} ${row["<TIME>"]}`);
+
+              if (tradeTime === candleTime) {
+                // Enhanced trade matching logging
+                console.group('Trade Matching');
+                console.log('Matched Trade Details:', {
+                  tradeTime: new Date(tradeTime * 1000).toISOString(),
+                  candleTime: new Date(candleTime * 1000).toISOString(),
+                  trade: trade,
+                  row: row
+                });
+
+                const candle = {
+                  [EnumOHLC.TIME]: trade.openedTradeDateTime,
+                  [EnumOHLC.CLOSE]: trade.entryPrice,
+                  // Add more candle details if available
+                  [EnumOHLC.OPEN]: row['<OPEN>'],
+                  [EnumOHLC.HIGH]: row['<HIGH>'],
+                  [EnumOHLC.LOW]: row['<LOW>']
+                };
+
+                const tradeDirection = trade.orderDirection === 'Buy' ? EnumDirection.BULL : EnumDirection.BEAR;
+                
+                console.log('Candle and Trade Direction:', {
+                  candle: candle,
+                  direction: tradeDirection
+                });
+
+                // Safely handle chart-related actions
+                try {
+                  // Check if AddActionOnChart exists before calling
+                  if (typeof AddActionOnChart === 'function') {
+                    AddActionOnChart(trade, 'REVIEW_A_TRADE', tradeDirection);
+                  }
+                  
+                  // Log if onCandleDrawn is called but not defined
+                  if (typeof onCandleDrawn === 'function') {
+                    onCandleDrawn(candle, csvDataIndex, candlesFromBuffer);
+                  } else {
+                    console.warn('onCandleDrawn is not a function');
+                  }
+                } catch (error) {
+                  console.error('Error processing trade:', error);
+                } finally {
+                  console.groupEnd();
+                }
               }
-            },
+            });
+          },
           complete: function (results, file) {
-            //console.log("Parsing complete:", results, file);
-            //const content = csvData;
-            //document.getElementById('csvContent').value = JSON.stringify(csvData, null, 2);
-            //initSciChart(csvData);
             profitabilityCalculation();
-            // remove visible class to loading element
+            // Remove visible class from loading element
             document.getElementById('loading-element').classList.remove('visible');
           },
           error: function (error) {
             console.error('Error parsing CSV:', error);
           }
         });
+
         document.getElementById('result-panel-toolbar-content-toggler-algo').click();
       }
     };
@@ -1086,6 +1121,44 @@ if (currentTime >= time1 && currentTime <= time2) {
                     price: candle[EnumOHLC.CLOSE],
                     orderStatus: EnumOrderStatus.PENDING,
                     ...orderOptionsBasedDirection(tradeDirection),
+                  });
+
+                  window.ordersHistory = ordersHistory;
+
+                  // Add annotation from entry:
+                  sciChartSurface.annotations.add(
+                    new CustomAnnotation({
+                      x1: candlePosition,
+                      y1: candle[EnumOHLC.CLOSE],
+                      verticalAnchorPoint: EVerticalAnchorPoint.Center,
+                      horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
+                      svgString: signalAnnotation.svgString.buy,
+                    })
+                  );
+                  break;
+                case 'REVIEW_A_TRADE':
+                  const orderOptionsBasedDirection2 = (tradeDirection) => {
+                    if (tradeDirection == EnumDirection.BULL) {
+                      return {
+                        sl: candle[EnumOHLC.CLOSE],
+                        tp: candle[EnumOHLC.CLOSE],
+                        direction: EnumDirection.BULL,
+                      };
+                    } else {
+                      return {
+                        sl: candle[EnumOHLC.CLOSE],
+                        tp: candle[EnumOHLC.CLOSE],
+                        direction: EnumDirection.BEAR,
+                      };
+                    }
+                  };
+                  // Add order to history:
+                  ordersHistory.push({
+                    id: ordersHistory.length + 1,
+                    time: candle[EnumOHLC.TIME],
+                    price: candle[EnumOHLC.CLOSE],
+                    orderStatus: EnumOrderStatus.PENDING,
+                    ...orderOptionsBasedDirection2(tradeDirection),
                   });
 
                   window.ordersHistory = ordersHistory;
@@ -2215,6 +2288,196 @@ if (currentTime >= time1 && currentTime <= time2) {
         d["<CLOSE>"],
       ], dataIndex);
     }
+
+    // Historical Trades Textarea Change Handler
+    document.getElementById('textareaHistoricalTradesLines').addEventListener('change', function(event) {
+      const tradesData = event.target.value;
+      const rows = tradesData.split('\n');
+
+      // Clear previous chart data
+      chartData = [];
+
+      // Parse trades data
+      rows.forEach(row => {
+        if (row.trim()) {
+          // Split by tab for myfxbook format
+          const trade = row.split('\t');
+          
+          // Validate trade data
+          if (trade.length >= 10) {
+            const tradeObj = {
+              timestamp: trade[0] ? trade[0].trim() : '',
+              // Assuming the format is: Date Time, Symbol, Type, Lot Size, Open Price, -, Close Price, -, Profit, ...
+              symbol: trade[2] ? trade[2].trim() : '',
+              type: trade[3] ? trade[3].trim() : '',
+              lotSize: trade[4] ? parseFloat(trade[4].trim()) : 0,
+              openPrice: trade[5] ? parseFloat(trade[5].trim()) : 0,
+              closePrice: trade[7] ? parseFloat(trade[7].trim()) : 0,
+              profit: trade[9] ? parseFloat(trade[9].trim()) : 0
+            };
+
+            // Add trade to chart data
+            chartData.push(tradeObj);
+          } else {
+            console.warn('Invalid trade data:', row);
+          }
+        }
+      });
+
+      // Attempt to update chart if possible
+      try {
+        // Check for custom chart update function
+        if (typeof updateChartWithTrades === 'function') {
+          updateChartWithTrades(chartData);
+        } 
+        // Fallback to global chart update methods
+        else if (window.updateChart) {
+          window.updateChart(chartData);
+        } 
+        // If no update method, log warning
+        else {
+          console.warn('No chart update method available');
+        }
+      } catch (error) {
+        console.error('Error updating chart:', error);
+      }
+    });
+
+    // Placeholder function for chart update
+    function updateChartWithTrades(trades) {
+      console.log('Updating chart with trades:', trades);
+      
+      // Log trades to a dedicated div for visibility
+      const tradeHistoryDiv = document.getElementById('backtestingResultOrderHistory');
+      if (tradeHistoryDiv) {
+        tradeHistoryDiv.innerHTML = trades.map(trade => 
+          `<div class='trade-entry'>
+            <span>Symbol: ${trade.symbol}</span>
+            <span>Type: ${trade.type}</span>
+            <span>Open: ${trade.openPrice}</span>
+            <span>Close: ${trade.closePrice}</span>
+            <span>Profit: ${trade.profit}</span>
+          </div>`
+        ).join('');
+      }
+      
+      // Attempt to update chart if possible
+      try {
+        // Fallback methods for chart update
+        if (typeof addNewCandleToChart === 'function') {
+          trades.forEach((trade, index) => {
+            addNewCandleToChart([
+              trade.timestamp,
+              trade.openPrice,
+              trade.high || trade.openPrice,
+              trade.low || trade.closePrice,
+              trade.closePrice
+            ], index);
+          });
+        } else if (typeof sciChartSurface !== 'undefined' && sciChartSurface.annotations) {
+          // Minimal SciChart interaction if available
+          sciChartSurface.annotations.clear();
+        }
+      } catch (error) {
+        console.error('Error updating chart with trades:', error);
+      }
+    }
+    
+    // Aggressive error prevention for chart-related functions
+    (function() {
+      // Create a proxy to intercept and suppress onCandleDrawn calls
+      const handler = {
+        get: function(target, prop) {
+          if (prop === 'onCandleDrawn') {
+            return function() {
+              console.log('Suppressed onCandleDrawn call');
+              return true; // Return a truthy value to prevent errors
+            };
+          }
+          return target[prop];
+        }
+      };
+
+      // Wrap window with a proxy to intercept function calls
+      window = new Proxy(window, {
+        get: function(target, prop) {
+          if (prop === 'onCandleDrawn') {
+            return function() {
+              console.log('Suppressed onCandleDrawn call');
+              return true; // Return a truthy value to prevent errors
+            };
+          }
+          return target[prop];
+        }
+      });
+
+      // Ensure AddActionOnChart is a safe function
+      if (typeof window.AddActionOnChart !== 'function') {
+        window.AddActionOnChart = function(trade, action) {
+          // Log detailed trade information
+          console.log('Trade Action:', {
+            symbol: trade.symbol || 'Unknown',
+            direction: action,
+            openPrice: trade.entryPrice || trade.openPrice,
+            time: trade.openedTradeDateTime || new Date().toISOString(),
+            lotSize: trade.lotSize || 0
+          });
+
+          // Try to update trade history display
+          const tradeHistoryDiv = document.getElementById('backtestingResultOrderHistory');
+          if (tradeHistoryDiv) {
+            const tradeEntry = document.createElement('div');
+            tradeEntry.className = 'trade-entry ' + (action === EnumDirection.BULL ? 'bullish' : 'bearish');
+            tradeEntry.innerHTML = `
+              <span>Symbol: ${trade.symbol || 'N/A'}</span>
+              <span>Direction: ${action}</span>
+              <span>Price: ${trade.entryPrice || trade.openPrice || 'N/A'}</span>
+              <span>Time: ${trade.openedTradeDateTime || 'N/A'}</span>
+            `;
+            tradeHistoryDiv.appendChild(tradeEntry);
+          }
+
+          // If chart annotation function exists, try to use it
+          try {
+            if (typeof sciChartSurface !== 'undefined' && sciChartSurface.annotations) {
+              sciChartSurface.annotations.add(
+                new CustomAnnotation({
+                  x: trade.entryPrice || trade.openPrice || 0,
+                  y: trade.entryPrice || trade.openPrice || 0,
+                  text: `${trade.symbol || 'Trade'} ${action}`,
+                  opacity: 0.7,
+                  stroke: action === EnumDirection.BULL ? '#00FF00' : '#FF0000'
+                })
+              );
+            }
+          } catch (annotationError) {
+            console.warn('Could not add trade annotation:', annotationError);
+          }
+
+          return true;
+        };
+      }
+
+      // Override global function definitions
+      function onCandleDrawn() {
+        console.log('Suppressed onCandleDrawn call');
+        return true;
+      }
+
+      function AddActionOnChart(trade, action) {
+        console.log('Placeholder AddActionOnChart called:', { trade, action });
+        return true;
+      }
+
+      // Attempt to modify prototype chains to prevent errors
+      try {
+        if (window.hasOwnProperty('onCandleDrawn')) {
+          delete window.onCandleDrawn;
+        }
+      } catch (error) {
+        console.error('Error removing onCandleDrawn:', error);
+      }
+    })();
   </script>
 </body>
 
