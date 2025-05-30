@@ -1,0 +1,320 @@
+:root {
+    --portfolio-primary: #ff394a;
+}
+
+.font-saira {
+    font-family: 'Saira Condensed', sans-serif;
+}
+
+/* Smooth scrolling for anchor links */
+a[href*="#"] {
+    scroll-behavior: smooth;
+    text-decoration: none;
+    transition: color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Hero section background */
+#hero {
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.98) 0%, rgba(0, 0, 0, 0.98) 100%);
+    backdrop-filter: blur(5px);
+}
+
+/* Minimalist buttons */
+.btn-minimal {
+    background-color: var(--portfolio-primary);
+    color: black;
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    text-decoration: none;
+    border: none;
+}
+
+.btn-minimal:hover {
+    background-color: var(--portfolio-primary);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(255, 57, 74, 0.3);
+}
+
+/* Passions section */
+#passions {
+    padding: 12rem 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Passion items */
+.passion-item {
+    padding: 4rem 0;
+    flex: 1;
+    min-height: 50vh;
+}
+
+.passion-item:last-child {
+    border-bottom: none;
+}
+
+/* Passion content */
+.passion-content {
+    padding: 3rem;
+    background: rgba(0, 0, 0, 0.95);
+    border-radius: 16px;
+    transition: transform 0.3s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.passion-content:hover {
+    transform: translateY(-10px);
+}
+
+/* Passion images */
+.passion-image {
+    border-radius: 16px;
+    overflow: hidden;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.passion-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.passion-image img:hover {
+    transform: scale(1.1);
+}
+
+/* Passion text */
+.passion-content h3 {
+    margin-bottom: 1.5rem;
+    color: rgba(255, 255, 255, 0.95);
+    font-size: 2.5rem;
+}
+
+/* Style for all cards */
+.passion-content, 
+.passion-image,
+.bg-gray-800 {
+    background-color: black !important;
+    padding: 1.5rem !important;
+    border-radius: 0.5rem !important;
+}
+
+/* Style for all buttons */
+.btn-minimal,
+.hover:text-primary,
+a {
+    border-color: var(--portfolio-primary) !important;
+}
+
+.btn-minimal:hover,
+.hover:text-primary:hover {
+    color: white;
+    border-color: var(--portfolio-primary) !important;
+}
+
+.passion-content p {
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.8;
+    font-size: 1.1rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .passion-item {
+        padding: 3rem 0;
+        min-height: 40vh;
+    }
+    
+    .passion-content {
+        padding: 2rem;
+    }
+    
+    .passion-content h3 {
+        font-size: 2rem;
+    }
+    
+    .passion-content p {
+        font-size: 1rem;
+    }
+}
+
+/* Skill icons */
+.skill-icon {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.skill-icon:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-3px);
+}
+
+/* Tooltips */
+[data-tooltip] {
+    position: relative;
+}
+
+[data-tooltip]:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    right: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.95);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    z-index: 10;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Icons */
+i {
+    transition: transform 0.3s ease;
+}
+
+i:hover {
+    transform: scale(1.1);
+}
+
+/* Navigation */
+nav {
+    background-color: rgba(0, 0, 0, 0.98);
+}
+
+nav a {
+    color: rgba(255, 255, 255, 0.7);
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    transition: all 0.3s ease;
+}
+
+nav a:hover {
+    color: rgba(255, 255, 255, 1);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* Section backgrounds */
+section {
+    background-color: rgba(0, 0, 0, 0.98);
+}
+
+/* Project cards */
+.bg-gray-800 {
+    background-color: rgba(0, 0, 0, 0.98);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: transform 0.3s ease-in-out, background-color 0.3s ease-in-out;
+}
+
+.bg-gray-800:hover {
+    transform: translateY(-5px);
+    background-color: rgba(0, 0, 0, 0.9);
+}
+
+/* Navigation */
+nav {
+    background-color: rgba(0, 0, 0, 0.98);
+}
+
+/* Form inputs */
+input, textarea {
+    background-color: rgba(0, 0, 0, 0.98);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+input:focus, textarea:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(255, 57, 74, 0.2);
+}
+
+/* Footer */
+footer {
+    background-color: rgba(0, 0, 0, 0.98);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.98);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #ff2333;
+}
+
+/* Project cards hover effect */
+.bg-gray-800 {
+    transition: transform 0.3s ease-in-out;
+}
+
+.bg-gray-800:hover {
+    transform: translateY(-5px);
+}
+
+/* Form input focus ring */
+input:focus, textarea:focus {
+    box-shadow: 0 0 0 3px rgba(255, 57, 74, 0.2);
+}
+
+/* Image hover effects */
+img {
+    transition: transform 0.3s ease-in-out;
+}
+
+img:hover {
+    transform: scale(1.05);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .text-5xl {
+        font-size: 2.5rem;
+    }
+    
+    .text-3xl {
+        font-size: 1.75rem;
+    }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #1a1a1a;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #ff394a;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #ff2333;
+}

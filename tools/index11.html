@@ -1,0 +1,725 @@
+<!doctype html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+        integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&display=swap">
+    <script src="../assets/reusables.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Three.js imports -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://threejs.org/build/three.module.js",
+                "three/addons/": "./jsm/"
+            }
+        }
+    </script>
+    
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'https://threejs.org/examples/jsm/controls/OrbitControls.js';
+        import { GLTFLoader } from 'https://threejs.org/examples/jsm/loaders/GLTFLoader.js';
+
+        // Helper function to create a basic scene
+        function createScene(containerId) {
+            const container = document.getElementById(containerId);
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            container.appendChild(renderer.domElement);
+            
+            // Set dark background
+            scene.background = new THREE.Color(0x000000);
+            
+            // Add lighting
+            // Strong ambient light
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+            scene.add(ambientLight);
+            
+            // Directional light from top-left
+            const directionalLight1 = new THREE.DirectionalLight(0xffffff, 1.2);
+            directionalLight1.position.set(5, 5, 5);
+            scene.add(directionalLight1);
+            
+            // Directional light from top-right
+            const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight2.position.set(-5, 5, -5);
+            scene.add(directionalLight2);
+            
+            // Directional light from bottom
+            const directionalLight3 = new THREE.DirectionalLight(0xffffff, 0.5);
+            directionalLight3.position.set(0, -5, 0);
+            scene.add(directionalLight3);
+            
+            // Point light for additional depth
+            const pointLight = new THREE.PointLight(0xffffff, 1.5);
+            pointLight.position.set(0, 2, 0);
+            scene.add(pointLight);
+            
+            // Add controls
+            const controls = new OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.enableZoom = false;  // Prevent zooming
+            controls.enablePan = false;   // Prevent panning
+            controls.minPolarAngle = Math.PI / 4;  // Limit vertical rotation
+            controls.maxPolarAngle = Math.PI * 3 / 4;  // Limit vertical rotation
+            controls.autoRotate = true;   // Enable automatic rotation
+            controls.autoRotateSpeed = 0.5;  // Set rotation speed
+            
+            return { scene, camera, renderer, controls };
+        }
+
+        // BMW 3D Model
+        function createBMWScene() {
+            const { scene, camera, renderer, controls } = createScene('bmw-3d');
+            
+            const modelPath = '../tools/js/threejs/models/bmw_1er_f20_lowpoly/scene.gltf';
+
+            const loader = new GLTFLoader();
+            loader.load(modelPath, function(gltf) {
+                const model = gltf.scene;
+                model.scale.set(1,1,1);
+                model.position.set(0, 0, 0);
+                scene.add(model);
+            });
+            
+            // Position camera
+            camera.position.z = 3;
+            
+            // Animation loop
+            function animate() {
+                requestAnimationFrame(animate);
+                controls.update();
+                renderer.render(scene, camera);
+            }
+            
+            animate();
+        }
+        // Crypto 3D Model
+        function createCryptoScene() {
+            const { scene, camera, renderer, controls } = createScene('crypto-3d');
+            
+            // Create a simple cube with gold material
+            const geometry = new THREE.BoxGeometry(1, 1, 1);
+            const material = new THREE.MeshPhongMaterial({ 
+                color: 0xFFD700,  // Gold color
+                shininess: 100,
+                specular: 0x888888
+            });
+            const cube = new THREE.Mesh(geometry, material);
+            scene.add(cube);
+            
+            // Position camera
+            camera.position.z = 2;
+            
+            // Animation loop
+            function animate() {
+                requestAnimationFrame(animate);
+                controls.update();
+                renderer.render(scene, camera);
+            }
+            
+            animate();
+        }
+
+        // 3D Printing Scene
+        function createPrintingScene() {
+            const { scene, camera, renderer, controls } = createScene('printing-3d');
+            
+            // Create a simple 3D printer model
+            const baseGeometry = new THREE.BoxGeometry(2, 0.2, 2);
+            const baseMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0x444444,
+                shininess: 100,
+                specular: 0x888888
+            });
+            const base = new THREE.Mesh(baseGeometry, baseMaterial);
+            scene.add(base);
+
+            const frameGeometry = new THREE.BoxGeometry(0.1, 2, 2);
+            const frameMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0x444444,
+                shininess: 50,
+                specular: 0x111111
+            });
+            const frame = new THREE.Mesh(frameGeometry, frameMaterial);
+            frame.position.y = 1;
+            scene.add(frame);
+
+            const printBedGeometry = new THREE.BoxGeometry(1.8, 0.05, 1.8);
+            const printBedMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0x444444,
+                shininess: 100,
+                specular: 0x888888
+            });
+            const printBed = new THREE.Mesh(printBedGeometry, printBedMaterial);
+            printBed.position.y = 0.1;
+            scene.add(printBed);
+
+            // Position camera
+            camera.position.z = 2;
+            
+            // Animation loop
+            function animate() {
+                requestAnimationFrame(animate);
+                controls.update();
+                renderer.render(scene, camera);
+            }
+            
+            animate();
+        }
+
+        // Drone Scene
+        function createDroneScene() {
+            const { scene, camera, renderer, controls } = createScene('drone-3d');
+            
+            // Create drone body
+            const bodyGeometry = new THREE.BoxGeometry(0.5, 0.1, 1);
+            const bodyMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0x333333,
+                shininess: 50,
+                specular: 0x111111
+            });
+            const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+            scene.add(body);
+
+            // Create arms
+            const armGeometry = new THREE.BoxGeometry(0.02, 0.02, 0.5);
+            const armMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0x444444,
+                shininess: 50,
+                specular: 0x111111
+            });
+
+            // Create propellers
+            const propGeometry = new THREE.CylinderGeometry(0.1, 0.1, 0.02, 32);
+            const propMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0x666666,
+                shininess: 50,
+                specular: 0x111111
+            });
+
+            // Create motors
+            const motorGeometry = new THREE.CylinderGeometry(0.05, 0.05, 0.1, 32);
+            const motorMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0x444444,
+                shininess: 50,
+                specular: 0x111111
+            });
+
+            // Create four arms with motors and props
+            const armPositions = [
+                { x: 0.25, z: 0.25 },
+                { x: -0.25, z: 0.25 },
+                { x: 0.25, z: -0.25 },
+                { x: -0.25, z: -0.25 }
+            ];
+
+            armPositions.forEach((pos, index) => {
+                const arm = new THREE.Mesh(armGeometry, armMaterial);
+                arm.position.set(pos.x, 0.05, pos.z);
+                scene.add(arm);
+
+                const motor = new THREE.Mesh(motorGeometry, motorMaterial);
+                motor.position.set(pos.x, 0.07, pos.z);
+                scene.add(motor);
+
+                const prop = new THREE.Mesh(propGeometry, propMaterial);
+                prop.position.set(pos.x, 0.07, pos.z);
+                prop.rotation.x = Math.PI / 2; // Rotate propeller to face up
+                scene.add(prop);
+            });
+
+            // Position camera
+            camera.position.z = 2;
+            camera.position.y = 1;
+            
+            // Animation loop
+            function animate() {
+                requestAnimationFrame(animate);
+                
+                // Rotate propellers
+                armPositions.forEach((pos, index) => {
+                    const prop = scene.getObjectByName(`prop${index}`);
+                    if (prop) {
+                        prop.rotation.z += 0.1;
+                    }
+                });
+                
+                controls.update();
+                renderer.render(scene, camera);
+            }
+            
+            animate();
+        }
+
+        // Initialize all scenes when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            createBMWScene();
+            createCryptoScene();
+            createPrintingScene();
+            createDroneScene();
+        });
+    </script>
+    <style>
+        /* Custom styles */
+        @import url('https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@400;500;700&display=swap');
+    </style>
+    
+
+    <link href="portfolio.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                fontFamily: {
+                    saira: ['Saira Condensed', 'sans-serif'],
+                },
+                fontSize: {
+                    xs: '1.2rem',
+                    sm: '1.4rem',
+                    base: '1.6rem',
+                    lg: '2rem',
+                    xl: '2.4rem',
+                    '2xl': '2.8rem',
+                },
+                letterSpacing: {
+                    wide: '1em', // class='tracking-wide'
+                },
+                extend: {
+                    colors: {
+                        primary: '#ff394a',
+                        secondary: '#000000',
+                        grey: '#222222',
+                        grey_dark: '#111111',
+                        dark: '#000000',
+                        bg_dark: '#000000',
+                        bg_darker: '#000000',
+                        section_bg: '#000000',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="font-saira text-white bg-dark">
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full bg-black/90 backdrop-blur-md z-50">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex justify-between items-center">
+                <h1 class="text-2xl font-bold uppercase">Mickael</h1>
+                <div class="hidden md:flex space-x-8">
+                    <a href="#about" class="hover:text-primary transition-colors">About</a>
+                    <a href="#work" class="hover:text-primary transition-colors">Work</a>
+                    <a href="#contact" class="hover:text-primary transition-colors">Contact</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+
+
+
+    <!-- Hero Section -->
+    <section id="hero" class="min-h-screen flex items-center justify-center">
+        <div class="container mx-auto px-6 z-10 text-center">
+            <h1 class="text-5xl font-bold mb-6 uppercase">Mickael</h1>
+            <p class="text-xl mb-8">Developer & Designer</p>
+            <a href="#work" class="text-white hover:text-primary transition-colors">View My Work</a>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="py-20">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-col md:flex-row gap-12">
+                <div class="md:w-1/2">
+                    <h2 class="text-3xl font-bold mb-6 uppercase">About Me</h2>
+                    <p class="mb-4">
+                        I'm Mickael, a detail-driven creator and performance enthusiast who values precision in everything I do.
+                        <br>
+                        <br>
+                        Whether I’m trading with calculated strategies, optimizing my sim racing setup for maximum realism, or customizing hardware with 3D-printed mods, I bring a hands-on, problem-solving mindset to the table.
+                        <br>
+                        <br>
+                        I prefer machines that feel right—like the raw power and refined build of a BMW M4 over the plastic minimalism of a Tesla.
+                        <br>
+                        <br>
+                        I love control, immersion, and tuning systems—be it force feedback in racing, market entries with tight stop-losses, or the acoustic fidelity of my Unreal Engine projects.
+                        <br>
+                        <br>
+                        I don’t just use tools—I master them, modify them, and make them mine.
+                    </p>
+                </div>
+                <div class="md:w-1/2 relative">
+                    <img src="../assets/images/tools/mika.png" class="rounded-full w-48 h-48 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" alt="Mickael">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Passions Section -->
+    <section id="passions" class="py-20">
+        <div class="container mx-auto px-6">
+            <h2 class="text-3xl font-bold text-center mb-12">MY PASSIONS</h2>
+
+            <!-- 3D Printing -->
+            <div class="passion-item">
+                <div class="flex flex-col md:flex-row gap-12">
+                    <div class="md:w-1/2">
+                        <div class="passion-content">
+                            <h3 class="text-2xl font-bold mb-4">3D Printing</h3>
+                            <p class="mb-4">Creating and designing custom 3D models for various projects and prototypes.</p>
+                            <p class="text-gray-400">Expertise in FDM and SLA printing technologies, material selection, and post-processing techniques.</p>
+                        </div>
+                    </div>
+                    <div class="md:w-1/2">
+                        <div class="passion-image">
+                            <div id="printing-3d" class="w-full h-full"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Drones -->
+            <div class="passion-item">
+                <div class="flex flex-col md:flex-row-reverse gap-12">
+                    <div class="md:w-1/2">
+                        <div class="passion-content">
+                            <h3 class="text-2xl font-bold mb-4">Drones</h3>
+                            <p class="mb-4">Building and flying drones for aerial photography and videography.</p>
+                            <p class="text-gray-400">DIY drone builds, custom modifications, and professional aerial photography services.</p>
+                        </div>
+                    </div>
+                    <div class="md:w-1/2">
+                        <div class="passion-image">
+                            <div id="drone-3d" class="w-full h-full"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BMW -->
+            <div class="passion-item">
+                <div class="flex flex-col md:flex-row-reverse gap-12">
+                    <div class="md:w-1/2">
+                        <div class="passion-image">
+                            <div id="bmw-3d" class="w-full h-full"></div>
+                        </div>
+                    </div>
+                    <div class="md:w-1/2">
+                        <div class="passion-content">
+                            <h3 class="text-2xl font-bold mb-4">BMW</h3>
+                            <p class="mb-4">Fan of BMW brand and proud owner of a F20 twin turbo model. Next car on my wishlist is an M3 or M5.</p>
+                            <p class="text-gray-400">Always open to discuss about cars, specially motorsport LMDh and GTs.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Crypto -->
+            <div class="passion-item">
+                <div class="flex flex-col md:flex-row gap-12">
+                    <div class="md:w-1/2">
+                        <div class="passion-image">
+                            <div id="crypto-3d" class="w-full h-full"></div>
+                        </div>
+                    </div>
+                    <div class="md:w-1/2">
+                        <div class="passion-content">
+                            <h3 class="text-2xl font-bold mb-4">Crypto</h3>
+                            <p class="mb-4">Investing and developing blockchain solutions since early 2017.</p>
+                            <p class="text-gray-400">Experience with Bitcoin, Ethereum, and other major cryptocurrencies. Active in DeFi and NFT spaces.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SimRacing -->
+            <div class="passion-item">
+                <div class="flex flex-col md:flex-row gap-12">
+                    <div class="md:w-1/2">
+                        <div class="passion-content">
+                            <h3 class="text-2xl font-bold mb-4">SimRacing</h3>
+                            <p class="mb-4">I'm someone who craves precision, performance, and authenticity—whether it's driving a BMW M series or racing in VR.</p>
+                            <p class="text-gray-400">I’m always refining my sim rig for better feedback and immersion, down to customizing pedals and exploring 3D-printed upgrades. I care about the feel of everything I use, and I don’t settle for “good enough.” If there’s a way to make something more real, more responsive, more right, I’ll find it.</p>
+                        </div>
+                    </div>
+                    <div class="md:w-1/2">
+                        <div class="passion-image">
+                            <div id="simracing-3d" class="w-full h-full"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Aquarium -->
+            <div class="passion-item">
+                <div class="flex flex-col md:flex-row gap-12">
+                    <div class="md:w-1/2">
+                        <div class="passion-image">
+                            <div id="aquarium-3d" class="w-full h-full"></div>
+                        </div>
+                    </div>
+                    <div class="md:w-1/2">
+                        <div class="passion-content">
+                            <h3 class="text-2xl font-bold mb-4">Aquarium</h3>
+                            <p class="mb-4">Maintaining and designing freshwater and marine aquariums.</p>
+                            <p class="text-gray-400">Expert in reef tanks, planted tanks, and aquatic plant propagation.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Tech Skills Section -->
+    <section id="skills" class="py-20">
+        <div class="container mx-auto px-6">
+            <h2 class="text-3xl font-bold text-center mb-12 uppercase">PROGRAMMING SKILLS</h2>
+            <div class="flex flex-col md:flex-row gap-12">
+                <div class="md:w-1/2">
+                    <div class="grid grid-cols-2 gap-4">
+                        <ul class="space-y-2 list-disc list-inside">
+                            <li>React & Next.js</li>
+                            <li>SciChart.js</li>
+                            <li>JavaScript</li>
+                            <li>TypeScript</li>
+                            <li>Tailwind CSS</li>
+                        </ul>
+                        <ul class="space-y-2 list-disc list-inside">
+                            <li>Git</li>
+                            <li>Node.js</li>
+                            <li>Express.js</li>
+                            <li>MongoDB</li>
+                            <li>PostgreSQL</li>
+                        </ul>
+                        <ul class="space-y-2 list-disc list-inside">
+                            <li>Redis</li>
+                            <li>Docker</li>
+                            <li>Kubernetes</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="md:w-1/2">
+                    <div class="grid grid-cols-6 gap-4">
+                        <!-- React -->
+                        <div class="skill-icon relative" data-tooltip="React.js - Building reusable components and managing state efficiently">
+                            <i class="fab fa-react text-3xl"></i>
+                        </div>
+                        <div class="skill-icon relative" data-tooltip="Next.js - Server-side rendering and static site generation">
+                            <i class="fas fa-server text-3xl"></i>
+                        </div>
+                        <div class="skill-icon relative" data-tooltip="JavaScript - ES6+ features and modern development">
+                            <i class="fab fa-js text-3xl"></i>
+                        </div>
+                        <div class="skill-icon relative" data-tooltip="TypeScript - Type safety and better code organization">
+                            <i class="fab fa-typescript text-3xl"></i>
+                        </div>
+                        <div class="skill-icon relative" data-tooltip="Tailwind CSS - Utility-first styling">
+                            <i class="fas fa-paint-brush text-3xl"></i>
+                        </div>
+                        <div class="skill-icon relative" data-tooltip="Git - Version control and collaboration">
+                            <i class="fab fa-git text-3xl"></i>
+                        </div>
+                        <div class="skill-icon relative" data-tooltip="Node.js - Backend development with JavaScript">
+                            <i class="fab fa-node text-3xl"></i>
+                        </div>
+                        <div class="skill-icon relative" data-tooltip="MongoDB - NoSQL database">
+                            <i class="fas fa-database text-3xl"></i>
+                        </div>
+                        <div class="skill-icon relative" data-tooltip="SciChart.js - Real-time data visualization">
+                            <i class="fas fa-chart-line text-3xl"></i>
+                        </div>
+                        <div class="skill-icon relative" data-tooltip="Electron - Cross-platform desktop application">
+                            <i class="fas fa-desktop text-3xl"></i>
+                        </div>
+                        <div class="skill-icon relative" data-tooltip="IFPS - Decentralized storage">
+                            <i class="fas fa-cloud text-3xl"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Other Skills -->
+    <section id="otherSkills" class="py-20">
+        <div class="container mx-auto px-6">
+            <h2 class="text-3xl font-bold text-center mb-12 uppercase">OTHER SKILLS</h2>
+            <div class="flex flex-col md:flex-row gap-12">
+                <div class="md:w-1/2">
+                    <div class="grid grid-cols-2 gap-4">
+                        <ul class="space-y-2 list-disc list-inside">
+                            <li>Blender</li>    
+                            <li>Unreal Engine</li>
+                            <li>3D Printing</li>
+                            <li>Live Streaming</li>
+                            <li>Trading</li>
+                            <li>Google Sheets</li>
+                            <li>FL Studio Music Composer</li>
+                        </ul>
+                        <ul class="space-y-2 list-disc list-inside">
+                            
+                        </ul>
+                        <ul class="space-y-2 list-disc list-inside">
+                           
+                        </ul>
+                    </div>
+                </div>
+                <div class="md:w-1/2">
+                    <div class="grid grid-cols-6 gap-4">
+                        <div class="skill-icon relative" data-tooltip="Blender - 3D Modeling">
+                            <i class="fab fa-blender text-3xl"></i>
+                        </div>
+                        <div class="skill-icon relative" data-tooltip="Unreal Engine - Game Development">
+                            <i class="fab fa-unreal-engine text-3xl"></i>
+                        </div>
+                        <div class="skill-icon relative" data-tooltip="3D Printing - FDM/SLA Printing">
+                            <i class="fas fa-print text-3xl"></i>
+                        </div>
+                        <div class="skill-icon relative" data-tooltip="Live Streaming - YouTube/Twitch">
+                            <i class="fab fa-youtube text-3xl"></i>
+                        </div>
+                        <div class="skill-icon relative" data-tooltip="Trading - Stock/Crypto Trading">
+                            <i class="fas fa-chart-pie text-3xl"></i>
+                        </div>
+                        <div class="skill-icon relative" data-tooltip="Google Sheets - Spreadsheets">
+                            <i class="fas fa-table text-3xl"></i>
+                        </div>
+                        <div class="skill-icon relative" data-tooltip="FL Studio - Music Composition">
+                            <i class="fas fa-music text-3xl"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tools Section -->
+    <section id="tools" class="py-20">
+        <div class="container mx-auto px-6">
+            <h2 class="text-3xl font-bold text-center mb-12">APPS / TOOLS / PROJECTS</h2>
+            <div class="mb-12 text-center">
+                <div class="flex flex-wrap justify-center">
+                    <span class="badge mr-2 mb-2" data-filter="all">All</span>
+                    <span class="badge mr-2 mb-2" data-filter="Racing">Racing</span>
+                    <span class="badge mr-2 mb-2" data-filter="Game Development">Game Development</span>
+                    <span class="badge mr-2 mb-2" data-filter="Android">Android</span>
+                    <span class="badge mr-2 mb-2" data-filter="Scripting">Scripting</span>
+                </div>
+            </div>
+            <div id="tools-grid" class="grid md:grid-cols-3 gap-12">
+                <div class="bg-gray-800 rounded-lg p-8" data-category="Racing">
+                    <img src="https://raw.githubusercontent.com/Mikaele01/simhub-dashboard/main/simhub-dashboard.png" alt="SimHub Dashboard" class="w-full rounded-lg mb-6">
+                    <h3 class="text-2xl font-bold mb-4">SimHub Dashboard</h3>
+                    <p class="mb-4">A customizable dashboard for SimHub, a racing simulator.</p>
+                    <a href="https://github.com/Mikaele01/simhub-dashboard" class="btn-minimal">View on GitHub</a>
+                </div>
+                <div class="bg-gray-800 rounded-lg p-8" data-category="Game Development">
+                    <img src="https://emittersgame.com/assets/images/1.jpg" alt="Emitters Game Website" class="w-full rounded-lg mb-6">
+                    <h3 class="text-2xl font-bold mb-4">Emitters Game Website</h3>
+                    <p class="mb-4">A website for my game Emitters, a fast-paced, first-person experience set in a future taken over by deadly hi-tech drones.</p>
+                    <a href="https://emittersgame.com" class="btn-minimal">Visit Website</a>
+                </div>
+                <div class="bg-gray-800 rounded-lg p-8" data-category="Apps">
+                    <img src="https://github.com/Mikaele01/MikasCodesApp/blob/main/assets/images/screenshot.png?raw=true" alt="Mikas Codes App" class="w-full rounded-lg mb-6">
+                    <h3 class="text-2xl font-bold mb-4">Mikas Codes App</h3>
+                    <p class="mb-4">An Electron app for storing and generating codes.</p>
+                    <a href="https://github.com/Mikaele01/MikasCodesApp" class="btn-minimal">View on GitHub</a>
+                </div>
+                <div class="bg-gray-800 rounded-lg p-8" data-category="Scripting">
+                    <img src="https://via.placeholder.com/600x400" alt="Scripting" class="w-full rounded-lg mb-6">
+                    <h3 class="text-2xl font-bold mb-4">Scripting</h3>
+                    <p class="mb-4">Another project with different features and technologies.</p>
+                    <a href="#" class="btn-minimal">View Details</a>
+                </div>
+                <div class="bg-gray-800 rounded-lg p-8" data-category="Cloud">
+                    <img src="../assets/images/tools/ipfs.png" alt="IFPSTutorial" class="w-full rounded-lg mb-6">
+                    <h3 class="text-2xl font-bold mb-4">IFPS Limitless Could Storage</h3>
+                    <p class="mb-4">A cloud file storage using web3 technology (IFPS).</p>
+                    <a href="https://github.com/Mikaele01/IFPSTutorial" class="btn-minimal">View on GitHub</a>
+                </div>
+                <div class="bg-gray-800 rounded-lg p-8" data-category="Game Development">
+                    <img src="../assets/images/tools/shoot.png" alt="Shooter" class="w-full rounded-lg mb-6">
+                    <h3 class="text-2xl font-bold mb-4">Shooter</h3>
+                    <p class="mb-4">A simple game where you have to avoid the squares.</p>
+                    <a href="https://mikaele01.github.io/Shooter/" class="btn-minimal">Play Online</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        const toolsCategories = document.querySelectorAll(".badge");
+        const toolsGrid = document.getElementById("tools-grid");
+
+        toolsCategories.forEach((category) => {
+            category.addEventListener("click", () => {
+                const selectedCategory = category.dataset.filter;
+                if (selectedCategory === "all") {
+                    toolsGrid.classList.remove("hidden");
+                    return;
+                }
+
+                const elements = toolsGrid.children;
+                for (let i = 0; i < elements.length; i++) {
+                    const element = elements[i];
+                    if (element.dataset.category === selectedCategory) {
+                        element.classList.remove("hidden");
+                    } else {
+                        element.classList.add("hidden");
+                    }
+                }
+            });
+        });
+    </script>
+
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-20">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-col md:flex-row gap-12">
+                <div class="md:w-1/2">
+                    <img src="https://via.placeholder.com/500" alt="Contact Image" class="rounded-lg shadow-xl">
+                </div>
+                <div class="md:w-1/2">
+                    <h2 class="text-3xl font-bold mb-6">Get in Touch</h2>
+                    <form class="space-y-6">
+                        <div>
+                            <input type="text" placeholder="Name" class="w-full bg-gray-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary">
+                        </div>
+                        <div>
+                            <input type="email" placeholder="Email" class="w-full bg-gray-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary">
+                        </div>
+                        <div>
+                            <textarea placeholder="Message" class="w-full bg-gray-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary h-32"></textarea>
+                        </div>
+                        <button type="submit" class="btn-minimal w-full">Send Message</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-black py-8">
+        <div class="container mx-auto px-6">
+            <div class="flex justify-center space-x-6">
+                <a href="#" class="text-white hover:text-primary transition-colors"><i class="fab fa-github"></i></a>
+                <a href="#" class="text-white hover:text-primary transition-colors"><i class="fab fa-linkedin"></i></a>
+                <a href="#" class="text-white hover:text-primary transition-colors"><i class="fab fa-twitter"></i></a>
+            </div>
+            <p class="text-center text-gray-400 mt-4"> 2025 Mickael. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>
