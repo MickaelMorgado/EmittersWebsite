@@ -1,0 +1,11 @@
+Model Information:
+* title:	BMW 1er F20 lowpoly
+* source:	https://sketchfab.com/3d-models/bmw-1er-f20-lowpoly-5c2335d831844ed4b4f3adadcc3544c7
+* author:	isdkv (https://sketchfab.com/isdkv)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "BMW 1er F20 lowpoly" (https://sketchfab.com/3d-models/bmw-1er-f20-lowpoly-5c2335d831844ed4b4f3adadcc3544c7) by isdkv (https://sketchfab.com/isdkv) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
