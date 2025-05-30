@@ -227,7 +227,7 @@
             )
                 .then((rowData) => {
                     const listOfImagesSrcs = extractArrayFromRows(rowData, 8);
-                    listOfProfitabilty = extractArrayFromRows(rowData, 1);
+                    listOfProfitabilty = extractArrayFromRows(rowData, 2);
                     init(listOfImagesSrcs);
                 })
                 .catch((error) => {
