@@ -15,7 +15,8 @@
         {
             "imports": {
                 "three": "https://threejs.org/build/three.module.js",
-                "three/addons/": "./jsm/"
+                "three/addons/": "./jsm/",
+                "postprocessing": "https://cdn.jsdelivr.net/npm/postprocessing@6.37.3/+esm"
             }
         }
     </script>
@@ -24,260 +25,92 @@
         import * as THREE from 'three';
         import { OrbitControls } from 'https://threejs.org/examples/jsm/controls/OrbitControls.js';
         import { GLTFLoader } from 'https://threejs.org/examples/jsm/loaders/GLTFLoader.js';
-        import { EffectComposer } from 'https://threejs.org/examples/jsm/postprocessing/EffectComposer.js';
-        import { RenderPass } from 'https://threejs.org/examples/jsm/postprocessing/RenderPass.js';
-        import { UnrealBloomPass } from 'https://threejs.org/examples/jsm/postprocessing/UnrealBloomPass.js';
-        import { FXAAShader } from 'https://threejs.org/examples/jsm/shaders/FXAAShader.js';
-        import { ShaderPass } from 'https://threejs.org/examples/jsm/postprocessing/ShaderPass.js';
+        import { EffectComposer, RenderPass, EffectPass, BloomEffect, BlendFunction } from 'postprocessing';
 
         // Helper function to create a basic scene
         function createScene(containerId) {
             const container = document.getElementById(containerId);
             const scene = new THREE.Scene();
+            scene.background = null;
             const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+            camera.position.z = 15;
             
-            // Enhanced WebGL renderer with better anti-aliasing
+            // Configure renderer with transparency
             const renderer = new THREE.WebGLRenderer({
-                antialias: true,
-                powerPreference: 'high-performance',
+                antialias: false,
                 alpha: true,
+                powerPreference: 'high-performance',
                 stencil: false,
-                depth: true
+                depth: true,
+                premultipliedAlpha: false
             });
             
-            // Enable high-quality anti-aliasing
-            renderer.antialias = true;
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Limit pixel ratio for performance
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             renderer.setSize(container.clientWidth, container.clientHeight);
             renderer.shadowMap.enabled = true;
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.setClearColor(0x000000, 0);
             
+            // Make container transparent
+            container.style.backgroundColor = 'transparent';
+            container.innerHTML = ''; // Clear previous canvas if any
             container.appendChild(renderer.domElement);
             
+            // Set up controls
+            const controls = new OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.autoRotate = true;
+            controls.autoRotateSpeed = 1.0;
+            controls.enableZoom = false; // Disable zooming
+            
+            // Add lighting
+            const ambientLight = new THREE.AmbientLight(0x404040);
+            scene.add(ambientLight);
+            
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1.5);
+            directionalLight.position.set(1, 1, 1);
+            scene.add(directionalLight);
+            
+            // Create bloom effect
+            const bloomEffect = new BloomEffect({
+                blendFunction: BlendFunction.ADD,
+                mipmapBlur: true,
+                luminanceThreshold: 0.4,
+                luminanceSmoothing: 0.1,
+                intensity: 15.0,
+                radius: 0.8
+            });
+            
+            // Create effect composer
+            const composer = new EffectComposer(renderer);
+            composer.addPass(new RenderPass(scene, camera));
+            composer.addPass(new EffectPass(camera, bloomEffect));
+            
+            // Animation loop
+            const animate = () => {
+                requestAnimationFrame(animate);
+                controls.update();
+                composer.render();
+            };
+            
             // Handle window resize
-            window.addEventListener('resize', () => {
+            const onWindowResize = () => {
                 camera.aspect = container.clientWidth / container.clientHeight;
                 camera.updateProjectionMatrix();
                 renderer.setSize(container.clientWidth, container.clientHeight);
-            });
+                composer.setSize(container.clientWidth, container.clientHeight);
+            };
             
-            // Set dark background
-            scene.background = new THREE.Color(0x000000);
+            window.addEventListener('resize', onWindowResize, false);
             
-            // Add lighting
-            // Strong ambient light
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
-            scene.add(ambientLight);
-            
-            // Directional light from top-left
-            const directionalLight1 = new THREE.DirectionalLight(0xffffff, 1.2);
-            directionalLight1.position.set(5, 5, 5);
-            scene.add(directionalLight1);
-            
-            // Directional light from top-right
-            const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.8);
-            directionalLight2.position.set(-5, 5, -5);
-            scene.add(directionalLight2);
-            
-            // Directional light from bottom
-            const directionalLight3 = new THREE.DirectionalLight(0xffffff, 0.5);
-            directionalLight3.position.set(0, -5, 0);
-            scene.add(directionalLight3);
-            
-            // Point light for additional depth
-            const pointLight = new THREE.PointLight(0xffffff, 1.5);
-            pointLight.position.set(0, 2, 0);
-            scene.add(pointLight);
-            
-            // Add controls
-            const controls = new OrbitControls(camera, renderer.domElement);
-            controls.enableDamping = true;
-            controls.enableZoom = false;  // Prevent zooming
-            controls.enablePan = false;   // Prevent panning
-            controls.minPolarAngle = Math.PI / 4;  // Limit vertical rotation
-            controls.maxPolarAngle = Math.PI * 3 / 4;  // Limit vertical rotation
-            controls.autoRotate = true;   // Enable automatic rotation
-            controls.autoRotateSpeed = 0.5;  // Set rotation speed
-            
-            return { scene, camera, renderer, controls };
+            return { scene, camera, renderer, controls, animate };
         }
-
-        // BMW 3D Model
-        function createBMWScene() {
-            const container = document.getElementById('bmw-3d');
-            const { scene, camera, renderer, controls } = createScene('bmw-3d');
-            const modelPath = '../tools/js/threejs/models/BMW.gltf';
-            
-            // Add red ambient light for better visibility
-            const ambientLight = new THREE.AmbientLight(0xff0000, 0.5);
-            scene.add(ambientLight);
-            
-            const loader = new GLTFLoader();
-            loader.load(modelPath, function(gltf) {
-                const model = gltf.scene;
-                model.scale.set(0.5, 0.5, 0.5);
-                model.position.set(0, -2, 0);
-                
-                model.traverse((child) => {
-                    if (child.isMesh) {
-                        const meshIndex = child.parent.children.indexOf(child);
-                        child.material = meshIndex === 1
-                            ? new THREE.MeshStandardMaterial({
-                                color: 0xff0000, // base color
-                                emissive: 0xff0000, // glow color
-                                emissiveIntensity: 10,
-                            })
-                            : new THREE.MeshBasicMaterial({
-                                color: 0xAAAAAA,    
-                                wireframe: false,      
-                                transparent: false,    
-                                //opacity: 0.9,         // Slight transparency
-                                wireframeLinewidth: 1  // Line thickness
-                            });
-                    }
-                });
-                
-                // Create composer with better anti-aliasing
-                const renderScene = new RenderPass(scene, camera);
-                const composer = new EffectComposer(renderer);
-                composer.addPass(renderScene);
-                
-                // Add FXAA for better edge smoothing
-                const fxaaPass = new ShaderPass(FXAAShader);
-                const pixelRatio = renderer.getPixelRatio();
-                fxaaPass.material.uniforms['resolution'].value.x = 1 / (container.clientWidth * pixelRatio);
-                fxaaPass.material.uniforms['resolution'].value.y = 1 / (container.clientHeight * pixelRatio);
-                composer.addPass(fxaaPass);
-                
-                // Add bloom effect
-                const bloomPass = new UnrealBloomPass(
-                    new THREE.Vector2(window.innerWidth, window.innerHeight),
-                    0.2,  // Strength
-                    0.75,  // Radius
-                    0.1   // Threshold
-                );
-                
-                composer.addPass(bloomPass);
-                scene.add(model);
-                
-                // Auto-rotate the model
-                function animate() {
-                    requestAnimationFrame(animate);
-                    model.rotation.y += 0.005;
-                    controls.update();
-                    composer.render();
-                }
-                
-                animate();
-            });
-
-            // Position camera
-            camera.position.z = 15;
-            
-            // Set up auto-rotation
-            controls.autoRotate = true;
-            controls.autoRotateSpeed = 1.0;
-            
-            // Initial render
-            function render() {
-                requestAnimationFrame(render);
-                controls.update();
-                renderer.render(scene, camera);
-            }
-            
-            render();
         
-        }
-        // Crypto 3D Model
-        function createCryptoScene() {
-            const container = document.getElementById('crypto-3d');
-            const { scene, camera, renderer, controls } = createScene('crypto-3d');
-            const modelPath = '../tools/js/threejs/models/CryptoTrezor.gltf';
-            
-            // Add red ambient light for better visibility
-            const ambientLight = new THREE.AmbientLight(0xff0000, 0.5);
-            scene.add(ambientLight);
-            
-            const loader = new GLTFLoader();
-            loader.load(modelPath, function(gltf) {
-                const model = gltf.scene;
-                model.scale.set(0.5, 0.5, 0.5);
-                model.position.set(0, -2, 0);
-                
-                model.traverse((child) => {
-                    if (child.isMesh) {
-                        const meshIndex = child.parent.children.indexOf(child);
-                        child.material = meshIndex === 1
-                            ? new THREE.MeshStandardMaterial({
-                                color: 0xff0000, // base color
-                                emissive: 0xff0000, // glow color
-                                emissiveIntensity: 10,
-                            })
-                            : new THREE.MeshBasicMaterial({
-                                color: 0xAAAAAA,    
-                                wireframe: false,      
-                                transparent: false,    
-                                //opacity: 0.9,         // Slight transparency
-                                wireframeLinewidth: 1  // Line thickness
-                            });
-                    }
-                });
-                
-                // Create composer with better anti-aliasing
-                const renderScene = new RenderPass(scene, camera);
-                const composer = new EffectComposer(renderer);
-                composer.addPass(renderScene);
-                
-                // Add FXAA for better edge smoothing
-                const fxaaPass = new ShaderPass(FXAAShader);
-                const pixelRatio = renderer.getPixelRatio();
-                fxaaPass.material.uniforms['resolution'].value.x = 1 / (container.clientWidth * pixelRatio);
-                fxaaPass.material.uniforms['resolution'].value.y = 1 / (container.clientHeight * pixelRatio);
-                composer.addPass(fxaaPass);
-                
-                // Add bloom effect
-                const bloomPass = new UnrealBloomPass(
-                    new THREE.Vector2(window.innerWidth, window.innerHeight),
-                    0.2,  // Strength
-                    0.75,  // Radius
-                    0.1   // Threshold
-                );
-                
-                composer.addPass(bloomPass);
-                scene.add(model);
-                
-                // Auto-rotate the model
-                function animate() {
-                    requestAnimationFrame(animate);
-                    model.rotation.y += 0.005;
-                    controls.update();
-                    composer.render();
-                }
-                
-                animate();
-            });
-
-            // Position camera
-            camera.position.z = 15;
-            
-            // Set up auto-rotation
-            controls.autoRotate = true;
-            controls.autoRotateSpeed = 1.0;
-            
-            // Initial render
-            function render() {
-                requestAnimationFrame(render);
-                controls.update();
-                renderer.render(scene, camera);
-            }
-            
-            render();
-        }
-
         // 3D Printing Scene
         function createPrintingScene() {
             const container = document.getElementById('printing-3d');
-            const { scene, camera, renderer, controls } = createScene('printing-3d');
+            const { scene, camera, renderer, controls, animate } = createScene('printing-3d');
             const modelPath = '../tools/js/threejs/models/A1Mini.gltf';
             
             // Add red ambient light for better visibility
@@ -287,83 +120,78 @@
             const loader = new GLTFLoader();
             loader.load(modelPath, function(gltf) {
                 const model = gltf.scene;
-                model.scale.set(0.5, 0.5, 0.5);
+                model.scale.set(1.1, 1.1, 1.1);
                 model.position.set(0, -2, 0);
                 
+                // Set up model materials with glow
                 model.traverse((child) => {
                     if (child.isMesh) {
-                        const meshIndex = child.parent.children.indexOf(child);
-                        child.material = meshIndex === 4
-                            ? new THREE.MeshStandardMaterial({
-                                color: 0xff0000, // base color
-                                emissive: 0xff0000, // glow color
-                                emissiveIntensity: 10,
-                            })
-                            : new THREE.MeshBasicMaterial({
-                                color: 0xAAAAAA,    
-                                wireframe: false,      
-                                transparent: false,    
-                                //opacity: 0.9,         // Slight transparency
-                                wireframeLinewidth: 1  // Line thickness
+                        // Set up basic material for all parts
+                        child.material = new THREE.MeshStandardMaterial({
+                            color: 0x555555,
+                            roughness: 0.7,
+                            metalness: 0.3
+                        });
+                        
+                        // Make specific parts glow (adjust these names based on your model)
+                        if (child.name === 'head' || child.name.includes('nozzle')) {
+                            child.material = new THREE.MeshStandardMaterial({
+                                color: 0xff0000,
+                                emissive: 0xff0000,
+                                emissiveIntensity: 2.0,
+                                roughness: 0.3,
+                                metalness: 0.8
                             });
+                            child.userData.glow = true;
+                        }
                     }
                 });
                 
-                // Create composer with better anti-aliasing
-                const renderScene = new RenderPass(scene, camera);
-                const composer = new EffectComposer(renderer);
-                composer.addPass(renderScene);
+                // Play all animations
+                const mixer = new THREE.AnimationMixer(model);
                 
-                // Add FXAA for better edge smoothing
-                const fxaaPass = new ShaderPass(FXAAShader);
-                const pixelRatio = renderer.getPixelRatio();
-                fxaaPass.material.uniforms['resolution'].value.x = 1 / (container.clientWidth * pixelRatio);
-                fxaaPass.material.uniforms['resolution'].value.y = 1 / (container.clientHeight * pixelRatio);
-                composer.addPass(fxaaPass);
+                // Play each animation clip
+                gltf.animations.forEach((clip) => {
+                    const action = mixer.clipAction(clip);
+                    action.setLoop(THREE.LoopRepeat);
+                    action.play();
+                });
                 
-                // Add bloom effect
-                const bloomPass = new UnrealBloomPass(
-                    new THREE.Vector2(window.innerWidth, window.innerHeight),
-                    0.2,  // Strength
-                    0.75,  // Radius
-                    0.1   // Threshold
-                );
-
-                composer.addPass(bloomPass);
+                // Add to scene
                 scene.add(model);
                 
-                // Auto-rotate the model
-                function animate() {
+                // Animation loop
+                const clock = new THREE.Clock();
+                const animate = () => {
                     requestAnimationFrame(animate);
-                    model.rotation.y += 0.005;
+                    
+                    // Update animations
+                    const delta = clock.getDelta();
+                    if (mixer) mixer.update(delta);
+                    
+                    // Update controls
                     controls.update();
-                    composer.render();
-                }
+                    
+                    // Render
+                    renderer.render(scene, camera);
+                };
                 
                 animate();
             });
-                        
-            // Position camera
-            camera.position.z = 8;
             
-            // Set up auto-rotation
-            controls.autoRotate = true;
-            controls.autoRotateSpeed = 1.0;
-            
-            // Initial render
-            function render() {
-                requestAnimationFrame(render);
-                controls.update();
-                renderer.render(scene, camera);
-            }
-            
-            render();
+
+            // Handle window resize
+            window.addEventListener('resize', () => {
+                camera.aspect = container.clientWidth / container.clientHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(container.clientWidth, container.clientHeight);
+            });
         }
 
         // Drone Scene
         function createDroneScene() {
             const container = document.getElementById('drone-3d');
-            const { scene, camera, renderer, controls } = createScene('drone-3d');
+            const { scene, camera, renderer, controls, animate } = createScene('drone-3d');
             const modelPath = '../tools/js/threejs/models/MikasDrone.gltf';
             
             // Add red ambient light for better visibility
@@ -373,87 +201,155 @@
             const loader = new GLTFLoader();
             loader.load(modelPath, function(gltf) {
                 const model = gltf.scene;
-                model.scale.set(0.5, 0.5, 0.5);
+                model.scale.set(.04, .04, .04);
                 model.position.set(0, -2, 0);
                 
+                // Set up model materials with glow
                 model.traverse((child) => {
                     if (child.isMesh) {
                         const meshIndex = child.parent.children.indexOf(child);
-                        child.material = 
-                        meshIndex === 3 ||
-                        meshIndex === 4 ||
-                        meshIndex === 5 ||
-                        meshIndex === 1
-                            ? new THREE.MeshStandardMaterial({
-                                color: 0xff0000, // base color
-                                emissive: 0xff0000, // glow color
-                                emissiveIntensity: 10,
-                            })
-                            : new THREE.MeshBasicMaterial({
-                                color: 0xAAAAAA,    
-                                wireframe: false,      
-                                transparent: false,    
-                                //opacity: 0.9,         // Slight transparency
-                                wireframeLinewidth: 1  // Line thickness
+                        if (meshIndex === 3 || meshIndex === 4 || meshIndex === 5 || meshIndex === 1) {
+                            child.material = new THREE.MeshStandardMaterial({
+                                color: 0xff0000,
+                                emissive: 0xff0000,
+                                emissiveIntensity: 2.0,
+                                roughness: 0.3,
+                                metalness: 0.8
                             });
+                            child.userData.glow = true; // Mark for glow effect
+                        } else {
+                            child.material = new THREE.MeshStandardMaterial({
+                                color: 0x555555,
+                                roughness: 0.7,
+                                metalness: 0.3
+                            });
+                            child.userData.glow = false;
+                        }
                     }
                 });
                 
-                // Create composer with better anti-aliasing
-                const renderScene = new RenderPass(scene, camera);
-                const composer = new EffectComposer(renderer);
-                composer.addPass(renderScene);
-                
-                // Add FXAA for better edge smoothing
-                const fxaaPass = new ShaderPass(FXAAShader);
-                const pixelRatio = renderer.getPixelRatio();
-                fxaaPass.material.uniforms['resolution'].value.x = 1 / (container.clientWidth * pixelRatio);
-                fxaaPass.material.uniforms['resolution'].value.y = 1 / (container.clientHeight * pixelRatio);
-                composer.addPass(fxaaPass);
-                
-                // Add bloom effect
-                const bloomPass = new UnrealBloomPass(
-                    new THREE.Vector2(window.innerWidth, window.innerHeight),
-                    0.2,  // Strength
-                    0.75,  // Radius
-                    0.1   // Threshold
-                );
-                
-                composer.addPass(bloomPass);
                 scene.add(model);
-                
-                // Auto-rotate the model
-                function animate() {
-                    requestAnimationFrame(animate);
-                    model.rotation.y += 0.005;
-                    controls.update();
-                    composer.render();
-                }
-                
                 animate();
             });
 
-            // Position camera
-            camera.position.z = 150;
+            // Handle window resize
+            window.addEventListener('resize', () => {
+                camera.aspect = container.clientWidth / container.clientHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(container.clientWidth, container.clientHeight);
+            });
+        }
+
+        // BMW 3D Model
+        function createBMWScene() {
+            const container = document.getElementById('bmw-3d');
+            const { scene, camera, renderer, controls, animate } = createScene('bmw-3d');
+            const modelPath = '../tools/js/threejs/models/BMW.gltf';
             
-            // Set up auto-rotation
-            controls.autoRotate = true;
-            controls.autoRotateSpeed = 1.0;
+            // Add ambient light for better visibility
+            const ambientLight = new THREE.AmbientLight(0x404040);
+            scene.add(ambientLight);
             
-            // Initial render
-            function render() {
-                requestAnimationFrame(render);
-                controls.update();
-                renderer.render(scene, camera);
-            }
+            // Add point light to enhance the glow effect
+            const pointLight = new THREE.PointLight(0xff0000, 1, 10);
+            pointLight.position.set(0, 0, 2);
+            scene.add(pointLight);
             
-            render();
+            const loader = new GLTFLoader();
+            loader.load(modelPath, function(gltf) {
+                const model = gltf.scene;
+                model.scale.set(.8, .8, .8);
+                model.position.set(0, -2, 0);
+                
+                // Set up model materials with glow
+                model.traverse((child) => {
+                    if (child.isMesh) {
+                        const meshIndex = child.parent.children.indexOf(child);
+                        if (meshIndex === 1) { // This is the part that should glow
+                            child.material = new THREE.MeshStandardMaterial({
+                                color: 0xff0000,
+                                emissive: 0xff0000,
+                                emissiveIntensity: 1.0,
+                                roughness: 0.1,
+                                metalness: 0.9,
+                            });
+                            // Add userData for selection in the bloom pass
+                            child.userData.bloom = true;
+                            child.layers.enable(1); // Use layer 1 for bloom
+                        } else {
+                            child.material = new THREE.MeshStandardMaterial({
+                                color: 0x444444,
+                                roughness: 0.7,
+                                metalness: 0.3
+                            });
+                            child.userData.bloom = false;
+                            child.layers.set(0); // Regular objects on layer 0
+                        }
+                    }
+                });
+                
+                scene.add(model);
+                
+                animate();
+            });
+        }
+
+        // Crypto 3D Model
+        function createCryptoScene() {
+            const container = document.getElementById('crypto-3d');
+            const { scene, camera, renderer, controls, animate } = createScene('crypto-3d');
+            const modelPath = '../tools/js/threejs/models/CryptoTrezor.gltf';
+            
+            // Add red ambient light for better visibility
+            const ambientLight = new THREE.AmbientLight(0xff0000, 0.5);
+            scene.add(ambientLight);
+            
+            const loader = new GLTFLoader();
+            loader.load(modelPath, function(gltf) {
+                const model = gltf.scene;
+                model.scale.set(.7, .7, .7);
+                model.position.set(0, -2, 0);
+                
+                // Set up model materials with glow
+                model.traverse((child) => {
+                    if (child.isMesh) {
+                        const meshIndex = child.parent.children.indexOf(child);
+                        if (meshIndex === 1) {
+                            child.material = new THREE.MeshStandardMaterial({
+                                color: 0xff0000,
+                                emissive: 0xff0000,
+                                emissiveIntensity: 2.0,
+                                roughness: 0.3,
+                                metalness: 0.8
+                            });
+                            child.userData.glow = true; // Mark for glow effect
+                        } else {
+                            child.material = new THREE.MeshStandardMaterial({
+                                color: 0x555555,
+                                roughness: 0.7,
+                                metalness: 0.3
+                            });
+                            child.userData.glow = false;
+                        }
+                    }
+                });
+                
+                scene.add(model);
+                animate();
+            });
+
+            // Handle window resize
+            window.addEventListener('resize', () => {
+                camera.aspect = container.clientWidth / container.clientHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(container.clientWidth, container.clientHeight);
+            });
         }
 
         // Steering Wheel Model
         function createSteeringWheelScene() {
             const container = document.getElementById('steering-wheel-3d');
-            const { scene, camera, renderer, controls } = createScene('steering-wheel-3d');
+            const { scene, camera, renderer, controls, animate } = createScene('steering-wheel-3d');
             const modelPath = '../tools/js/threejs/models/SteeringWheel.gltf';
             
             // Add red ambient light for better visibility
@@ -463,84 +359,49 @@
             const loader = new GLTFLoader();
             loader.load(modelPath, function(gltf) {
                 const model = gltf.scene;
-                model.scale.set(0.5, 0.5, 0.5);
+                model.scale.set(.35, .35, .35);
                 model.position.set(0, -2, 0);
                 
+                // Set up model materials with glow
                 model.traverse((child) => {
                     if (child.isMesh) {
                         const meshIndex = child.parent.children.indexOf(child);
-                        child.material = meshIndex === 1
-                            ? new THREE.MeshStandardMaterial({
-                                color: 0xff0000, // base color
-                                emissive: 0xff0000, // glow color
-                                emissiveIntensity: 10,
-                            })
-                            : new THREE.MeshBasicMaterial({
-                                color: 0xAAAAAA,    
-                                wireframe: false,      
-                                transparent: false,    
-                                //opacity: 0.9,         // Slight transparency
-                                wireframeLinewidth: 1  // Line thickness
+                        if (meshIndex === 1) {
+                            child.material = new THREE.MeshStandardMaterial({
+                                color: 0xff0000,
+                                emissive: 0xff0000,
+                                emissiveIntensity: 2.0,
+                                roughness: 0.3,
+                                metalness: 0.8
                             });
+                            child.userData.glow = true; // Mark for glow effect
+                        } else {
+                            child.material = new THREE.MeshStandardMaterial({
+                                color: 0x555555,
+                                roughness: 0.7,
+                                metalness: 0.3
+                            });
+                            child.userData.glow = false;
+                        }
                     }
                 });
                 
-                // Create composer with better anti-aliasing
-                const renderScene = new RenderPass(scene, camera);
-                const composer = new EffectComposer(renderer);
-                composer.addPass(renderScene);
-                
-                // Add FXAA for better edge smoothing
-                const fxaaPass = new ShaderPass(FXAAShader);
-                const pixelRatio = renderer.getPixelRatio();
-                fxaaPass.material.uniforms['resolution'].value.x = 1 / (container.clientWidth * pixelRatio);
-                fxaaPass.material.uniforms['resolution'].value.y = 1 / (container.clientHeight * pixelRatio);
-                composer.addPass(fxaaPass);
-                
-                // Add bloom effect
-                const bloomPass = new UnrealBloomPass(
-                    new THREE.Vector2(window.innerWidth, window.innerHeight),
-                    0.2,  // Strength
-                    0.75,  // Radius
-                    0.1   // Threshold
-                );
-                
-                composer.addPass(bloomPass);
                 scene.add(model);
-                
-                // Auto-rotate the model
-                function animate() {
-                    requestAnimationFrame(animate);
-                    model.rotation.y += 0.005;
-                    controls.update();
-                    composer.render();
-                }
-                
                 animate();
             });
 
-            // Position camera
-            camera.position.z = 30;
-            
-            // Set up auto-rotation
-            controls.autoRotate = true;
-            controls.autoRotateSpeed = 1.0;
-            
-            // Initial render
-            function render() {
-                requestAnimationFrame(render);
-                controls.update();
-                renderer.render(scene, camera);
-            }
-            
-            render();
-        
+            // Handle window resize
+            window.addEventListener('resize', () => {
+                camera.aspect = container.clientWidth / container.clientHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(container.clientWidth, container.clientHeight);
+            });
         }
 
         // Aquarium Model
         function createAquariumScene() {
             const container = document.getElementById('aquarium-3d');
-            const { scene, camera, renderer, controls } = createScene('aquarium-3d');
+            const { scene, camera, renderer, controls, animate } = createScene('aquarium-3d');
             const modelPath = '../tools/js/threejs/models/Aquarium.gltf';
             
             // Add red ambient light for better visibility
@@ -550,78 +411,153 @@
             const loader = new GLTFLoader();
             loader.load(modelPath, function(gltf) {
                 const model = gltf.scene;
-                model.scale.set(0.5, 0.5, 0.5);
+                model.scale.set(.35, .35, .35);
                 model.position.set(0, -2, 0);
                 
+                // Set up model materials with glow
                 model.traverse((child) => {
                     if (child.isMesh) {
                         const meshIndex = child.parent.children.indexOf(child);
-                        child.material = meshIndex === 1 || meshIndex === 2 || meshIndex === 3
-                            ? new THREE.MeshStandardMaterial({
-                                color: 0xff0000, // base color
-                                emissive: 0xff0000, // glow color
-                                emissiveIntensity: 10,
-                            })
-                            : new THREE.MeshBasicMaterial({
-                                color: 0xAAAAAA,    
-                                wireframe: false,      
-                                transparent: false,    
-                                //opacity: 0.9,         // Slight transparency
-                                wireframeLinewidth: 1  // Line thickness
+                        if (meshIndex === 1 || meshIndex === 2 || meshIndex === 3) {
+                            child.material = new THREE.MeshStandardMaterial({
+                                color: 0xff0000,
+                                emissive: 0xff0000,
+                                emissiveIntensity: 2.0,
+                                roughness: 0.3,
+                                metalness: 0.8
                             });
+                            child.userData.glow = true; // Mark for glow effect
+                        } else {
+                            child.material = new THREE.MeshStandardMaterial({
+                                color: 0x555555,
+                                roughness: 0.7,
+                                metalness: 0.3
+                            });
+                            child.userData.glow = false;
+                        }
                     }
                 });
+
+                // Play all animations
+                const mixer = new THREE.AnimationMixer(model);
                 
-                // Create composer with better anti-aliasing
-                const renderScene = new RenderPass(scene, camera);
-                const composer = new EffectComposer(renderer);
-                composer.addPass(renderScene);
+                // Play each animation clip
+                gltf.animations.forEach((clip) => {
+                    const action = mixer.clipAction(clip);
+                    action.setLoop(THREE.LoopRepeat);
+                    action.play();
+                });
                 
-                // Add FXAA for better edge smoothing
-                const fxaaPass = new ShaderPass(FXAAShader);
-                const pixelRatio = renderer.getPixelRatio();
-                fxaaPass.material.uniforms['resolution'].value.x = 1 / (container.clientWidth * pixelRatio);
-                fxaaPass.material.uniforms['resolution'].value.y = 1 / (container.clientHeight * pixelRatio);
-                composer.addPass(fxaaPass);
-                
-                // Add bloom effect
-                const bloomPass = new UnrealBloomPass(
-                    new THREE.Vector2(window.innerWidth, window.innerHeight),
-                    0.2,  // Strength
-                    0.75,  // Radius
-                    0.1   // Threshold
-                );
-                
-                composer.addPass(bloomPass);
+                // Add to scene
                 scene.add(model);
                 
-                // Auto-rotate the model
-                function animate() {
+                // Animation loop
+                const clock = new THREE.Clock();
+                const animate = () => {
                     requestAnimationFrame(animate);
-                    model.rotation.y += 0.005;
+                    
+                    // Update animations
+                    const delta = clock.getDelta();
+                    if (mixer) mixer.update(delta);
+                    
+                    // Update controls
                     controls.update();
-                    composer.render();
-                }
+                    
+                    // Render
+                    renderer.render(scene, camera);
+                };
                 
                 animate();
             });
 
-            // Position camera
-            camera.position.z = 25;
+            // Handle window resize
+            window.addEventListener('resize', () => {
+                camera.aspect = container.clientWidth / container.clientHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(container.clientWidth, container.clientHeight);
+            });
             
-            // Set up auto-rotation
-            controls.autoRotate = true;
-            controls.autoRotateSpeed = 1.0;
+        }
+
+        // Code Model
+        function createCodeScene() {
+            const container = document.getElementById('code-3d');
+            const { scene, camera, renderer, controls, animate } = createScene('code-3d');
+            const modelPath = '../tools/js/threejs/models/Code.gltf';
             
-            // Initial render
-            function render() {
-                requestAnimationFrame(render);
-                controls.update();
-                renderer.render(scene, camera);
-            }
+            // Add red ambient light for better visibility
+            const ambientLight = new THREE.AmbientLight(0xff0000, 0.5);
+            scene.add(ambientLight);
             
-            render();
-        
+            const loader = new GLTFLoader();
+            loader.load(modelPath, function(gltf) {
+                const model = gltf.scene;
+                model.scale.set(1.5, 1.5, 1.5);
+                model.position.set(0, -2, 0);
+                
+                // Set up model materials with glow
+                model.traverse((child) => {
+                    if (child.isMesh) {
+                        const meshIndex = child.parent.children.indexOf(child);
+                        if (meshIndex === 2) {
+                            child.material = new THREE.MeshStandardMaterial({
+                                color: 0xff0000,
+                                emissive: 0xff0000,
+                                emissiveIntensity: 2.0,
+                                roughness: 0.3,
+                                metalness: 0.8
+                            });
+                            child.userData.glow = true; // Mark for glow effect
+                        } else {
+                            child.material = new THREE.MeshStandardMaterial({
+                                color: 0x555555,
+                                roughness: 0.7,
+                                metalness: 0.3
+                            });
+                            child.userData.glow = false;
+                        }
+                    }
+                });
+
+                // Play all animations
+                const mixer = new THREE.AnimationMixer(model);
+                
+                // Play each animation clip
+                gltf.animations.forEach((clip) => {
+                    const action = mixer.clipAction(clip);
+                    action.setLoop(THREE.LoopRepeat);
+                    action.play();
+                });
+                
+                // Add to scene
+                scene.add(model);
+                
+                // Animation loop
+                const clock = new THREE.Clock();
+                const animate = () => {
+                    requestAnimationFrame(animate);
+                    
+                    // Update animations
+                    const delta = clock.getDelta();
+                    if (mixer) mixer.update(delta);
+                    
+                    // Update controls
+                    controls.update();
+                    
+                    // Render
+                    renderer.render(scene, camera);
+                };
+                
+                animate();
+            });
+
+            // Handle window resize
+            window.addEventListener('resize', () => {
+                camera.aspect = container.clientWidth / container.clientHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(container.clientWidth, container.clientHeight);
+            });
+            
         }
 
         // Initialize all scenes when DOM is loaded
@@ -632,6 +568,7 @@
             createDroneScene();
             createSteeringWheelScene();
             createAquariumScene();
+            createCodeScene();
         });
     </script>
     <style>
@@ -708,8 +645,22 @@
     <!-- Motion Path Background -->
     <div class="motion-path-container">
         <svg id="motionSVG" viewBox="0 0 1200 11075" preserveAspectRatio="xMidYMin meet" style="width: 100%; height: 100%;">
-            <!-- Path with smooth curves and varied horizontal distances -->
-            <path id="motionPath" 
+            <!-- Glow filter -->
+            <defs>
+                <filter id="laserGlow" height="400%" width="400%" x="-150%" y="-150%">
+                    <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="blur" />
+                    <feFlood flood-color="#ff3366" flood-opacity="0.8" result="glow" />
+                    <feComposite in="glow" in2="blur" operator="in" result="softGlow" />
+                    <feMerge>
+                        <feMergeNode in="softGlow"/>
+                        <feMergeNode in="softGlow"/>
+                        <feMergeNode in="SourceGraphic"/>
+                    </feMerge>
+                </filter>
+            </defs>
+            
+            <!-- Background path (static) -->
+            <path id="motionPathBg"
                   d="M 600,0
                      V 1500
                      C 600,1600 650,1650 800,1650
@@ -754,13 +705,129 @@
                   stroke-linecap="round"
                   stroke-linejoin="round"
                   vector-effect="non-scaling-stroke"/>
-            <g id="tractor">
-                <circle cx="0" cy="0" r="8" fill="#ff3366" />
-                <path d="M-6,-6 L6,0 L-6,6 Z" fill="white" transform="rotate(90)" />
+                  
+            <!-- Progress path (fills as you scroll) -->
+            <path id="motionPathHighlight"
+                  d="M 600,0
+                     V 1500
+                     C 600,1600 650,1650 800,1650
+                     H 1000
+                     C 1150,1650 1200,1700 1200,1800
+                     V 2000
+                     C 1200,2100 1150,2150 1000,2150
+                     H 400
+                     C 250,2150 200,2200 200,2300
+                     V 3800
+                     C 200,3900 150,3950 100,3950
+                     H 50
+                     C 0,3950 0,4000 0,4050
+                     V 4250
+                     C 0,4300 50,4350 100,4350
+                     H 1000
+                     C 1150,4350 1200,4400 1200,4500
+                     V 4700
+                     C 1200,4800 1150,4850 1000,4850
+                     H 400
+                     C 250,4850 200,4900 200,5000
+                     V 6500
+                     C 200,6600 250,6650 400,6650
+                     H 800
+                     C 950,6650 1000,6700 1000,6800
+                     V 7000
+                     C 1000,7100 950,7150 800,7150
+                     H 200
+                     C 100,7150 50,7200 50,7300
+                     V 8800
+                     C 50,8900 100,8950 200,8950
+                     H 1000
+                     C 1150,8950 1200,9000 1200,9100
+                     V 9300
+                     C 1200,9400 1150,9450 1000,9450
+                     H 400
+                     C 250,9450 200,9500 200,9600
+                     V 11075" 
+                  fill="none" 
+                  stroke="rgb(255, 0, 0)" 
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  vector-effect="non-scaling-stroke"/>            
+            
+            <g id="tractor" filter="url(#laserGlow)">
+                <circle cx="0" cy="0" r="15" fill="#ff0000">
+                    <animate attributeName="r" 
+                             values="8;14;8" 
+                             dur="1.8s" 
+                             repeatCount="indefinite" />
+                    <animate attributeName="opacity" 
+                             values="0.7;1;0.7" 
+                             dur="1.8s" 
+                             repeatCount="indefinite" />
+                </circle>
+                <circle cx="0" cy="0" r="6" fill="#ff8888" opacity="0.9">
+                    <animate attributeName="r" 
+                             values="4;6;4" 
+                             dur="1.8s" 
+                             repeatCount="indefinite" />
+                </circle>
+                <circle cx="0" cy="0" r="2" fill="white" opacity="1" />
             </g>
         </svg>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Register plugins
+            gsap.registerPlugin(ScrollTrigger, MotionPathPlugin);
 
+            // Initial setup
+            gsap.set("#motionSVG", { autoAlpha: 1 });
+            gsap.set("#tractor", { transformOrigin: "center" });
+            
+            // Get the highlight path and set initial dash properties
+            const highlightPath = document.querySelector("#motionPathHighlight");
+            const pathLength = highlightPath.getTotalLength();
+            
+            // Set initial dash properties
+            gsap.set(highlightPath, {
+                strokeDasharray: pathLength,
+                strokeDashoffset: pathLength
+            });
+            
+            // Animation - follows full page scroll with path-based progress
+            gsap.to("#tractor", {
+                scrollTrigger: {
+                    trigger: "body",
+                    start: "top top",
+                    end: `bottom bottom`,
+                    scrub: 0.5,
+                    markers: false,
+                    onUpdate: (self) => {
+                        const progress = self.progress;
+                        gsap.set(highlightPath, {
+                            strokeDashoffset: pathLength * (1 - progress)
+                        });
+                    },
+                    onEnter: () => {
+                        gsap.set(highlightPath, {
+                            strokeDashoffset: pathLength
+                        });
+                    },
+                    onEnterBack: () => {
+                        gsap.set(highlightPath, {
+                            strokeDashoffset: pathLength
+                        });
+                    }
+                },
+                motionPath: {
+                    path: "#motionPathHighlight",
+                    align: "#motionPathHighlight",
+                    alignOrigin: [0.5, 0.5],
+                    autoRotate: 90,
+                },
+                ease: "none"
+            });
+        });
+    </script>
     <!-- Navigation -->
     <nav class="fixed top-0 w-full bg-black/90 backdrop-blur-md z-50">
         <div class="container mx-auto px-6 py-4">
@@ -778,9 +845,9 @@
     <!-- Hero Section -->
     <section id="hero" class="min-h-screen flex items-center justify-center">
         <div class="container mx-auto px-6 z-10 text-center">
-            <h1 class="text-5xl font-bold mb-6 uppercase">Mickael</h1>
-            <p class="text-xl mb-8">Developer & Designer</p>
-            <a href="#work" class="text-white hover:text-primary transition-colors">View My Work</a>
+            <h1 class="text-5xl font-bold mb-6 uppercase">WEB DEV Developer</h1>
+            <p class="text-xl mb-8">The ultimate 'Jack of all trades'</p>
+            <a href="#work" class="text-primary hover:text-white transition-colors">View My Work</a>
         </div>
     </section>
 
@@ -788,9 +855,9 @@
     <section id="about" class="py-20">
         <div class="container mx-auto px-6">
             <div class="flex flex-col md:flex-row gap-12">
-                <div class="md:w-1/2">
+                <div class="md:w-2/4">
                     <h2 class="text-3xl font-bold mb-6 uppercase">About Me</h2>
-                    <p class="mb-4">
+                    <p class="mb-4 mr-12">
                         I'm Mickael, a detail-driven creator and performance enthusiast who values precision in everything I do.
                         <br>
                         <br>
@@ -806,8 +873,8 @@
                         I don’t just use tools—I master them, modify them, and make them mine.
                     </p>
                 </div>
-                <div class="md:w-1/2 relative">
-                    <img src="../assets/images/tools/mika.png" class="rounded-full w-48 h-48 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" alt="Mickael">
+                <div class="md:w-2/4 relative">
+                    <img src="../assets/images/tools/mika.png" class="rounded-full w-80 h-80 mx-auto saturate-50" alt="Mickael">
                 </div>
             </div>
         </div>
@@ -895,7 +962,7 @@
                 <div class="flex flex-col md:flex-row gap-12">
                     <div class="md:w-1/2">
                         <div class="passion-content">
-                            <h3 class="text-2xl font-bold mb-4">SimRacing</h3>
+                            <h3 class="text-2xl font-bold mb-4">Sim Racing</h3>
                             <p class="mb-4">I'm someone who craves precision, performance, and authenticity—whether it's driving a BMW M series or racing in VR.</p>
                             <p class="text-gray-400">I’m always refining my sim rig for better feedback and immersion, down to customizing pedals and exploring 3D-printed upgrades. I care about the feel of everything I use, and I don’t settle for “good enough.” If there’s a way to make something more real, more responsive, more right, I’ll find it.</p>
                         </div>
@@ -911,12 +978,12 @@
             <!-- Aquarium -->
             <div class="passion-item">
                 <div class="flex flex-col md:flex-row gap-12">
-                    <div class="md:w-1/2">
+                    <div class="md:w-2/3">
                         <div class="passion-image">
                             <div id="aquarium-3d" class="w-full h-full"></div>
                         </div>
                     </div>
-                    <div class="md:w-1/2">
+                    <div class="md:w-1/3">
                         <div class="passion-content">
                             <h3 class="text-2xl font-bold mb-4">Aquarium</h3>
                             <p class="mb-4">Maintaining and designing freshwater and marine aquariums.</p>
@@ -926,6 +993,23 @@
                 </div>
             </div>
 
+            <!-- Code -->
+            <div class="passion-item">
+                <div class="flex flex-col md:flex-row gap-12">
+                    <div class="md:w-1/2">
+                        <div class="passion-content">
+                            <h3 class="text-2xl font-bold mb-4">Code</h3>
+                            <p class="mb-4">I'm someone who craves precision, performance, and authenticity—whether it's driving a BMW M series or racing in VR.</p>
+                            <p class="text-gray-400">I’m always refining my sim rig for better feedback and immersion, down to customizing pedals and exploring 3D-printed upgrades. I care about the feel of everything I use, and I don’t settle for “good enough.” If there’s a way to make something more real, more responsive, more right, I’ll find it.</p>
+                        </div>
+                    </div>
+                    <div class="md:w-1/2">
+                        <div class="passion-image">
+                            <div id="code-3d" class="w-full h-full"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -1058,49 +1142,61 @@
             <h2 class="text-3xl font-bold text-center mb-12">APPS / TOOLS / PROJECTS</h2>
             <div class="mb-12 text-center">
                 <div class="flex flex-wrap justify-center">
-                    <span class="badge mr-2 mb-2" data-filter="all">All</span>
+                    <span class="badge mr-2 mb-2 active" data-filter="all">All</span>
                     <span class="badge mr-2 mb-2" data-filter="Racing">Racing</span>
                     <span class="badge mr-2 mb-2" data-filter="Game Development">Game Development</span>
-                    <span class="badge mr-2 mb-2" data-filter="Android">Android</span>
+                    <span class="badge mr-2 mb-2" data-filter="Apps">Apps</span>
                     <span class="badge mr-2 mb-2" data-filter="Scripting">Scripting</span>
                 </div>
             </div>
             <div id="tools-grid" class="grid md:grid-cols-3 gap-12">
-                <div class="bg-gray-800 rounded-lg p-8" data-category="Racing">
-                    <img src="https://raw.githubusercontent.com/Mikaele01/simhub-dashboard/main/simhub-dashboard.png" alt="SimHub Dashboard" class="w-full rounded-lg mb-6">
-                    <h3 class="text-2xl font-bold mb-4">SimHub Dashboard</h3>
-                    <p class="mb-4">A customizable dashboard for SimHub, a racing simulator.</p>
-                    <a href="https://github.com/Mikaele01/simhub-dashboard" class="btn-minimal">View on GitHub</a>
+                <div class="card rounded-lg p-8" data-category="Racing">
+                    <div class="card-content">
+                        <img src="https://raw.githubusercontent.com/Mikaele01/simhub-dashboard/main/simhub-dashboard.png" alt="SimHub Dashboard" class="w-full rounded-lg mb-6">
+                        <h3 class="text-2xl font-bold mb-4">SimHub Dashboard</h3>
+                        <p class="mb-4">A customizable dashboard for SimHub, a racing simulator.</p>
+                        <a href="https://github.com/Mikaele01/simhub-dashboard" class="btn-minimal">View on GitHub</a>
+                    </div>
                 </div>
-                <div class="bg-gray-800 rounded-lg p-8" data-category="Game Development">
-                    <img src="https://emittersgame.com/assets/images/1.jpg" alt="Emitters Game Website" class="w-full rounded-lg mb-6">
-                    <h3 class="text-2xl font-bold mb-4">Emitters Game Website</h3>
-                    <p class="mb-4">A website for my game Emitters, a fast-paced, first-person experience set in a future taken over by deadly hi-tech drones.</p>
-                    <a href="https://emittersgame.com" class="btn-minimal">Visit Website</a>
+                <div class="card rounded-lg p-8" data-category="Game Development">
+                    <div class="card-content">
+                        <img src="https://emittersgame.com/assets/images/1.jpg" alt="Emitters Game Website" class="w-full rounded-lg mb-6">
+                        <h3 class="text-2xl font-bold mb-4">Emitters Game Website</h3>
+                        <p class="mb-4">A website for my game Emitters, a fast-paced, first-person experience set in a future taken over by deadly hi-tech drones.</p>
+                        <a href="https://emittersgame.com" class="btn-minimal">Visit Website</a>
+                    </div>
                 </div>
-                <div class="bg-gray-800 rounded-lg p-8" data-category="Apps">
-                    <img src="https://github.com/Mikaele01/MikasCodesApp/blob/main/assets/images/screenshot.png?raw=true" alt="Mikas Codes App" class="w-full rounded-lg mb-6">
-                    <h3 class="text-2xl font-bold mb-4">Mikas Codes App</h3>
-                    <p class="mb-4">An Electron app for storing and generating codes.</p>
-                    <a href="https://github.com/Mikaele01/MikasCodesApp" class="btn-minimal">View on GitHub</a>
+                <div class="card rounded-lg p-8" data-category="Apps">
+                    <div class="card-content">
+                        <img src="https://github.com/Mikaele01/MikasCodesApp/blob/main/assets/images/screenshot.png?raw=true" alt="Mikas Codes App" class="w-full rounded-lg mb-6">
+                        <h3 class="text-2xl font-bold mb-4">Mikas Codes App</h3>
+                        <p class="mb-4">An Electron app for storing and generating codes.</p>
+                        <a href="https://github.com/Mikaele01/MikasCodesApp" class="btn-minimal">View on GitHub</a>
+                    </div>
                 </div>
-                <div class="bg-gray-800 rounded-lg p-8" data-category="Scripting">
-                    <img src="https://via.placeholder.com/600x400" alt="Scripting" class="w-full rounded-lg mb-6">
-                    <h3 class="text-2xl font-bold mb-4">Scripting</h3>
-                    <p class="mb-4">Another project with different features and technologies.</p>
-                    <a href="#" class="btn-minimal">View Details</a>
+                <div class="card rounded-lg p-8" data-category="Scripting">
+                    <div class="card-content">
+                        <img src="https://via.placeholder.com/600x400" alt="Scripting" class="w-full rounded-lg mb-6">
+                        <h3 class="text-2xl font-bold mb-4">Scripting</h3>
+                        <p class="mb-4">Another project with different features and technologies.</p>
+                        <a href="#" class="btn-minimal">View Details</a>
+                    </div>
                 </div>
-                <div class="bg-gray-800 rounded-lg p-8" data-category="Cloud">
-                    <img src="../assets/images/tools/ipfs.png" alt="IFPSTutorial" class="w-full rounded-lg mb-6">
-                    <h3 class="text-2xl font-bold mb-4">IFPS Limitless Could Storage</h3>
-                    <p class="mb-4">A cloud file storage using web3 technology (IFPS).</p>
-                    <a href="https://github.com/Mikaele01/IFPSTutorial" class="btn-minimal">View on GitHub</a>
+                <div class="card rounded-lg p-8" data-category="Apps">
+                    <div class="card-content">
+                        <img src="../assets/images/tools/ipfs.png" alt="IFPSTutorial" class="w-full rounded-lg mb-6">
+                        <h3 class="text-2xl font-bold mb-4">IFPS Limitless Cloud Storage</h3>
+                        <p class="mb-4">A cloud file storage using web3 technology (IFPS).</p>
+                        <a href="https://github.com/Mikaele01/IFPSTutorial" class="btn-minimal">View on GitHub</a>
+                    </div>
                 </div>
-                <div class="bg-gray-800 rounded-lg p-8" data-category="Game Development">
-                    <img src="../assets/images/tools/shoot.png" alt="Shooter" class="w-full rounded-lg mb-6">
-                    <h3 class="text-2xl font-bold mb-4">Shooter</h3>
-                    <p class="mb-4">A simple game where you have to avoid the squares.</p>
-                    <a href="https://mikaele01.github.io/Shooter/" class="btn-minimal">Play Online</a>
+                <div class="card rounded-lg p-8" data-category="Game Development">
+                    <div class="card-content">
+                        <img src="../assets/images/tools/shoot.png" alt="Shooter" class="w-full rounded-lg mb-6">
+                        <h3 class="text-2xl font-bold mb-4">Shooter</h3>
+                        <p class="mb-4">A simple game where you have to avoid the squares.</p>
+                        <a href="https://mikaele01.github.io/Shooter/" class="btn-minimal">Play Online</a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1112,19 +1208,32 @@
 
         toolsCategories.forEach((category) => {
             category.addEventListener("click", () => {
+                const elements = toolsGrid.children;
                 const selectedCategory = category.dataset.filter;
+
+                toolsCategories.forEach((category) => {
+                    category.classList.remove("active");
+                });
+                category.classList.add("active");
+
                 if (selectedCategory === "all") {
-                    toolsGrid.classList.remove("hidden");
+                     for (let i = 0; i <elements.length; i++) {
+                        const element = elements[i];
+                        element.classList.remove("hidden");
+                    }
+
                     return;
                 }
 
-                const elements = toolsGrid.children;
+                for (let i = 0; i <elements.length; i++) {
+                    const element = elements[i];
+                    element.classList.add("hidden");
+                }
+
                 for (let i = 0; i <elements.length; i++) {
                     const element = elements[i];
                     if (element.dataset.category === selectedCategory) {
                         element.classList.remove("hidden");
-                    } else {
-                        element.classList.add("hidden");
                     }
                 }
             });
@@ -1143,13 +1252,13 @@
                     <h2 class="text-3xl font-bold mb-6">Get in Touch</h2>
                     <form class="space-y-6">
                         <div>
-                            <input type="text" placeholder="Name" class="w-full bg-gray-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary">
+                            <input type="text" placeholder="Name" class="w-full card rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary">
                         </div>
                         <div>
-                            <input type="email" placeholder="Email" class="w-full bg-gray-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary">
+                            <input type="email" placeholder="Email" class="w-full card rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary">
                         </div>
                         <div>
-                            <textarea placeholder="Message" class="w-full bg-gray-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary h-32"></textarea>
+                            <textarea placeholder="Message" class="w-full card rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary h-32"></textarea>
                         </div>
                         <button type="submit" class="btn-minimal w-full">Send Message</button>
                     </form>
@@ -1169,46 +1278,5 @@
             <p class="text-center text-gray-400 mt-4"> 2025 Mickael. All rights reserved.</p>
         </div>
     </footer>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Register plugins
-            gsap.registerPlugin(ScrollTrigger, MotionPathPlugin);
-
-            // Initial setup
-            gsap.set("#motionSVG", { autoAlpha: 1 });
-            gsap.set("#tractor", { transformOrigin: "center" });
-            
-            // Calculate total page height
-            const getMaxHeight = () => {
-                const body = document.body;
-                const html = document.documentElement;
-                return Math.max(
-                    body.scrollHeight, body.offsetHeight,
-                    html.clientHeight, html.scrollHeight, html.offsetHeight
-                );
-            };
-            
-            // Animation - follows full page scroll
-            gsap.to("#tractor", {
-                scrollTrigger: {
-                    trigger: "body",
-                    start: "top top",
-                    end: `bottom bottom`,
-                    scrub: 0.5,
-                    markers: true, // Set to false to hide markers
-                    onUpdate: self => {
-                        // Optional: Add any update logic here
-                    }
-                },
-                ease: "none",
-                motionPath: {
-                    path: "#motionPath",
-                    align: "#motionPath",
-                    alignOrigin: [0.5, 0.5],
-                    autoRotate: 90,
-                }
-            });
-        });
-    </script>
 </body>
 </html>
