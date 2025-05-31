@@ -1,5 +1,6 @@
 :root {
     --portfolio-primary: #ff394a;
+    --grey_dark: #333;
 }
 
 body {
@@ -19,8 +20,56 @@ a[href*="#"] {
 
 /* Hero section background */
 #hero {
-    background: linear-gradient(135deg, rgba(0, 0, 0, 0.98) 0%, rgba(0, 0, 0, 0.98) 100%);
     backdrop-filter: blur(5px);
+}
+
+/* Hero Section Animations */
+#hero h1, 
+#hero p, 
+#hero a {
+    opacity: 0;
+    transform: translateY(30px);
+    animation: fadeInUp 1s ease forwards;
+}
+
+#hero h1 {
+    animation-delay: 0.3s;
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0);
+    animation: fadeInUp 1s ease forwards 0.3s, 
+               glow 3s ease-in-out infinite 1.3s;
+}
+
+#hero p {
+    animation-delay: 0.6s;
+    animation: fadeInUp 0.8s ease forwards 0.6s;
+}
+
+#hero a {
+    display: inline-block;
+    animation: fadeInUp 0.8s ease forwards 0.9s;
+    transition: all 0.3s ease;
+}
+
+#hero a:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* Keyframes */
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes glow {
+    0%, 100% {
+        text-shadow: 0 0 20px rgba(255, 255, 255, 0);
+    }
+    50% {
+        text-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
+    }
 }
 
 /* Minimalist buttons */
@@ -52,7 +101,6 @@ a[href*="#"] {
 
 /* Passion items */
 .passion-item {
-    padding: 4rem 0;
     flex: 1;
     min-height: 50vh;
 }
@@ -120,12 +168,85 @@ a[href*="#"] {
     font-size: 2.5rem;
 }
 
+.badge {
+    padding: 0.5rem 1rem;
+    border-radius: 30px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    text-decoration: none;
+    border: none;
+    border: 1px solid var(--grey_dark);
+    cursor: pointer;
+}
+
+.badge:hover,.badge.active {
+    background-color: var(--portfolio-primary);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(255, 57, 74, 0.3);
+}
+
 /* Style for all cards */
 .passion-content, 
 .passion-image,
-.bg-gray-800 {
+.card {
     padding: 1.5rem !important;
     border-radius: 0.5rem !important;
+}
+
+.card {
+    background-color: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--grey_dark);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: center;
+    will-change: transform, filter, opacity;
+}
+
+/* Hover effect for the card being hovered */
+.card:hover {
+    transform: scale(1.08);
+    box-shadow: 0 15px 30px -5px rgba(255, 57, 74, 0.3), 
+                0 10px 15px -8px rgba(255, 57, 74, 0.3);
+    z-index: 10;
+    position: relative;
+}
+
+/* Blur effect for other cards when one is hovered */
+.card:hover ~ .card,
+.card:has(~ .card:hover) {
+    filter: blur(4px);
+    transform: scale(0.96);
+    opacity: 0.7;
+}
+
+.card-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.card-content p {
+    flex-grow: 1;
+    margin-bottom: 1.5rem;
+}
+
+.card-content .btn-minimal {
+    margin-top: auto;
+    align-self: flex-start;
+}
+
+/* Ensure smooth transitions for child elements */
+.card * {
+    transition: inherit;
+}
+
+/* Card hover effects */
+#tools-grid {
+    transition: all 0.5s ease;
 }
 
 /* Style for all buttons */

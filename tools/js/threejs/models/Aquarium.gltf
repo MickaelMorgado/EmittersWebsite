@@ -86,6 +86,101 @@
 			]
 		}
 	],
+	"animations":[
+		{
+			"channels":[
+				{
+					"sampler":0,
+					"target":{
+						"node":1,
+						"path":"translation"
+					}
+				},
+				{
+					"sampler":1,
+					"target":{
+						"node":1,
+						"path":"rotation"
+					}
+				}
+			],
+			"name":"Cube.007Action",
+			"samplers":[
+				{
+					"input":14,
+					"interpolation":"LINEAR",
+					"output":15
+				},
+				{
+					"input":14,
+					"interpolation":"LINEAR",
+					"output":16
+				}
+			]
+		},
+		{
+			"channels":[
+				{
+					"sampler":0,
+					"target":{
+						"node":2,
+						"path":"translation"
+					}
+				},
+				{
+					"sampler":1,
+					"target":{
+						"node":2,
+						"path":"rotation"
+					}
+				}
+			],
+			"name":"Cube.008Action.001",
+			"samplers":[
+				{
+					"input":14,
+					"interpolation":"LINEAR",
+					"output":17
+				},
+				{
+					"input":14,
+					"interpolation":"LINEAR",
+					"output":18
+				}
+			]
+		},
+		{
+			"channels":[
+				{
+					"sampler":0,
+					"target":{
+						"node":3,
+						"path":"translation"
+					}
+				},
+				{
+					"sampler":1,
+					"target":{
+						"node":3,
+						"path":"rotation"
+					}
+				}
+			],
+			"name":"Cube.009Action",
+			"samplers":[
+				{
+					"input":14,
+					"interpolation":"LINEAR",
+					"output":19
+				},
+				{
+					"input":14,
+					"interpolation":"LINEAR",
+					"output":20
+				}
+			]
+		}
+	],
 	"meshes":[
 		{
 			"name":"Cube.019",
@@ -264,6 +359,54 @@
 			"componentType":5126,
 			"count":216,
 			"type":"VEC2"
+		},
+		{
+			"bufferView":14,
+			"componentType":5126,
+			"count":91,
+			"max":[
+				3.75
+			],
+			"min":[
+				0
+			],
+			"type":"SCALAR"
+		},
+		{
+			"bufferView":15,
+			"componentType":5126,
+			"count":91,
+			"type":"VEC3"
+		},
+		{
+			"bufferView":16,
+			"componentType":5126,
+			"count":91,
+			"type":"VEC4"
+		},
+		{
+			"bufferView":17,
+			"componentType":5126,
+			"count":91,
+			"type":"VEC3"
+		},
+		{
+			"bufferView":18,
+			"componentType":5126,
+			"count":91,
+			"type":"VEC4"
+		},
+		{
+			"bufferView":19,
+			"componentType":5126,
+			"count":91,
+			"type":"VEC3"
+		},
+		{
+			"bufferView":20,
+			"componentType":5126,
+			"count":91,
+			"type":"VEC4"
 		}
 	],
 	"bufferViews":[
@@ -350,11 +493,46 @@
 			"byteLength":1728,
 			"byteOffset":26568,
 			"target":34962
+		},
+		{
+			"buffer":0,
+			"byteLength":364,
+			"byteOffset":28296
+		},
+		{
+			"buffer":0,
+			"byteLength":1092,
+			"byteOffset":28660
+		},
+		{
+			"buffer":0,
+			"byteLength":1456,
+			"byteOffset":29752
+		},
+		{
+			"buffer":0,
+			"byteLength":1092,
+			"byteOffset":31208
+		},
+		{
+			"buffer":0,
+			"byteLength":1456,
+			"byteOffset":32300
+		},
+		{
+			"buffer":0,
+			"byteLength":1092,
+			"byteOffset":33756
+		},
+		{
+			"buffer":0,
+			"byteLength":1456,
+			"byteOffset":34848
 		}
 	],
 	"buffers":[
 		{
-			"byteLength":28296,
+			"byteLength":36304,
 			"uri":"Aquarium.bin"
 		}
 	]
