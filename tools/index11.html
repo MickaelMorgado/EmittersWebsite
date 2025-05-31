@@ -4,8 +4,6 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portfolio</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
-        integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
     <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&display=swap">
@@ -675,8 +673,94 @@
             }
         }
     </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/MotionPathPlugin.min.js"></script>
+    <style>
+        .motion-path-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            min-height: 100vh;
+            z-index: -1;
+            pointer-events: none;
+        }
+        #motionSVG {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            min-height: 100vh;
+        }
+        #tractor {
+            transform-origin: center;
+        }
+        body {
+            position: relative;
+            min-height: 100vh;
+        }
+    </style>
 </head>
 <body class="font-saira text-white bg-dark">
+    <!-- Motion Path Background -->
+    <div class="motion-path-container">
+        <svg id="motionSVG" viewBox="0 0 1200 11075" preserveAspectRatio="xMidYMin meet" style="width: 100%; height: 100%;">
+            <!-- Path with smooth curves and varied horizontal distances -->
+            <path id="motionPath" 
+                  d="M 600,0
+                     V 1500
+                     C 600,1600 650,1650 800,1650
+                     H 1000
+                     C 1150,1650 1200,1700 1200,1800
+                     V 2000
+                     C 1200,2100 1150,2150 1000,2150
+                     H 400
+                     C 250,2150 200,2200 200,2300
+                     V 3800
+                     C 200,3900 150,3950 100,3950
+                     H 50
+                     C 0,3950 0,4000 0,4050
+                     V 4250
+                     C 0,4300 50,4350 100,4350
+                     H 1000
+                     C 1150,4350 1200,4400 1200,4500
+                     V 4700
+                     C 1200,4800 1150,4850 1000,4850
+                     H 400
+                     C 250,4850 200,4900 200,5000
+                     V 6500
+                     C 200,6600 250,6650 400,6650
+                     H 800
+                     C 950,6650 1000,6700 1000,6800
+                     V 7000
+                     C 1000,7100 950,7150 800,7150
+                     H 200
+                     C 100,7150 50,7200 50,7300
+                     V 8800
+                     C 50,8900 100,8950 200,8950
+                     H 1000
+                     C 1150,8950 1200,9000 1200,9100
+                     V 9300
+                     C 1200,9400 1150,9450 1000,9450
+                     H 400
+                     C 250,9450 200,9500 200,9600
+                     V 11075" 
+                  fill="none" 
+                  stroke="rgba(255,255,255,0.1)" 
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  vector-effect="non-scaling-stroke"/>
+            <g id="tractor">
+                <circle cx="0" cy="0" r="8" fill="#ff3366" />
+                <path d="M-6,-6 L6,0 L-6,6 Z" fill="white" transform="rotate(90)" />
+            </g>
+        </svg>
+    </div>
+
     <!-- Navigation -->
     <nav class="fixed top-0 w-full bg-black/90 backdrop-blur-md z-50">
         <div class="container mx-auto px-6 py-4">
@@ -690,9 +774,6 @@
             </div>
         </div>
     </nav>
-
-
-
 
     <!-- Hero Section -->
     <section id="hero" class="min-h-screen flex items-center justify-center">
@@ -1038,7 +1119,7 @@
                 }
 
                 const elements = toolsGrid.children;
-                for (let i = 0; i < elements.length; i++) {
+                for (let i = 0; i <elements.length; i++) {
                     const element = elements[i];
                     if (element.dataset.category === selectedCategory) {
                         element.classList.remove("hidden");
@@ -1088,5 +1169,46 @@
             <p class="text-center text-gray-400 mt-4"> 2025 Mickael. All rights reserved.</p>
         </div>
     </footer>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Register plugins
+            gsap.registerPlugin(ScrollTrigger, MotionPathPlugin);
+
+            // Initial setup
+            gsap.set("#motionSVG", { autoAlpha: 1 });
+            gsap.set("#tractor", { transformOrigin: "center" });
+            
+            // Calculate total page height
+            const getMaxHeight = () => {
+                const body = document.body;
+                const html = document.documentElement;
+                return Math.max(
+                    body.scrollHeight, body.offsetHeight,
+                    html.clientHeight, html.scrollHeight, html.offsetHeight
+                );
+            };
+            
+            // Animation - follows full page scroll
+            gsap.to("#tractor", {
+                scrollTrigger: {
+                    trigger: "body",
+                    start: "top top",
+                    end: `bottom bottom`,
+                    scrub: 0.5,
+                    markers: true, // Set to false to hide markers
+                    onUpdate: self => {
+                        // Optional: Add any update logic here
+                    }
+                },
+                ease: "none",
+                motionPath: {
+                    path: "#motionPath",
+                    align: "#motionPath",
+                    alignOrigin: [0.5, 0.5],
+                    autoRotate: 90,
+                }
+            });
+        });
+    </script>
 </body>
 </html>
