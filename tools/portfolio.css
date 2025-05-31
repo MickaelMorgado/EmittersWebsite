@@ -90,6 +90,23 @@ a[href*="#"] {
     transition: transform 0.3s ease;
 }
 
+  
+/* Passion image container styles */
+.passion-image {
+    height: 100vh;  /* Increased from default */
+    width: 100%;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: #1a1a1a;
+    position: relative;
+}
+
+/* Ensure the 3D container fills its parent */
+.passion-image > div {
+    width: 100% !important;
+    height: 100% !important;
+}
+
 .passion-image img:hover {
     transform: scale(1.1);
 }

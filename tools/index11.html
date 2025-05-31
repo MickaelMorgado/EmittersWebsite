@@ -26,15 +26,42 @@
         import * as THREE from 'three';
         import { OrbitControls } from 'https://threejs.org/examples/jsm/controls/OrbitControls.js';
         import { GLTFLoader } from 'https://threejs.org/examples/jsm/loaders/GLTFLoader.js';
+        import { EffectComposer } from 'https://threejs.org/examples/jsm/postprocessing/EffectComposer.js';
+        import { RenderPass } from 'https://threejs.org/examples/jsm/postprocessing/RenderPass.js';
+        import { UnrealBloomPass } from 'https://threejs.org/examples/jsm/postprocessing/UnrealBloomPass.js';
+        import { FXAAShader } from 'https://threejs.org/examples/jsm/shaders/FXAAShader.js';
+        import { ShaderPass } from 'https://threejs.org/examples/jsm/postprocessing/ShaderPass.js';
 
         // Helper function to create a basic scene
         function createScene(containerId) {
             const container = document.getElementById(containerId);
             const scene = new THREE.Scene();
             const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
-            const renderer = new THREE.WebGLRenderer({ antialias: true });
+            
+            // Enhanced WebGL renderer with better anti-aliasing
+            const renderer = new THREE.WebGLRenderer({
+                antialias: true,
+                powerPreference: 'high-performance',
+                alpha: true,
+                stencil: false,
+                depth: true
+            });
+            
+            // Enable high-quality anti-aliasing
+            renderer.antialias = true;
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Limit pixel ratio for performance
             renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            
             container.appendChild(renderer.domElement);
+            
+            // Handle window resize
+            window.addEventListener('resize', () => {
+                camera.aspect = container.clientWidth / container.clientHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(container.clientWidth, container.clientHeight);
+            });
             
             // Set dark background
             scene.background = new THREE.Color(0x000000);
@@ -79,186 +106,524 @@
 
         // BMW 3D Model
         function createBMWScene() {
+            const container = document.getElementById('bmw-3d');
             const { scene, camera, renderer, controls } = createScene('bmw-3d');
+            const modelPath = '../tools/js/threejs/models/BMW.gltf';
             
-            const modelPath = '../tools/js/threejs/models/bmw_1er_f20_lowpoly/scene.gltf';
-
+            // Add red ambient light for better visibility
+            const ambientLight = new THREE.AmbientLight(0xff0000, 0.5);
+            scene.add(ambientLight);
+            
             const loader = new GLTFLoader();
             loader.load(modelPath, function(gltf) {
                 const model = gltf.scene;
-                model.scale.set(1,1,1);
-                model.position.set(0, 0, 0);
+                model.scale.set(0.5, 0.5, 0.5);
+                model.position.set(0, -2, 0);
+                
+                model.traverse((child) => {
+                    if (child.isMesh) {
+                        const meshIndex = child.parent.children.indexOf(child);
+                        child.material = meshIndex === 1
+                            ? new THREE.MeshStandardMaterial({
+                                color: 0xff0000, // base color
+                                emissive: 0xff0000, // glow color
+                                emissiveIntensity: 10,
+                            })
+                            : new THREE.MeshBasicMaterial({
+                                color: 0xAAAAAA,    
+                                wireframe: false,      
+                                transparent: false,    
+                                //opacity: 0.9,         // Slight transparency
+                                wireframeLinewidth: 1  // Line thickness
+                            });
+                    }
+                });
+                
+                // Create composer with better anti-aliasing
+                const renderScene = new RenderPass(scene, camera);
+                const composer = new EffectComposer(renderer);
+                composer.addPass(renderScene);
+                
+                // Add FXAA for better edge smoothing
+                const fxaaPass = new ShaderPass(FXAAShader);
+                const pixelRatio = renderer.getPixelRatio();
+                fxaaPass.material.uniforms['resolution'].value.x = 1 / (container.clientWidth * pixelRatio);
+                fxaaPass.material.uniforms['resolution'].value.y = 1 / (container.clientHeight * pixelRatio);
+                composer.addPass(fxaaPass);
+                
+                // Add bloom effect
+                const bloomPass = new UnrealBloomPass(
+                    new THREE.Vector2(window.innerWidth, window.innerHeight),
+                    0.2,  // Strength
+                    0.75,  // Radius
+                    0.1   // Threshold
+                );
+                
+                composer.addPass(bloomPass);
                 scene.add(model);
+                
+                // Auto-rotate the model
+                function animate() {
+                    requestAnimationFrame(animate);
+                    model.rotation.y += 0.005;
+                    controls.update();
+                    composer.render();
+                }
+                
+                animate();
             });
-            
+
             // Position camera
-            camera.position.z = 3;
+            camera.position.z = 15;
             
-            // Animation loop
-            function animate() {
-                requestAnimationFrame(animate);
+            // Set up auto-rotation
+            controls.autoRotate = true;
+            controls.autoRotateSpeed = 1.0;
+            
+            // Initial render
+            function render() {
+                requestAnimationFrame(render);
                 controls.update();
                 renderer.render(scene, camera);
             }
             
-            animate();
+            render();
+        
         }
         // Crypto 3D Model
         function createCryptoScene() {
+            const container = document.getElementById('crypto-3d');
             const { scene, camera, renderer, controls } = createScene('crypto-3d');
+            const modelPath = '../tools/js/threejs/models/CryptoTrezor.gltf';
             
-            // Create a simple cube with gold material
-            const geometry = new THREE.BoxGeometry(1, 1, 1);
-            const material = new THREE.MeshPhongMaterial({ 
-                color: 0xFFD700,  // Gold color
-                shininess: 100,
-                specular: 0x888888
+            // Add red ambient light for better visibility
+            const ambientLight = new THREE.AmbientLight(0xff0000, 0.5);
+            scene.add(ambientLight);
+            
+            const loader = new GLTFLoader();
+            loader.load(modelPath, function(gltf) {
+                const model = gltf.scene;
+                model.scale.set(0.5, 0.5, 0.5);
+                model.position.set(0, -2, 0);
+                
+                model.traverse((child) => {
+                    if (child.isMesh) {
+                        const meshIndex = child.parent.children.indexOf(child);
+                        child.material = meshIndex === 1
+                            ? new THREE.MeshStandardMaterial({
+                                color: 0xff0000, // base color
+                                emissive: 0xff0000, // glow color
+                                emissiveIntensity: 10,
+                            })
+                            : new THREE.MeshBasicMaterial({
+                                color: 0xAAAAAA,    
+                                wireframe: false,      
+                                transparent: false,    
+                                //opacity: 0.9,         // Slight transparency
+                                wireframeLinewidth: 1  // Line thickness
+                            });
+                    }
+                });
+                
+                // Create composer with better anti-aliasing
+                const renderScene = new RenderPass(scene, camera);
+                const composer = new EffectComposer(renderer);
+                composer.addPass(renderScene);
+                
+                // Add FXAA for better edge smoothing
+                const fxaaPass = new ShaderPass(FXAAShader);
+                const pixelRatio = renderer.getPixelRatio();
+                fxaaPass.material.uniforms['resolution'].value.x = 1 / (container.clientWidth * pixelRatio);
+                fxaaPass.material.uniforms['resolution'].value.y = 1 / (container.clientHeight * pixelRatio);
+                composer.addPass(fxaaPass);
+                
+                // Add bloom effect
+                const bloomPass = new UnrealBloomPass(
+                    new THREE.Vector2(window.innerWidth, window.innerHeight),
+                    0.2,  // Strength
+                    0.75,  // Radius
+                    0.1   // Threshold
+                );
+                
+                composer.addPass(bloomPass);
+                scene.add(model);
+                
+                // Auto-rotate the model
+                function animate() {
+                    requestAnimationFrame(animate);
+                    model.rotation.y += 0.005;
+                    controls.update();
+                    composer.render();
+                }
+                
+                animate();
             });
-            const cube = new THREE.Mesh(geometry, material);
-            scene.add(cube);
-            
+
             // Position camera
-            camera.position.z = 2;
+            camera.position.z = 15;
             
-            // Animation loop
-            function animate() {
-                requestAnimationFrame(animate);
+            // Set up auto-rotation
+            controls.autoRotate = true;
+            controls.autoRotateSpeed = 1.0;
+            
+            // Initial render
+            function render() {
+                requestAnimationFrame(render);
                 controls.update();
                 renderer.render(scene, camera);
             }
             
-            animate();
+            render();
         }
 
         // 3D Printing Scene
         function createPrintingScene() {
+            const container = document.getElementById('printing-3d');
             const { scene, camera, renderer, controls } = createScene('printing-3d');
+            const modelPath = '../tools/js/threejs/models/A1Mini.gltf';
             
-            // Create a simple 3D printer model
-            const baseGeometry = new THREE.BoxGeometry(2, 0.2, 2);
-            const baseMaterial = new THREE.MeshPhongMaterial({ 
-                color: 0x444444,
-                shininess: 100,
-                specular: 0x888888
-            });
-            const base = new THREE.Mesh(baseGeometry, baseMaterial);
-            scene.add(base);
+            // Add red ambient light for better visibility
+            const ambientLight = new THREE.AmbientLight(0xff0000, 0.5);
+            scene.add(ambientLight);
+            
+            const loader = new GLTFLoader();
+            loader.load(modelPath, function(gltf) {
+                const model = gltf.scene;
+                model.scale.set(0.5, 0.5, 0.5);
+                model.position.set(0, -2, 0);
+                
+                model.traverse((child) => {
+                    if (child.isMesh) {
+                        const meshIndex = child.parent.children.indexOf(child);
+                        child.material = meshIndex === 4
+                            ? new THREE.MeshStandardMaterial({
+                                color: 0xff0000, // base color
+                                emissive: 0xff0000, // glow color
+                                emissiveIntensity: 10,
+                            })
+                            : new THREE.MeshBasicMaterial({
+                                color: 0xAAAAAA,    
+                                wireframe: false,      
+                                transparent: false,    
+                                //opacity: 0.9,         // Slight transparency
+                                wireframeLinewidth: 1  // Line thickness
+                            });
+                    }
+                });
+                
+                // Create composer with better anti-aliasing
+                const renderScene = new RenderPass(scene, camera);
+                const composer = new EffectComposer(renderer);
+                composer.addPass(renderScene);
+                
+                // Add FXAA for better edge smoothing
+                const fxaaPass = new ShaderPass(FXAAShader);
+                const pixelRatio = renderer.getPixelRatio();
+                fxaaPass.material.uniforms['resolution'].value.x = 1 / (container.clientWidth * pixelRatio);
+                fxaaPass.material.uniforms['resolution'].value.y = 1 / (container.clientHeight * pixelRatio);
+                composer.addPass(fxaaPass);
+                
+                // Add bloom effect
+                const bloomPass = new UnrealBloomPass(
+                    new THREE.Vector2(window.innerWidth, window.innerHeight),
+                    0.2,  // Strength
+                    0.75,  // Radius
+                    0.1   // Threshold
+                );
 
-            const frameGeometry = new THREE.BoxGeometry(0.1, 2, 2);
-            const frameMaterial = new THREE.MeshPhongMaterial({ 
-                color: 0x444444,
-                shininess: 50,
-                specular: 0x111111
+                composer.addPass(bloomPass);
+                scene.add(model);
+                
+                // Auto-rotate the model
+                function animate() {
+                    requestAnimationFrame(animate);
+                    model.rotation.y += 0.005;
+                    controls.update();
+                    composer.render();
+                }
+                
+                animate();
             });
-            const frame = new THREE.Mesh(frameGeometry, frameMaterial);
-            frame.position.y = 1;
-            scene.add(frame);
-
-            const printBedGeometry = new THREE.BoxGeometry(1.8, 0.05, 1.8);
-            const printBedMaterial = new THREE.MeshPhongMaterial({ 
-                color: 0x444444,
-                shininess: 100,
-                specular: 0x888888
-            });
-            const printBed = new THREE.Mesh(printBedGeometry, printBedMaterial);
-            printBed.position.y = 0.1;
-            scene.add(printBed);
-
+                        
             // Position camera
-            camera.position.z = 2;
+            camera.position.z = 8;
             
-            // Animation loop
-            function animate() {
-                requestAnimationFrame(animate);
+            // Set up auto-rotation
+            controls.autoRotate = true;
+            controls.autoRotateSpeed = 1.0;
+            
+            // Initial render
+            function render() {
+                requestAnimationFrame(render);
                 controls.update();
                 renderer.render(scene, camera);
             }
             
-            animate();
+            render();
         }
 
         // Drone Scene
         function createDroneScene() {
+            const container = document.getElementById('drone-3d');
             const { scene, camera, renderer, controls } = createScene('drone-3d');
+            const modelPath = '../tools/js/threejs/models/MikasDrone.gltf';
             
-            // Create drone body
-            const bodyGeometry = new THREE.BoxGeometry(0.5, 0.1, 1);
-            const bodyMaterial = new THREE.MeshPhongMaterial({ 
-                color: 0x333333,
-                shininess: 50,
-                specular: 0x111111
-            });
-            const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
-            scene.add(body);
-
-            // Create arms
-            const armGeometry = new THREE.BoxGeometry(0.02, 0.02, 0.5);
-            const armMaterial = new THREE.MeshPhongMaterial({ 
-                color: 0x444444,
-                shininess: 50,
-                specular: 0x111111
-            });
-
-            // Create propellers
-            const propGeometry = new THREE.CylinderGeometry(0.1, 0.1, 0.02, 32);
-            const propMaterial = new THREE.MeshPhongMaterial({ 
-                color: 0x666666,
-                shininess: 50,
-                specular: 0x111111
-            });
-
-            // Create motors
-            const motorGeometry = new THREE.CylinderGeometry(0.05, 0.05, 0.1, 32);
-            const motorMaterial = new THREE.MeshPhongMaterial({ 
-                color: 0x444444,
-                shininess: 50,
-                specular: 0x111111
-            });
-
-            // Create four arms with motors and props
-            const armPositions = [
-                { x: 0.25, z: 0.25 },
-                { x: -0.25, z: 0.25 },
-                { x: 0.25, z: -0.25 },
-                { x: -0.25, z: -0.25 }
-            ];
-
-            armPositions.forEach((pos, index) => {
-                const arm = new THREE.Mesh(armGeometry, armMaterial);
-                arm.position.set(pos.x, 0.05, pos.z);
-                scene.add(arm);
-
-                const motor = new THREE.Mesh(motorGeometry, motorMaterial);
-                motor.position.set(pos.x, 0.07, pos.z);
-                scene.add(motor);
-
-                const prop = new THREE.Mesh(propGeometry, propMaterial);
-                prop.position.set(pos.x, 0.07, pos.z);
-                prop.rotation.x = Math.PI / 2; // Rotate propeller to face up
-                scene.add(prop);
-            });
-
-            // Position camera
-            camera.position.z = 2;
-            camera.position.y = 1;
+            // Add red ambient light for better visibility
+            const ambientLight = new THREE.AmbientLight(0xff0000, 0.5);
+            scene.add(ambientLight);
             
-            // Animation loop
-            function animate() {
-                requestAnimationFrame(animate);
+            const loader = new GLTFLoader();
+            loader.load(modelPath, function(gltf) {
+                const model = gltf.scene;
+                model.scale.set(0.5, 0.5, 0.5);
+                model.position.set(0, -2, 0);
                 
-                // Rotate propellers
-                armPositions.forEach((pos, index) => {
-                    const prop = scene.getObjectByName(`prop${index}`);
-                    if (prop) {
-                        prop.rotation.z += 0.1;
+                model.traverse((child) => {
+                    if (child.isMesh) {
+                        const meshIndex = child.parent.children.indexOf(child);
+                        child.material = 
+                        meshIndex === 3 ||
+                        meshIndex === 4 ||
+                        meshIndex === 5 ||
+                        meshIndex === 1
+                            ? new THREE.MeshStandardMaterial({
+                                color: 0xff0000, // base color
+                                emissive: 0xff0000, // glow color
+                                emissiveIntensity: 10,
+                            })
+                            : new THREE.MeshBasicMaterial({
+                                color: 0xAAAAAA,    
+                                wireframe: false,      
+                                transparent: false,    
+                                //opacity: 0.9,         // Slight transparency
+                                wireframeLinewidth: 1  // Line thickness
+                            });
                     }
                 });
                 
+                // Create composer with better anti-aliasing
+                const renderScene = new RenderPass(scene, camera);
+                const composer = new EffectComposer(renderer);
+                composer.addPass(renderScene);
+                
+                // Add FXAA for better edge smoothing
+                const fxaaPass = new ShaderPass(FXAAShader);
+                const pixelRatio = renderer.getPixelRatio();
+                fxaaPass.material.uniforms['resolution'].value.x = 1 / (container.clientWidth * pixelRatio);
+                fxaaPass.material.uniforms['resolution'].value.y = 1 / (container.clientHeight * pixelRatio);
+                composer.addPass(fxaaPass);
+                
+                // Add bloom effect
+                const bloomPass = new UnrealBloomPass(
+                    new THREE.Vector2(window.innerWidth, window.innerHeight),
+                    0.2,  // Strength
+                    0.75,  // Radius
+                    0.1   // Threshold
+                );
+                
+                composer.addPass(bloomPass);
+                scene.add(model);
+                
+                // Auto-rotate the model
+                function animate() {
+                    requestAnimationFrame(animate);
+                    model.rotation.y += 0.005;
+                    controls.update();
+                    composer.render();
+                }
+                
+                animate();
+            });
+
+            // Position camera
+            camera.position.z = 150;
+            
+            // Set up auto-rotation
+            controls.autoRotate = true;
+            controls.autoRotateSpeed = 1.0;
+            
+            // Initial render
+            function render() {
+                requestAnimationFrame(render);
                 controls.update();
                 renderer.render(scene, camera);
             }
             
-            animate();
+            render();
+        }
+
+        // Steering Wheel Model
+        function createSteeringWheelScene() {
+            const container = document.getElementById('steering-wheel-3d');
+            const { scene, camera, renderer, controls } = createScene('steering-wheel-3d');
+            const modelPath = '../tools/js/threejs/models/SteeringWheel.gltf';
+            
+            // Add red ambient light for better visibility
+            const ambientLight = new THREE.AmbientLight(0xff0000, 0.5);
+            scene.add(ambientLight);
+            
+            const loader = new GLTFLoader();
+            loader.load(modelPath, function(gltf) {
+                const model = gltf.scene;
+                model.scale.set(0.5, 0.5, 0.5);
+                model.position.set(0, -2, 0);
+                
+                model.traverse((child) => {
+                    if (child.isMesh) {
+                        const meshIndex = child.parent.children.indexOf(child);
+                        child.material = meshIndex === 1
+                            ? new THREE.MeshStandardMaterial({
+                                color: 0xff0000, // base color
+                                emissive: 0xff0000, // glow color
+                                emissiveIntensity: 10,
+                            })
+                            : new THREE.MeshBasicMaterial({
+                                color: 0xAAAAAA,    
+                                wireframe: false,      
+                                transparent: false,    
+                                //opacity: 0.9,         // Slight transparency
+                                wireframeLinewidth: 1  // Line thickness
+                            });
+                    }
+                });
+                
+                // Create composer with better anti-aliasing
+                const renderScene = new RenderPass(scene, camera);
+                const composer = new EffectComposer(renderer);
+                composer.addPass(renderScene);
+                
+                // Add FXAA for better edge smoothing
+                const fxaaPass = new ShaderPass(FXAAShader);
+                const pixelRatio = renderer.getPixelRatio();
+                fxaaPass.material.uniforms['resolution'].value.x = 1 / (container.clientWidth * pixelRatio);
+                fxaaPass.material.uniforms['resolution'].value.y = 1 / (container.clientHeight * pixelRatio);
+                composer.addPass(fxaaPass);
+                
+                // Add bloom effect
+                const bloomPass = new UnrealBloomPass(
+                    new THREE.Vector2(window.innerWidth, window.innerHeight),
+                    0.2,  // Strength
+                    0.75,  // Radius
+                    0.1   // Threshold
+                );
+                
+                composer.addPass(bloomPass);
+                scene.add(model);
+                
+                // Auto-rotate the model
+                function animate() {
+                    requestAnimationFrame(animate);
+                    model.rotation.y += 0.005;
+                    controls.update();
+                    composer.render();
+                }
+                
+                animate();
+            });
+
+            // Position camera
+            camera.position.z = 30;
+            
+            // Set up auto-rotation
+            controls.autoRotate = true;
+            controls.autoRotateSpeed = 1.0;
+            
+            // Initial render
+            function render() {
+                requestAnimationFrame(render);
+                controls.update();
+                renderer.render(scene, camera);
+            }
+            
+            render();
+        
+        }
+
+        // Aquarium Model
+        function createAquariumScene() {
+            const container = document.getElementById('aquarium-3d');
+            const { scene, camera, renderer, controls } = createScene('aquarium-3d');
+            const modelPath = '../tools/js/threejs/models/Aquarium.gltf';
+            
+            // Add red ambient light for better visibility
+            const ambientLight = new THREE.AmbientLight(0xff0000, 0.5);
+            scene.add(ambientLight);
+            
+            const loader = new GLTFLoader();
+            loader.load(modelPath, function(gltf) {
+                const model = gltf.scene;
+                model.scale.set(0.5, 0.5, 0.5);
+                model.position.set(0, -2, 0);
+                
+                model.traverse((child) => {
+                    if (child.isMesh) {
+                        const meshIndex = child.parent.children.indexOf(child);
+                        child.material = meshIndex === 1 || meshIndex === 2 || meshIndex === 3
+                            ? new THREE.MeshStandardMaterial({
+                                color: 0xff0000, // base color
+                                emissive: 0xff0000, // glow color
+                                emissiveIntensity: 10,
+                            })
+                            : new THREE.MeshBasicMaterial({
+                                color: 0xAAAAAA,    
+                                wireframe: false,      
+                                transparent: false,    
+                                //opacity: 0.9,         // Slight transparency
+                                wireframeLinewidth: 1  // Line thickness
+                            });
+                    }
+                });
+                
+                // Create composer with better anti-aliasing
+                const renderScene = new RenderPass(scene, camera);
+                const composer = new EffectComposer(renderer);
+                composer.addPass(renderScene);
+                
+                // Add FXAA for better edge smoothing
+                const fxaaPass = new ShaderPass(FXAAShader);
+                const pixelRatio = renderer.getPixelRatio();
+                fxaaPass.material.uniforms['resolution'].value.x = 1 / (container.clientWidth * pixelRatio);
+                fxaaPass.material.uniforms['resolution'].value.y = 1 / (container.clientHeight * pixelRatio);
+                composer.addPass(fxaaPass);
+                
+                // Add bloom effect
+                const bloomPass = new UnrealBloomPass(
+                    new THREE.Vector2(window.innerWidth, window.innerHeight),
+                    0.2,  // Strength
+                    0.75,  // Radius
+                    0.1   // Threshold
+                );
+                
+                composer.addPass(bloomPass);
+                scene.add(model);
+                
+                // Auto-rotate the model
+                function animate() {
+                    requestAnimationFrame(animate);
+                    model.rotation.y += 0.005;
+                    controls.update();
+                    composer.render();
+                }
+                
+                animate();
+            });
+
+            // Position camera
+            camera.position.z = 25;
+            
+            // Set up auto-rotation
+            controls.autoRotate = true;
+            controls.autoRotateSpeed = 1.0;
+            
+            // Initial render
+            function render() {
+                requestAnimationFrame(render);
+                controls.update();
+                renderer.render(scene, camera);
+            }
+            
+            render();
+        
         }
 
         // Initialize all scenes when DOM is loaded
@@ -267,6 +632,8 @@
             createCryptoScene();
             createPrintingScene();
             createDroneScene();
+            createSteeringWheelScene();
+            createAquariumScene();
         });
     </script>
     <style>
@@ -454,7 +821,7 @@
                     </div>
                     <div class="md:w-1/2">
                         <div class="passion-image">
-                            <div id="simracing-3d" class="w-full h-full"></div>
+                            <div id="steering-wheel-3d" class="w-full h-full"></div>
                         </div>
                     </div>
                 </div>
