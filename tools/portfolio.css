@@ -435,6 +435,10 @@ img:hover {
     }
 }
 
+.phone {
+    font-size: 100px;
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
     width: 8px;
