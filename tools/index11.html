@@ -10,6 +10,14 @@
     <script src="../assets/reusables.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/ScrollTrigger.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollSmoother.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/MotionPathPlugin.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/MotionPathHelper.min.js"></script>
+    
+    
     <!-- Three.js imports -->
     <script type="importmap">
         {
@@ -610,9 +618,6 @@
             }
         }
     </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollTrigger.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/MotionPathPlugin.min.js"></script>
     <style>
         .motion-path-container {
             position: absolute;
@@ -632,9 +637,6 @@
             height: 100%;
             min-height: 100vh;
         }
-        #tractor {
-            transform-origin: center;
-        }
         body {
             position: relative;
             min-height: 100vh;
@@ -642,20 +644,35 @@
     </style>
 </head>
 <body class="font-saira text-white bg-dark">
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full bg-black/90 backdrop-blur-md z-50">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex justify-between items-center">
+                <h1 class="text-2xl font-bold uppercase">Mickael</h1>
+                <div class="hidden md:flex space-x-8">
+                    <a href="#about" class="hover:text-primary transition-colors">About</a>
+                    <a href="#work" class="hover:text-primary transition-colors">Work</a>
+                    <a href="#contact" class="hover:text-primary transition-colors">Contact</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+<div id="smooth-wrapper">
+<div id="smooth-content">
     <!-- Motion Path Background -->
     <div class="motion-path-container">
         <svg id="motionSVG" viewBox="0 0 1200 11075" preserveAspectRatio="xMidYMin meet" style="width: 100%; height: 100%;">
             <!-- Glow filter -->
             <defs>
-                <filter id="laserGlow" height="400%" width="400%" x="-150%" y="-150%">
-                    <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="blur" />
-                    <feFlood flood-color="#ff3366" flood-opacity="0.8" result="glow" />
-                    <feComposite in="glow" in2="blur" operator="in" result="softGlow" />
-                    <feMerge>
-                        <feMergeNode in="softGlow"/>
-                        <feMergeNode in="softGlow"/>
-                        <feMergeNode in="SourceGraphic"/>
-                    </feMerge>
+                <filter id="laserGlow">
+                    <fegaussianblur class="blur" result="coloredBlur" stddeviation="25"></fegaussianblur>
+                    <femerge>
+                        <femergenode in="coloredBlur"></femergenode>
+                        <femergenode in="coloredBlur"></femergenode>
+                        <femergenode in="coloredBlur"></femergenode>
+                        <femergenode in="SourceGraphic"></femergenode>
+                    </femerge>
                 </filter>
             </defs>
             
@@ -751,96 +768,10 @@
                   stroke-width="2"
                   stroke-linecap="round"
                   stroke-linejoin="round"
-                  vector-effect="non-scaling-stroke"/>            
-            
-            <g id="tractor" filter="url(#laserGlow)">
-                <circle cx="0" cy="0" r="15" fill="#ff0000">
-                    <animate attributeName="r" 
-                             values="8;14;8" 
-                             dur="1.8s" 
-                             repeatCount="indefinite" />
-                    <animate attributeName="opacity" 
-                             values="0.7;1;0.7" 
-                             dur="1.8s" 
-                             repeatCount="indefinite" />
-                </circle>
-                <circle cx="0" cy="0" r="6" fill="#ff8888" opacity="0.9">
-                    <animate attributeName="r" 
-                             values="4;6;4" 
-                             dur="1.8s" 
-                             repeatCount="indefinite" />
-                </circle>
-                <circle cx="0" cy="0" r="2" fill="white" opacity="1" />
-            </g>
+                  filter="url(#laserGlow)"
+                  vector-effect="non-scaling-stroke"/>
         </svg>
     </div>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Register plugins
-            gsap.registerPlugin(ScrollTrigger, MotionPathPlugin);
-
-            // Initial setup
-            gsap.set("#motionSVG", { autoAlpha: 1 });
-            gsap.set("#tractor", { transformOrigin: "center" });
-            
-            // Get the highlight path and set initial dash properties
-            const highlightPath = document.querySelector("#motionPathHighlight");
-            const pathLength = highlightPath.getTotalLength();
-            
-            // Set initial dash properties
-            gsap.set(highlightPath, {
-                strokeDasharray: pathLength,
-                strokeDashoffset: pathLength
-            });
-            
-            // Animation - follows full page scroll with path-based progress
-            gsap.to("#tractor", {
-                scrollTrigger: {
-                    trigger: "body",
-                    start: "top top",
-                    end: `bottom bottom`,
-                    scrub: 0.5,
-                    markers: false,
-                    onUpdate: (self) => {
-                        const progress = self.progress;
-                        gsap.set(highlightPath, {
-                            strokeDashoffset: pathLength * (1 - progress)
-                        });
-                    },
-                    onEnter: () => {
-                        gsap.set(highlightPath, {
-                            strokeDashoffset: pathLength
-                        });
-                    },
-                    onEnterBack: () => {
-                        gsap.set(highlightPath, {
-                            strokeDashoffset: pathLength
-                        });
-                    }
-                },
-                motionPath: {
-                    path: "#motionPathHighlight",
-                    align: "#motionPathHighlight",
-                    alignOrigin: [0.5, 0.5],
-                    autoRotate: 90,
-                },
-                ease: "none"
-            });
-        });
-    </script>
-    <!-- Navigation -->
-    <nav class="fixed top-0 w-full bg-black/90 backdrop-blur-md z-50">
-        <div class="container mx-auto px-6 py-4">
-            <div class="flex justify-between items-center">
-                <h1 class="text-2xl font-bold uppercase">Mickael</h1>
-                <div class="hidden md:flex space-x-8">
-                    <a href="#about" class="hover:text-primary transition-colors">About</a>
-                    <a href="#work" class="hover:text-primary transition-colors">Work</a>
-                    <a href="#contact" class="hover:text-primary transition-colors">Contact</a>
-                </div>
-            </div>
-        </div>
-    </nav>
 
     <!-- Hero Section -->
     <section id="hero" class="min-h-screen flex items-center justify-center">
@@ -1202,45 +1133,6 @@
         </div>
     </section>
 
-    <script>
-        const toolsCategories = document.querySelectorAll(".badge");
-        const toolsGrid = document.getElementById("tools-grid");
-
-        toolsCategories.forEach((category) => {
-            category.addEventListener("click", () => {
-                const elements = toolsGrid.children;
-                const selectedCategory = category.dataset.filter;
-
-                toolsCategories.forEach((category) => {
-                    category.classList.remove("active");
-                });
-                category.classList.add("active");
-
-                if (selectedCategory === "all") {
-                     for (let i = 0; i <elements.length; i++) {
-                        const element = elements[i];
-                        element.classList.remove("hidden");
-                    }
-
-                    return;
-                }
-
-                for (let i = 0; i <elements.length; i++) {
-                    const element = elements[i];
-                    element.classList.add("hidden");
-                }
-
-                for (let i = 0; i <elements.length; i++) {
-                    const element = elements[i];
-                    if (element.dataset.category === selectedCategory) {
-                        element.classList.remove("hidden");
-                    }
-                }
-            });
-        });
-    </script>
-
-
     <!-- Contact Section -->
     <section id="contact" class="py-20">
         <div class="container mx-auto px-6">
@@ -1278,5 +1170,109 @@
             <p class="text-center text-gray-400 mt-4">  <script>document.write(new Date().getFullYear())</script>. All rights reserved.</p>
         </div>
     </footer>
+</div> <!-- End smooth-content -->
+</div> <!-- End smooth-wrapper -->
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Register plugins
+        gsap.registerPlugin(ScrollTrigger, MotionPathPlugin, ScrollSmoother, MotionPathHelper);
+
+        // Initial setup
+        gsap.set("#motionSVG", { autoAlpha: 1 });
+        
+        // Get the highlight path and set initial dash properties
+        const highlightPath = document.querySelector("#motionPathHighlight");
+        const pathLength = highlightPath.getTotalLength();
+        
+        // Set initial dash properties
+        gsap.set(highlightPath, {
+            strokeDasharray: pathLength,
+            strokeDashoffset: pathLength
+        });
+        
+        // Animation - follows full page scroll with path-based progress
+        gsap.to("#tractor", {
+            scrollTrigger: {
+                trigger: "body",
+                start: "top top",
+                end: `bottom bottom`,
+                scrub: 0,
+                markers: false,
+                onUpdate: (self) => {
+                    const progress = self.progress;
+                    gsap.set(highlightPath, {
+                        strokeDashoffset: pathLength * (1 - progress)
+                    });
+                },
+                onEnter: () => {
+                    gsap.set(highlightPath, {
+                        strokeDashoffset: pathLength
+                    });
+                },
+                onEnterBack: () => {
+                    gsap.set(highlightPath, {
+                        strokeDashoffset: pathLength
+                    });
+                }
+            },
+            motionPath: {
+                path: "#motionPathHighlight",
+                align: "#motionPathHighlight",
+                alignOrigin: [0.5, 0.5],
+                autoRotate: 90,
+            }
+        });
+
+        // Motion path helper
+        //MotionPathHelper.create("#motionPathBg");
+
+        // Initialize ScrollSmoother
+        const smoother = ScrollSmoother.create({
+            wrapper: "#smooth-wrapper",
+            content: "#smooth-content",
+            smooth: 2,
+            effects: true,
+            smoothTouch: 0.1,
+        });
+    });
+
+    // Tools grid filter
+    const toolsCategories = document.querySelectorAll(".badge");
+    const toolsGrid = document.getElementById("tools-grid");
+
+    toolsCategories.forEach((category) => {
+        category.addEventListener("click", () => {
+            const elements = toolsGrid.children;
+            const selectedCategory = category.dataset.filter;
+
+            toolsCategories.forEach((category) => {
+                category.classList.remove("active");
+            });
+            category.classList.add("active");
+
+            if (selectedCategory === "all") {
+                    for (let i = 0; i <elements.length; i++) {
+                    const element = elements[i];
+                    element.classList.remove("hidden");
+                }
+
+                return;
+            }
+
+            for (let i = 0; i <elements.length; i++) {
+                const element = elements[i];
+                element.classList.add("hidden");
+            }
+
+            for (let i = 0; i <elements.length; i++) {
+                const element = elements[i];
+                if (element.dataset.category === selectedCategory) {
+                    element.classList.remove("hidden");
+                }
+            }
+        });
+    });
+</script>
 </body>
 </html>
