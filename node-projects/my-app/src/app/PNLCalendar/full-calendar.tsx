@@ -19,17 +19,17 @@ interface TradeData {
 const parseTradeData = (input: string): TradeData => {
     const lines = input.trim().split('\n')
     const data: TradeData = {}
-    
+
     // Skip header line if it exists
     const startIndex = lines[0].includes('Time\tPosition') ? 1 : 0
-    
+
     for (let i = startIndex; i < lines.length; i++) {
         const line = lines[i].trim()
         if (!line) continue
-        
+
         const columns = line.split('\t')
         if (columns.length < 12) continue // Ensure we have all required columns
-        
+
         try {
             // Column indices based on the provided format:
             // 0: Open Time, 1: Position, 2: Symbol, 3: Type, 4: Volume
@@ -40,7 +40,7 @@ const parseTradeData = (input: string): TradeData => {
             const swap = parseFloat(columns[11]) || 0
             const profit = parseFloat(columns[12]) // 13th column is profit
             const totalProfit = profit + commission + swap
-            
+
             // Parse the close time (format: YYYY.MM.DD HH:MM:SS)
             const [datePart] = closeTime.split(' ')
             const [year, month, day] = datePart.split('.').map(Number)
@@ -48,7 +48,7 @@ const parseTradeData = (input: string): TradeData => {
             const tradeDate = new Date(year, month - 1, day)
             // Format as YYYY-MM-DD in local timezone
             const formattedDate = tradeDate.toISOString().split('T')[0]
-            
+
             if (data[formattedDate]) {
                 data[formattedDate].pnl += totalProfit
                 data[formattedDate].trades += 1
@@ -59,7 +59,7 @@ const parseTradeData = (input: string): TradeData => {
             console.error('Error parsing line:', line, error)
         }
     }
-    
+
     return data
 }
 
@@ -185,7 +185,7 @@ export function TradingCalendar() {
 
     return (
         <div className="min-h-screen bg-background p-4 md:p-6">
-            <div className="mx-auto max-w-7xl space-y-6">
+            <div className="mx-auto max-w-7xl space-y-8">
                 {/* Trade Data Import */}
                 <Card>
                     <CardHeader>
@@ -212,8 +212,8 @@ export function TradingCalendar() {
                             <Button onClick={handleImportTrades}>
                                 Import Trades
                             </Button>
-                            <Button 
-                                variant="outline" 
+                            <Button
+                                variant="outline"
                                 onClick={() => setTradeInput(sampleData)}
                                 className="ml-2"
                             >
@@ -225,15 +225,19 @@ export function TradingCalendar() {
 
                 {/* Header */}
                 <Card className="mb-6">
-                    <CardHeader>
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-4">
+                    <CardHeader className="px-6 py-4">
+                        <div className="flex items-center justify-between w-full gap-12">
+                            <div className="w-10">
                                 <Button variant="outline" size="icon" onClick={() => navigateMonth("prev")}>
                                     <ChevronLeft className="h-4 w-4" />
                                 </Button>
-                                <CardTitle className="text-2xl md:text-3xl">
+                            </div>
+                            <div className="flex-1 text-center min-w-[240px] px-4">
+                                <CardTitle className="text-2xl md:text-3xl font-medium">
                                     {monthNames[month]} {year}
                                 </CardTitle>
+                            </div>
+                            <div className="w-10">
                                 <Button variant="outline" size="icon" onClick={() => navigateMonth("next")}>
                                     <ChevronRight className="h-4 w-4" />
                                 </Button>
