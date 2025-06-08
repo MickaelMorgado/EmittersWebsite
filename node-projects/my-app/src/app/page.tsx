@@ -51,7 +51,7 @@ export default function Home() {
             </Card>
           </Link>
 
-          <Link href="/hips" className="h-full">
+          <Link href="/HipsExample" className="h-full">
             <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
               <CardHeader>
                 <CardTitle>Hips Project</CardTitle>
