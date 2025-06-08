@@ -23,6 +23,7 @@
     "@theatre/r3f": "^0.5.1",
     "@theatre/studio": "^0.5.1",
     "@types/gsap": "^3.0.0",
+    "autoprefixer": "^10.4.21",
     "axios": "^1.7.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
