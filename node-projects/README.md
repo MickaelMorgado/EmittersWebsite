@@ -13,6 +13,13 @@ docker compose exec app npm run dev
 npx shadcn@latest add [component]
 ```
 
+## Run it locally
+
+```
+cd node-projects
+docker compose up
+```
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
