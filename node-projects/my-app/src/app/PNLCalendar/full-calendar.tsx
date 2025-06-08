@@ -1,161 +1,368 @@
-"use client";
+"use client"
 
-import React, { useState, useCallback } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { format, parseISO } from 'date-fns';
-import { cn } from '../../lib/utils';
-import { Button } from '../../components/ui/button';
-import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/card';
-import { parseMT5CSV } from '../../../lib/mt5Parser';
+import { useState } from "react"
+import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { ChevronLeft, ChevronRight, TrendingUp, TrendingDown } from "lucide-react"
+import { cn } from "@/lib/utils"
 
-type Trade = {
-    time: string;
-    profit: number;
-};
-
-type TradingData = {
-    [date: string]: {
-        profit: number;
+// Type definitions
+interface TradeData {
+    [key: string]: {
+        pnl: number;
         trades: number;
     };
-};
+}
 
-export default function PNLCalendar() {
-    const [currentDate, setCurrentDate] = useState<Date>(new Date());
-    const [selectedDate, setSelectedDate] = useState<string | null>(null);
-    const [tradingData, setTradingData] = useState<TradingData>({});
-    const [inputText, setInputText] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+// Sample trading data
+const parseTradeData = (input: string): TradeData => {
+    const lines = input.trim().split('\n')
+    const data: TradeData = {}
+    
+    // Skip header line if it exists
+    const startIndex = lines[0].includes('Time\tPosition') ? 1 : 0
+    
+    for (let i = startIndex; i < lines.length; i++) {
+        const line = lines[i].trim()
+        if (!line) continue
+        
+        const columns = line.split('\t')
+        if (columns.length < 12) continue // Ensure we have all required columns
+        
+        try {
+            // Column indices based on the provided format:
+            // 0: Open Time, 1: Position, 2: Symbol, 3: Type, 4: Volume
+            // 5: Price, 6: S/L, 7: T/P, 8: Close Time, 9: Close Price
+            // 10: Commission, 11: Swap, 12: Profit
+            const closeTime = columns[8] // 9th column is close time
+            const commission = parseFloat(columns[10]) || 0
+            const swap = parseFloat(columns[11]) || 0
+            const profit = parseFloat(columns[12]) // 13th column is profit
+            const totalProfit = profit + commission + swap
+            
+            // Format date as YYYY-MM-DD
+            const dateStr = closeTime.split(' ')[0].replace(/\./g, '-')
+            const [year, month, day] = dateStr.split('-')
+            const formattedDate = `${year.padStart(4, '20')}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+            
+            if (data[formattedDate]) {
+                data[formattedDate].pnl += totalProfit
+                data[formattedDate].trades += 1
+            } else {
+                data[formattedDate] = { pnl: totalProfit, trades: 1 }
+            }
+        } catch (error) {
+            console.error('Error parsing line:', line, error)
+        }
+    }
+    
+    return data
+}
 
-    const monthName = new Intl.DateTimeFormat('en-US', { month: 'long' }).format(currentDate);
-    const currentYear = currentDate.getFullYear();
+const sampleData = `2025.06.05 10:04:02\t61595621\tEURUSD\tbuy\t1\t1.14129\t1.14117\t1.14200\t2025.06.05 10:06:54\t1.14117\t-4.00\t0.00\t-10.52
+2025.06.05 10:10:05\t61596071\tEURUSD\tbuy\t1\t1.14146\t1.14162\t1.14202\t2025.06.05 10:14:58\t1.14192\t-4.00\t0.00\t40.28
+2025.06.06 10:37:04\t61675593\tEURUSD\tbuy\t1\t1.14280\t1.14267\t1.14378\t2025.06.06 10:37:11\t1.14267\t-4.00\t0.00\t-11.38
+2025.06.06 10:45:06\t61676274\tEURUSD\tbuy\t1\t1.14284\t1.14271\t1.14375\t2025.06.06 10:46:50\t1.14271\t-4.00\t0.00\t-11.38
+2025.06.06 11:03:02\t61677483\tEURUSD\tsell\t1.5\t1.14225\t1.14237\t1.14157\t2025.06.06 11:03:25\t1.14237\t-6.00\t0.00\t-15.76
+2025.06.06 11:12:22\t61677870\tEURUSD\tsell\t1.5\t1.14220\t1.14231\t1.14154\t2025.06.06 11:13:26\t1.14231\t-6.00\t0.00\t-14.44`
+
+const monthNames = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+]
+
+const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+
+interface DayData {
+    date: Date;
+    isCurrentMonth: boolean;
+    isToday: boolean;
+    tradingData?: {
+        pnl: number;
+        trades: number;
+    };
+}
+
+export function TradingCalendar() {
+    const [currentDate, setCurrentDate] = useState(new Date())
+    const [tradeInput, setTradeInput] = useState('')
+    const [tradingData, setTradingData] = useState<TradeData>({})
+
+    const year = currentDate.getFullYear()
+    const month = currentDate.getMonth()
+
+    // Get first day of month and calculate calendar grid
+    const firstDayOfMonth = new Date(year, month, 1)
+    const lastDayOfMonth = new Date(year, month + 1, 0)
+    const firstDayOfWeek = firstDayOfMonth.getDay()
+    const daysInMonth = lastDayOfMonth.getDate()
+
+    // Calculate days to show (including previous/next month days)
+    const startDate = new Date(firstDayOfMonth)
+    startDate.setDate(startDate.getDate() - firstDayOfWeek)
+
+    const endDate = new Date(lastDayOfMonth)
+    const remainingDays = 6 - lastDayOfMonth.getDay()
+    endDate.setDate(endDate.getDate() + remainingDays)
+
+    // Generate calendar days
+    const calendarDays: DayData[] = []
+    const currentDateIter = new Date(startDate)
+
+    while (currentDateIter <= endDate) {
+        const dateKey = currentDateIter.toISOString().split("T")[0]
+        const isCurrentMonth = currentDateIter.getMonth() === month
+        const isToday = currentDateIter.toDateString() === new Date().toDateString()
+
+        calendarDays.push({
+            date: new Date(currentDateIter),
+            isCurrentMonth,
+            isToday,
+            tradingData: tradingData[dateKey as keyof typeof tradingData],
+        })
+
+        currentDateIter.setDate(currentDateIter.getDate() + 1)
+    }
+
+    // Group days into weeks
+    const weeks: DayData[][] = []
+    for (let i = 0; i < calendarDays.length; i += 7) {
+        weeks.push(calendarDays.slice(i, i + 7))
+    }
+
+    // Calculate monthly totals
+    const monthlyTotals = Object.entries(tradingData).reduce(
+        (acc, [dateStr, data]) => {
+            const date = new Date(dateStr)
+            if (date.getMonth() === month && date.getFullYear() === year) {
+                acc.totalPnl += data.pnl
+                acc.totalTrades += data.trades
+                acc.tradingDays += 1
+            }
+            return acc
+        },
+        { totalPnl: 0, totalTrades: 0, tradingDays: 0 },
+    )
+
+    const handleImportTrades = () => {
+        const data = parseTradeData(tradeInput || sampleData)
+        setTradingData(data)
+    }
 
     const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-        setInputText(e.target.value);
-    };
+        setTradeInput(e.target.value)
+    }
 
-    const groupTradesByDate = (trades: Trade[]): TradingData => {
-        return trades.reduce((acc, trade) => {
-            const date = trade.time.split(' ')[0];
-            if (!acc[date]) {
-                acc[date] = { profit: 0, trades: 0 };
-            }
-            acc[date].profit += trade.profit;
-            acc[date].trades += 1;
-            return acc;
-        }, {} as TradingData);
-    };
+    const navigateMonth = (direction: "prev" | "next") => {
+        setCurrentDate((prev) => {
+            const newDate = new Date(prev)
+            newDate.setMonth(prev.getMonth() + (direction === "next" ? 1 : -1))
+            return newDate
+        })
+    }
 
-    const handleParseData = useCallback(() => {
-        if (!inputText.trim()) return;
-
-        setIsLoading(true);
-        setError(null);
-
-        try {
-            const trades = parseMT5CSV(inputText);
-            setTradingData(groupTradesByDate(trades));
-        } catch (err) {
-            setError('Failed to parse the data. Please check the format and try again.');
-            console.error('Error parsing data:', err);
-        } finally {
-            setIsLoading(false);
-        }
-    }, [inputText]);
-
-    const handleDateSelect = useCallback((date: Date | null) => {
-        if (date) {
-            setSelectedDate(format(date, 'yyyy-MM-dd'));
-        } else {
-            setSelectedDate(null);
-        }
-    }, []);
-
-    const prevMonth = () => {
-        setCurrentDate(new Date(currentYear, currentDate.getMonth() - 1, 1));
-    };
-
-    const nextMonth = () => {
-        setCurrentDate(new Date(currentYear, currentDate.getMonth() + 1, 1));
-    };
+    const formatCurrency = (amount: number) => {
+        return new Intl.NumberFormat("en-US", {
+            style: "currency",
+            currency: "USD",
+            minimumFractionDigits: 2,
+        }).format(amount)
+    }
 
     return (
-        <div className="container mx-auto p-4 max-w-6xl">
-            <Card className="mb-6">
-                <CardHeader>
-                    <CardTitle>PNL Calendar</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <div className="mb-4">
-                                <label htmlFor="trades" className="block text-sm font-medium mb-2">
-                                    Paste MT5 Trades (CSV format)
+        <div className="min-h-screen bg-background p-4 md:p-6">
+            <div className="mx-auto max-w-7xl space-y-6">
+                {/* Trade Data Import */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Import Trade Data</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <label htmlFor="trade-data" className="text-sm font-medium">
+                                    Paste your trade history (tab-separated values)
                                 </label>
                                 <textarea
-                                    id="trades"
-                                    rows={10}
-                                    className="w-full p-2 border rounded-md font-mono text-sm"
-                                    value={inputText}
+                                    id="trade-data"
+                                    rows={8}
+                                    value={tradeInput}
                                     onChange={handleInputChange}
-                                    placeholder="Paste your MT5 trades CSV data here..."
+                                    placeholder="Paste your trade data here..."
+                                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                                 />
+                                <p className="text-sm text-muted-foreground">
+                                    Paste your trade history in the format: Time, Position, Symbol, Type, Volume, Price, S/L, T/P, Close Time, Close Price, Commission, Swap, Profit
+                                </p>
                             </div>
-                            <Button
-                                onClick={handleParseData}
-                                disabled={isLoading || !inputText.trim()}
-                                className="w-full md:w-auto"
-                            >
-                                {isLoading ? 'Processing...' : 'Parse Trades'}
+                            <Button onClick={handleImportTrades}>
+                                Import Trades
                             </Button>
-                            {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+                            <Button 
+                                variant="outline" 
+                                onClick={() => setTradeInput(sampleData)}
+                                className="ml-2"
+                            >
+                                Load Sample Data
+                            </Button>
                         </div>
+                    </CardContent>
+                </Card>
 
-                        <div>
-                            <div className="flex items-center justify-between mb-4">
-                                <Button variant="outline" size="icon" onClick={prevMonth}>
+                {/* Header */}
+                <Card className="mb-6">
+                    <CardHeader>
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                <Button variant="outline" size="icon" onClick={() => navigateMonth("prev")}>
                                     <ChevronLeft className="h-4 w-4" />
                                 </Button>
-                                <h2 className="text-xl font-semibold">
-                                    {monthName} {currentYear}
-                                </h2>
-                                <Button variant="outline" size="icon" onClick={nextMonth}>
+                                <CardTitle className="text-2xl md:text-3xl">
+                                    {monthNames[month]} {year}
+                                </CardTitle>
+                                <Button variant="outline" size="icon" onClick={() => navigateMonth("next")}>
                                     <ChevronRight className="h-4 w-4" />
                                 </Button>
                             </div>
 
-                            <div className="rounded-md border p-4">
-
-                            </div>
-
-                            {selectedDate && tradingData[selectedDate] && (
-                                <div className="mt-4 p-3 bg-muted rounded-md">
-                                    <h3 className="font-medium mb-1">
-                                        {format(parseISO(selectedDate), 'EEEE, MMMM d, yyyy')}
-                                    </h3>
-                                    <div className="grid grid-cols-2 gap-2">
-                                        <div>
-                                            <p className="text-sm text-muted-foreground">Total Trades</p>
-                                            <p className="font-medium">{tradingData[selectedDate].trades}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-sm text-muted-foreground">Daily P/L</p>
-                                            <p className={cn(
-                                                'font-medium',
-                                                tradingData[selectedDate].profit >= 0 ? 'text-green-600' : 'text-red-600'
-                                            )}>
-                                                {tradingData[selectedDate].profit >= 0 ? '+' : ''}
-                                                {tradingData[selectedDate].profit.toFixed(2)}
-                                            </p>
-                                        </div>
+                            <div className="flex items-center gap-6">
+                                <div className="text-right">
+                                    <div className="text-sm text-muted-foreground">Monthly P&L</div>
+                                    <div
+                                        className={cn("text-lg font-bold", monthlyTotals.totalPnl >= 0 ? "text-green-600" : "text-red-600")}
+                                    >
+                                        {formatCurrency(monthlyTotals.totalPnl)}
                                     </div>
                                 </div>
-                            )}
+                                <div className="text-right">
+                                    <div className="text-sm text-muted-foreground">Trading Days</div>
+                                    <div className="text-lg font-bold">{monthlyTotals.tradingDays}</div>
+                                </div>
+                                <div className="text-right">
+                                    <div className="text-sm text-muted-foreground">Total Trades</div>
+                                    <div className="text-lg font-bold">{monthlyTotals.totalTrades}</div>
+                                </div>
+                            </div>
                         </div>
+                    </CardHeader>
+                </Card>
+
+                {/* Legend */}
+                <div className="mb-4 flex items-center gap-6 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-2">
+                        <div className="h-3 w-3 rounded-full bg-green-500"></div>
+                        <span>Profitable Day</span>
                     </div>
-                </CardContent>
-            </Card>
+                    <div className="flex items-center gap-2">
+                        <div className="h-3 w-3 rounded-full bg-red-500"></div>
+                        <span>Loss Day</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <div className="h-3 w-3 rounded-full bg-muted"></div>
+                        <span>No Trading</span>
+                    </div>
+                </div>
+
+                {/* Calendar */}
+                <Card>
+                    <CardContent className="p-0">
+                        {/* Day headers */}
+                        <div className="grid grid-cols-7 border-b">
+                            {dayNames.map((day) => (
+                                <div key={day} className="p-4 text-center text-sm font-medium text-muted-foreground">
+                                    {day}
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Calendar weeks */}
+                        {weeks.map((week, weekIndex) => (
+                            <div key={weekIndex} className="grid grid-cols-7 border-b last:border-b-0">
+                                {week.map((day, dayIndex) => (
+                                    <div
+                                        key={dayIndex}
+                                        className={cn(
+                                            "relative min-h-[120px] border-r p-3 last:border-r-0",
+                                            !day.isCurrentMonth && "bg-muted/30",
+                                            day.isToday && "bg-blue-50 dark:bg-blue-950/20",
+                                        )}
+                                    >
+                                        {/* Date number */}
+                                        <div className="flex items-start justify-between">
+                                            <div
+                                                className={cn(
+                                                    "flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium",
+                                                    day.isToday && "bg-blue-600 text-white",
+                                                    !day.isCurrentMonth && "text-muted-foreground",
+                                                )}
+                                            >
+                                                {day.date.getDate()}
+                                            </div>
+
+                                            {/* Trade count badge */}
+                                            {day.tradingData && (
+                                                <Badge variant="secondary" className="text-xs">
+                                                    {day.tradingData.trades} trades
+                                                </Badge>
+                                            )}
+                                        </div>
+
+                                        {/* Trading data */}
+                                        {day.tradingData && (
+                                            <div className="mt-2 space-y-1">
+                                                <div
+                                                    className={cn(
+                                                        "flex items-center gap-1 text-sm font-semibold",
+                                                        day.tradingData.pnl >= 0 ? "text-green-600" : "text-red-600",
+                                                    )}
+                                                >
+                                                    {day.tradingData.pnl >= 0 ? (
+                                                        <TrendingUp className="h-3 w-3" />
+                                                    ) : (
+                                                        <TrendingDown className="h-3 w-3" />
+                                                    )}
+                                                    {formatCurrency(Math.abs(day.tradingData.pnl))}
+                                                </div>
+
+                                                {/* Visual indicator */}
+                                                <div
+                                                    className={cn(
+                                                        "h-1 w-full rounded-full",
+                                                        day.tradingData.pnl >= 0 ? "bg-green-200" : "bg-red-200",
+                                                    )}
+                                                >
+                                                    <div
+                                                        className={cn(
+                                                            "h-full rounded-full",
+                                                            day.tradingData.pnl >= 0 ? "bg-green-500" : "bg-red-500",
+                                                        )}
+                                                        style={{
+                                                            width: `${Math.min(100, Math.abs(day.tradingData.pnl) / 25)}%`,
+                                                        }}
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        ))}
+                    </CardContent>
+                </Card>
+            </div>
         </div>
-    );
+    )
 }
+
+export default TradingCalendar;
