@@ -7,9 +7,9 @@ import HipsExample from './pages/HipsExample';
 const App = () => {
   return (
     <Routes>
-      <Route index element={<Home />} />
+      {/*       <Route index element={<Home />} />
       <Route path="/pnl-calendar" element={<PNLCalendar />} />
-      <Route path="/hips" element={<HipsExample />} />
+      <Route path="/hips" element={<HipsExample />} /> */}
     </Routes>
   )
 }
