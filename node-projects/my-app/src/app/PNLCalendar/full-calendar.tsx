@@ -41,10 +41,13 @@ const parseTradeData = (input: string): TradeData => {
             const profit = parseFloat(columns[12]) // 13th column is profit
             const totalProfit = profit + commission + swap
             
-            // Format date as YYYY-MM-DD
-            const dateStr = closeTime.split(' ')[0].replace(/\./g, '-')
-            const [year, month, day] = dateStr.split('-')
-            const formattedDate = `${year.padStart(4, '20')}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+            // Parse the close time (format: YYYY.MM.DD HH:MM:SS)
+            const [datePart] = closeTime.split(' ')
+            const [year, month, day] = datePart.split('.').map(Number)
+            // Create a date object in local timezone
+            const tradeDate = new Date(year, month - 1, day)
+            // Format as YYYY-MM-DD in local timezone
+            const formattedDate = tradeDate.toISOString().split('T')[0]
             
             if (data[formattedDate]) {
                 data[formattedDate].pnl += totalProfit
