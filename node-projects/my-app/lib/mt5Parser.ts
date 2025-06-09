@@ -56,7 +56,7 @@ export function parseMT5CSV(csvText: string): Trade[] {
       const dateMatch = timeValue.match(/(\d{4})[\/\.](\d{1,2})[\/\.](\d{1,2})/);
       if (!dateMatch) continue; // Skip if date format is invalid
 
-      const [_, year, month, day] = dateMatch.map(Number);
+      const [, year, month, day] = dateMatch.map(Number);
       const date = new Date(year, month - 1, day).toISOString().split('T')[0];
 
       // Parse numeric values, defaulting to 0 if not a valid number
