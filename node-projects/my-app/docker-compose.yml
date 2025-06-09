@@ -6,8 +6,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - '3000:3000'  # Next.js default port
-      - '24678:24678'  # Vite HMR port
+      - '3000:3000' # Next.js default port
     volumes:
       - .:/app
       - /app/node_modules
