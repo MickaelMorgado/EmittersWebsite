@@ -1,6 +1,6 @@
 FROM node:22-alpine
 
-WORKDIR /my-app
+WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
@@ -14,5 +14,8 @@ COPY . .
 # Expose port 5173
 EXPOSE 5173
 
-# Start development server with hot-reload
-CMD ["npm", "start"]
+# Set environment to development by default
+ENV NODE_ENV=development
+
+# Start the development server by default
+CMD ["npm", "run", "dev"]

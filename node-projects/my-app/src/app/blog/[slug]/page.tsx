@@ -101,7 +101,12 @@ const blogPosts = [
   },
 ];
 
-export default function BlogPostPage({ params }: { params: { slug: string } }) {
+interface BlogPostPageProps {
+  params: { slug: string };
+  searchParams: { [key: string]: string | string[] | undefined };
+}
+
+export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const post = blogPosts.find((post) => post.slug === params.slug);
 
   if (!post) {
