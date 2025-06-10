@@ -13,7 +13,7 @@ export default function Home() {
     <div className="container mx-auto px-4 py-8">
       <div className="flex items-center justify-between">
         <div>
-          <TypographyH1>Welcome to my Projects Page</TypographyH1>
+          <TypographyH1>Welcome to my Projects Page 1</TypographyH1>
           <p className="text-muted-foreground mb-8">Explore my collection of interactive projects and experiments.</p>
         </div>
         <Link href="/" className="size-8">
