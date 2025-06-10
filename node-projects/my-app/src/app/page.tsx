@@ -17,7 +17,7 @@ export default function Home() {
           <p className="text-muted-foreground mb-8">Explore my collection of interactive projects and experiments.</p>
         </div>
         <Link href="/" className="size-8">
-          <Button size="icon" aria-label="Back to homepage">
+          <Button size="icon" aria-label="Back to homepage" variant="default">
             <X className="h-4 w-4" />
           </Button>
         </Link>
