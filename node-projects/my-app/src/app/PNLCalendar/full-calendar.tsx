@@ -101,6 +101,7 @@ export function TradingCalendar() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [tradeInput, setTradeInput] = useState('');
   const [tradingData, setTradingData] = useState<TradeData>({});
+  const [showImportSection, setShowImportSection] = useState(true);
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -162,6 +163,7 @@ export function TradingCalendar() {
   const handleImportTrades = () => {
     const data = parseTradeData(tradeInput || sampleData);
     setTradingData(data);
+    setShowImportSection(false);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -184,49 +186,86 @@ export function TradingCalendar() {
     }).format(amount);
   };
 
+  const handleShowImportSection = () => {
+    setShowImportSection(true);
+  };
+
   return (
-    <div className="min-h-screen bg-background p-4 md:p-6">
-      <div className="mx-auto max-w-7xl space-y-8">
-        {/* Trade Data Import */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Import Trade Data</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <label htmlFor="trade-data" className="text-sm font-medium">
-                  Paste your trade history (tab-separated values)
-                </label>
-                <textarea
-                  id="trade-data"
-                  rows={8}
-                  value={tradeInput}
-                  onChange={handleInputChange}
-                  placeholder="Paste your trade data here..."
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                />
-                <p className="text-sm text-muted-foreground">
-                  Paste your trade history in the format: Time, Position,
-                  Symbol, Type, Volume, Price, S/L, T/P, Close Time, Close
-                  Price, Commission, Swap, Profit
-                </p>
-              </div>
-              <Button onClick={handleImportTrades}>Import Trades</Button>
-              <Button
-                variant="outline"
-                onClick={() => setTradeInput(sampleData)}
-                className="ml-2"
+    <div className="min-h-screen bg-background p-2 md:p-4">
+      <div className="mx-auto max-w-7xl space-y-4">
+        {/* Trade Data Import Toggle */}
+        {!showImportSection && (
+          <div className="flex justify-end">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={handleShowImportSection}
+              className="h-8"
+            >
+              Import Trades
+            </Button>
+          </div>
+        )}
+
+        {/* Trade Data Import Section */}
+        {showImportSection && (
+          <Card className="border">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-4 pb-2">
+              <CardTitle className="text-lg">Import Trade Data</CardTitle>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => setShowImportSection(false)}
+                className="h-6 w-6 p-0"
               >
-                Load Sample Data
+                ×
               </Button>
-            </div>
-          </CardContent>
-        </Card>
+            </CardHeader>
+            <CardContent className="p-4 pt-0">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label htmlFor="trade-data" className="text-sm font-medium">
+                    Paste your trade history (tab-separated values)
+                  </label>
+                  <textarea
+                    id="trade-data"
+                    rows={4}
+                    value={tradeInput}
+                    onChange={handleInputChange}
+                    placeholder="Paste your trade data here..."
+                    className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    Paste your trade history in the format: Time, Position,
+                    Symbol, Type, Volume, Price, S/L, T/P, Close Time, Close
+                    Price, Commission, Swap, Profit
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button 
+                    size="sm" 
+                    onClick={handleImportTrades}
+                    className="h-8"
+                  >
+                    Import
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setTradeInput(sampleData)}
+                    className="h-8"
+                  >
+                    Sample Data
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Header */}
-        <Card className="mb-6">
-          <CardHeader className="px-6 py-4">
+        <Card className="mb-2">
+          <CardHeader className="px-4 py-3">
             <div className="flex items-center justify-between w-full gap-12">
               <div className="w-10">
                 <Button
@@ -290,7 +329,7 @@ export function TradingCalendar() {
         </Card>
 
         {/* Legend */}
-        <div className="mb-4 flex items-center gap-6 text-sm text-muted-foreground">
+        <div className="mb-2 flex items-center gap-4 text-xs text-muted-foreground">
           <div className="flex items-center gap-2">
             <div className="h-3 w-3 rounded-full bg-green-500"></div>
             <span>Profitable Day</span>
@@ -306,14 +345,14 @@ export function TradingCalendar() {
         </div>
 
         {/* Calendar */}
-        <Card>
-          <CardContent className="p-0">
+        <Card className="overflow-hidden">
+          <CardContent className="p-1">
             {/* Day headers */}
             <div className="grid grid-cols-7 border-b">
               {dayNames.map((day) => (
                 <div
                   key={day}
-                  className="p-4 text-center text-sm font-medium text-muted-foreground"
+                  className="p-2 text-center text-xs font-medium text-muted-foreground"
                 >
                   {day}
                 </div>
@@ -330,7 +369,7 @@ export function TradingCalendar() {
                   <div
                     key={dayIndex}
                     className={cn(
-                      'relative min-h-[120px] border-r p-3 last:border-r-0',
+                      'relative min-h-[80px] border-r p-1.5 last:border-r-0',
                       !day.isCurrentMonth && 'bg-muted/30',
                       day.isToday && 'bg-blue-50 dark:bg-blue-950/20'
                     )}
@@ -339,7 +378,7 @@ export function TradingCalendar() {
                     <div className="flex items-start justify-between">
                       <div
                         className={cn(
-                          'flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium',
+                          'flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium',
                           day.isToday && 'bg-blue-600 text-white',
                           !day.isCurrentMonth && 'text-muted-foreground'
                         )}
