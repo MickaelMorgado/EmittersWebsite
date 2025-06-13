@@ -13,6 +13,8 @@ interface TradeData {
     pnl: number;
     trades: number;
     profitableTrades: number;
+    profitPoints: number[];
+    lossPoints: number[];
   };
 }
 
@@ -50,15 +52,50 @@ const parseTradeData = (input: string): TradeData => {
       // Format as YYYY-MM-DD in local timezone
       const formattedDate = tradeDate.toISOString().split('T')[0];
 
+      // Calculate points for the trade
+      const entryPrice = parseFloat(columns[5]);
+      const stopLoss = parseFloat(columns[6]);
+      const takeProfit = parseFloat(columns[7]);
+      const closePrice = parseFloat(columns[9]);
+      const tradeType = columns[3].toLowerCase();
+      
+      let points = 0;
+      
+      if (totalProfit >= 0) {
+        // For profitable trades, calculate points from entry to take profit if TP was hit
+        if (tradeType === 'buy') {
+          points = takeProfit > 0 ? takeProfit - entryPrice : closePrice - entryPrice;
+        } else { // sell
+          points = takeProfit > 0 ? entryPrice - takeProfit : entryPrice - closePrice;
+        }
+      } else {
+        // For losing trades, calculate points from entry to stop loss if SL was hit
+        if (tradeType === 'buy') {
+          points = stopLoss > 0 ? entryPrice - stopLoss : entryPrice - closePrice;
+        } else { // sell
+          points = stopLoss > 0 ? stopLoss - entryPrice : closePrice - entryPrice;
+        }
+      }
+      
+      // Ensure points are positive and valid
+      points = Math.abs(points) > 0.00001 ? Math.abs(points) : 0;
+      
       if (data[formattedDate]) {
         data[formattedDate].pnl += totalProfit;
         data[formattedDate].trades += 1;
-        data[formattedDate].profitableTrades += totalProfit >= 0 ? 1 : 0;
+        if (totalProfit >= 0) {
+          data[formattedDate].profitableTrades += 1;
+          data[formattedDate].profitPoints.push(points);
+        } else {
+          data[formattedDate].lossPoints.push(points);
+        }
       } else {
         data[formattedDate] = {
           pnl: totalProfit,
           trades: 1,
           profitableTrades: totalProfit >= 0 ? 1 : 0,
+          profitPoints: totalProfit >= 0 ? [points] : [],
+          lossPoints: totalProfit < 0 ? [points] : []
         };
       }
     } catch (error) {
@@ -161,6 +198,8 @@ export function TradingCalendar() {
         acc.totalTrades += data.trades;
         acc.profitableTrades += data.profitableTrades;
         acc.tradingDays += 1;
+        acc.profitPoints.push(...(data.profitPoints || []));
+        acc.lossPoints.push(...(data.lossPoints || []));
       }
       return acc;
     },
@@ -169,6 +208,8 @@ export function TradingCalendar() {
       totalTrades: 0,
       profitableTrades: 0,
       tradingDays: 0,
+      profitPoints: [] as number[],
+      lossPoints: [] as number[],
     }
   );
 
@@ -195,7 +236,20 @@ export function TradingCalendar() {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
     }).format(amount);
+  };
+
+  const formatPoints = (value: number) => {
+    if (value === 0) return '0';
+    if (!value) return 'N/A';
+    
+    // Convert to points (multiply by 100,000) and round to nearest integer
+    return Math.round(value * 100000).toString();
+  };
+  
+  const formatPercentage = (value: number) => {
+    return `${Math.round(value)}%`;
   };
 
   const handleShowImportSection = () => {
@@ -339,11 +393,31 @@ export function TradingCalendar() {
                   <div className="text-sm text-muted-foreground">Win Rate</div>
                   <div className="text-lg font-bold">
                     {monthlyTotals.totalTrades > 0
-                      ? `${Math.round(
-                          (monthlyTotals.profitableTrades /
-                            monthlyTotals.totalTrades) *
-                            100
-                        )}%`
+                      ? formatPercentage(
+                          (monthlyTotals.profitableTrades / monthlyTotals.totalTrades) * 100
+                        )
+                      : 'N/A'}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-sm text-muted-foreground">Avg Profit (pts)</div>
+                  <div className="text-lg font-bold text-green-600">
+                    {monthlyTotals.profitPoints.length > 0
+                      ? formatPoints(
+                          monthlyTotals.profitPoints.reduce((a, b) => a + b, 0) / 
+                          monthlyTotals.profitPoints.length
+                        )
+                      : 'N/A'}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-sm text-muted-foreground">Avg Loss (pts)</div>
+                  <div className="text-lg font-bold text-red-600">
+                    {monthlyTotals.lossPoints.length > 0
+                      ? formatPoints(
+                          monthlyTotals.lossPoints.reduce((a, b) => a + b, 0) / 
+                          monthlyTotals.lossPoints.length
+                        )
                       : 'N/A'}
                   </div>
                 </div>
@@ -430,7 +504,7 @@ export function TradingCalendar() {
                               : 'bg-red-50 text-red-800 border-red-300 dark:bg-red-900/30 dark:border-red-700 dark:text-red-300'
                           )}
                         >
-                          {formatCurrency(day.tradingData.pnl)}
+                          {formatCurrency(day.tradingData.pnl).replace('$', '')}
                         </Badge>
                       </div>
                     )}
