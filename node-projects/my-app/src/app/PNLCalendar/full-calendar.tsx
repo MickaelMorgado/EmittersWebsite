@@ -264,6 +264,16 @@ export function TradingCalendar() {
     return Math.round(value * 100000).toString();
   };
   
+  // Calculate overall stats
+  const overallStats = {
+    totalPnl: Object.values(tradingData).reduce((sum, day) => sum + day.pnl, 0),
+    totalTrades: Object.values(tradingData).reduce((sum, day) => sum + day.trades, 0),
+    profitableTrades: Object.values(tradingData).reduce((sum, day) => sum + day.profitableTrades, 0),
+    tradingDays: Object.keys(tradingData).length,
+    profitPoints: Object.values(tradingData).flatMap(day => day.profitPoints),
+    lossPoints: Object.values(tradingData).flatMap(day => day.lossPoints)
+  };
+  
   const formatPercentage = (value: number) => {
     return `${Math.round(value)}%`;
   };
@@ -534,9 +544,59 @@ export function TradingCalendar() {
             ))}
           </CardContent>
         </Card>
+
+        {/* Overall Statistics */}
+        <Card className="mt-8">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xl">Overall Statistics</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <div className="text-center">
+                <div className="text-sm text-muted-foreground">Total P&L</div>
+                <div className={cn(
+                  'text-2xl font-bold mt-1',
+                  Object.values(tradingData).reduce((sum, day) => sum + day.pnl, 0) >= 0 
+                    ? 'text-green-600' 
+                    : 'text-red-600'
+                )}>
+                  {formatCurrency(
+                    Object.values(tradingData).reduce((sum, day) => sum + day.pnl, 0)
+                  )}
+                </div>
+              </div>
+              
+              <div className="text-center">
+                <div className="text-sm text-muted-foreground">Total Trades</div>
+                <div className="text-2xl font-bold mt-1">
+                  {Object.values(tradingData).reduce((sum, day) => sum + day.trades, 0)}
+                </div>
+              </div>
+              
+              <div className="text-center">
+                <div className="text-sm text-muted-foreground">Win Rate</div>
+                <div className="text-2xl font-bold mt-1">
+                  {Object.values(tradingData).reduce((sum, day) => sum + day.trades, 0) > 0
+                    ? formatPercentage(
+                        (Object.values(tradingData).reduce((sum, day) => sum + day.profitableTrades, 0) /
+                        Object.values(tradingData).reduce((sum, day) => sum + day.trades, 0)) * 100
+                      )
+                    : 'N/A'}
+                </div>
+              </div>
+              
+              <div className="text-center">
+                <div className="text-sm text-muted-foreground">Trading Days</div>
+                <div className="text-2xl font-bold mt-1">
+                  {Object.keys(tradingData).length}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
-}
+};
 
 export default TradingCalendar;
