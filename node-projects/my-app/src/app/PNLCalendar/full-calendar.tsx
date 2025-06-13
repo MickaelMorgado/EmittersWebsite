@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 // Type definitions
 interface TradeData {
@@ -231,6 +231,22 @@ export function TradingCalendar() {
     });
   };
 
+  // Add keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') {
+        navigateMonth('prev');
+      } else if (e.key === 'ArrowRight') {
+        navigateMonth('next');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -257,7 +273,11 @@ export function TradingCalendar() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-2 md:p-4">
+    <div 
+      className="min-h-screen bg-background p-2 md:p-4 focus:outline-none" 
+      tabIndex={0} // Make the div focusable
+      onKeyDown={(e) => e.stopPropagation()} // Prevent event bubbling
+    >
       <div className="mx-auto max-w-7xl space-y-4">
         {/* Trade Data Import Toggle */}
         {!showImportSection && (
