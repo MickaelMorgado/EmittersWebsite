@@ -12,6 +12,7 @@ interface TradeData {
   [key: string]: {
     pnl: number;
     trades: number;
+    profitableTrades: number;
   };
 }
 
@@ -52,8 +53,13 @@ const parseTradeData = (input: string): TradeData => {
       if (data[formattedDate]) {
         data[formattedDate].pnl += totalProfit;
         data[formattedDate].trades += 1;
+        data[formattedDate].profitableTrades += totalProfit >= 0 ? 1 : 0;
       } else {
-        data[formattedDate] = { pnl: totalProfit, trades: 1 };
+        data[formattedDate] = {
+          pnl: totalProfit,
+          trades: 1,
+          profitableTrades: totalProfit >= 0 ? 1 : 0,
+        };
       }
     } catch (error) {
       console.error('Error parsing line:', line, error);
@@ -153,11 +159,17 @@ export function TradingCalendar() {
       if (date.getMonth() === month && date.getFullYear() === year) {
         acc.totalPnl += data.pnl;
         acc.totalTrades += data.trades;
+        acc.profitableTrades += data.profitableTrades;
         acc.tradingDays += 1;
       }
       return acc;
     },
-    { totalPnl: 0, totalTrades: 0, tradingDays: 0 }
+    {
+      totalPnl: 0,
+      totalTrades: 0,
+      profitableTrades: 0,
+      tradingDays: 0,
+    }
   );
 
   const handleImportTrades = () => {
@@ -196,8 +208,8 @@ export function TradingCalendar() {
         {/* Trade Data Import Toggle */}
         {!showImportSection && (
           <div className="flex justify-end">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               size="sm"
               onClick={handleShowImportSection}
               className="h-8"
@@ -212,8 +224,8 @@ export function TradingCalendar() {
           <Card className="border">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 p-4 pb-2">
               <CardTitle className="text-lg">Import Trade Data</CardTitle>
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 size="sm"
                 onClick={() => setShowImportSection(false)}
                 className="h-6 w-6 p-0"
@@ -242,8 +254,8 @@ export function TradingCalendar() {
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button 
-                    size="sm" 
+                  <Button
+                    size="sm"
                     onClick={handleImportTrades}
                     className="h-8"
                   >
@@ -321,6 +333,18 @@ export function TradingCalendar() {
                   </div>
                   <div className="text-lg font-bold">
                     {monthlyTotals.totalTrades}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-sm text-muted-foreground">Win Rate</div>
+                  <div className="text-lg font-bold">
+                    {monthlyTotals.totalTrades > 0
+                      ? `${Math.round(
+                          (monthlyTotals.profitableTrades /
+                            monthlyTotals.totalTrades) *
+                            100
+                        )}%`
+                      : 'N/A'}
                   </div>
                 </div>
               </div>
