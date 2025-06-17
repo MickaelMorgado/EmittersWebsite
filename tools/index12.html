@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PnL Calendar</title>
+  <script src="../assets/reusables.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f0f2f5;
+      color: #333;
+    }
+    .panel {
+      background: white;
+      border-radius: 10px;
+      padding: 25px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    h1 {
+      color: #2c3e50;
+      text-align: center;
+      margin-bottom: 25px;
+    }
+    textarea {
+      width: 100%;
+      min-height: 150px;
+      padding: 12px;
+      margin: 10px 0 20px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      resize: vertical;
+    }
+    button {
+      background-color: #3498db;
+      color: white;
+      padding: 10px 24px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 500;
+      transition: background-color 0.2s;
+      margin-bottom: 20px;
+    }
+    button:hover {
+      background-color: #2980b9;
+    }
+    .tabs {
+      display: flex;
+      margin-bottom: 20px;
+      border-bottom: 1px solid #ddd;
+    }
+    .tab {
+      padding: 10px 20px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      border-bottom: none;
+      border-radius: 6px 6px 0 0;
+      margin-right: 5px;
+      background: #f8f9fa;
+      transition: all 0.2s;
+    }
+    .tab.active {
+      background: #3498db;
+      color: white;
+      border-color: #2980b9;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    .calendar {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+    .calendar th, .calendar td {
+      padding: 10px;
+      text-align: center;
+      border: 1px solid #e0e0e0;
+    }
+    .calendar th {
+      background-color: #f8f9fa;
+      font-weight: 600;
+    }
+    .calendar td {
+      height: 40px;
+      vertical-align: middle;
+    }
+    .profit {
+      color: #27ae60;
+      font-weight: 500;
+    }
+    .loss {
+      color: #e74c3c;
+      font-weight: 500;
+    }
+    .month-header {
+      text-align: center;
+      margin: 20px 0 10px;
+      color: #2c3e50;
+      font-size: 1.2em;
+    }
+    .summary-card {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 15px;
+      margin: 10px 0;
+    }
+    .summary-card h3 {
+      margin-top: 0;
+      color: #2c3e50;
+    }
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      margin: 5px 0;
+      padding: 5px 0;
+      border-bottom: 1px solid #eee;
+    }
+    .summary-row:last-child {
+      border-bottom: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="panel">
+    <h1>PnL Calendar</h1>
+    <div class="input-group">
+      <label for="tradingData">Paste your trading data (CSV format):</label>
+      <textarea id="tradingData" placeholder="Ticket,Open Time,Type,Volume,Item,Price,Stoploss,Takeprofit,Close Time,Price,Commission,Swap,Profit
+123456,2023-01-01 12:00:00,BUY,0.1,EURUSD,1.1000,1.0950,1.1100,2023-01-01 14:00:00,1.1050,1.50,-0.25,50.00"></textarea>
+    </div>
+    <button id="calculatePnLButton">Generate PnL Calendar</button>
+    
+    <div id="results">
+      <div class="tabs">
+        <div class="tab active" data-tab="daily">Daily</div>
+        <div class="tab" data-tab="weekly">Weekly</div>
+        <div class="tab" data-tab="monthly">Monthly</div>
+      </div>
+      
+      <div id="daily-view" class="tab-content active">
+        <h3>Daily PnL - June 2024</h3>
+        <div class="calendar-container" id="daily-calendar"></div>
+      </div>
+      
+      <div id="weekly-view" class="tab-content">
+        <h3>Weekly PnL</h3>
+        <div class="summary-card">
+          <div class="summary-row">
+            <span>Week of June 3rd:</span>
+            <span class="loss">-3.90</span>
+          </div>
+          <div class="summary-row">
+            <span>Week of June 10th:</span>
+            <span class="profit">+0.08</span>
+          </div>
+          <div class="summary-row">
+            <span>Week of June 17th:</span>
+            <span class="loss">-12.65</span>
+          </div>
+          <div class="summary-row">
+            <span>Week of June 24th:</span>
+            <span class="profit">+0.24</span>
+          </div>
+          <div class="summary-row">
+            <span>Week of July 1st:</span>
+            <span class="loss">-5.91</span>
+          </div>
+        </div>
+      </div>
+      
+      <div id="monthly-view" class="tab-content">
+        <h3>Monthly PnL</h3>
+        <div class="summary-card">
+          <div class="summary-row">
+            <span>May 2024:</span>
+            <span class="profit">+3.99</span>
+          </div>
+          <div class="summary-row">
+            <span>June 2024:</span>
+            <span class="loss">-16.14</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <pre><code data="chatGPT-container"></code></pre>
+
+
+  <script>
+    // Tab switching functionality
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        // Remove active class from all tabs and content
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        
+        // Add active class to clicked tab and corresponding content
+        tab.classList.add('active');
+        document.getElementById(`${tab.dataset.tab}-view`).classList.add('active');
+      });
+    });
+
+    // Calendar generation for daily PnL
+    function generateDailyCalendar(dailyData = {}, month = null, year = null) {
+      // Use provided month and year, or current month/year if not provided
+      const now = new Date();
+      month = month !== null ? month : now.getMonth();
+      year = year !== null ? year : now.getFullYear();
+      
+      console.log(`Generating calendar for ${year}-${month + 1} with data:`, dailyData);
+      const firstDay = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      
+      let calendar = `
+        <table class="calendar">
+          <thead>
+            <tr>
+              <th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+      `;
+
+      // Add empty cells for days before the 1st of the month
+      for (let i = 0; i < firstDay; i++) {
+        calendar += '<td></td>';
+      }
+
+      // Add days of the month
+      for (let day = 1; day <= daysInMonth; day++) {
+        if ((day + firstDay - 1) % 7 === 0 && day > 1) {
+          calendar += '</tr><tr>';
+        }
+        
+        // Format date as YYYY-MM-DD to match our data keys
+        const pad = n => n < 10 ? '0' + n : n;
+        const dateStr = `${year}-${pad(month + 1)}-${pad(day)}`;
+        const pnl = dailyData[dateStr] || 0;
+        console.log(`Checking PnL for ${dateStr}:`, pnl, 'in data:', dailyData[dateStr]);
+        const pnlClass = pnl > 0 ? 'profit' : pnl < 0 ? 'loss' : '';
+        const pnlDisplay = pnl !== 0 ? (pnl > 0 ? '+' : '') + pnl.toFixed(2) : '';
+        
+        calendar += `
+          <td>
+            <div>${day}</div>
+            <div class="${pnlClass}">${pnlDisplay}</div>
+          </td>
+        `;
+      }
+
+      // Add empty cells for the last row if needed
+      const lastRowCells = (firstDay + daysInMonth) % 7;
+      if (lastRowCells > 0) {
+        for (let i = lastRowCells; i < 7; i++) {
+          calendar += '<td></td>';
+        }
+      }
+
+      calendar += '</tr></tbody></table>';
+      document.getElementById('daily-calendar').innerHTML = calendar;
+    }
+
+    // Initialize with empty calendar when the page loads
+    document.addEventListener('DOMContentLoaded', () => {
+      generateDailyCalendar();
+    });
+
+    // Parse PnL data from ChatGPT response
+    function parsePnLData(response) {
+      const dailyData = {};
+      const weeklyData = [];
+      const monthlyData = [];
+      
+      // Parse daily PnL
+      console.log('Parsing response:', response);
+      // Match lines like "- 2025.05.02: 112.75"
+      const dailyRegex = /- (\d{4}\.\d{2}\.\d{2}): \$?([-\d.]+)/g;
+      let match;
+      const monthMap = {
+        'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5,
+        'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11
+      };
+      
+      while ((match = dailyRegex.exec(response)) !== null) {
+        const [_, dateStr, amount] = match;
+        console.log('Matched date string:', dateStr, 'Amount:', amount);
+        
+        try {
+          // Parse date string like "2025.05.02"
+          const [year, month, day] = dateStr.split('.').map(Number);
+          // Create date string in YYYY-MM-DD format (months are 1-12 in the input)
+          const pad = n => n < 10 ? '0' + n : n;
+          const dateKey = `${year}-${pad(month)}-${pad(day)}`;
+          
+          // Store the amount with the date key
+          dailyData[dateKey] = parseFloat(amount);
+          console.log(`Parsed daily PnL for ${dateStr} (${dateKey}): ${amount}`);
+        } catch (error) {
+          console.error('Error parsing date:', dateStr, error);
+        }
+      }
+      
+      // Parse weekly PnL (new format: "- Week 1 (May 1 - May 7): 57.89")
+      const weeklyRegex = /\n- Week \d+ \([^)]+\): \$?([-\d.]+)/g;
+      const weeklyMatches = [...response.matchAll(weeklyRegex)];
+      for (const match of weeklyMatches) {
+        weeklyData.push(parseFloat(match[1]));
+      }
+      
+      // Parse monthly PnL
+      const monthlyRegex = /\nMonthly PnL:[\s\S]*?\n- (\w+): \$?([-\d.]+)/;
+      const monthlyMatch = response.match(monthlyRegex);
+      if (monthlyMatch) {
+        const monthlyDataMatch = response.matchAll(/\n- (\w+): \$?([-\d.]+)/g);
+        for (const match of monthlyDataMatch) {
+          monthlyData.push({
+            month: match[1],
+            amount: parseFloat(match[2])
+          });
+        }
+      }
+      
+      return { dailyData, weeklyData, monthlyData };
+    }
+    
+    // Update the UI with parsed data
+    function updateUIWithData(data) {
+      const { dailyData, weeklyData, monthlyData } = data;
+      
+      // Log the data for debugging
+      console.log('Updating UI with data:', { dailyData, weeklyData, monthlyData });
+      
+      // Find the first date in the data to determine the month to show
+      const firstDateKey = Object.keys(dailyData)[0];
+      if (firstDateKey) {
+        const [year, month] = firstDateKey.split('-').map(Number);
+        // Update daily calendar with the parsed data and correct month
+        generateDailyCalendar(dailyData, month - 1, year);
+      } else {
+        // Fallback to current month if no data
+        generateDailyCalendar(dailyData);
+      }
+      
+      // Update weekly data
+      const weeklyContainer = document.getElementById('weekly-view');
+      let weeklyHTML = '<h3>Weekly PnL</h3><div class="summary-card">';
+      const weekNames = ['Week 1 (May 19th - May 23rd)', 'Week 2 (May 26th - May 30th)'];
+      
+      weeklyData.forEach((amount, index) => {
+        const pnlClass = amount >= 0 ? 'profit' : 'loss';
+        const sign = amount >= 0 ? '+' : '';
+        weeklyHTML += `
+          <div class="summary-row">
+            <span>${weekNames[index] || `Week ${index + 1}`}:</span>
+            <span class="${pnlClass}">${sign}${amount.toFixed(2)}</span>
+          </div>
+        `;
+      });
+      
+      weeklyHTML += '</div>';
+      weeklyContainer.innerHTML = weeklyHTML;
+      
+      // Update monthly data
+      const monthlyContainer = document.getElementById('monthly-view');
+      let monthlyHTML = '<h3>Monthly PnL</h3><div class="summary-card">';
+      
+      monthlyData.forEach(item => {
+        const pnlClass = item.amount >= 0 ? 'profit' : 'loss';
+        const sign = item.amount >= 0 ? '+' : '';
+        monthlyHTML += `
+          <div class="summary-row">
+            <span>${item.month}:</span>
+            <span class="${pnlClass}">${sign}${item.amount.toFixed(2)}</span>
+          </div>
+        `;
+      });
+      
+      monthlyHTML += '</div>';
+      monthlyContainer.innerHTML = monthlyHTML;
+    }
+    
+    // Handle the PnL calculation button click
+    document.getElementById('calculatePnLButton').addEventListener('click', async () => {
+      const userInput = document.getElementById('tradingData').value;
+      if (!userInput.trim()) {
+        alert('Please enter some trading data first.');
+        return;
+      }
+      
+      document.getElementById('results').style.display = 'block';
+      
+      try {
+        const prompt = `${userInput}\n\nBased on these trades, show me a calendar of daily (only for last month), weekly and monthly PnL (adding commission -4.00). Format the response like this:\n\nDaily PnL for last month:\n\n- (YYYY.MM.DD): (amount)\n...\n\nWeekly PnL:\n\n- Week 1 (date range): (amount)\n...\n\nMonthly PnL:\n\n- (YYYY.MM): (amount)`;
+        // Use the chatGPTRequest from reusables.js
+        const response = await chatGPTRequest(prompt);
+        const pnlData = parsePnLData(response);
+        updateUIWithData(pnlData);
+      } catch (error) {
+        console.error('Error processing PnL data:', error);
+        alert('Error processing trading data. Please check the console for details.');
+      }
+    });
+  </script>
+</body>
+</html>
