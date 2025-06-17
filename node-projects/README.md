@@ -1,3 +1,25 @@
+# Docker
+
+Useful Docker command to clean up the system by removing all unused containers, networks, volumes, and images, build the Dockerfile without using the cache, remove all unused images, and start the Docker containers:
+```
+docker rm $(docker ps -a -q)
+docker compose up --build --no-cache
+docker compose exec app npm run dev
+```
+
+## Useful node commands for installing shadcn components
+
+```
+npx shadcn@latest add [component]
+```
+
+## Run it locally
+
+```
+cd node-projects
+docker compose up
+```
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.

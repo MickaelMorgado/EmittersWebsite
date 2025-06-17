@@ -1,17 +1,16 @@
 import './App.css'
-import MainWebsitePage from './MainWebsitePage'
-import ThreeJSExample from './ThreeJSExample'
-import Test from './Test';
+import { Routes, Route } from 'react-router-dom';
+import Home from './pages/Home';
+import PNLCalendar from './pages/PNLCalendar';
+import HipsExample from './pages/HipsExample';
 
 const App = () => {
   return (
-    <>
-      <div id="website-content" className='page-home'>
-        {/*<ThreeJSExample />
-        <MainWebsitePage />*/}
-        <Test />
-      </div>
-    </>
+    <Routes>
+      {/*       <Route index element={<Home />} />
+      <Route path="/pnl-calendar" element={<PNLCalendar />} />
+      <Route path="/hips" element={<HipsExample />} /> */}
+    </Routes>
   )
 }
 
