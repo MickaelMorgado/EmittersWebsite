@@ -1,16 +1,19 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Disable static optimization for development
-  output: 'standalone',
-  // Force full page reload on changes
-  devIndicators: {
-    buildActivity: true,
+  // Enable static exports
+  output: 'export',
+  
+  // Optional: Add a trailing slash to all paths for better compatibility
+  trailingSlash: true,
+  
+  // Disable the Image Optimization API for static exports
+  images: {
+    unoptimized: true,
   },
-  // Disable static optimization in development
-  experimental: {
-    optimizeCss: false,
-  },
+  
+  // Remove deprecated devIndicators
+  // Remove the experimental section as it's not needed for production
 };
 
 export default nextConfig;
