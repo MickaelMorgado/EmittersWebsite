@@ -1,11 +1,12 @@
 'use client';
 
+import { PortfolioChart } from '@/components/portfolio-chart';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 // Constants
 const POINTS_SCALING_FACTOR = 50000; // Adjust this to change the height of the volume bars (5 = 20 points = 100% height)
@@ -307,16 +308,16 @@ export function TradingCalendar() {
     profitFactor: (() => {
       // Calculate total profit from profitable days
       const totalProfit = Object.values(tradingData)
-        .filter(day => day.pnl > 0)
+        .filter((day) => day.pnl > 0)
         .reduce((sum, day) => sum + day.pnl, 0);
-      
+
       // Calculate total loss from losing days (as positive number)
       const totalLoss = Math.abs(
         Object.values(tradingData)
-          .filter(day => day.pnl < 0)
+          .filter((day) => day.pnl < 0)
           .reduce((sum, day) => sum + day.pnl, 0)
       );
-      
+
       // Return profit factor with 2 decimal places, or 'N/A' if no losses
       return totalLoss > 0 ? (totalProfit / totalLoss).toFixed(2) : 'N/A';
     })(),
@@ -329,6 +330,24 @@ export function TradingCalendar() {
   const handleShowImportSection = () => {
     setShowImportSection(true);
   };
+
+  // Prepare chart data
+  const chartData = useMemo(() => {
+    const sortedDays = Object.entries(tradingData).sort(
+      ([dateA], [dateB]) =>
+        new Date(dateA).getTime() - new Date(dateB).getTime()
+    );
+
+    let cumulativePnl = 0;
+    return sortedDays.map(([date, dayData]) => {
+      cumulativePnl += dayData.pnl;
+      return {
+        date,
+        pnl: dayData.pnl,
+        cumulativePnl: parseFloat(cumulativePnl.toFixed(2)),
+      };
+    });
+  }, [tradingData]);
 
   return (
     <div
@@ -408,7 +427,7 @@ export function TradingCalendar() {
         )}
 
         {/* Header */}
-        <Card className="mb-2">
+        <Card className="mb-8">
           <CardHeader className="px-4 py-3">
             <div className="flex items-center justify-between w-full gap-12">
               <div className="w-10">
@@ -507,27 +526,10 @@ export function TradingCalendar() {
                       : 'N/A'}
                   </div>
                 </div>
-
               </div>
             </div>
           </CardHeader>
         </Card>
-
-        {/* Legend */}
-        <div className="mb-2 flex items-center gap-4 text-xs text-muted-foreground">
-          <div className="flex items-center gap-2">
-            <div className="h-3 w-3 rounded-full bg-green-500"></div>
-            <span>Profitable Day</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="h-3 w-3 rounded-full bg-red-500"></div>
-            <span>Loss Day</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="h-3 w-3 rounded-full bg-muted"></div>
-            <span>No Trading</span>
-          </div>
-        </div>
 
         {/* Calendar */}
         <Card className="overflow-hidden">
@@ -651,7 +653,7 @@ export function TradingCalendar() {
           <CardHeader className="pb-2">
             <CardTitle className="text-xl">Overall Statistics</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-12">
             <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
               <div className="text-center">
                 <div className="text-sm text-muted-foreground">Total P&L</div>
@@ -667,7 +669,9 @@ export function TradingCalendar() {
                 </div>
               </div>
               <div className="text-center">
-                <div className="text-sm text-muted-foreground">Profit Factor</div>
+                <div className="text-sm text-muted-foreground">
+                  Profit Factor
+                </div>
                 <div className="text-2xl font-bold">
                   {overallStats.profitFactor}
                 </div>
@@ -715,6 +719,9 @@ export function TradingCalendar() {
                   {Object.keys(tradingData).length}
                 </div>
               </div>
+            </div>
+            <div className="h-80">
+              <PortfolioChart data={chartData} />
             </div>
           </CardContent>
         </Card>
