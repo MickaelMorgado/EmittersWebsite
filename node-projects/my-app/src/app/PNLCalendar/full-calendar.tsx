@@ -173,7 +173,6 @@ export function TradingCalendar() {
   const firstDayOfMonth = new Date(year, month, 1);
   const lastDayOfMonth = new Date(year, month + 1, 0);
   const firstDayOfWeek = firstDayOfMonth.getDay();
-  const daysInMonth = lastDayOfMonth.getDate();
 
   // Calculate days to show (including previous/next month days)
   const startDate = new Date(firstDayOfMonth);
