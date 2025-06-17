@@ -304,6 +304,22 @@ export function TradingCalendar() {
     tradingDays: Object.keys(tradingData).length,
     profitPoints: Object.values(tradingData).flatMap((day) => day.profitPoints),
     lossPoints: Object.values(tradingData).flatMap((day) => day.lossPoints),
+    profitFactor: (() => {
+      // Calculate total profit from profitable days
+      const totalProfit = Object.values(tradingData)
+        .filter(day => day.pnl > 0)
+        .reduce((sum, day) => sum + day.pnl, 0);
+      
+      // Calculate total loss from losing days (as positive number)
+      const totalLoss = Math.abs(
+        Object.values(tradingData)
+          .filter(day => day.pnl < 0)
+          .reduce((sum, day) => sum + day.pnl, 0)
+      );
+      
+      // Return profit factor with 2 decimal places, or 'N/A' if no losses
+      return totalLoss > 0 ? (totalProfit / totalLoss).toFixed(2) : 'N/A';
+    })(),
   };
 
   const formatPercentage = (value: number) => {
@@ -491,6 +507,7 @@ export function TradingCalendar() {
                       : 'N/A'}
                   </div>
                 </div>
+
               </div>
             </div>
           </CardHeader>
@@ -635,26 +652,24 @@ export function TradingCalendar() {
             <CardTitle className="text-xl">Overall Statistics</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
               <div className="text-center">
                 <div className="text-sm text-muted-foreground">Total P&L</div>
                 <div
                   className={cn(
                     'text-2xl font-bold mt-1',
-                    Object.values(tradingData).reduce(
-                      (sum, day) => sum + day.pnl,
-                      0
-                    ) >= 0
+                    overallStats.totalPnl >= 0
                       ? 'text-green-600'
                       : 'text-red-600'
                   )}
                 >
-                  {formatCurrency(
-                    Object.values(tradingData).reduce(
-                      (sum, day) => sum + day.pnl,
-                      0
-                    )
-                  )}
+                  {formatCurrency(overallStats.totalPnl)}
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-sm text-muted-foreground">Profit Factor</div>
+                <div className="text-2xl font-bold">
+                  {overallStats.profitFactor}
                 </div>
               </div>
 
