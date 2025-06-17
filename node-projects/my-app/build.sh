@@ -8,6 +8,14 @@ set -x
 
 echo "🚀 Starting build process..."
 
+# Clean up previous build
+if [ -d "dist" ]; then
+  echo "🧹 Cleaning up previous build..."
+  rm -rf dist/*
+else
+  mkdir -p dist
+fi
+
 # Install dependencies if node_modules doesn't exist
 if [ ! -d "node_modules" ]; then
   echo "📦 Installing dependencies..."
@@ -18,11 +26,7 @@ fi
 echo "🔨 Building the application..."
 npm run build
 
-# Export the static site
-echo "📦 Exporting static site..."
-npm run export
-
 echo "✅ Build completed successfully!"
-echo "📁 The static files are ready in the 'out' directory"
+echo "📁 The static files are ready in the 'dist' directory"
 echo "🌍 To serve the static site, you can use any static file server like 'serve' or 'http-server'"
-echo "   For example: npx serve@latest out"
+echo "   For example: npx serve@latest dist"
