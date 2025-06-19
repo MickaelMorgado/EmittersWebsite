@@ -176,30 +176,31 @@ export function TradingCalendar() {
         }
       }
 
-      let inputValue = '';
-
-      // Show extracted trade data in alert
+      // Process the extracted trade data
       if (tradeData.length > 0) {
-        inputValue = tradeData.join('\n');
-        console.log(inputValue);
-      } else {
-        console.log('No trade data found in the file.');
-        return;
-      }
-
-      // Try to find trade data in the HTML
-      const tradeDataElement = doc.querySelector('pre') || doc.querySelector('code') || doc.querySelector('body');
-      if (tradeDataElement?.textContent) {
         try {
-          const tradeData = parseTradeData(tradeDataElement.textContent);
-          setTradingData(tradeData);
+          // Join the rows with newlines to match the expected format
+          const tradeDataText = tradeData.join('\n');
+          console.log('Processed trade data:', tradeDataText);
+          
+          // Parse the trade data using our existing parser
+          const parsedTradeData = parseTradeData(tradeDataText);
+          
+          // Update the trading data state
+          setTradingData(parsedTradeData);
           setShowImportSection(false);
+          
+          // Show success message
+          const tradeCount = Object.values(parsedTradeData).reduce(
+            (sum, day) => sum + day.trades, 0
+          );
+          alert(`Successfully imported ${tradeCount} trades from ${Object.keys(parsedTradeData).length} trading days.`);
         } catch (error) {
-          console.error('Error parsing trade data:', error);
-          alert('Error parsing trade data. Please check the file format.');
+          console.error('Error processing trade data:', error);
+          alert('Error processing trade data. Please check the file format.');
         }
       } else {
-        alert('Could not find trade data in the uploaded file.');
+        alert('No trade data found in the uploaded file.');
       }
     };
     reader.onerror = () => {
