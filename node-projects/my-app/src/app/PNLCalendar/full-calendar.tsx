@@ -7,21 +7,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
+import { TradeData, parseTradeData, sampleData } from '@/lib/tradeParser';
 
 // Constants
 const POINTS_SCALING_FACTOR = 50000; // Adjust this to change the height of the volume bars (5 = 20 points = 100% height)
 
 // Type definitions
-interface TradeData {
-  [key: string]: {
-    pnl: number;
-    trades: number;
-    profitableTrades: number;
-    profitPoints: number[];
-    lossPoints: number[];
-  };
-}
-
 interface TradingData {
   pnl: number;
   trades: number;
@@ -30,106 +21,17 @@ interface TradingData {
   lossPoints: number[];
 }
 
-// Sample trading data
-const parseTradeData = (input: string): TradeData => {
-  const lines = input.trim().split('\n');
-  const data: TradeData = {};
-
-  // Skip header line if it exists
-  const startIndex = lines[0].includes('Time\tPosition') ? 1 : 0;
-
-  for (let i = startIndex; i < lines.length; i++) {
-    const line = lines[i].trim();
-    if (!line) continue;
-
-    const columns = line.split('\t');
-    if (columns.length < 12) continue; // Ensure we have all required columns
-
-    try {
-      // Column indices based on the provided format:
-      // 0: Open Time, 1: Position, 2: Symbol, 3: Type, 4: Volume
-      // 5: Price, 6: S/L, 7: T/P, 8: Close Time, 9: Close Price
-      // 10: Commission, 11: Swap, 12: Profit
-      const closeTime = columns[8]; // 9th column is close time
-      const commission = parseFloat(columns[10]) || 0;
-      const swap = parseFloat(columns[11]) || 0;
-      const profit = parseFloat(columns[12]); // 13th column is profit
-      const totalProfit = profit + commission + swap;
-
-      // Parse the close time (format: YYYY.MM.DD HH:MM:SS)
-      const [datePart] = closeTime.split(' ');
-      const [year, month, day] = datePart.split('.').map(Number);
-      // Create a date object in local timezone
-      const tradeDate = new Date(year, month - 1, day);
-      // Format as YYYY-MM-DD in local timezone
-      const formattedDate = tradeDate.toISOString().split('T')[0];
-
-      // Calculate points for the trade
-      const entryPrice = parseFloat(columns[5]);
-      const stopLoss = parseFloat(columns[6]);
-      const takeProfit = parseFloat(columns[7]);
-      const closePrice = parseFloat(columns[9]);
-      const tradeType = columns[3].toLowerCase();
-
-      let points = 0;
-
-      if (totalProfit >= 0) {
-        // For profitable trades, calculate points from entry to take profit if TP was hit
-        if (tradeType === 'buy') {
-          points =
-            takeProfit > 0 ? takeProfit - entryPrice : closePrice - entryPrice;
-        } else {
-          // sell
-          points =
-            takeProfit > 0 ? entryPrice - takeProfit : entryPrice - closePrice;
-        }
-      } else {
-        // For losing trades, calculate points from entry to stop loss if SL was hit
-        if (tradeType === 'buy') {
-          points =
-            stopLoss > 0 ? entryPrice - stopLoss : entryPrice - closePrice;
-        } else {
-          // sell
-          points =
-            stopLoss > 0 ? stopLoss - entryPrice : closePrice - entryPrice;
-        }
-      }
-
-      // Ensure points are positive and valid
-      points = Math.abs(points) > 0.00001 ? Math.abs(points) : 0;
-
-      if (data[formattedDate]) {
-        data[formattedDate].pnl += totalProfit;
-        data[formattedDate].trades += 1;
-        if (totalProfit >= 0) {
-          data[formattedDate].profitableTrades += 1;
-          data[formattedDate].profitPoints.push(points);
-        } else {
-          data[formattedDate].lossPoints.push(points);
-        }
-      } else {
-        data[formattedDate] = {
-          pnl: totalProfit,
-          trades: 1,
-          profitableTrades: totalProfit >= 0 ? 1 : 0,
-          profitPoints: totalProfit >= 0 ? [points] : [],
-          lossPoints: totalProfit < 0 ? [points] : [],
-        };
-      }
-    } catch (error) {
-      console.error('Error parsing line:', line, error);
-    }
-  }
-
-  return data;
-};
-
-const sampleData = `2025.06.05 10:04:02\t61595621\tEURUSD\tbuy\t1\t1.14129\t1.14117\t1.14200\t2025.06.05 10:06:54\t1.14117\t-4.00\t0.00\t-10.52
-2025.06.05 10:10:05\t61596071\tEURUSD\tbuy\t1\t1.14146\t1.14162\t1.14202\t2025.06.05 10:14:58\t1.14192\t-4.00\t0.00\t40.28
-2025.06.06 10:37:04\t61675593\tEURUSD\tbuy\t1\t1.14280\t1.14267\t1.14378\t2025.06.06 10:37:11\t1.14267\t-4.00\t0.00\t-11.38
-2025.06.06 10:45:06\t61676274\tEURUSD\tbuy\t1\t1.14284\t1.14271\t1.14375\t2025.06.06 10:46:50\t1.14271\t-4.00\t0.00\t-11.38
-2025.06.06 11:03:02\t61677483\tEURUSD\tsell\t1.5\t1.14225\t1.14237\t1.14157\t2025.06.06 11:03:25\t1.14237\t-6.00\t0.00\t-15.76
-2025.06.06 11:12:22\t61677870\tEURUSD\tsell\t1.5\t1.14220\t1.14231\t1.14154\t2025.06.06 11:13:26\t1.14231\t-6.00\t0.00\t-14.44`;
+interface DayData {
+  date: Date;
+  isCurrentMonth: boolean;
+  isToday: boolean;
+  tradingData?: TradingData;
+  pnl: number;
+  trades: number;
+  profitableTrades: number;
+  profitPoints: number[];
+  lossPoints: number[];
+}
 
 const monthNames = [
   'January',
@@ -147,18 +49,6 @@ const monthNames = [
 ];
 
 const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
-interface DayData {
-  date: Date;
-  isCurrentMonth: boolean;
-  isToday: boolean;
-  tradingData?: TradingData;
-  pnl: number;
-  trades: number;
-  profitableTrades: number;
-  profitPoints: number[];
-  lossPoints: number[];
-}
 
 export function TradingCalendar() {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -243,6 +133,79 @@ export function TradingCalendar() {
     const data = parseTradeData(tradeInput || sampleData);
     setTradingData(data);
     setShowImportSection(false);
+  };
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const content = e.target?.result as string;
+      if (!content) return;
+
+      // Parse HTML content
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(content, 'text/html');
+
+      // Get all table rows and process only consecutive tr[align="right"]
+      const allRows = doc.querySelectorAll('tr');
+      const tradeData: string[] = [];
+      let foundFirstRightAligned = false;
+      let shouldStop = false;
+
+      for (const row of Array.from(allRows)) {
+        // Check if this is a right-aligned row
+        const isRightAligned = row.getAttribute('align') === 'right';
+
+        // If we find a non-right-aligned row after finding right-aligned ones, stop
+        if (foundFirstRightAligned && !isRightAligned) {
+          break;
+        }
+
+        // If this is a right-aligned row, process it
+        if (isRightAligned) {
+          foundFirstRightAligned = true;
+          const cells = Array.from((row as HTMLTableRowElement).cells || []);
+          // Skip rows where all cells are hidden
+          const visibleCells = cells.filter(cell => !cell.classList.contains('hidden'));
+          if (visibleCells.length > 0) {
+            const rowData = visibleCells.map(cell => cell.textContent?.trim() || '');
+            tradeData.push(rowData.join('\t'));
+          }
+        }
+      }
+
+      let inputValue = '';
+
+      // Show extracted trade data in alert
+      if (tradeData.length > 0) {
+        inputValue = tradeData.join('\n');
+        console.log(inputValue);
+      } else {
+        console.log('No trade data found in the file.');
+        return;
+      }
+
+      // Try to find trade data in the HTML
+      const tradeDataElement = doc.querySelector('pre') || doc.querySelector('code') || doc.querySelector('body');
+      if (tradeDataElement?.textContent) {
+        try {
+          const tradeData = parseTradeData(tradeDataElement.textContent);
+          setTradingData(tradeData);
+          setShowImportSection(false);
+        } catch (error) {
+          console.error('Error parsing trade data:', error);
+          alert('Error parsing trade data. Please check the file format.');
+        }
+      } else {
+        alert('Could not find trade data in the uploaded file.');
+      }
+    };
+    reader.onerror = () => {
+      alert('Error reading file');
+    };
+    reader.readAsText(file);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -384,40 +347,74 @@ export function TradingCalendar() {
               </Button>
             </CardHeader>
             <CardContent className="p-4 pt-0">
-              <div className="space-y-4">
+              <div className="space-y-6">
+                {/* File Upload Section */}
                 <div className="space-y-2">
-                  <label htmlFor="trade-data" className="text-sm font-medium">
-                    Paste your trade history (tab-separated values)
+                  <label className="block text-sm font-medium text-gray-700">
+                    Upload HTML Report
+                  </label>
+                  <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed border-gray-300 rounded-lg">
+                    <div className="space-y-1 text-center">
+                      <div className="flex text-sm text-gray-600 justify-center">
+                        <label
+                          htmlFor="file-upload"
+                          className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none"
+                        >
+                          <span>Upload a file</span>
+                          <input
+                            id="file-upload"
+                            name="file-upload"
+                            type="file"
+                            className="sr-only"
+                            accept=".html,.htm,text/html"
+                            onChange={handleFileUpload}
+                          />
+                        </label>
+                        <p className="pl-1">or drag and drop</p>
+                      </div>
+                      <p className="text-xs text-gray-500">
+                        HTML files with trade data
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-300" />
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-2 bg-white text-gray-500">OR</span>
+                  </div>
+                </div>
+
+                {/* Manual Input Section */}
+                <div className="space-y-2">
+                  <label
+                    htmlFor="tradeData"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Paste trade data manually:
                   </label>
                   <textarea
-                    id="trade-data"
-                    rows={4}
+                    id="tradeData"
+                    rows={8}
+                    className="w-full p-2 border rounded-md font-mono text-sm"
                     value={tradeInput}
                     onChange={handleInputChange}
                     placeholder="Paste your trade data here..."
-                    className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                   />
-                  <p className="text-sm text-muted-foreground">
-                    Paste your trade history in the format: Time, Position,
-                    Symbol, Type, Volume, Price, S/L, T/P, Close Time, Close
-                    Price, Commission, Swap, Profit
-                  </p>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    size="sm"
-                    onClick={handleImportTrades}
-                    className="h-8"
-                  >
-                    Import
+
+                <div className="flex justify-between pt-2">
+                  <Button onClick={handleImportTrades}>
+                    Import Trades
                   </Button>
                   <Button
                     variant="outline"
-                    size="sm"
-                    onClick={() => setTradeInput(sampleData)}
-                    className="h-8"
+                    onClick={() => setShowImportSection(false)}
                   >
-                    Sample Data
+                    Cancel
                   </Button>
                 </div>
               </div>
@@ -490,10 +487,10 @@ export function TradingCalendar() {
                   <div className="text-lg font-bold">
                     {monthlyTotals.totalTrades > 0
                       ? formatPercentage(
-                          (monthlyTotals.profitableTrades /
-                            monthlyTotals.totalTrades) *
-                            100
-                        )
+                        (monthlyTotals.profitableTrades /
+                          monthlyTotals.totalTrades) *
+                        100
+                      )
                       : 'N/A'}
                   </div>
                 </div>
@@ -504,11 +501,11 @@ export function TradingCalendar() {
                   <div className="text-lg font-bold text-green-600">
                     {monthlyTotals.profitPoints.length > 0
                       ? formatPoints(
-                          monthlyTotals.profitPoints.reduce(
-                            (a, b) => a + b,
-                            0
-                          ) / monthlyTotals.profitPoints.length
-                        )
+                        monthlyTotals.profitPoints.reduce(
+                          (a, b) => a + b,
+                          0
+                        ) / monthlyTotals.profitPoints.length
+                      )
                       : 'N/A'}
                   </div>
                 </div>
@@ -519,9 +516,9 @@ export function TradingCalendar() {
                   <div className="text-lg font-bold text-red-600">
                     {monthlyTotals.lossPoints.length > 0
                       ? formatPoints(
-                          monthlyTotals.lossPoints.reduce((a, b) => a + b, 0) /
-                            monthlyTotals.lossPoints.length
-                        )
+                        monthlyTotals.lossPoints.reduce((a, b) => a + b, 0) /
+                        monthlyTotals.lossPoints.length
+                      )
                       : 'N/A'}
                   </div>
                 </div>
@@ -598,46 +595,46 @@ export function TradingCalendar() {
                         {/* Volume bars */}
                         {(day.tradingData.profitPoints.length > 0 ||
                           day.tradingData.lossPoints.length > 0) && (
-                          <div className="mt-1 flex items-end justify-center h-8 w-full">
-                            <div className="flex items-end h-full w-full space-x-0.5 px-1 opacity-25 hover:opacity-100 transition-opacity">
-                              {/* Winning trades */}
-                              {day.tradingData?.profitPoints?.map(
-                                (points: number, i: number) => (
-                                  <div
-                                    key={`win-${i}`}
-                                    className=" bg-green-500 rounded-xs w-2"
-                                    style={{
-                                      height: `${Math.min(
-                                        points * POINTS_SCALING_FACTOR,
-                                        100
-                                      )}%`,
-                                      maxHeight: '100%',
-                                    }}
-                                    title={`+${formatPoints(points)} pts`}
-                                  />
-                                )
-                              )}
-                              {/* Losing trades */}
-                              {day.tradingData?.lossPoints?.map(
-                                (points: number, i: number) => (
-                                  <div
-                                    key={`loss-${i}`}
-                                    className=" bg-red-500 rounded-xs w-2"
-                                    style={{
-                                      height: `${Math.min(
-                                        points * POINTS_SCALING_FACTOR,
-                                        100
-                                      )}%`,
-                                      maxHeight: '100%',
-                                      alignSelf: 'flex-end',
-                                    }}
-                                    title={`-${formatPoints(points)} pts`}
-                                  />
-                                )
-                              )}
+                            <div className="mt-1 flex items-end justify-center h-8 w-full">
+                              <div className="flex items-end h-full w-full space-x-0.5 px-1 opacity-25 hover:opacity-100 transition-opacity">
+                                {/* Winning trades */}
+                                {day.tradingData?.profitPoints?.map(
+                                  (points: number, i: number) => (
+                                    <div
+                                      key={`win-${i}`}
+                                      className=" bg-green-500 rounded-xs w-2"
+                                      style={{
+                                        height: `${Math.min(
+                                          points * POINTS_SCALING_FACTOR,
+                                          100
+                                        )}%`,
+                                        maxHeight: '100%',
+                                      }}
+                                      title={`+${formatPoints(points)} pts`}
+                                    />
+                                  )
+                                )}
+                                {/* Losing trades */}
+                                {day.tradingData?.lossPoints?.map(
+                                  (points: number, i: number) => (
+                                    <div
+                                      key={`loss-${i}`}
+                                      className=" bg-red-500 rounded-xs w-2"
+                                      style={{
+                                        height: `${Math.min(
+                                          points * POINTS_SCALING_FACTOR,
+                                          100
+                                        )}%`,
+                                        maxHeight: '100%',
+                                        alignSelf: 'flex-end',
+                                      }}
+                                      title={`-${formatPoints(points)} pts`}
+                                    />
+                                  )
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        )}
+                          )}
                       </div>
                     )}
                   </div>
@@ -696,16 +693,16 @@ export function TradingCalendar() {
                     0
                   ) > 0
                     ? formatPercentage(
-                        (Object.values(tradingData).reduce(
-                          (sum, day) => sum + day.profitableTrades,
+                      (Object.values(tradingData).reduce(
+                        (sum, day) => sum + day.profitableTrades,
+                        0
+                      ) /
+                        Object.values(tradingData).reduce(
+                          (sum, day) => sum + day.trades,
                           0
-                        ) /
-                          Object.values(tradingData).reduce(
-                            (sum, day) => sum + day.trades,
-                            0
-                          )) *
-                          100
-                      )
+                        )) *
+                      100
+                    )
                     : 'N/A'}
                 </div>
               </div>
