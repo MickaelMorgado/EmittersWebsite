@@ -72,6 +72,7 @@ export function TradingCalendar() {
   const [tradeInput, setTradeInput] = useState('');
   const [tradingData, setTradingData] = useState<TradeData>({});
   const [weekdayData, setWeekdayData] = useState<WeekdayData[]>([]);
+  const [profitFactor, setProfitFactor] = useState<number | null>(null);
   const [showImportSection, setShowImportSection] = useState(true);
 
   const year = currentDate.getFullYear();
@@ -369,6 +370,31 @@ export function TradingCalendar() {
 
           // Parse the trade data using our existing parser
           const parsedTradeData = parseTradeData(tradeDataText);
+
+          // Calculate profit factor using actual P&L values
+          let grossProfit = 0;
+          let grossLoss = 0;
+
+          // Process each day's trades
+          Object.values(parsedTradeData).forEach((dayData) => {
+            // Calculate daily P&L from the actual P&L values (which already include commissions)
+            const dailyPnl = dayData.pnl;
+
+            if (dailyPnl > 0) {
+              grossProfit += dailyPnl;
+            } else if (dailyPnl < 0) {
+              grossLoss += Math.abs(dailyPnl);
+            }
+          });
+
+          // Calculate profit factor
+          const factor =
+            grossLoss > 0
+              ? grossProfit / grossLoss
+              : grossProfit > 0
+              ? Infinity
+              : 0;
+          setProfitFactor(factor);
 
           // Update the trading data state
           setTradingData(parsedTradeData);
@@ -777,7 +803,7 @@ export function TradingCalendar() {
         <Card className="overflow-hidden">
           <CardContent className="p-1">
             {/* Day headers */}
-            <div className="grid grid-cols-7 border-b">
+            <div className="grid grid-cols-4 gap-4 mt-6">
               {dayNames.map((day) => (
                 <div
                   key={day}
@@ -896,7 +922,7 @@ export function TradingCalendar() {
             <CardTitle className="text-xl">Overall Statistics</CardTitle>
           </CardHeader>
           <CardContent className="space-y-12">
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
@@ -929,8 +955,7 @@ export function TradingCalendar() {
                   </p>
                 </CardContent>
               </Card>
-
-              <Card className="col-span-2 border-0 shadow-sm bg-gradient-to-br from-card to-card/90 backdrop-blur-sm overflow-hidden">
+              <Card className="col-span-3 border-0 shadow-sm bg-gradient-to-br from-card to-card/90 backdrop-blur-sm overflow-hidden">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-lg font-semibold text-foreground/90">
                     Weekly Performance
@@ -1085,6 +1110,28 @@ export function TradingCalendar() {
               </Card>
               <div className="text-center">
                 <div className="text-sm text-muted-foreground">
+                  Profit Factor
+                </div>
+                <div
+                  className={`text-2xl font-bold mt-1 ${
+                    profitFactor === null
+                      ? 'text-muted-foreground'
+                      : profitFactor > 1.5
+                      ? 'text-green-500'
+                      : profitFactor > 1
+                      ? 'text-amber-400'
+                      : 'text-red-500'
+                  }`}
+                >
+                  {profitFactor === null
+                    ? 'N/A'
+                    : profitFactor === Infinity
+                    ? '∞'
+                    : profitFactor.toFixed(2)}
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-sm text-muted-foreground">
                   Total Trades
                 </div>
                 <div className="text-2xl font-bold mt-1">
@@ -1115,7 +1162,6 @@ export function TradingCalendar() {
                     : 'N/A'}
                 </div>
               </div>
-
               <div className="text-center">
                 <div className="text-sm text-muted-foreground">
                   Trading Days
