@@ -379,7 +379,7 @@ export function TradingCalendar() {
             (sum, day) => sum + day.trades,
             0
           );
-          alert(
+          console.log(
             `Successfully imported ${tradeCount} trades from ${
               Object.keys(parsedTradeData).length
             } trading days.\n\nCheck browser console (F12) for detailed weekday analysis.`
@@ -540,18 +540,71 @@ export function TradingCalendar() {
             <CardContent className="p-4 pt-0">
               <div className="space-y-6">
                 {/* File Upload Section */}
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Upload HTML Report
-                  </label>
-                  <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed border-gray-300 rounded-lg">
-                    <div className="space-y-1 text-center">
-                      <div className="flex text-sm text-gray-600 justify-center">
+                <div className="space-y-3">
+                  <div className="text-center">
+                    <h3 className="text-lg font-semibold text-foreground/90">
+                      Import Trades
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      Upload your trading report to analyze performance
+                    </p>
+                  </div>
+                  <div
+                    className="relative mt 2 border-1 border-dashed border-border rounded-xl p-8 text-center transition-colors hover:border-primary/50 bg-card/50 hover:bg-card/70"
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      e.currentTarget.classList.add(
+                        'border-primary/70',
+                        'bg-card/80'
+                      );
+                    }}
+                    onDragLeave={(e) => {
+                      e.currentTarget.classList.remove(
+                        'border-primary/70',
+                        'bg-card/80'
+                      );
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      e.currentTarget.classList.remove(
+                        'border-primary/70',
+                        'bg-card/80'
+                      );
+                      if (
+                        e.dataTransfer.files &&
+                        e.dataTransfer.files.length > 0
+                      ) {
+                        handleFileUpload({
+                          target: { files: e.dataTransfer.files },
+                        } as any);
+                      }
+                    }}
+                  >
+                    <div className="flex flex-col items-center justify-center space-y-3">
+                      <div className="p-3 rounded-full bg-primary/10">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="w-6 h-6 text-primary"
+                        >
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                          <polyline points="17 8 12 3 7 8" />
+                          <line x1="12" y1="3" x2="12" y2="15" />
+                        </svg>
+                      </div>
+                      <div className="space-y-1">
                         <label
                           htmlFor="file-upload"
-                          className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none"
+                          className="relative cursor-pointer text-sm font-medium text-primary hover:text-primary/80 transition-colors"
                         >
-                          <span>Upload a file</span>
+                          <span>Click to upload</span>
                           <input
                             id="file-upload"
                             name="file-upload"
@@ -561,21 +614,25 @@ export function TradingCalendar() {
                             onChange={handleFileUpload}
                           />
                         </label>
-                        <p className="pl-1">or drag and drop</p>
+                        <p className="text-xs text-muted-foreground">
+                          or drag and drop HTML files
+                        </p>
                       </div>
-                      <p className="text-xs text-gray-500">
-                        HTML files with trade data
+                      <p className="text-xs text-muted-foreground">
+                        Supports HTML reports from your trading platform
                       </p>
                     </div>
                   </div>
                 </div>
 
-                <div className="relative">
+                <div className="relative my-4">
                   <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gray-300" />
+                    <div className="w-full border-t border-border" />
                   </div>
-                  <div className="relative flex justify-center text-sm">
-                    <span className="px-2 bg-white text-gray-500">OR</span>
+                  <div className="relative flex justify-center">
+                    <span className="px-3 text-xs font-medium bg-background text-muted-foreground rounded-full border border-border">
+                      OR
+                    </span>
                   </div>
                 </div>
 
