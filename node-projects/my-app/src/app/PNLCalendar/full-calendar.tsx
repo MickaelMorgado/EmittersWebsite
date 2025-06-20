@@ -4,10 +4,21 @@ import { PortfolioChart } from '@/components/portfolio-chart';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { TradeData, parseTradeData, sampleData } from '@/lib/tradeParser';
 import { cn } from '@/lib/utils';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
-import { TradeData, parseTradeData, sampleData } from '@/lib/tradeParser';
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  ReferenceLine,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 
 // Constants
 const POINTS_SCALING_FACTOR = 50000; // Adjust this to change the height of the volume bars (5 = 20 points = 100% height)
@@ -19,6 +30,12 @@ interface TradingData {
   profitableTrades: number;
   profitPoints: number[];
   lossPoints: number[];
+}
+
+interface WeekdayData {
+  day: string;
+  pnl: number;
+  trades: number;
 }
 
 interface DayData {
@@ -54,6 +71,7 @@ export function TradingCalendar() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [tradeInput, setTradeInput] = useState('');
   const [tradingData, setTradingData] = useState<TradeData>({});
+  const [weekdayData, setWeekdayData] = useState<WeekdayData[]>([]);
   const [showImportSection, setShowImportSection] = useState(true);
 
   const year = currentDate.getFullYear();
@@ -129,6 +147,55 @@ export function TradingCalendar() {
     }
   );
 
+  const analyzeTradingDays = (data: TradeData) => {
+    const daysOfWeek = [
+      'Sunday',
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+    ];
+    const dayStats = daysOfWeek.map((day) => ({
+      day,
+      totalTrades: 0,
+      profitableTrades: 0,
+      totalPnl: 0,
+      daysTraded: 0,
+    }));
+    Object.entries(data).forEach(([dateStr, dayData]) => {
+      const date = new Date(dateStr);
+      const dayOfWeek = date.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+      const dayStat = dayStats[dayOfWeek];
+
+      dayStat.totalTrades += dayData.trades;
+      dayStat.profitableTrades += dayData.profitableTrades;
+      dayStat.totalPnl += dayData.pnl;
+      dayStat.daysTraded++;
+    });
+
+    // Filter only weekdays (Monday to Friday)
+    const weekdayStats = dayStats.slice(1, 6);
+
+    console.log('Trading Performance by Weekday:');
+    weekdayStats.forEach((stat) => {
+      if (stat.daysTraded > 0) {
+        const winRate = (
+          (stat.profitableTrades / stat.totalTrades) *
+          100
+        ).toFixed(1);
+        const avgPnl = (stat.totalPnl / stat.daysTraded).toFixed(2);
+        console.log(`${stat.day}:`);
+        console.log(`  Days Traded: ${stat.daysTraded}`);
+        console.log(`  Total Trades: ${stat.totalTrades}`);
+        console.log(`  Win Rate: ${winRate}%`);
+        console.log(`  Average Daily P&L: $${avgPnl}`);
+        console.log('-------------------');
+      }
+    });
+  };
+
   const handleImportTrades = () => {
     const data = parseTradeData(tradeInput || sampleData);
     setTradingData(data);
@@ -140,6 +207,7 @@ export function TradingCalendar() {
     if (!file) return;
 
     const reader = new FileReader();
+
     reader.onload = (e) => {
       const content = e.target?.result as string;
       if (!content) return;
@@ -168,9 +236,13 @@ export function TradingCalendar() {
           foundFirstRightAligned = true;
           const cells = Array.from((row as HTMLTableRowElement).cells || []);
           // Skip rows where all cells are hidden
-          const visibleCells = cells.filter(cell => !cell.classList.contains('hidden'));
+          const visibleCells = cells.filter(
+            (cell) => !cell.classList.contains('hidden')
+          );
           if (visibleCells.length > 0) {
-            const rowData = visibleCells.map(cell => cell.textContent?.trim() || '');
+            const rowData = visibleCells.map(
+              (cell) => cell.textContent?.trim() || ''
+            );
             tradeData.push(rowData.join('\t'));
           }
         }
@@ -182,19 +254,136 @@ export function TradingCalendar() {
           // Join the rows with newlines to match the expected format
           const tradeDataText = tradeData.join('\n');
           console.log('Processed trade data:', tradeDataText);
-          
+
+          // Analyze trades by weekday
+          const analyzeTradesByWeekday = (
+            tradeDataText: string
+          ): WeekdayData[] => {
+            const daysOfWeek = [
+              'Sunday',
+              'Monday',
+              'Tuesday',
+              'Wednesday',
+              'Thursday',
+              'Friday',
+              'Saturday',
+            ];
+            const weekdayStats = daysOfWeek.map((day) => ({
+              day,
+              winningTrades: 0,
+              losingTrades: 0,
+              totalTrades: 0,
+              totalProfit: 0,
+            }));
+
+            const lines = tradeDataText.split('\n');
+
+            lines.forEach((line) => {
+              if (!line.trim()) return;
+
+              const columns = line.split('\t');
+              if (columns.length < 13) return; // Skip invalid lines
+
+              try {
+                const dateStr = columns[0].split(' ')[0]; // Get date part from Time column
+                const [year, month, day] = dateStr.split('.').map(Number);
+                // Handle 2-digit year by adding 2000
+                const date = new Date(2000 + year, month - 1, day);
+                const dayOfWeek = date.getDay(); // 0 = Sunday, 1 = Monday, etc.
+
+                const profit = parseFloat(
+                  columns[12].replace(/[^0-9.-]/g, '') || '0'
+                );
+
+                weekdayStats[dayOfWeek].totalTrades++;
+                weekdayStats[dayOfWeek].totalProfit += profit;
+
+                if (profit >= 0) {
+                  weekdayStats[dayOfWeek].winningTrades++;
+                } else {
+                  weekdayStats[dayOfWeek].losingTrades++;
+                }
+              } catch (error) {
+                console.error('Error processing trade:', error);
+              }
+            });
+
+            // Log the results
+            console.log('\n=== Trading Performance by Weekday ===');
+            weekdayStats.forEach((stat) => {
+              if (stat.totalTrades > 0) {
+                const winRate = (
+                  (stat.winningTrades / stat.totalTrades) *
+                  100
+                ).toFixed(1);
+                const avgProfit = (stat.totalProfit / stat.totalTrades).toFixed(
+                  2
+                );
+                console.log(`\n${stat.day}:`);
+                console.log(`  Trades: ${stat.totalTrades}`);
+                console.log(
+                  `  Winning Trades: ${stat.winningTrades} (${winRate}%)`
+                );
+                console.log(`  Losing Trades: ${stat.losingTrades}`);
+                console.log(`  Average P&L per Trade: $${avgProfit}`);
+                console.log(`  Total P&L: $${stat.totalProfit.toFixed(2)}`);
+              }
+            });
+            console.log('===================================\n');
+
+            // Return the processed data for the chart
+            return weekdayStats.map((stat) => ({
+              day: stat.day,
+              pnl: stat.totalProfit,
+              trades: stat.totalTrades,
+            }));
+          };
+
+          // Run the analysis and get weekday stats
+          const weekdayStats = analyzeTradesByWeekday(tradeDataText);
+
+          // Update weekday data for the chart
+          const weekdays = [
+            'Sunday',
+            'Monday',
+            'Tuesday',
+            'Wednesday',
+            'Thursday',
+            'Friday',
+            'Saturday',
+          ];
+          const formattedWeekdayData = weekdays.map((day) => {
+            const stats = weekdayStats.find((d) => d.day === day) || {
+              day,
+              pnl: 0,
+              trades: 0,
+            };
+            return {
+              day: day.substring(0, 3), // Shorten day names for the chart
+              pnl: stats.pnl || 0,
+              trades: stats.trades || 0,
+            };
+          });
+
+          setWeekdayData(formattedWeekdayData);
+
           // Parse the trade data using our existing parser
           const parsedTradeData = parseTradeData(tradeDataText);
-          
+
           // Update the trading data state
           setTradingData(parsedTradeData);
           setShowImportSection(false);
-          
+
           // Show success message
           const tradeCount = Object.values(parsedTradeData).reduce(
-            (sum, day) => sum + day.trades, 0
+            (sum, day) => sum + day.trades,
+            0
           );
-          alert(`Successfully imported ${tradeCount} trades from ${Object.keys(parsedTradeData).length} trading days.`);
+          alert(
+            `Successfully imported ${tradeCount} trades from ${
+              Object.keys(parsedTradeData).length
+            } trading days.\n\nCheck browser console (F12) for detailed weekday analysis.`
+          );
         } catch (error) {
           console.error('Error processing trade data:', error);
           alert('Error processing trade data. Please check the file format.');
@@ -206,6 +395,7 @@ export function TradingCalendar() {
     reader.onerror = () => {
       alert('Error reading file');
     };
+
     reader.readAsText(file);
   };
 
@@ -408,9 +598,7 @@ export function TradingCalendar() {
                 </div>
 
                 <div className="flex justify-between pt-2">
-                  <Button onClick={handleImportTrades}>
-                    Import Trades
-                  </Button>
+                  <Button onClick={handleImportTrades}>Import Trades</Button>
                   <Button
                     variant="outline"
                     onClick={() => setShowImportSection(false)}
@@ -488,10 +676,10 @@ export function TradingCalendar() {
                   <div className="text-lg font-bold">
                     {monthlyTotals.totalTrades > 0
                       ? formatPercentage(
-                        (monthlyTotals.profitableTrades /
-                          monthlyTotals.totalTrades) *
-                        100
-                      )
+                          (monthlyTotals.profitableTrades /
+                            monthlyTotals.totalTrades) *
+                            100
+                        )
                       : 'N/A'}
                   </div>
                 </div>
@@ -502,11 +690,11 @@ export function TradingCalendar() {
                   <div className="text-lg font-bold text-green-600">
                     {monthlyTotals.profitPoints.length > 0
                       ? formatPoints(
-                        monthlyTotals.profitPoints.reduce(
-                          (a, b) => a + b,
-                          0
-                        ) / monthlyTotals.profitPoints.length
-                      )
+                          monthlyTotals.profitPoints.reduce(
+                            (a, b) => a + b,
+                            0
+                          ) / monthlyTotals.profitPoints.length
+                        )
                       : 'N/A'}
                   </div>
                 </div>
@@ -517,9 +705,9 @@ export function TradingCalendar() {
                   <div className="text-lg font-bold text-red-600">
                     {monthlyTotals.lossPoints.length > 0
                       ? formatPoints(
-                        monthlyTotals.lossPoints.reduce((a, b) => a + b, 0) /
-                        monthlyTotals.lossPoints.length
-                      )
+                          monthlyTotals.lossPoints.reduce((a, b) => a + b, 0) /
+                            monthlyTotals.lossPoints.length
+                        )
                       : 'N/A'}
                   </div>
                 </div>
@@ -596,46 +784,46 @@ export function TradingCalendar() {
                         {/* Volume bars */}
                         {(day.tradingData.profitPoints.length > 0 ||
                           day.tradingData.lossPoints.length > 0) && (
-                            <div className="mt-1 flex items-end justify-center h-8 w-full">
-                              <div className="flex items-end h-full w-full space-x-0.5 px-1 opacity-25 hover:opacity-100 transition-opacity">
-                                {/* Winning trades */}
-                                {day.tradingData?.profitPoints?.map(
-                                  (points: number, i: number) => (
-                                    <div
-                                      key={`win-${i}`}
-                                      className=" bg-green-500 rounded-xs w-2"
-                                      style={{
-                                        height: `${Math.min(
-                                          points * POINTS_SCALING_FACTOR,
-                                          100
-                                        )}%`,
-                                        maxHeight: '100%',
-                                      }}
-                                      title={`+${formatPoints(points)} pts`}
-                                    />
-                                  )
-                                )}
-                                {/* Losing trades */}
-                                {day.tradingData?.lossPoints?.map(
-                                  (points: number, i: number) => (
-                                    <div
-                                      key={`loss-${i}`}
-                                      className=" bg-red-500 rounded-xs w-2"
-                                      style={{
-                                        height: `${Math.min(
-                                          points * POINTS_SCALING_FACTOR,
-                                          100
-                                        )}%`,
-                                        maxHeight: '100%',
-                                        alignSelf: 'flex-end',
-                                      }}
-                                      title={`-${formatPoints(points)} pts`}
-                                    />
-                                  )
-                                )}
-                              </div>
+                          <div className="mt-1 flex items-end justify-center h-8 w-full">
+                            <div className="flex items-end h-full w-full space-x-0.5 px-1 opacity-25 hover:opacity-100 transition-opacity">
+                              {/* Winning trades */}
+                              {day.tradingData?.profitPoints?.map(
+                                (points: number, i: number) => (
+                                  <div
+                                    key={`win-${i}`}
+                                    className=" bg-green-500 rounded-xs w-2"
+                                    style={{
+                                      height: `${Math.min(
+                                        points * POINTS_SCALING_FACTOR,
+                                        100
+                                      )}%`,
+                                      maxHeight: '100%',
+                                    }}
+                                    title={`+${formatPoints(points)} pts`}
+                                  />
+                                )
+                              )}
+                              {/* Losing trades */}
+                              {day.tradingData?.lossPoints?.map(
+                                (points: number, i: number) => (
+                                  <div
+                                    key={`loss-${i}`}
+                                    className=" bg-red-500 rounded-xs w-2"
+                                    style={{
+                                      height: `${Math.min(
+                                        points * POINTS_SCALING_FACTOR,
+                                        100
+                                      )}%`,
+                                      maxHeight: '100%',
+                                      alignSelf: 'flex-end',
+                                    }}
+                                    title={`-${formatPoints(points)} pts`}
+                                  />
+                                )
+                              )}
                             </div>
-                          )}
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
@@ -651,29 +839,193 @@ export function TradingCalendar() {
             <CardTitle className="text-xl">Overall Statistics</CardTitle>
           </CardHeader>
           <CardContent className="space-y-12">
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-              <div className="text-center">
-                <div className="text-sm text-muted-foreground">Total P&L</div>
-                <div
-                  className={cn(
-                    'text-2xl font-bold mt-1',
-                    overallStats.totalPnl >= 0
-                      ? 'text-green-600'
-                      : 'text-red-600'
-                  )}
-                >
-                  {formatCurrency(overallStats.totalPnl)}
-                </div>
-              </div>
-              <div className="text-center">
-                <div className="text-sm text-muted-foreground">
-                  Profit Factor
-                </div>
-                <div className="text-2xl font-bold">
-                  {overallStats.profitFactor}
-                </div>
-              </div>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    Total P&L
+                  </CardTitle>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    className="h-4 w-4 text-muted-foreground"
+                  >
+                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                  </svg>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {formatCurrency(
+                      Object.values(tradingData).reduce(
+                        (sum, day) => sum + day.pnl,
+                        0
+                      )
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    All time profit & loss
+                  </p>
+                </CardContent>
+              </Card>
 
+              <Card className="col-span-2 border-0 shadow-sm bg-gradient-to-br from-card to-card/90 backdrop-blur-sm overflow-hidden">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-lg font-semibold text-foreground/90">
+                    Weekly Performance
+                  </CardTitle>
+                  <p className="text-xs text-muted-foreground">
+                    Net P&L by weekday
+                  </p>
+                </CardHeader>
+                <CardContent className="h-[300px] p-4">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={weekdayData}
+                      margin={{ top: 10, right: 20, left: 0, bottom: 5 }}
+                      barCategoryGap={12}
+                      barSize={32}
+                    >
+                      <defs>
+                        <linearGradient
+                          id="profitGradient"
+                          x1="0"
+                          y1="0"
+                          x2="0"
+                          y2="1"
+                        >
+                          <stop
+                            offset="0%"
+                            stopColor="#10b981"
+                            stopOpacity={0.8}
+                          />
+                          <stop
+                            offset="100%"
+                            stopColor="#059669"
+                            stopOpacity={0.9}
+                          />
+                        </linearGradient>
+                        <linearGradient
+                          id="lossGradient"
+                          x1="0"
+                          y1="0"
+                          x2="0"
+                          y2="1"
+                        >
+                          <stop
+                            offset="0%"
+                            stopColor="#ef4444"
+                            stopOpacity={0.8}
+                          />
+                          <stop
+                            offset="100%"
+                            stopColor="#dc2626"
+                            stopOpacity={0.9}
+                          />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        vertical={false}
+                        stroke="hsl(var(--muted))"
+                        strokeOpacity={0.3}
+                      />
+                      <XAxis
+                        dataKey="day"
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{
+                          fill: 'hsl(0, 0%, 80%)',
+                          fontSize: 12,
+                          fontWeight: 500,
+                        }}
+                        padding={{ left: 10, right: 10 }}
+                      />
+                      <YAxis
+                        tickFormatter={(value) =>
+                          `$${Math.abs(Number(value))}${
+                            value >= 1000 ? 'K' : ''
+                          }`
+                        }
+                        width={50}
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{
+                          fill: 'hsl(0, 0%, 80%)',
+                          fontSize: 11,
+                          dx: -5,
+                        }}
+                        tickMargin={8}
+                      />
+                      <Tooltip
+                        content={({ active, payload, label }) => {
+                          if (active && payload && payload.length) {
+                            const value = payload[0].value as number;
+                            return (
+                              <div className="bg-background/95 backdrop-blur-sm p-3 rounded-lg border shadow-lg">
+                                <p className="font-medium text-sm">{label}</p>
+                                <p
+                                  className={cn(
+                                    'text-sm font-semibold',
+                                    value >= 0
+                                      ? 'text-green-500'
+                                      : 'text-red-500'
+                                  )}
+                                >
+                                  {value >= 0 ? '+' : ''}
+                                  {value.toFixed(2)} USD
+                                </p>
+                                <p className="text-xs text-muted-foreground mt-0.5">
+                                  {payload[0].payload.trades} trades
+                                </p>
+                              </div>
+                            );
+                          }
+                          return null;
+                        }}
+                        cursor={{
+                          fill: 'hsl(var(--muted))',
+                          fillOpacity: 0.1,
+                          stroke: 'hsl(var(--muted-foreground))',
+                          strokeWidth: 1,
+                          strokeDasharray: '3 3',
+                          radius: 4,
+                        }}
+                      />
+                      <Bar
+                        dataKey="pnl"
+                        name="P&L"
+                        radius={[4, 4, 0, 0]}
+                        animationDuration={1200}
+                        animationEasing="ease-out"
+                      >
+                        {weekdayData.map((entry, index) => (
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={
+                              entry.pnl >= 0
+                                ? 'url(#profitGradient)'
+                                : 'url(#lossGradient)'
+                            }
+                            stroke={
+                              entry.pnl >= 0
+                                ? 'rgba(16, 185, 129, 0.2)'
+                                : 'rgba(239, 68, 68, 0.2)'
+                            }
+                            strokeWidth={1}
+                            className="transition-all duration-300 hover:opacity-80"
+                          />
+                        ))}
+                      </Bar>
+                      <ReferenceLine y={0} stroke="hsl(var(--border))" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
               <div className="text-center">
                 <div className="text-sm text-muted-foreground">
                   Total Trades
@@ -685,7 +1037,6 @@ export function TradingCalendar() {
                   )}
                 </div>
               </div>
-
               <div className="text-center">
                 <div className="text-sm text-muted-foreground">Win Rate</div>
                 <div className="text-2xl font-bold mt-1">
@@ -694,16 +1045,16 @@ export function TradingCalendar() {
                     0
                   ) > 0
                     ? formatPercentage(
-                      (Object.values(tradingData).reduce(
-                        (sum, day) => sum + day.profitableTrades,
-                        0
-                      ) /
-                        Object.values(tradingData).reduce(
-                          (sum, day) => sum + day.trades,
+                        (Object.values(tradingData).reduce(
+                          (sum, day) => sum + day.profitableTrades,
                           0
-                        )) *
-                      100
-                    )
+                        ) /
+                          Object.values(tradingData).reduce(
+                            (sum, day) => sum + day.trades,
+                            0
+                          )) *
+                          100
+                      )
                     : 'N/A'}
                 </div>
               </div>
