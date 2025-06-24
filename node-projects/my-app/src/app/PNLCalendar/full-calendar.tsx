@@ -803,7 +803,7 @@ export function TradingCalendar() {
         <Card className="overflow-hidden">
           <CardContent className="p-1">
             {/* Day headers */}
-            <div className="grid grid-cols-4 gap-4 mt-6">
+            <div className="grid grid-cols-7 gap-4 mt-6">
               {dayNames.map((day) => (
                 <div
                   key={day}
