@@ -23,6 +23,20 @@ interface ChatMessage {
   timestamp: Date;
 }
 
+interface Prompt {
+  id: string;
+  title: string;
+  text: string;
+  timestamp: Date;
+}
+
+interface ChatHistoryMessage {
+  id: string;
+  content: string;
+  role: 'user' | 'bot';
+  timestamp: string;
+}
+
 export default function Component() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -51,7 +65,7 @@ export default function Component() {
       try {
         const parsed = JSON.parse(stored);
         setSavedPrompts(
-          parsed.map((p: any) => ({
+          (parsed as Prompt[]).map((p) => ({
             ...p,
             timestamp: new Date(p.timestamp),
           }))
@@ -67,7 +81,7 @@ export default function Component() {
       try {
         const parsed = JSON.parse(storedChat);
         setChatMessages(
-          parsed.map((m: any) => ({
+          (parsed as ChatHistoryMessage[]).map((m) => ({
             ...m,
             timestamp: new Date(m.timestamp),
           }))
@@ -432,7 +446,7 @@ export default function Component() {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col">
         {/* Chat Messages Area */}
-        <div className="flex-1 overflow-y-auto p-4" data="chatGPT-container">
+        <div className="flex-1 overflow-y-auto p-4" data-chatgpt-container="true">
           {chatMessages.length === 0 ? (
             <div className="flex items-center justify-center h-full">
               <div className="text-center">
