@@ -174,7 +174,7 @@ export function TradingCalendar() {
       const allRows = doc.querySelectorAll('tr');
       const tradeData: string[] = [];
       let foundFirstRightAligned = false;
-      const shouldStop = false;
+      // Removed unused shouldStop variable
 
       for (const row of Array.from(allRows)) {
         // Check if this is a right-aligned row
@@ -553,9 +553,12 @@ export function TradingCalendar() {
                         e.dataTransfer.files &&
                         e.dataTransfer.files.length > 0
                       ) {
-                        handleFileUpload({
+                        const event = {
                           target: { files: e.dataTransfer.files },
-                        } as any);
+                          preventDefault: () => {},
+                          stopPropagation: () => {}
+                        } as React.ChangeEvent<HTMLInputElement>;
+                        handleFileUpload(event);
                       }
                     }}
                   >
