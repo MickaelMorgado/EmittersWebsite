@@ -17,53 +17,235 @@
     <link href="css.css" rel="stylesheet">
     <script src="js.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ffmpeg/0.12.10/umd/ffmpeg.min.js" integrity="sha512-j2FJMGBh+AdPWKCKDqIzH67vu4ps8OsNZqqetz8YSlbwy2ZwFTL+p6Hp1j17nL0B7IDl9E4zhPUXZKwz7MzjQQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <style>
+        .sidebar {
+            width: 300px;
+            height: 100vh;
+            position: fixed;
+            right: 0;
+            top: 0;
+            background: #f8f9fa;
+            border-left: 1px solid #dee2e6;
+            padding: 20px;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+        .prompt-item {
+            cursor: pointer;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+        .prompt-item:hover {
+            background-color: #e9ecef;
+        }
+        .add-prompt-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1001;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .main-content {
+            transition: margin-right 0.3s ease;
+            margin-right: 300px;
+        }
+    </style>
 </head>
 
 <body class="style-trade">
-    <div class="container">
-        <div class="col padded">
-            <div id="chat-container">
-                <div id="messages"></div>
-                <div id="input-container">
-                <input type="text" id="input" placeholder="Type your message here">
-                <button id="send">Send</button>
+    <div class="main-content">
+        <div class="container">
+            <div class="col padded">
+                <div id="chat-container">
+                    <div id="messages"></div>
+                    <div id="input-container">
+                        <input type="text" id="input" placeholder="Type your message here">
+                        <button id="send">Send</button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h4>Saved Prompts</h4>
+        <div id="savedPromptsList" class="mt-3">
+            <!-- Prompts will be loaded here -->
+        </div>
+    </div>
+
+    <!-- Add Prompt Button -->
+    <button id="addPromptBtn" class="btn btn-primary add-prompt-btn">
+        <i class="fas fa-plus"></i>
+    </button>
+
+    <!-- Add Prompt Modal -->
+    <div class="modal fade" id="addPromptModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New Prompt</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="promptTitle">Title (Optional)</label>
+                        <input type="text" class="form-control" id="promptTitle" placeholder="Enter a title">
+                    </div>
+                    <div class="form-group">
+                        <label for="promptText">Prompt Text</label>
+                        <textarea class="form-control" id="promptText" rows="4" placeholder="Enter your prompt"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveNewPrompt">Save Prompt</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const messagesContainer = document.getElementById('messages');
+        const inputField = document.getElementById('input');
+        const sendButton = document.getElementById('send');
+        const savedPromptsList = document.getElementById('savedPromptsList');
+        const addPromptBtn = document.getElementById('addPromptBtn');
+        const saveNewPromptBtn = document.getElementById('saveNewPrompt');
+        const promptText = document.getElementById('promptText');
+        const promptTitle = document.getElementById('promptTitle');
+        const addPromptModal = new bootstrap.Modal(document.getElementById('addPromptModal'));
+
+        // Load saved prompts from localStorage
+        function loadPrompts() {
+            return JSON.parse(localStorage.getItem('savedPrompts') || '[]');
+        }
+
+        // Save prompts to localStorage
+        function savePrompts(prompts) {
+            localStorage.setItem('savedPrompts', JSON.stringify(prompts));
+        }
+
+        // Render saved prompts in the sidebar
+        function renderPrompts() {
+            const prompts = loadPrompts();
+            savedPromptsList.innerHTML = '';
+            
+            if (prompts.length === 0) {
+                savedPromptsList.innerHTML = '<div class="text-muted text-center py-3">No saved prompts yet</div>';
+                return;
+            }
+
+            prompts.forEach((prompt, index) => {
+                const promptElement = document.createElement('div');
+                promptElement.className = 'prompt-item border p-3 mb-2 rounded';
+                promptElement.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            ${prompt.title ? `<h6 class="mb-1">${prompt.title}</h6>` : ''}
+                            <p class="mb-0 text-muted small">${prompt.text.substring(0, 50)}${prompt.text.length > 50 ? '...' : ''}</p>
+                        </div>
+                        <button class="btn btn-sm btn-outline-danger delete-prompt" data-index="${index}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+
+                // Add click event to use the prompt
+                promptElement.addEventListener('click', (e) => {
+                    if (!e.target.closest('.delete-prompt')) {
+                        inputField.value = prompt.text;
+                        inputField.focus();
+                    }
+                });
+
+                savedPromptsList.appendChild(promptElement);
+            });
+
+            // Add event listeners for delete buttons
+            document.querySelectorAll('.delete-prompt').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (confirm('Are you sure you want to delete this prompt?')) {
+                        const index = parseInt(btn.dataset.index);
+                        const prompts = loadPrompts();
+                        prompts.splice(index, 1);
+                        savePrompts(prompts);
+                        renderPrompts();
+                    }
+                });
+            });
+        }
+
+        // Show add prompt modal
+        addPromptBtn.addEventListener('click', () => {
+            promptTitle.value = '';
+            promptText.value = '';
+            addPromptModal.show();
+        });
+
+        // Save new prompt
+        saveNewPromptBtn.addEventListener('click', () => {
+            const text = promptText.value.trim();
+            if (text) {
+                const title = promptTitle.value.trim();
+                const prompts = loadPrompts();
+                prompts.unshift({ title, text }); // Add new prompt to the beginning
+                savePrompts(prompts);
+                addPromptModal.hide();
+                renderPrompts();
+            } else {
+                alert('Please enter a prompt text');
+            }
+        });
+
+        // Allow saving with Ctrl+Enter in the prompt textarea
+        promptText.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                saveNewPromptBtn.click();
+            }
+        });
+
+        // Initialize
+        renderPrompts();
+
+        // Existing chat functionality
+        function appendMessage(text, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            messageDiv.textContent = text;
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        sendButton.addEventListener('click', () => {
+            const message = inputField.value.trim();
+            if (message) {
+                inputField.value = '';
+                chatGPTRequest(message);
+                appendMessage(message, 'user');
+            }
+        });
+
+        inputField.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                sendButton.click();
+            }
+        });
+    </script>
 </body>
-
-<script>
-    const messagesContainer = document.getElementById('messages');
-    const inputField = document.getElementById('input');
-    const sendButton = document.getElementById('send');
-
-    // Append message to chat window
-    function appendMessage(text, sender) {
-      const messageDiv = document.createElement('div');
-      messageDiv.className = `message ${sender}`;
-      messageDiv.textContent = text;
-      messagesContainer.appendChild(messageDiv);
-      messagesContainer.scrollTop = messagesContainer.scrollHeight; // Auto-scroll to the bottom
-    }
-
-    // Event listener for the send button
-    sendButton.addEventListener('click', () => {
-      const message = inputField.value.trim();
-      if (message) {
-        inputField.value = '';
-        chatGPTRequest(message);
-      }
-    });
-
-    // Send message on Enter key press
-    inputField.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        sendButton.click();
-      }
-    });
-  </script>
 
 </html>
