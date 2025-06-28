@@ -35,6 +35,16 @@ export default function Home() {
               </CardContent>
             </Card>
           </Link>
+          <Link href="/memogpt" className="h-full">
+            <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
+              <CardHeader>
+                <CardTitle>MemoGPT</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">AI-powered memo and prompt manager</p>
+              </CardContent>
+            </Card>
+          </Link>
         </div>
       </section>
       <section className="mt-12">
