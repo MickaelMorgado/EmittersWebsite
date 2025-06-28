@@ -148,54 +148,7 @@ export function TradingCalendar() {
     }
   );
 
-  const analyzeTradingDays = (data: TradeData) => {
-    const daysOfWeek = [
-      'Sunday',
-      'Monday',
-      'Tuesday',
-      'Wednesday',
-      'Thursday',
-      'Friday',
-      'Saturday',
-    ];
-    const dayStats = daysOfWeek.map((day) => ({
-      day,
-      totalTrades: 0,
-      profitableTrades: 0,
-      totalPnl: 0,
-      daysTraded: 0,
-    }));
-    Object.entries(data).forEach(([dateStr, dayData]) => {
-      const date = new Date(dateStr);
-      const dayOfWeek = date.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
-      const dayStat = dayStats[dayOfWeek];
-
-      dayStat.totalTrades += dayData.trades;
-      dayStat.profitableTrades += dayData.profitableTrades;
-      dayStat.totalPnl += dayData.pnl;
-      dayStat.daysTraded++;
-    });
-
-    // Filter only weekdays (Monday to Friday)
-    const weekdayStats = dayStats.slice(1, 6);
-
-    console.log('Trading Performance by Weekday:');
-    weekdayStats.forEach((stat) => {
-      if (stat.daysTraded > 0) {
-        const winRate = (
-          (stat.profitableTrades / stat.totalTrades) *
-          100
-        ).toFixed(1);
-        const avgPnl = (stat.totalPnl / stat.daysTraded).toFixed(2);
-        console.log(`${stat.day}:`);
-        console.log(`  Days Traded: ${stat.daysTraded}`);
-        console.log(`  Total Trades: ${stat.totalTrades}`);
-        console.log(`  Win Rate: ${winRate}%`);
-        console.log(`  Average Daily P&L: $${avgPnl}`);
-        console.log('-------------------');
-      }
-    });
-  };
+  // analyzeTradingDays function removed as it was unused
 
   const handleImportTrades = () => {
     const data = parseTradeData(tradeInput || sampleData);
@@ -221,7 +174,7 @@ export function TradingCalendar() {
       const allRows = doc.querySelectorAll('tr');
       const tradeData: string[] = [];
       let foundFirstRightAligned = false;
-      let shouldStop = false;
+      const shouldStop = false;
 
       for (const row of Array.from(allRows)) {
         // Check if this is a right-aligned row
@@ -470,37 +423,37 @@ export function TradingCalendar() {
     return Math.round(value * 100000).toString();
   };
 
-  // Calculate overall stats
-  const overallStats = {
-    totalPnl: Object.values(tradingData).reduce((sum, day) => sum + day.pnl, 0),
-    totalTrades: Object.values(tradingData).reduce(
-      (sum, day) => sum + day.trades,
-      0
-    ),
-    profitableTrades: Object.values(tradingData).reduce(
-      (sum, day) => sum + day.profitableTrades,
-      0
-    ),
-    tradingDays: Object.keys(tradingData).length,
-    profitPoints: Object.values(tradingData).flatMap((day) => day.profitPoints),
-    lossPoints: Object.values(tradingData).flatMap((day) => day.lossPoints),
-    profitFactor: (() => {
-      // Calculate total profit from profitable days
-      const totalProfit = Object.values(tradingData)
-        .filter((day) => day.pnl > 0)
-        .reduce((sum, day) => sum + day.pnl, 0);
-
-      // Calculate total loss from losing days (as positive number)
-      const totalLoss = Math.abs(
-        Object.values(tradingData)
-          .filter((day) => day.pnl < 0)
-          .reduce((sum, day) => sum + day.pnl, 0)
-      );
-
-      // Return profit factor with 2 decimal places, or 'N/A' if no losses
-      return totalLoss > 0 ? (totalProfit / totalLoss).toFixed(2) : 'N/A';
-    })(),
-  };
+  // Calculate overall stats (commented out as it's not currently used)
+  // const overallStats = {
+  //   totalPnl: Object.values(tradingData).reduce((sum, day) => sum + day.pnl, 0),
+  //   totalTrades: Object.values(tradingData).reduce(
+  //     (sum, day) => sum + day.trades,
+  //     0
+  //   ),
+  //   profitableTrades: Object.values(tradingData).reduce(
+  //     (sum, day) => sum + day.profitableTrades,
+  //     0
+  //   ),
+  //   tradingDays: Object.keys(tradingData).length,
+  //   profitPoints: Object.values(tradingData).flatMap((day) => day.profitPoints),
+  //   lossPoints: Object.values(tradingData).flatMap((day) => day.lossPoints),
+  //   profitFactor: (() => {
+  //     // Calculate total profit from profitable days
+  //     const totalProfit = Object.values(tradingData)
+  //       .filter((day) => day.pnl > 0)
+  //       .reduce((sum, day) => sum + day.pnl, 0);
+  //
+  //     // Calculate total loss from losing days (as positive number)
+  //     const totalLoss = Math.abs(
+  //       Object.values(tradingData)
+  //         .filter((day) => day.pnl < 0)
+  //         .reduce((sum, day) => sum + day.pnl, 0)
+  //     );
+  //
+  //     // Calculate profit factor (avoid division by zero)
+  //     return totalLoss > 0 ? totalProfit / totalLoss : totalProfit > 0 ? Infinity : 0;
+  //   })(),
+  // };
 
   const formatPercentage = (value: number) => {
     return `${Math.round(value)}%`;
