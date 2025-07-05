@@ -15,6 +15,10 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Bot, Edit, Plus, Send, Trash2, User, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+
+import styles from './styles.module.css';
 
 interface ChatMessage {
   id: string;
@@ -117,15 +121,13 @@ export default function Component() {
     try {
       setIsLoading(true);
 
-      const open_ai_key = ``;
-
       const response = await fetch(
         'https://api.openai.com/v1/chat/completions',
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${open_ai_key}`,
+            Authorization: `Bearer `,
           },
           body: JSON.stringify({
             model: 'gpt-3.5-turbo',
@@ -490,11 +492,13 @@ export default function Component() {
                         : 'border-2 border-primary text-primary'
                     }`}
                   >
-                    <p className="text-sm whitespace-pre-wrap">
-                      {message.content}
-                    </p>
-                    <p
-                      className={`text-xs mt-1 ${
+                    <div className="text-sm whitespace-pre-wrap markdown-container">
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                        {message.content}
+                      </ReactMarkdown>
+                    </div>
+                    <small
+                      className={`text-xs mt-2 ${
                         message.role === 'user'
                           ? 'text-primary/20'
                           : 'text-primary/60'
@@ -504,7 +508,7 @@ export default function Component() {
                         hour: '2-digit',
                         minute: '2-digit',
                       })}
-                    </p>
+                    </small>
                   </div>
                   {message.role === 'user' && (
                     <div className="w-8 h-8 rounded-full bg-gray-400 flex items-center justify-center flex-shrink-0">
