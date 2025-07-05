@@ -55,8 +55,14 @@ export default function Component() {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Your API key - consider moving this to environment variables for security
-  const apiKey = '';
+  useEffect(() => {
+    const elem = document.querySelector<HTMLDivElement>(
+      '[data-chatgpt-container]'
+    );
+    if (elem) {
+      elem.scrollTop = elem.scrollHeight;
+    }
+  }, [chatMessages]);
 
   // Load prompts from localStorage on component mount
   useEffect(() => {
@@ -111,13 +117,15 @@ export default function Component() {
     try {
       setIsLoading(true);
 
+      const open_ai_key = ``;
+
       const response = await fetch(
         'https://api.openai.com/v1/chat/completions',
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${apiKey}`,
+            Authorization: `Bearer ${open_ai_key}`,
           },
           body: JSON.stringify({
             model: 'gpt-3.5-turbo',
@@ -446,7 +454,10 @@ export default function Component() {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col">
         {/* Chat Messages Area */}
-        <div className="flex-1 overflow-y-auto p-4" data-chatgpt-container="true">
+        <div
+          className="flex-1 overflow-y-auto p-4"
+          data-chatgpt-container="true"
+        >
           {chatMessages.length === 0 ? (
             <div className="flex items-center justify-center h-full">
               <div className="text-center">
