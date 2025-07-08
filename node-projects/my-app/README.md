@@ -39,9 +39,49 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 ```sh
 cd D:\EmittersWebsite\EmittersWebsite\node-projects\my-app
-./build-windows.bat
+npm run build
 ```
 
 ## Cpanel Upload built
 
-> Navigate to \node-projects\my-app\dist to get the compressed zip built project, as Cpanel upload has limitations
+- go to dist folder 
+- compress content (zip)
+- upload it to your Cpanel (as Cpanel upload has limitations) in public_html/node-projects/my-app/dist 
+
+## Testing the Vite Setup - Step by Step Guide
+
+1. **Install dependencies**  
+   Open a terminal in the `node-projects/my-app` directory and run:  
+   ```sh
+   npm install
+   ```
+
+2. **Start development server**  
+   Run the development server with hot reload:  
+   ```sh
+   npm run dev
+   ```  
+   This will open your app at [http://localhost:5173](http://localhost:5173) by default.
+
+3. **Build production bundle**  
+   When ready to create a production build, run:  
+   ```sh
+   npm run build
+   ```  
+   This will generate an optimized static build in the `dist` directory.
+
+4. **Preview production build locally**  
+   To preview the production build on a local server, run:  
+   ```sh
+   npm run preview
+   ```  
+   This serves the `dist` directory so you can verify the production build.
+
+5. **Serve production build on any static server**  
+   You can serve the `dist` directory using any static file server, for example:  
+   ```sh
+   npx serve dist
+   ```  
+   or any other static file server of your choice.
+
+This setup allows you to develop and deploy your React app as a fully static site using Vite.
