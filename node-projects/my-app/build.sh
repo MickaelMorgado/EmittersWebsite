@@ -26,6 +26,10 @@ fi
 echo "🔨 Building the application..."
 npm run build
 
+# Zip the build output
+echo "📦 Zipping the build output..."
+zip -r dist/my-app.zip .next public package.json package-lock.json
+
 echo "✅ Build completed successfully!"
 echo "📁 The static files are ready in the 'dist' directory"
 echo "🌍 To serve the static site, you can use any static file server like 'serve' or 'http-server'"
