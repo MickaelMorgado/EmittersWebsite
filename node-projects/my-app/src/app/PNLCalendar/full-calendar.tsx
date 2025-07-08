@@ -636,10 +636,13 @@ export function TradingCalendar() {
                   />
                 </div>
 
-                <div className="flex justify-between pt-2">
-                  <Button onClick={handleImportTrades}>Import Trades</Button>
+                <div className="flex flex-col md:flex-row justify-between pt-2 space-y-2 md:space-y-0">
+                  <Button className="w-full md:w-auto" onClick={handleImportTrades}>
+                    Import Trades
+                  </Button>
                   <Button
                     variant="outline"
+                    className="w-full md:w-auto"
                     onClick={() => setShowImportSection(false)}
                   >
                     Cancel
@@ -653,8 +656,8 @@ export function TradingCalendar() {
         {/* Header */}
         <Card className="mb-8">
           <CardHeader className="px-4 py-3">
-            <div className="flex items-center justify-between w-full gap-12">
-              <div className="w-10">
+            <div className="flex flex-col md:flex-row items-center justify-between w-full gap-4 md:gap-12">
+              <div className="w-10 flex-shrink-0">
                 <Button
                   variant="outline"
                   size="icon"
@@ -668,7 +671,7 @@ export function TradingCalendar() {
                   {monthNames[month]} {year}
                 </CardTitle>
               </div>
-              <div className="w-10">
+              <div className="w-10 flex-shrink-0">
                 <Button
                   variant="outline"
                   size="icon"
@@ -678,8 +681,8 @@ export function TradingCalendar() {
                 </Button>
               </div>
 
-              <div className="flex items-center gap-6">
-                <div className="text-right">
+              <div className="flex flex-wrap items-center gap-6 justify-center md:justify-start">
+                <div className="text-right min-w-[80px]">
                   <div className="text-sm text-muted-foreground">
                     Monthly P&L
                   </div>
@@ -694,7 +697,7 @@ export function TradingCalendar() {
                     {formatCurrency(monthlyTotals.totalPnl)}
                   </div>
                 </div>
-                <div className="text-right">
+                <div className="text-right min-w-[80px]">
                   <div className="text-sm text-muted-foreground">
                     Trading Days
                   </div>
@@ -702,7 +705,7 @@ export function TradingCalendar() {
                     {monthlyTotals.tradingDays}
                   </div>
                 </div>
-                <div className="text-right">
+                <div className="text-right min-w-[80px]">
                   <div className="text-sm text-muted-foreground">
                     Total Trades
                   </div>
@@ -710,7 +713,7 @@ export function TradingCalendar() {
                     {monthlyTotals.totalTrades}
                   </div>
                 </div>
-                <div className="text-right">
+                <div className="text-right min-w-[80px]">
                   <div className="text-sm text-muted-foreground">Win Rate</div>
                   <div className="text-lg font-bold">
                     {monthlyTotals.totalTrades > 0
@@ -722,7 +725,7 @@ export function TradingCalendar() {
                       : 'N/A'}
                   </div>
                 </div>
-                <div className="text-right">
+                <div className="text-right min-w-[80px]">
                   <div className="text-sm text-muted-foreground">
                     Avg Profit (pts)
                   </div>
@@ -737,7 +740,7 @@ export function TradingCalendar() {
                       : 'N/A'}
                   </div>
                 </div>
-                <div className="text-right">
+                <div className="text-right min-w-[80px]">
                   <div className="text-sm text-muted-foreground">
                     Avg Loss (pts)
                   </div>
@@ -1116,14 +1119,6 @@ export function TradingCalendar() {
                           100
                       )
                     : 'N/A'}
-                </div>
-              </div>
-              <div className="text-center">
-                <div className="text-sm text-muted-foreground">
-                  Trading Days
-                </div>
-                <div className="text-2xl font-bold mt-1">
-                  {Object.keys(tradingData).length}
                 </div>
               </div>
             </div>
