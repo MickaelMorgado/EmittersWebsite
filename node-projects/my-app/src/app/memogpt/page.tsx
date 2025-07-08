@@ -18,8 +18,6 @@ import { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-import styles from './styles.module.css';
-
 interface ChatMessage {
   id: string;
   content: string;
@@ -253,16 +251,16 @@ export default function Component() {
   };
 
   return (
-    <div className="flex h-screen">
+    <div className="flex flex-col md:flex-row min-h-screen">
       {/* Left Sidebar */}
-      <div className="w-64 border-r border-gray flex flex-col">
-        <div className="p-4 space-y-3 flex-1 overflow-y-auto">
+      <div className="w-full md:w-64 border-b md:border-b-0 md:border-r border-gray flex flex-row md:flex-col">
+        <div className="p-2 md:p-4 flex flex-row space-x-3 overflow-x-auto scrollbar-thin scrollbar-thumb-primary scrollbar-track-transparent">
           {/* Chat History Items */}
           {savedPrompts.length > 0 ? (
             savedPrompts.slice(0, 10).map((savedPrompt) => (
               <Card
                 key={savedPrompt.id}
-                className="border-2 border-primary cursor-pointer hover:border-primary/80 transition-colors relative group"
+                className="min-w-[200px] border-2 border-primary cursor-pointer hover:border-primary/80 transition-colors relative group flex-shrink-0"
                 onClick={() => handlePromptClick(savedPrompt)}
               >
                 <CardContent className="p-3">
@@ -315,7 +313,7 @@ export default function Component() {
         </div>
 
         {/* Bottom Icons */}
-        <div className="p-4 border-t border-gray flex justify-between items-center">
+        <div className="p-2 md:p-4 border-t border-gray flex justify-between items-center">
           <Button
             variant="ghost"
             size="icon"
@@ -457,12 +455,12 @@ export default function Component() {
       <div className="flex-1 flex flex-col">
         {/* Chat Messages Area */}
         <div
-          className="flex-1 overflow-y-auto p-4"
+          className="flex-1 overflow-y-auto p-2 md:p-4 pb-24"
           data-chatgpt-container="true"
         >
           {chatMessages.length === 0 ? (
             <div className="flex items-center justify-center h-full">
-              <div className="text-center">
+              <div className="text-center flex flex-col justify-center h-full">
                 <h1 className="text-4xl font-bold text-primary tracking-wide mb-4">
                   ASK ME ANYTHING
                 </h1>
@@ -536,7 +534,7 @@ export default function Component() {
         </div>
 
         {/* Input Area */}
-        <div className="border-t border-gray p-4">
+        <div className="border-t border-gray p-2 md:p-4 fixed bottom-0 left-0 right-0 backdrop-blur-sm md:static md:bg-transparent z-50">
           <div className="max-w-4xl mx-auto">
             <div className="relative">
               <Input
@@ -545,13 +543,13 @@ export default function Component() {
                 onChange={(e) => setMainInput(e.target.value)}
                 onKeyPress={handleKeyPress}
                 disabled={isLoading}
-                className="w-full h-14 px-6 pr-14 text-lg border-2 border-primary rounded-full focus:border-primary/80"
+                className="w-full h-12 md:h-14 px-4 md:px-6 pr-12 md:pr-14 text-base md:text-lg border-2 border-primary rounded-full focus:border-primary/80"
               />
               <Button
                 onClick={handleSubmit}
                 disabled={!mainInput.trim() || isLoading}
                 size="icon"
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 h-10 w-10 rounded-full bg-primary hover:bg-primary/80 disabled:bg-gray-300 disabled:hover:bg-gray-300"
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 h-9 w-9 md:h-10 md:w-10 rounded-full bg-primary hover:bg-primary/80 disabled:bg-gray-300 disabled:hover:bg-gray-300"
               >
                 <Send className="w-4 h-4 text-white" />
               </Button>
