@@ -12,244 +12,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="../assets/reusables.js"></script>
   <script>document.addEventListener('DOMContentLoaded', function() { document.title = `HYTEK - ${document.getElementsByTagName("h1")[0].innerText}` });</script>
-  <style>
-    :root {
-      --main-width: 350px;
-      --padding: 15px;
-    }
-
-    html,
-    body {
-      margin: 0;
-      padding: 0;
-    }
-
-    #upload-section {
-      position: fixed;
-      height: 100%;
-      z-index: 2;
-      background: rgba(0, 0, 0, 0.5);
-      width: var(--main-width);
-      overflow: hidden;
-      transition: all 0.5s ease;
-      overflow-y: auto;
-    }
-
-    #upload-section>.h-flex {
-      gap: 10px;
-    }
-
-    #upload-section>.h-flex>div {
-      transition: all 0.5s ease;
-    }
-
-    .chart-section {
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      margin-left: var(--main-width);
-    }
-
-    #scichart-root {
-      flex-grow: 1;
-    }
-
-    .result-panel {
-      position: relative;
-      height: 60px;
-      background: black;
-      color: white;
-      overflow-y: auto;
-      z-index: 1;
-      transition: all .5s ease;
-    }
-
-    .result-panel-toolbar {
-      position: fixed;
-      display: flex;
-      left: var(--main-width);
-      right: 0;
-      gap: var(--padding);
-      padding: 10px;
-      background: var(--dark);
-      box-shadow: 0 10px 20px -5px var(--dark3);
-      box-sizing: border-box;
-    }
-
-    .result-panel-content {
-      padding: 20px;
-      padding-top: 90px;
-    }
-
-    .result-panel-toolbar-toggler {
-      span:first-child { display: inline; }
-      span:last-child { display: none; }
-    }
-
-    /* When the result panel is active: */
-    .result-panel.active {
-      height: 500px;
-    }
-
-    .active .result-panel-toolbar-toggler {
-      span:first-child { display: none; }
-      span:last-child { display: inline; }
-    }
-
-    #hidder {
-      display: none;
-      left: 800px;
-      right: 69px;
-      top: 0;
-      bottom: 24px;
-      background: #141515;
-      z-index: 1;
-      position: absolute;
-    }
-
-    .tools,
-    .rules {
-      position: fixed;
-      top: var(--padding);
-      right: var(--padding);
-      background-color: var(--transparent-dark3);
-      padding: calc(var(--padding) / 2);
-      border-radius: 5px;
-      z-index: 2;
-    }
-
-    .rules {
-      top: auto;
-      bottom: 40px;
-    }
-
-    .spacer {
-      flex-grow: 1;
-    }
-
-    .accordion {
-      width: 100%;
-      border: 1px solid var(--dark3);
-      border-radius: var(--radius);
-      overflow: hidden;
-    }
-
-    .accordion-item {
-      border-bottom: 1px solid var(--dark3);
-    }
-
-    .accordion-header {
-      background-color: var(--dark);
-      cursor: pointer;
-    }
-
-    .accordion-button {
-      background-color: var(--dark2);
-      border: none;
-      font-size: 16px;
-      text-align: left;
-      width: 100%;
-      padding: 10px;
-      cursor: pointer;
-      color: var(--grey1);
-      text-transform: uppercase;
-      font-weight: bold;
-    }
-
-    .accordion-button:focus {
-      outline: none;
-    }
-
-    .accordion-collapse {
-      height: 0;
-      overflow: hidden;
-      transition: height 0.3s ease;
-    }
-
-    .accordion-collapse.show {
-      height: auto;
-    }
-
-    .accordion-body {
-      padding: var(--padding);
-      background-color: var(--dark);
-      display: flex;
-      flex-direction: column;
-      gap: var(--padding);
-    }
-
-    #chatGPTFloatingIconButtonForModal {
-      background: var(--dark);
-      color: var(--grey1);
-      border: none;
-      position: absolute;
-      box-shadow: 0 0 60px 5px grey;
-      border: 10px solid black;
-      bottom: 20px;
-      right: 20px;
-      width: 50px;
-      height: 50px;
-      padding: 10px;
-      border-radius: 100%;
-      cursor: pointer;
-      background-image: url('../assets/images/icons/chatGPT.png');
-      background-size: 100%;
-      background-repeat: no-repeat;
-    }
-
-    .loading-element {
-      position: absolute;
-      top: 0;
-      background: rgba(0, 0, 0, 0.7);
-      border-radius: 10px;
-      padding: 20px 20px 20px 60px;
-      z-index: 1;
-      opacity: 0;
-      transition: opacity 1s ease;
-      color: red;
-    }
-
-    .loading-element.visible {
-      opacity: 1;
-    }
-
-    .loading-element .spinner {
-      position: absolute;
-      top: 0;
-      left: 10px;
-      border: 1px solid rgba(255, 0, 0, 1);
-      box-shadow: 0 0 10px red;
-      border-left-color: black;
-      border-radius: 50%;
-      width: 10px;
-      height: 10px;
-      animation: scaletrans .6s ease-out infinite alternate;
-      transform: scale(1);
-      margin: 20px;
-    }
-
-    @keyframes scaletrans {
-      0% {
-      transform: scale(1) rotate(0deg);
-      }
-
-      100% {
-      transform: scale(2) rotate(590deg);
-      }
-    }
-
-    @-webkit-keyframes scaletrans {
-      0% {
-      transform: scale(1) rotate(0deg);
-      }
-
-      100% {
-      transform: scale(2) rotate(590deg);
-      }
-    }
-    }
-  </style>
+  <link rel="stylesheet" href="index6.css" />
 </head>
 
 <body class="h-style">
@@ -300,7 +63,6 @@
           function changeDate(direction) {
             const select = document.getElementById('NavigateTroughtDates');
             let newIndex = select.selectedIndex + direction;
-            // Ensure newIndex is within the bounds of the select options
             if (newIndex >= 0 && newIndex < select.options.length) {
               select.selectedIndex = newIndex;
               select.dispatchEvent(new Event('change'));
@@ -799,15 +561,24 @@ if (currentTime >= time1 && currentTime <= time2) {
     };
 
     const convertMT5DateToUnix = (candleTime) => {
+      if (!candleTime) {
+        // TODO: this seems to be infinitly called, need to fix it:
+        // console.warn('No candleTime provided, returning current date.');
+        return new Date(); // If candleTime is not provided, return current date
+      }
+      if (typeof candleTime.replaceAll !== 'function') {
+        debugger;
+      }
       const ct = candleTime.replaceAll('.','-');
       return new Date(ct).getTime() / 1000; // - 3600 * 2; // divided by 1000 to convert from milliseconds to seconds as Unix time only accepts seconds, while JS Date is more precise as working with milliseconds.
     };
 
     initSciChart();
 
-    const applyTimeout = false; // TODO: Currenlty not working as expected, need to fix it
+    const readingSpeed = 200; // Speed of reading the CSV file in milliseconds
     
     const csvData = [];
+    let CSIDLookbackCandleSerie = [];
     let csvDataIndex = 0;
     let numbDays = 0;
     let ordersHistory = [];
@@ -835,8 +606,11 @@ if (currentTime >= time1 && currentTime <= time2) {
             const row = results.data;
             csvDataIndex += 1;
 
-            // Append data to the chart
+            parser.pause()
+            // Append data to the chart:
             appendDataToChart(results.data, csvDataIndex);
+            // Plot real-time indicators:
+            appendIndicatorsToChart(results.data, csvDataIndex);
 
             // Match trades based on the opening time
             trades.forEach(trade => {
@@ -889,6 +663,11 @@ if (currentTime >= time1 && currentTime <= time2) {
                 }
               }
             });
+
+            setTimeout(() => {
+              // Resume parsing after a short delay to allow UI updates
+              parser.resume();
+            }, readingSpeed || 100);
           },
           complete: function (results, file) {
             profitabilityCalculation();
@@ -1035,8 +814,16 @@ if (currentTime >= time1 && currentTime <= time2) {
 
           console.log("scichart yaxis started");
 
-          // Variables initialization:
+          // Variables initialization =========================
           let annotations = [];
+          // Variables initialization for CSID:
+          let rollingHighestHighDataSeries = null;
+          let rollingLowestLowDataSeries = null;
+          const lookbackPeriod = 15;
+          const highestHighLong = [];
+          const lowestLowShort = [];
+          // End of Variables initialization =========================
+
 
           // Create an XAxis and YAxis with growBy padding
           // sciChartSurface.xAxes.add(new NumericAxis(wasmContext, { axisTitle: "Time", growBy }));
@@ -1225,8 +1012,6 @@ if (currentTime >= time1 && currentTime <= time2) {
           let inRange = false;
           let swingHighLowHistory = [];
           let fvgHistory = [];
-          let rollingHighestHighDataSeries = null;
-          let rollingLowestLowDataSeries = null;
           const minDate = new Date(ohlcData[0].time);
           const maxDate = new Date(ohlcData[ohlcData.length - 1].time);
           const offsetCandleDateTimeStamp = (candleDateTimeStamp) => candleDateTimeStamp; // - 3600 * 1; // !! offseting candle position in X axis by -1h to match tradingView (The correct way would be to offset the axis labels, but dont know how to do it yet)
@@ -1433,65 +1218,67 @@ if (currentTime >= time1 && currentTime <= time2) {
               */
             // End of FVG Related ========================================
             
-            // MSS Line Logic: ========================================
-              /*
-              function calculateRollingHighLow(ohlcData, lookbackPeriod) {
-                const highPrices = ohlcData.map(data => data.close); // data.high
-                const lowPrices = ohlcData.map(data => data.close); // data.low
-                const rollingHighestHigh = [];
-                const rollingLowestLow = [];
-                for (let i = lookbackPeriod - 1; i < highPrices.length; i++) {
-                  const highest = Math.max(...highPrices.slice(i - lookbackPeriod + 1, i + 1));
-                  const lowest = Math.min(...lowPrices.slice(i - lookbackPeriod + 1, i + 1));
-                  rollingHighestHigh.push(highest);
-                  rollingLowestLow.push(lowest);
-                }
-                return { rollingHighestHigh, rollingLowestLow };
-              }
+          // Declare CSID-related variables outside the onCandleDrawn function to persist state
+          let lastSignalBar = null;
+          const signalCooldown = 4;
+          const slopeThreshold = 0.5;
 
-              const signalCooldown = 4;
-              const lookbackPeriod = 8;
-              const slopeThreshold = 0.5;
-              const times = ohlcData.map(data => convertMT5DateToUnix(data[0]));
-              const { rollingHighestHigh, rollingLowestLow } = calculateRollingHighLow(ohlcData, lookbackPeriod);
-              let mssDetected = false;
-              let newSignalAvailable = false;
-              let bullishMSS = false;
-              let bearishMSS = false;
-              const highestHighLong = [];
-              const lowestLowShort = [];
-              let slopeHighestHighLong = 0;
-              let slopeLowestLowShort = 0;
+
+          // Store references to rolling high/low annotations to clear/redraw
+          //let rollingHighAnnotations = [];
+          //let rollingLowAnnotations = [];
+
+          // CSID Line Logic: ========================================
+            function calculateRollingHighLow(ohlcData, lookbackPeriod) {
+              const highPrices = ohlcData.map(data => data.close); // data.high
+              const lowPrices = ohlcData.map(data => data.close); // data.low
+              const rollingHighestHigh = [];
+              const rollingLowestLow = [];
+              for (let i = lookbackPeriod - 1; i < highPrices.length; i++) {
+                const highest = Math.max(...highPrices.slice(i - lookbackPeriod + 1, i + 1));
+                const lowest = Math.min(...lowPrices.slice(i - lookbackPeriod + 1, i + 1));
+                rollingHighestHigh.push(highest);
+                rollingLowestLow.push(lowest);
+              }
+              return { rollingHighestHigh, rollingLowestLow };
+            }
+
+            // Inside onCandleDrawn function, replace the CSID logic with this:
+            const onCandleDrawn = (candle, index, candlesFromBuffer) => {
+              // Clear previous rolling high/low annotations before drawing new ones
+              //rollingHighAnnotations.forEach(annotation => sciChartSurface.annotations.remove(annotation));
+              //rollingLowAnnotations.forEach(annotation => sciChartSurface.annotations.remove(annotation));
+              //rollingHighAnnotations = [];
+              //rollingLowAnnotations = [];
+
+              console.log('CSID onCandleDrawn called for index:', index);
 
               // Calculate highest high and lowest low
               if (index >= lookbackPeriod) {
                 const highPrices = ohlcData.slice(index - lookbackPeriod, index).map(candle => candle.close); // candle.high
                 highestHighLong.push(Math.max(...highPrices));
-                
+
                 const lowPrices = ohlcData.slice(index - lookbackPeriod, index).map(candle => candle.close); // candle.low
                 lowestLowShort.push(Math.min(...lowPrices));
 
                 // Calculate slope:
-                slopeHighestHighLong = (highestHighLong - highestHighLong[lookbackPeriod]) / lookbackPeriod
-                slopeLowestLowShort = (lowestLowShort - lowestLowShort[lookbackPeriod]) / lookbackPeriod
+                const slopeHighestHighLong = (highestHighLong[highestHighLong.length - 1] - highestHighLong[0]) / lookbackPeriod;
+                const slopeLowestLowShort = (lowestLowShort[lowestLowShort.length - 1] - lowestLowShort[0]) / lookbackPeriod;
 
-                // Check for MSS breakout conditions (breakout of the highest high or lowest low && slope is less than threshold (consistency))
-                bullishMSS = candle.close > highestHighLong[0]// && Math.abs(slopeHighestHighLong) < slopeThreshold
-                bearishMSS = candle.close < lowestLowShort[0]// && Math.abs(slopeLowestLowShort) < slopeThreshold
-
-                // console.log('-> ', candle.close , highestHighLong[0], bullishMSS,);
+                // Check for CSID breakout conditions (breakout of the highest high or lowest low && slope is less than threshold (consistency))
+                const bullishCSID = candle.close > highestHighLong[highestHighLong.length - 1]; // && Math.abs(slopeHighestHighLong) < slopeThreshold
+                const bearishCSID = candle.close < lowestLowShort[lowestLowShort.length - 1]; // && Math.abs(slopeLowestLowShort) < slopeThreshold
 
                 // Cooldown logic
-                let lastSignalBar = null;
-                signalTriggered = bullishMSS || bearishMSS
-                newSignalAvailable = !lastSignalBar || (index - lastSignalBar >= signalCooldown)
+                const signalTriggered = bullishCSID || bearishCSID;
+                const newSignalAvailable = !lastSignalBar || (index - lastSignalBar >= signalCooldown);
 
                 if (signalTriggered && newSignalAvailable) {
-                  lastSignalBar = index
+                  lastSignalBar = index;
                 }
 
-                showBullish = (bullishMSS && newSignalAvailable) ? true : false
-                showBearish = (bearishMSS && newSignalAvailable) ? true : false
+                const showBullish = (bullishCSID && newSignalAvailable);
+                const showBearish = (bearishCSID && newSignalAvailable);
 
                 if (hourMinutes() >= '10:10' && hourMinutes() <= '10:45') {
                   inRange = true;
@@ -1500,43 +1287,98 @@ if (currentTime >= time1 && currentTime <= time2) {
                   canTakeATrade = true;
                 }
 
+                // Draw rolling highest high line annotation
+                console.log('Adding high line annotation:', {
+                  x1: convertMT5DateToUnix(candlesFromBuffer[index - lookbackPeriod][0]),
+                  x2: convertMT5DateToUnix(candle[0]),
+                  y: highestHighLong[highestHighLong.length - 1],
+                });
+                const highAnnotation = new LineAnnotation({
+                  stroke: `#${bullishColor}`,
+                  strokeThickness: 1,
+                  strokeDashArray: [4, 4],
+                  x1: convertMT5DateToUnix(candlesFromBuffer[index - lookbackPeriod][0]),
+                  x2: convertMT5DateToUnix(candle[0]),
+                  y1: highestHighLong[highestHighLong.length - 1],
+                  y2: highestHighLong[highestHighLong.length - 1],
+                  annotationLayer: EAnnotationLayer.Foreground,
+                  isEditable: false,
+                  xCoordinateMode: ECoordinateMode.DataValue,
+                  yCoordinateMode: ECoordinateMode.DataValue,
+                });
+                //sciChartSurface.annotations.add(highAnnotation);
+                //rollingHighAnnotations.push(highAnnotation);
+
+                // Draw rolling lowest low line annotation
+                console.log('Adding low line annotation:', {
+                  x1: convertMT5DateToUnix(candlesFromBuffer[index - lookbackPeriod][0]),
+                  x2: convertMT5DateToUnix(candle[0]),
+                  y: lowestLowShort[lowestLowShort.length - 1],
+                });
+                const lowAnnotation = new LineAnnotation({
+                  stroke: `#${bearishColor}`,
+                  strokeThickness: 1,
+                  strokeDashArray: [4, 4],
+                  x1: convertMT5DateToUnix(candlesFromBuffer[index - lookbackPeriod][0]),
+                  x2: convertMT5DateToUnix(candle[0]),
+                  y1: lowestLowShort[lowestLowShort.length - 1],
+                  y2: lowestLowShort[lowestLowShort.length - 1],
+                  annotationLayer: EAnnotationLayer.Foreground,
+                  isEditable: false,
+                  xCoordinateMode: ECoordinateMode.DataValue,
+                  yCoordinateMode: ECoordinateMode.DataValue,
+                });
+                //sciChartSurface.annotations.add(lowAnnotation);
+                //rollingLowAnnotations.push(lowAnnotation);
+
                 if (showBullish) {
-                  //AddActionOnChart(EnumActionType.DRAW_A_CIRCLE);
+                  AddActionOnChart(candle, EnumActionType.DRAW_A_CIRCLE);
                   if (inRange && canTakeATrade) {
-                    AddActionOnChart(EnumActionType.TAKE_A_TRADE, EnumDirection.BULL);
+                    AddActionOnChart(candle, EnumActionType.TAKE_A_TRADE, EnumDirection.BULL);
                     canTakeATrade = false;
                   }
                 } else if (showBearish) {
-                  //AddActionOnChart(EnumActionType.DRAW_A_CIRCLE);
+                  AddActionOnChart(candle, EnumActionType.DRAW_A_CIRCLE);
                   if (inRange && canTakeATrade) {
-                    AddActionOnChart(EnumActionType.TAKE_A_TRADE, EnumDirection.BEAR);
+                    AddActionOnChart(candle, EnumActionType.TAKE_A_TRADE, EnumDirection.BEAR);
                     canTakeATrade = false;
                   }
                 }
               }
-              
-              /*
-              if (candle.close >= rollingHighestHigh[index - lookbackPeriod + 1]) {
-                AddActionOnChart(EnumActionType.DRAW_A_CIRCLE);
-                AddActionOnChart(EnumActionType.TAKE_A_TRADE, EnumDirection.BULL);
-                mssDetected = true;
-              } else {
-                mssDetected = false;
-              }
-              */
 
-              // Create data series for rolling highest high and lowest low
-              /*
-              rollingHighestHighDataSeries = new XyDataSeries(wasmContext, {
-                xValues: times.slice(lookbackPeriod - 1),
-                yValues: rollingHighestHigh,
-              });
-              rollingLowestLowDataSeries = new XyDataSeries(wasmContext, {
-                xValues: times.slice(lookbackPeriod - 1),
-                yValues: rollingLowestLow,
-              });
-              */
-            // End of MSS Line Logic ========================================
+              // Draw CSID lines on chart for all candles up to current index
+              for (let i = lookbackPeriod; i <= index; i++) {
+                const high = highestHighLong[i - lookbackPeriod];
+                const low = lowestLowShort[i - lookbackPeriod];
+                const startX = convertMT5DateToUnix(candlesFromBuffer[i - lookbackPeriod][0]);
+                const endX = convertMT5DateToUnix(candlesFromBuffer[i][0]);
+
+                const highLine = new LineAnnotation({
+                  stroke: `#${bullishColor}`,
+                  strokeThickness: 1,
+                  strokeDashArray: [2, 2],
+                  x1: startX,
+                  x2: endX,
+                  y1: high,
+                  y2: high,
+                });
+                //sciChartSurface.annotations.add(highLine);
+                //rollingHighAnnotations.push(highLine);
+
+                const lowLine = new LineAnnotation({
+                  stroke: `#${bearishColor}`,
+                  strokeThickness: 1,
+                  strokeDashArray: [2, 2],
+                  x1: startX,
+                  x2: endX,
+                  y1: low,
+                  y2: low,
+                });
+                //sciChartSurface.annotations.add(lowLine);
+                //rollingLowAnnotations.push(lowLine);
+              }
+            };
+          // End of CSID Line Logic ========================================
 
             eval(algoEditorTextareaMain0.value);
 
@@ -1631,7 +1473,7 @@ if (currentTime >= time1 && currentTime <= time2) {
                 $navigateTroughtDates.innerHTML += `<option value="${unixTime}">${candleDateTime}</option>`;
 
                 // Backtesting line annotation:
-                sciChartSurface.annotations.add(
+                /*sciChartSurface.annotations.add(
                   new VerticalLineAnnotation({
                     stroke: '#999',
                     axisLabelFill: '#999',
@@ -1641,7 +1483,7 @@ if (currentTime >= time1 && currentTime <= time2) {
                     labelPlacement: ELabelPlacement.TopLeft,
                     labelValue: `${candleDateTime}`,
                   })
-                );
+                );*/
               }
             // End of Backtesting dates ====================================
           }
@@ -1904,13 +1746,12 @@ if (currentTime >= time1 && currentTime <= time2) {
           })
           sciChartSurface.renderableSeries.add(FCRS);
           
+          // Start of Window assigned custom scichart functions: ========================
           const addNewCandleToChart = (ohlcDataRow, dataIndex) => {
             if (candlesFromBuffer.length >= MAX_BUFFER_SIZE) {
               candlesFromBuffer.shift(); // Remove the oldest element if the buffer is full to save memory
             }
             candlesFromBuffer.push(ohlcDataRow);
-
-            onCandleDrawn(ohlcDataRow, dataIndex, candlesFromBuffer);
 
             ohlcDataSeries.append(
               convertMT5DateToUnix(ohlcDataRow[0]),
@@ -1922,35 +1763,159 @@ if (currentTime >= time1 && currentTime <= time2) {
           };
           window.addNewCandleToChart = addNewCandleToChart;
 
+          // Create a vertical line annotation for the first time
+          const verticalAnnotation = new VerticalLineAnnotation({
+            x1: convertMT5DateToUnix("2025-07-10 05:00"),
+            stroke: `#0000FF`,
+            opacity: 0.4,
+            strokeThickness: 3,
+          })
+
+          /*
+          const highAnnotation = new FastLineRenderableSeries({
+            stroke: `#FF0000`,// `#${bullishColor}`,
+            strokeThickness: 3, //1,
+            //strokeDashArray: [4, 4],
+            //x1: convertMT5DateToUnix("2025-07-10 00:00"),
+            //x2: convertMT5DateToUnix("2025-07-10 12:00"),
+            dataSeries: new XyDataSeries(wasmContext, {
+              xValues,
+              yValues
+            }),
+
+            //y1: 1,// highestHighLong[highestHighLong.length - 1],
+            //y2: 1.5,// highestHighLong[highestHighLong.length - 1],
+            //annotationLayer: EAnnotationLayer.Foreground,
+            //isEditable: false,
+            //xCoordinateMode: ECoordinateMode.DataValue,
+            //yCoordinateMode: ECoordinateMode.DataValue,
+          }); 
+          */
+               
+          sciChartSurface.annotations.insert(0, verticalAnnotation); // Insert at index 0 to ensure it appears first
+          //sciChartSurface.annotations.insert(1, highAnnotation); // Insert at index 1 to ensure it appears first
+          const CSIDDataSerieFromHighs = new XyDataSeries(wasmContext);
+          const CSIDDataSerieFromLows = new XyDataSeries(wasmContext);
+          
+          const CSIDHighline = new FastLineRenderableSeries(wasmContext, {
+            stroke: "#FFF",
+            strokeThickness: 2,
+            dataSeries: CSIDDataSerieFromHighs,
+            opacity: 0.6,
+          });
+          const CSIDLowline = new FastLineRenderableSeries(wasmContext, {
+            stroke: "#FFF",
+            strokeThickness: 2,
+            dataSeries: CSIDDataSerieFromLows,
+            opacity: 0.6,
+          });
+
+          sciChartSurface.renderableSeries.add(CSIDHighline);
+          sciChartSurface.renderableSeries.add(CSIDLowline);
+
+          const updateCSIDLineAnnotation = (d, dataIndex) => {
+            const index = dataIndex || 0;
+            
+            if (index < lookbackPeriod) return; // Ensure we have enough data for CSID calculation
+
+            // store lookback candles:
+            CSIDLookbackCandleSerie.push(
+              d
+            )
+
+            // Calculate highest high and lowest low in the lookback period except the current candle:
+            const highPrices = CSIDLookbackCandleSerie.slice(CSIDLookbackCandleSerie.length - 1 - lookbackPeriod).map(candle => candle['<HIGH>']); // candle.high
+            highestHighLong.push(Math.max(...highPrices));
+
+            const lowPrices = CSIDLookbackCandleSerie.slice(CSIDLookbackCandleSerie.length - 1 - lookbackPeriod).map(candle => candle['<LOW>']); // candle.low
+            lowestLowShort.push(Math.min(...lowPrices));
+
+            // Calculate slope:
+            const slopeHighestHighLong = (highestHighLong[highestHighLong.length - 1] - highestHighLong[0]) / lookbackPeriod;
+            const slopeLowestLowShort = (lowestLowShort[lowestLowShort.length - 1] - lowestLowShort[0]) / lookbackPeriod;
+
+            // Flat line detection, mostly for UI styling:
+            flatThreshold = 0.00001 // Adjust this value depending on how flat the line is
+            isFlatHigh = Math.abs(highestHighLong - highestHighLong[1]) < flatThreshold
+            isFlatLow = Math.abs(lowestLowShort - lowestLowShort[1]) < flatThreshold
+
+            if (isFlatHigh || isFlatLow) {
+              debugger
+            }
+
+            // Check for CSID breakout conditions (breakout of the highest high or lowest low && slope is less than threshold (consistency))
+            const bullishCSID = d['<CLOSE>'] > highestHighLong[highestHighLong.length - 2]; // && Math.abs(slopeHighestHighLong) < slopeThreshold
+            const bearishCSID = d['<CLOSE>'] < lowestLowShort[lowestLowShort.length - 2]; // && Math.abs(slopeLowestLowShort) < slopeThreshold
+            
+            console.log('CSID Breakout Conditions:', {
+              highestHighLong: highestHighLong[highestHighLong.length - 2],
+              lowestLowShort: lowestLowShort[lowestLowShort.length - 2],
+              date: `${d["<DATE>"]} ${d["<TIME>"]}`,
+              close: d['<CLOSE>'],
+              bullishCSID,
+              bearishCSID,
+            });
+
+            /*let lookbackCandleSerie = candlesFromBuffer[index - lookbackPeriod];
+            if (candlesFromBuffer[index - lookbackPeriod] === undefined) {
+              console.warn('CSID Line Annotation: candlesFromBuffer[index - lookbackPeriod][0] is undefined');
+              debugger
+              return;
+            }*/
+
+            // CSID Graph Related Annotations: ========================================
+              // We are updating the annotation on every new candle:
+              //verticalAnnotation.x1 = convertMT5DateToUnix(`2025-07-10 0${Math.floor(Math.random() * 10)}:00`);
+              //highAnnotation.x1 = convertMT5DateToUnix(`${d["<DATE>"]} ${d["<TIME>"]}`);
+              //console.log(sciChartSurface.annotations.items, `${d["<DATE>"]} ${d["<TIME>"]}`);
+
+              // Add a new CSID Data for our line annotation High:
+              CSIDDataSerieFromHighs.append(
+                convertMT5DateToUnix(d["<DATE>"] + " " + d["<TIME>"]),
+                highestHighLong[highestHighLong.length - 1]
+              );
+              CSIDDataSerieFromLows.append(
+                convertMT5DateToUnix(d["<DATE>"] + " " + d["<TIME>"]),
+                lowestLowShort[lowestLowShort.length - 1]
+              );
+
+              if (bullishCSID || bearishCSID) {
+                if (bullishCSID) {
+                  const buySignal = new CustomAnnotation({
+                    x1: convertMT5DateToUnix(d["<DATE>"] + " " + d["<TIME>"]),
+                    y1: d['<OPEN>'],
+                    verticalAnchorPoint: EVerticalAnchorPoint.Center,
+                    horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
+                    svgString: signalAnnotation.svgString.buy,
+                  })
+                  sciChartSurface.annotations.add(buySignal);
+                }
+                if (bearishCSID) {
+                  const sellSignal = new CustomAnnotation({
+                    x1: convertMT5DateToUnix(d["<DATE>"] + " " + d["<TIME>"]),
+                    y1: d['<OPEN>'],
+                    verticalAnchorPoint: EVerticalAnchorPoint.Center,
+                    horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
+                    svgString: signalAnnotation.svgString.sell,
+                  })
+                  sciChartSurface.annotations.add(sellSignal);
+                }
+              }
+            // End of CSID Graph Related Annotations ========================================
+          };
+          window.updateCSIDLineAnnotation = updateCSIDLineAnnotation;
+          
           const clearAndDeleteChart = () => {
             // Clear the select element:
             $navigateTroughtDates.innerHTML = "";
-
+            
             if (ohlcDataSeries) {
               ohlcDataSeries.clear();
-              sciChartSurface.annotations.clear();
+              //sciChartSurface.annotations.clear();
             }
           };
           window.clearAndDeleteChart = clearAndDeleteChart;
-
-          /*
-          // MSS Graph Related Annotations: ========================================
-            // Plot the rolling highest high and lowest low lines
-            const rollingHighestHighLine = new FastLineRenderableSeries(wasmContext, {
-              dataSeries: rollingHighestHighDataSeries,
-              stroke: "#333333", // Orange for rolling highest high
-              strokeThickness: 1,
-            });
-            const rollingLowestLowLine = new FastLineRenderableSeries(wasmContext, {
-              dataSeries: rollingLowestLowDataSeries,
-              stroke: "#333333", // Blue for rolling lowest low
-              strokeThickness: 1,
-            });
-
-            sciChartSurface.renderableSeries.add(rollingHighestHighLine);
-            sciChartSurface.renderableSeries.add(rollingLowestLowLine);
-          // End of MSS Graph Related Annotations ========================================
-          */
+          // End of Window assigned custom scichart functions: ========================
 
           // Add CursorModifier for crosshair
           sciChartSurface.chartModifiers.add(
@@ -1970,10 +1935,7 @@ if (currentTime >= time1 && currentTime <= time2) {
               crosshairStrokeThickness: 1,
               tooltipContainerBackground: '#000',
               // tooltipTextStroke: "#ff6600",
-            })
-          );
-
-          sciChartSurface.chartModifiers.add(
+            }),
             new MouseWheelZoomModifier(),
             new ZoomPanModifier(),
             new ZoomExtentsModifier(),
@@ -2289,6 +2251,17 @@ if (currentTime >= time1 && currentTime <= time2) {
       ], dataIndex);
     }
 
+    const CSIDIndicator = (d, dataIndex) => {
+      updateCSIDLineAnnotation(d, dataIndex);
+    }
+
+    // Create Indicators as the chart goes along:
+    const appendIndicatorsToChart = (d, dataIndex) => {
+      // Example of appending indicators to the chart
+      // This is a placeholder function, you can implement your own logic
+      CSIDIndicator(d, dataIndex);
+    }
+
     // Historical Trades Textarea Change Handler
     document.getElementById('textareaHistoricalTradesLines').addEventListener('change', function(event) {
       const tradesData = event.target.value;
@@ -2376,7 +2349,7 @@ if (currentTime >= time1 && currentTime <= time2) {
           });
         } else if (typeof sciChartSurface !== 'undefined' && sciChartSurface.annotations) {
           // Minimal SciChart interaction if available
-          sciChartSurface.annotations.clear();
+          //sciChartSurface.annotations.clear();
         }
       } catch (error) {
         console.error('Error updating chart with trades:', error);
@@ -2438,7 +2411,7 @@ if (currentTime >= time1 && currentTime <= time2) {
           }
 
           // If chart annotation function exists, try to use it
-          try {
+          /*try {
             if (typeof sciChartSurface !== 'undefined' && sciChartSurface.annotations) {
               sciChartSurface.annotations.add(
                 new CustomAnnotation({
@@ -2452,7 +2425,7 @@ if (currentTime >= time1 && currentTime <= time2) {
             }
           } catch (annotationError) {
             console.warn('Could not add trade annotation:', annotationError);
-          }
+          }*/
 
           return true;
         };

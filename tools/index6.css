@@ -1,0 +1,243 @@
+:root {
+  --main-width: 350px;
+  --padding: 15px;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+#upload-section {
+  position: fixed;
+  height: 100%;
+  z-index: 2;
+  background: rgba(0, 0, 0, 0.5);
+  width: var(--main-width);
+  overflow: hidden;
+  transition: all 0.5s ease;
+  overflow-y: auto;
+}
+
+#upload-section > .h-flex {
+  gap: 10px;
+}
+
+#upload-section > .h-flex > div {
+  transition: all 0.5s ease;
+}
+
+.chart-section {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  margin-left: var(--main-width);
+}
+
+#scichart-root {
+  flex-grow: 1;
+}
+
+.result-panel {
+  position: relative;
+  height: 60px;
+  background: black;
+  color: white;
+  overflow-y: auto;
+  z-index: 1;
+  transition: all 0.5s ease;
+}
+
+.result-panel-toolbar {
+  position: fixed;
+  display: flex;
+  left: var(--main-width);
+  right: 0;
+  gap: var(--padding);
+  padding: 10px;
+  background: var(--dark);
+  box-shadow: 0 10px 20px -5px var(--dark3);
+  box-sizing: border-box;
+}
+
+.result-panel-content {
+  padding: 20px;
+  padding-top: 90px;
+}
+
+.result-panel-toolbar-toggler {
+  span:first-child {
+    display: inline;
+  }
+  span:last-child {
+    display: none;
+  }
+}
+
+/* When the result panel is active: */
+.result-panel.active {
+  height: 500px;
+}
+
+.active .result-panel-toolbar-toggler {
+  span:first-child {
+    display: none;
+  }
+  span:last-child {
+    display: inline;
+  }
+}
+
+#hidder {
+  display: none;
+  left: 800px;
+  right: 69px;
+  top: 0;
+  bottom: 24px;
+  background: #141515;
+  z-index: 1;
+  position: absolute;
+}
+
+.tools,
+.rules {
+  position: fixed;
+  top: var(--padding);
+  right: var(--padding);
+  background-color: var(--transparent-dark3);
+  padding: calc(var(--padding) / 2);
+  border-radius: 5px;
+  z-index: 2;
+}
+
+.rules {
+  top: auto;
+  bottom: 40px;
+}
+
+.spacer {
+  flex-grow: 1;
+}
+
+.accordion {
+  width: 100%;
+  border: 1px solid var(--dark3);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.accordion-item {
+  border-bottom: 1px solid var(--dark3);
+}
+
+.accordion-header {
+  background-color: var(--dark);
+  cursor: pointer;
+}
+
+.accordion-button {
+  background-color: var(--dark2);
+  border: none;
+  font-size: 16px;
+  text-align: left;
+  width: 100%;
+  padding: 10px;
+  cursor: pointer;
+  color: var(--grey1);
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+.accordion-button:focus {
+  outline: none;
+}
+
+.accordion-collapse {
+  height: 0;
+  overflow: hidden;
+  transition: height 0.3s ease;
+}
+
+.accordion-collapse.show {
+  height: auto;
+}
+
+.accordion-body {
+  padding: var(--padding);
+  background-color: var(--dark);
+  display: flex;
+  flex-direction: column;
+  gap: var(--padding);
+}
+
+#chatGPTFloatingIconButtonForModal {
+  background: var(--dark);
+  color: var(--grey1);
+  border: none;
+  position: absolute;
+  box-shadow: 0 0 60px 5px grey;
+  border: 10px solid black;
+  bottom: 20px;
+  right: 20px;
+  width: 50px;
+  height: 50px;
+  padding: 10px;
+  border-radius: 100%;
+  cursor: pointer;
+  background-image: url('../assets/images/icons/chatGPT.png');
+  background-size: 100%;
+  background-repeat: no-repeat;
+}
+
+.loading-element {
+  position: absolute;
+  top: 0;
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 10px;
+  padding: 20px 20px 20px 60px;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 1s ease;
+  color: red;
+}
+
+.loading-element.visible {
+  opacity: 1;
+}
+
+.loading-element .spinner {
+  position: absolute;
+  top: 0;
+  left: 10px;
+  border: 1px solid rgba(255, 0, 0, 1);
+  box-shadow: 0 0 10px red;
+  border-left-color: black;
+  border-radius: 50%;
+  width: 10px;
+  height: 10px;
+  animation: scaletrans 0.6s ease-out infinite alternate;
+  transform: scale(1);
+  margin: 20px;
+}
+
+@keyframes scaletrans {
+  0% {
+    transform: scale(1) rotate(0deg);
+  }
+
+  100% {
+    transform: scale(2) rotate(590deg);
+  }
+}
+
+@-webkit-keyframes scaletrans {
+  0% {
+    transform: scale(1) rotate(0deg);
+  }
+
+  100% {
+    transform: scale(2) rotate(590deg);
+  }
+}
