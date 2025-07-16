@@ -575,10 +575,12 @@ if (currentTime >= time1 && currentTime <= time2) {
 
     initSciChart();
 
-    const readingSpeed = 200; // Speed of reading the CSV file in milliseconds
+    const readingSpeed = 0; // Speed of reading the CSV file in milliseconds
     
     const csvData = [];
     let CSIDLookbackCandleSerie = [];
+    let CSIDSignalTriggered = false;
+    let CSIDCoolddownSignal = 5;
     let csvDataIndex = 0;
     let numbDays = 0;
     let ordersHistory = [];
@@ -667,7 +669,7 @@ if (currentTime >= time1 && currentTime <= time2) {
             setTimeout(() => {
               // Resume parsing after a short delay to allow UI updates
               parser.resume();
-            }, readingSpeed || 100);
+            }, readingSpeed);
           },
           complete: function (results, file) {
             profitabilityCalculation();
@@ -1824,6 +1826,7 @@ if (currentTime >= time1 && currentTime <= time2) {
             )
 
             // Calculate highest high and lowest low in the lookback period except the current candle:
+            // TODO: Switch to <CLOSE> (but we will need to check candle direction) rather than <HIGH> and <LOW> for CSID breakouts and not MSS.
             const highPrices = CSIDLookbackCandleSerie.slice(CSIDLookbackCandleSerie.length - 1 - lookbackPeriod).map(candle => candle['<HIGH>']); // candle.high
             highestHighLong.push(Math.max(...highPrices));
 
@@ -1847,14 +1850,16 @@ if (currentTime >= time1 && currentTime <= time2) {
             const bullishCSID = d['<CLOSE>'] > highestHighLong[highestHighLong.length - 2]; // && Math.abs(slopeHighestHighLong) < slopeThreshold
             const bearishCSID = d['<CLOSE>'] < lowestLowShort[lowestLowShort.length - 2]; // && Math.abs(slopeLowestLowShort) < slopeThreshold
             
-            console.log('CSID Breakout Conditions:', {
-              highestHighLong: highestHighLong[highestHighLong.length - 2],
-              lowestLowShort: lowestLowShort[lowestLowShort.length - 2],
-              date: `${d["<DATE>"]} ${d["<TIME>"]}`,
-              close: d['<CLOSE>'],
-              bullishCSID,
-              bearishCSID,
-            });
+            /*
+              console.log('CSID Breakout Conditions:', {
+                highestHighLong: highestHighLong[highestHighLong.length - 2],
+                lowestLowShort: lowestLowShort[lowestLowShort.length - 2],
+                date: `${d["<DATE>"]} ${d["<TIME>"]}`,
+                close: d['<CLOSE>'],
+                bullishCSID,
+                bearishCSID,
+              });
+            /*
 
             /*let lookbackCandleSerie = candlesFromBuffer[index - lookbackPeriod];
             if (candlesFromBuffer[index - lookbackPeriod] === undefined) {
@@ -1869,7 +1874,7 @@ if (currentTime >= time1 && currentTime <= time2) {
               //highAnnotation.x1 = convertMT5DateToUnix(`${d["<DATE>"]} ${d["<TIME>"]}`);
               //console.log(sciChartSurface.annotations.items, `${d["<DATE>"]} ${d["<TIME>"]}`);
 
-              // Add a new CSID Data for our line annotation High:
+              // Add a new CSID Data for our line annotations:
               CSIDDataSerieFromHighs.append(
                 convertMT5DateToUnix(d["<DATE>"] + " " + d["<TIME>"]),
                 highestHighLong[highestHighLong.length - 1]
@@ -1879,7 +1884,23 @@ if (currentTime >= time1 && currentTime <= time2) {
                 lowestLowShort[lowestLowShort.length - 1]
               );
 
+              // If previous candle was a breakout candle, we will not draw this new annotation,
+              // I m gonna use a cooldown system rather than checking and modifying CSIDLookbackCandleSerie, for code simplicity (for now):
+              if (CSIDSignalTriggered) {
+                CSIDCoolddownSignal--;
+                if (CSIDCoolddownSignal > 0) {
+                  // console.log('CSID Cooldown Signal:', CSIDCoolddownSignal);
+                  return; // Skip drawing the annotation if we are in cooldown period
+                } else {
+                  CSIDSignalTriggered = false; // Reset the cooldown signal
+                  CSIDCoolddownSignal = 5; // Reset the cooldown signal to 5 candles
+                  // console.log('CSID Cooldown Signal Reset');
+                }
+              }
+
               if (bullishCSID || bearishCSID) {
+                CSIDSignalTriggered = true;
+
                 if (bullishCSID) {
                   const buySignal = new CustomAnnotation({
                     x1: convertMT5DateToUnix(d["<DATE>"] + " " + d["<TIME>"]),
