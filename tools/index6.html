@@ -531,8 +531,12 @@ if (currentTime >= time1 && currentTime <= time2) {
       CLOSE: 4,
     };
 
+    // Probably deprecated in the future:
     const getCandleDirection = (candle) => {
       return candle[4] > candle[1] ? EnumDirection.BULL : EnumDirection.BEAR;
+    };
+    const getCandleDirection2 = (openPrice, closePrice) => {
+      return closePrice > openPrice ? EnumDirection.BULL : EnumDirection.BEAR;
     };
 
     const getCandleChartAxisLocationFromDate = (date) => {
@@ -1826,11 +1830,12 @@ if (currentTime >= time1 && currentTime <= time2) {
             )
 
             // Calculate highest high and lowest low in the lookback period except the current candle:
-            // TODO: Switch to <CLOSE> (but we will need to check candle direction) rather than <HIGH> and <LOW> for CSID breakouts and not MSS.
-            const highPrices = CSIDLookbackCandleSerie.slice(CSIDLookbackCandleSerie.length - 1 - lookbackPeriod).map(candle => candle['<HIGH>']); // candle.high
+            const candleDirection = (candle) => getCandleDirection2(candle['<OPEN>'], candle['<CLOSE>']);
+
+            const highPrices = CSIDLookbackCandleSerie.slice(CSIDLookbackCandleSerie.length - 1 - lookbackPeriod).map(candle => candleDirection(candle) == 'BULL' ? candle['<CLOSE>'] : candle['<OPEN>']);
             highestHighLong.push(Math.max(...highPrices));
 
-            const lowPrices = CSIDLookbackCandleSerie.slice(CSIDLookbackCandleSerie.length - 1 - lookbackPeriod).map(candle => candle['<LOW>']); // candle.low
+            const lowPrices = CSIDLookbackCandleSerie.slice(CSIDLookbackCandleSerie.length - 1 - lookbackPeriod).map(candle => candleDirection(candle) == 'BULL' ? candle['<OPEN>'] : candle['<CLOSE>']);
             lowestLowShort.push(Math.min(...lowPrices));
 
             // Calculate slope:
