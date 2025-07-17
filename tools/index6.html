@@ -826,6 +826,8 @@ if (currentTime >= time1 && currentTime <= time2) {
           let rollingHighestHighDataSeries = null;
           let rollingLowestLowDataSeries = null;
           const lookbackPeriod = 15;
+          const lookbackPeriodForCSIDHigh = lookbackPeriod;
+          const lookbackPeriodForCSIDLow = 9;
           const highestHighLong = [];
           const lowestLowShort = [];
           // End of Variables initialization =========================
