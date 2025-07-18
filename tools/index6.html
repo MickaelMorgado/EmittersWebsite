@@ -818,8 +818,6 @@ if (currentTime >= time1 && currentTime <= time2) {
           sciChartSurface.xAxes.add(xAxis);
           sciChartSurface.yAxes.add(yAxis);
 
-          console.log("scichart yaxis started");
-
           // Variables initialization =========================
           let annotations = [];
           // Variables initialization for CSID:
@@ -831,7 +829,6 @@ if (currentTime >= time1 && currentTime <= time2) {
           const highestHighLong = [];
           const lowestLowShort = [];
           // End of Variables initialization =========================
-
 
           // Create an XAxis and YAxis with growBy padding
           // sciChartSurface.xAxes.add(new NumericAxis(wasmContext, { axisTitle: "Time", growBy }));
@@ -1225,170 +1222,8 @@ if (currentTime >= time1 && currentTime <= time2) {
               }
               */
             // End of FVG Related ========================================
-            
-          // Declare CSID-related variables outside the onCandleDrawn function to persist state
-          let lastSignalBar = null;
-          const signalCooldown = 4;
-          const slopeThreshold = 0.5;
 
-
-          // Store references to rolling high/low annotations to clear/redraw
-          //let rollingHighAnnotations = [];
-          //let rollingLowAnnotations = [];
-
-          // CSID Line Logic: ========================================
-            function calculateRollingHighLow(ohlcData, lookbackPeriod) {
-              const highPrices = ohlcData.map(data => data.close); // data.high
-              const lowPrices = ohlcData.map(data => data.close); // data.low
-              const rollingHighestHigh = [];
-              const rollingLowestLow = [];
-              for (let i = lookbackPeriod - 1; i < highPrices.length; i++) {
-                const highest = Math.max(...highPrices.slice(i - lookbackPeriod + 1, i + 1));
-                const lowest = Math.min(...lowPrices.slice(i - lookbackPeriod + 1, i + 1));
-                rollingHighestHigh.push(highest);
-                rollingLowestLow.push(lowest);
-              }
-              return { rollingHighestHigh, rollingLowestLow };
-            }
-
-            // Inside onCandleDrawn function, replace the CSID logic with this:
-            const onCandleDrawn = (candle, index, candlesFromBuffer) => {
-              // Clear previous rolling high/low annotations before drawing new ones
-              //rollingHighAnnotations.forEach(annotation => sciChartSurface.annotations.remove(annotation));
-              //rollingLowAnnotations.forEach(annotation => sciChartSurface.annotations.remove(annotation));
-              //rollingHighAnnotations = [];
-              //rollingLowAnnotations = [];
-
-              console.log('CSID onCandleDrawn called for index:', index);
-
-              // Calculate highest high and lowest low
-              if (index >= lookbackPeriod) {
-                const highPrices = ohlcData.slice(index - lookbackPeriod, index).map(candle => candle.close); // candle.high
-                highestHighLong.push(Math.max(...highPrices));
-
-                const lowPrices = ohlcData.slice(index - lookbackPeriod, index).map(candle => candle.close); // candle.low
-                lowestLowShort.push(Math.min(...lowPrices));
-
-                // Calculate slope:
-                const slopeHighestHighLong = (highestHighLong[highestHighLong.length - 1] - highestHighLong[0]) / lookbackPeriod;
-                const slopeLowestLowShort = (lowestLowShort[lowestLowShort.length - 1] - lowestLowShort[0]) / lookbackPeriod;
-
-                // Check for CSID breakout conditions (breakout of the highest high or lowest low && slope is less than threshold (consistency))
-                const bullishCSID = candle.close > highestHighLong[highestHighLong.length - 1]; // && Math.abs(slopeHighestHighLong) < slopeThreshold
-                const bearishCSID = candle.close < lowestLowShort[lowestLowShort.length - 1]; // && Math.abs(slopeLowestLowShort) < slopeThreshold
-
-                // Cooldown logic
-                const signalTriggered = bullishCSID || bearishCSID;
-                const newSignalAvailable = !lastSignalBar || (index - lastSignalBar >= signalCooldown);
-
-                if (signalTriggered && newSignalAvailable) {
-                  lastSignalBar = index;
-                }
-
-                const showBullish = (bullishCSID && newSignalAvailable);
-                const showBearish = (bearishCSID && newSignalAvailable);
-
-                if (hourMinutes() >= '10:10' && hourMinutes() <= '10:45') {
-                  inRange = true;
-                } else {
-                  inRange = false;
-                  canTakeATrade = true;
-                }
-
-                // Draw rolling highest high line annotation
-                console.log('Adding high line annotation:', {
-                  x1: convertMT5DateToUnix(candlesFromBuffer[index - lookbackPeriod][0]),
-                  x2: convertMT5DateToUnix(candle[0]),
-                  y: highestHighLong[highestHighLong.length - 1],
-                });
-                const highAnnotation = new LineAnnotation({
-                  stroke: `#${bullishColor}`,
-                  strokeThickness: 1,
-                  strokeDashArray: [4, 4],
-                  x1: convertMT5DateToUnix(candlesFromBuffer[index - lookbackPeriod][0]),
-                  x2: convertMT5DateToUnix(candle[0]),
-                  y1: highestHighLong[highestHighLong.length - 1],
-                  y2: highestHighLong[highestHighLong.length - 1],
-                  annotationLayer: EAnnotationLayer.Foreground,
-                  isEditable: false,
-                  xCoordinateMode: ECoordinateMode.DataValue,
-                  yCoordinateMode: ECoordinateMode.DataValue,
-                });
-                //sciChartSurface.annotations.add(highAnnotation);
-                //rollingHighAnnotations.push(highAnnotation);
-
-                // Draw rolling lowest low line annotation
-                console.log('Adding low line annotation:', {
-                  x1: convertMT5DateToUnix(candlesFromBuffer[index - lookbackPeriod][0]),
-                  x2: convertMT5DateToUnix(candle[0]),
-                  y: lowestLowShort[lowestLowShort.length - 1],
-                });
-                const lowAnnotation = new LineAnnotation({
-                  stroke: `#${bearishColor}`,
-                  strokeThickness: 1,
-                  strokeDashArray: [4, 4],
-                  x1: convertMT5DateToUnix(candlesFromBuffer[index - lookbackPeriod][0]),
-                  x2: convertMT5DateToUnix(candle[0]),
-                  y1: lowestLowShort[lowestLowShort.length - 1],
-                  y2: lowestLowShort[lowestLowShort.length - 1],
-                  annotationLayer: EAnnotationLayer.Foreground,
-                  isEditable: false,
-                  xCoordinateMode: ECoordinateMode.DataValue,
-                  yCoordinateMode: ECoordinateMode.DataValue,
-                });
-                //sciChartSurface.annotations.add(lowAnnotation);
-                //rollingLowAnnotations.push(lowAnnotation);
-
-                if (showBullish) {
-                  AddActionOnChart(candle, EnumActionType.DRAW_A_CIRCLE);
-                  if (inRange && canTakeATrade) {
-                    AddActionOnChart(candle, EnumActionType.TAKE_A_TRADE, EnumDirection.BULL);
-                    canTakeATrade = false;
-                  }
-                } else if (showBearish) {
-                  AddActionOnChart(candle, EnumActionType.DRAW_A_CIRCLE);
-                  if (inRange && canTakeATrade) {
-                    AddActionOnChart(candle, EnumActionType.TAKE_A_TRADE, EnumDirection.BEAR);
-                    canTakeATrade = false;
-                  }
-                }
-              }
-
-              // Draw CSID lines on chart for all candles up to current index
-              for (let i = lookbackPeriod; i <= index; i++) {
-                const high = highestHighLong[i - lookbackPeriod];
-                const low = lowestLowShort[i - lookbackPeriod];
-                const startX = convertMT5DateToUnix(candlesFromBuffer[i - lookbackPeriod][0]);
-                const endX = convertMT5DateToUnix(candlesFromBuffer[i][0]);
-
-                const highLine = new LineAnnotation({
-                  stroke: `#${bullishColor}`,
-                  strokeThickness: 1,
-                  strokeDashArray: [2, 2],
-                  x1: startX,
-                  x2: endX,
-                  y1: high,
-                  y2: high,
-                });
-                //sciChartSurface.annotations.add(highLine);
-                //rollingHighAnnotations.push(highLine);
-
-                const lowLine = new LineAnnotation({
-                  stroke: `#${bearishColor}`,
-                  strokeThickness: 1,
-                  strokeDashArray: [2, 2],
-                  x1: startX,
-                  x2: endX,
-                  y1: low,
-                  y2: low,
-                });
-                //sciChartSurface.annotations.add(lowLine);
-                //rollingLowAnnotations.push(lowLine);
-              }
-            };
-          // End of CSID Line Logic ========================================
-
-            eval(algoEditorTextareaMain0.value);
+            // eval(algoEditorTextareaMain0.value);
 
             /*
               const SignalCondition1 = () => {
@@ -1772,166 +1607,143 @@ if (currentTime >= time1 && currentTime <= time2) {
           window.addNewCandleToChart = addNewCandleToChart;
 
           // Create a vertical line annotation for the first time
-          const verticalAnnotation = new VerticalLineAnnotation({
+          /*const verticalAnnotation = new VerticalLineAnnotation({
             x1: convertMT5DateToUnix("2025-07-10 05:00"),
             stroke: `#0000FF`,
             opacity: 0.4,
             strokeThickness: 3,
-          })
-
-          /*
-          const highAnnotation = new FastLineRenderableSeries({
-            stroke: `#FF0000`,// `#${bullishColor}`,
-            strokeThickness: 3, //1,
-            //strokeDashArray: [4, 4],
-            //x1: convertMT5DateToUnix("2025-07-10 00:00"),
-            //x2: convertMT5DateToUnix("2025-07-10 12:00"),
-            dataSeries: new XyDataSeries(wasmContext, {
-              xValues,
-              yValues
-            }),
-
-            //y1: 1,// highestHighLong[highestHighLong.length - 1],
-            //y2: 1.5,// highestHighLong[highestHighLong.length - 1],
-            //annotationLayer: EAnnotationLayer.Foreground,
-            //isEditable: false,
-            //xCoordinateMode: ECoordinateMode.DataValue,
-            //yCoordinateMode: ECoordinateMode.DataValue,
-          }); 
-          */
-               
-          sciChartSurface.annotations.insert(0, verticalAnnotation); // Insert at index 0 to ensure it appears first
-          //sciChartSurface.annotations.insert(1, highAnnotation); // Insert at index 1 to ensure it appears first
-          const CSIDDataSerieFromHighs = new XyDataSeries(wasmContext);
-          const CSIDDataSerieFromLows = new XyDataSeries(wasmContext);
+          })*/
+          //sciChartSurface.annotations.insert(0, verticalAnnotation); // Insert at index 0 to ensure it appears first
           
-          const CSIDHighline = new FastLineRenderableSeries(wasmContext, {
-            stroke: "#FFF",
-            strokeThickness: 2,
-            dataSeries: CSIDDataSerieFromHighs,
-            opacity: 0.6,
-          });
-          const CSIDLowline = new FastLineRenderableSeries(wasmContext, {
-            stroke: "#FFF",
-            strokeThickness: 2,
-            dataSeries: CSIDDataSerieFromLows,
-            opacity: 0.6,
-          });
-
-          sciChartSurface.renderableSeries.add(CSIDHighline);
-          sciChartSurface.renderableSeries.add(CSIDLowline);
-
-          const updateCSIDLineAnnotation = (d, dataIndex) => {
-            const index = dataIndex || 0;
+          // CSID Indicator: ========================================
+            const CSIDDataSerieFromHighs = new XyDataSeries(wasmContext);
+            const CSIDDataSerieFromLows = new XyDataSeries(wasmContext);
             
-            if (index < lookbackPeriod) return; // Ensure we have enough data for CSID calculation
+            const CSIDHighline = new FastLineRenderableSeries(wasmContext, {
+              stroke: "#FFF",
+              strokeThickness: 2,
+              dataSeries: CSIDDataSerieFromHighs,
+              opacity: 0.6,
+            });
+            const CSIDLowline = new FastLineRenderableSeries(wasmContext, {
+              stroke: "#FFF",
+              strokeThickness: 2,
+              dataSeries: CSIDDataSerieFromLows,
+              opacity: 0.6,
+            });
 
-            // store lookback candles:
-            CSIDLookbackCandleSerie.push(
-              d
-            )
+            sciChartSurface.renderableSeries.add(CSIDHighline);
+            sciChartSurface.renderableSeries.add(CSIDLowline);
 
-            // Calculate highest high and lowest low in the lookback period except the current candle:
-            const candleDirection = (candle) => getCandleDirection2(candle['<OPEN>'], candle['<CLOSE>']);
+            const updateCSIDLineAnnotation = (d, dataIndex) => {
+              const index = dataIndex || 0;
+              
+              if (index < lookbackPeriod) return; // Ensure we have enough data for CSID calculation
 
-            const highPrices = CSIDLookbackCandleSerie.slice(CSIDLookbackCandleSerie.length - 1 - lookbackPeriod).map(candle => candleDirection(candle) == 'BULL' ? candle['<CLOSE>'] : candle['<OPEN>']);
-            highestHighLong.push(Math.max(...highPrices));
+              // store lookback candles:
+              CSIDLookbackCandleSerie.push(
+                d
+              )
 
-            const lowPrices = CSIDLookbackCandleSerie.slice(CSIDLookbackCandleSerie.length - 1 - lookbackPeriod).map(candle => candleDirection(candle) == 'BULL' ? candle['<OPEN>'] : candle['<CLOSE>']);
-            lowestLowShort.push(Math.min(...lowPrices));
+              // Calculate highest high and lowest low in the lookback period except the current candle:
+              const candleDirection = (candle) => getCandleDirection2(candle['<OPEN>'], candle['<CLOSE>']);
 
-            // Calculate slope:
-            const slopeHighestHighLong = (highestHighLong[highestHighLong.length - 1] - highestHighLong[0]) / lookbackPeriod;
-            const slopeLowestLowShort = (lowestLowShort[lowestLowShort.length - 1] - lowestLowShort[0]) / lookbackPeriod;
+              const highPrices = CSIDLookbackCandleSerie.slice(CSIDLookbackCandleSerie.length - 1 - lookbackPeriod).map(candle => candleDirection(candle) == 'BULL' ? candle['<CLOSE>'] : candle['<OPEN>']);
+              highestHighLong.push(Math.max(...highPrices));
 
-            // Flat line detection, mostly for UI styling:
-            flatThreshold = 0.00001 // Adjust this value depending on how flat the line is
-            isFlatHigh = Math.abs(highestHighLong - highestHighLong[1]) < flatThreshold
-            isFlatLow = Math.abs(lowestLowShort - lowestLowShort[1]) < flatThreshold
+              const lowPrices = CSIDLookbackCandleSerie.slice(CSIDLookbackCandleSerie.length - 1 - lookbackPeriod).map(candle => candleDirection(candle) == 'BULL' ? candle['<OPEN>'] : candle['<CLOSE>']);
+              lowestLowShort.push(Math.min(...lowPrices));
 
-            if (isFlatHigh || isFlatLow) {
-              debugger
-            }
+              // Calculate slope:
+              const slopeHighestHighLong = (highestHighLong[highestHighLong.length - 1] - highestHighLong[0]) / lookbackPeriod;
+              const slopeLowestLowShort = (lowestLowShort[lowestLowShort.length - 1] - lowestLowShort[0]) / lookbackPeriod;
 
-            // Check for CSID breakout conditions (breakout of the highest high or lowest low && slope is less than threshold (consistency))
-            const bullishCSID = d['<CLOSE>'] > highestHighLong[highestHighLong.length - 2]; // && Math.abs(slopeHighestHighLong) < slopeThreshold
-            const bearishCSID = d['<CLOSE>'] < lowestLowShort[lowestLowShort.length - 2]; // && Math.abs(slopeLowestLowShort) < slopeThreshold
-            
-            /*
-              console.log('CSID Breakout Conditions:', {
-                highestHighLong: highestHighLong[highestHighLong.length - 2],
-                lowestLowShort: lowestLowShort[lowestLowShort.length - 2],
-                date: `${d["<DATE>"]} ${d["<TIME>"]}`,
-                close: d['<CLOSE>'],
-                bullishCSID,
-                bearishCSID,
-              });
-            /*
+              // Flat line detection, mostly for UI styling:
+              /*
+                flatThreshold = 0.00001 // Adjust this value depending on how flat the line is
+                isFlatHigh = Math.abs(highestHighLong - highestHighLong[1]) < flatThreshold
+                isFlatLow = Math.abs(lowestLowShort - lowestLowShort[1]) < flatThreshold
 
-            /*let lookbackCandleSerie = candlesFromBuffer[index - lookbackPeriod];
-            if (candlesFromBuffer[index - lookbackPeriod] === undefined) {
-              console.warn('CSID Line Annotation: candlesFromBuffer[index - lookbackPeriod][0] is undefined');
-              debugger
-              return;
-            }*/
-
-            // CSID Graph Related Annotations: ========================================
-              // We are updating the annotation on every new candle:
-              //verticalAnnotation.x1 = convertMT5DateToUnix(`2025-07-10 0${Math.floor(Math.random() * 10)}:00`);
-              //highAnnotation.x1 = convertMT5DateToUnix(`${d["<DATE>"]} ${d["<TIME>"]}`);
-              //console.log(sciChartSurface.annotations.items, `${d["<DATE>"]} ${d["<TIME>"]}`);
-
-              // Add a new CSID Data for our line annotations:
-              CSIDDataSerieFromHighs.append(
-                convertMT5DateToUnix(d["<DATE>"] + " " + d["<TIME>"]),
-                highestHighLong[highestHighLong.length - 1]
-              );
-              CSIDDataSerieFromLows.append(
-                convertMT5DateToUnix(d["<DATE>"] + " " + d["<TIME>"]),
-                lowestLowShort[lowestLowShort.length - 1]
-              );
-
-              // If previous candle was a breakout candle, we will not draw this new annotation,
-              // I m gonna use a cooldown system rather than checking and modifying CSIDLookbackCandleSerie, for code simplicity (for now):
-              if (CSIDSignalTriggered) {
-                CSIDCoolddownSignal--;
-                if (CSIDCoolddownSignal > 0) {
-                  // console.log('CSID Cooldown Signal:', CSIDCoolddownSignal);
-                  return; // Skip drawing the annotation if we are in cooldown period
-                } else {
-                  CSIDSignalTriggered = false; // Reset the cooldown signal
-                  CSIDCoolddownSignal = 5; // Reset the cooldown signal to 5 candles
-                  // console.log('CSID Cooldown Signal Reset');
+                if (isFlatHigh || isFlatLow) {
+                  debugger
                 }
-              }
+              */
 
-              if (bullishCSID || bearishCSID) {
-                CSIDSignalTriggered = true;
+              // Check for CSID breakout conditions (breakout of the highest high or lowest low && slope is less than threshold (consistency))
+              const bullishCSID = d['<CLOSE>'] > highestHighLong[highestHighLong.length - 2]; // && Math.abs(slopeHighestHighLong) < slopeThreshold
+              const bearishCSID = d['<CLOSE>'] < lowestLowShort[lowestLowShort.length - 2]; // && Math.abs(slopeLowestLowShort) < slopeThreshold
+              
+              /*
+                console.log('CSID Breakout Conditions:', {
+                  highestHighLong: highestHighLong[highestHighLong.length - 2],
+                  lowestLowShort: lowestLowShort[lowestLowShort.length - 2],
+                  date: `${d["<DATE>"]} ${d["<TIME>"]}`,
+                  close: d['<CLOSE>'],
+                  bullishCSID,
+                  bearishCSID,
+                });
+              /*
 
-                if (bullishCSID) {
-                  const buySignal = new CustomAnnotation({
-                    x1: convertMT5DateToUnix(d["<DATE>"] + " " + d["<TIME>"]),
-                    y1: d['<OPEN>'],
-                    verticalAnchorPoint: EVerticalAnchorPoint.Center,
-                    horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
-                    svgString: signalAnnotation.svgString.buy,
-                  })
-                  sciChartSurface.annotations.add(buySignal);
+              /*let lookbackCandleSerie = candlesFromBuffer[index - lookbackPeriod];
+              if (candlesFromBuffer[index - lookbackPeriod] === undefined) {
+                console.warn('CSID Line Annotation: candlesFromBuffer[index - lookbackPeriod][0] is undefined');
+                debugger
+                return;
+              }*/
+
+              // CSID Graph Related Annotations: ========================================
+                // Add a new CSID Data for our line annotations:
+                CSIDDataSerieFromHighs.append(
+                  convertMT5DateToUnix(d["<DATE>"] + " " + d["<TIME>"]),
+                  highestHighLong[highestHighLong.length - 1]
+                );
+                CSIDDataSerieFromLows.append(
+                  convertMT5DateToUnix(d["<DATE>"] + " " + d["<TIME>"]),
+                  lowestLowShort[lowestLowShort.length - 1]
+                );
+
+                // If previous candle was a breakout candle, we will not draw this new annotation,
+                // I m gonna use a cooldown system rather than checking and modifying CSIDLookbackCandleSerie, for code simplicity (for now):
+                if (CSIDSignalTriggered) {
+                  CSIDCoolddownSignal--;
+                  if (CSIDCoolddownSignal > 0) {
+                    // console.log('CSID Cooldown Signal:', CSIDCoolddownSignal);
+                    return; // Skip drawing the annotation if we are in cooldown period
+                  } else {
+                    CSIDSignalTriggered = false; // Reset the cooldown signal
+                    CSIDCoolddownSignal = 5; // Reset the cooldown signal to 5 candles
+                    // console.log('CSID Cooldown Signal Reset');
+                  }
                 }
-                if (bearishCSID) {
-                  const sellSignal = new CustomAnnotation({
-                    x1: convertMT5DateToUnix(d["<DATE>"] + " " + d["<TIME>"]),
-                    y1: d['<OPEN>'],
-                    verticalAnchorPoint: EVerticalAnchorPoint.Center,
-                    horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
-                    svgString: signalAnnotation.svgString.sell,
-                  })
-                  sciChartSurface.annotations.add(sellSignal);
+
+                if (bullishCSID || bearishCSID) {
+                  CSIDSignalTriggered = true;
+
+                  if (bullishCSID) {
+                    const buySignal = new CustomAnnotation({
+                      x1: convertMT5DateToUnix(d["<DATE>"] + " " + d["<TIME>"]),
+                      y1: d['<OPEN>'],
+                      verticalAnchorPoint: EVerticalAnchorPoint.Center,
+                      horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
+                      svgString: signalAnnotation.svgString.buy,
+                    })
+                    sciChartSurface.annotations.add(buySignal);
+                  }
+                  if (bearishCSID) {
+                    const sellSignal = new CustomAnnotation({
+                      x1: convertMT5DateToUnix(d["<DATE>"] + " " + d["<TIME>"]),
+                      y1: d['<OPEN>'],
+                      verticalAnchorPoint: EVerticalAnchorPoint.Center,
+                      horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
+                      svgString: signalAnnotation.svgString.sell,
+                    })
+                    sciChartSurface.annotations.add(sellSignal);
+                  }
                 }
-              }
-            // End of CSID Graph Related Annotations ========================================
-          };
-          window.updateCSIDLineAnnotation = updateCSIDLineAnnotation;
+              // End of CSID Graph Related Annotations ========================================
+            };
+            window.updateCSIDLineAnnotation = updateCSIDLineAnnotation;
+          // End of CSID Indicator: ========================================
           
           const clearAndDeleteChart = () => {
             // Clear the select element:
