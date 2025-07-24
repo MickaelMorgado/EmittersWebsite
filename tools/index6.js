@@ -173,7 +173,7 @@ const convertMT5DateToUnix = (candleTime) => {
 
 initSciChart();
 
-const readingSpeed = 10; // Speed of reading the CSV file in milliseconds
+const readingSpeed = 0.0001; // Speed of reading the CSV file in milliseconds
 
 const csvData = [];
 let CSIDLookbackCandleSerie = [];
@@ -340,7 +340,7 @@ function initSciChart(data) {
 
   // Initialize SciChartSurface. Don't forget to await!
   SciChartSurface.create('scichart-root', {
-    theme: new SciChartJsNavyTheme(),
+    //theme: new SciChartJsNavyTheme(),
   })
     .then(({ sciChartSurface, wasmContext }) => {
       // Extract URL parameters
@@ -358,8 +358,8 @@ function initSciChart(data) {
         axisTitleColor: '#111',
         annotationsGripsBackroundBrush: 'white',
         annotationsGripsBorderBrush: 'white',
-        axis3DBandsFill: '#1F3D6833',
-        axisBandsFill: '#1F3D6833',
+        axis3DBandsFill: '#000', //'#1F3D6833', // Bands (Not sure if used)
+        axisBandsFill: '#030300', // Bands
         axisPlaneBackgroundFill: 'Transparent',
         columnFillBrush: 'white',
         columnLineColor: 'Transparent',
@@ -375,8 +375,8 @@ function initSciChart(data) {
         lineSeriesColor: 'white',
         loadingAnimationBackground: '#111',
         loadingAnimationForeground: '#111',
-        majorGridLineBrush: '#111',
-        minorGridLineBrush: '#111',
+        majorGridLineBrush: '#111', // Major grid lines color
+        minorGridLineBrush: '#000', // Minor grid lines color
         mountainAreaBrush: 'white',
         mountainLineColor: 'white',
         overviewFillBrush: 'white',
