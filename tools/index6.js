@@ -1,7 +1,8 @@
 // NOTES:
 /*
   Most of the functions if they are using charting annotation, they need to be inside initchart function.
-  The Graph is now populating or get drawned with the CSV file data at a pace speed (one by one).
+  - The Graph is now populating or get drawned with the CSV file data at a pace speed (one by one).
+  - When dealing with times for candles never forget this pattern: `${d[EnumMT5OHLC.DATE]} $d[EnumMT5OHLC.TIME]}`
 */
 
 // Result Panel Related Actions / Triggers:
@@ -118,6 +119,7 @@ const EnumActionType = {
   TAKE_A_TRADE: 'TAKE_A_TRADE',
 };
 const EnumMT5OHLC = {
+  DATE: '<DATE>',
   TIME: '<TIME>',
   OPEN: '<OPEN>',
   HIGH: '<HIGH>',
@@ -436,10 +438,10 @@ function initSciChart(data) {
         svgString: {
           buy: '<svg id="Capa_1" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10"><g transform="translate(-54.616083,-75.548914)"><path style="fill:#0000FF;" d="M 55,85 L 60,75 L 65,85 Z"/></g></svg>',
           bullish:
-            '<svg id="Capa_1" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10"><g transform="translate(-54.616083,-75.548914)"><path style="fill:#00FF00;" d="M 55,85 L 60,75 L 65,85 Z"/></g></svg>',
+            '<svg id="Capa_1" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10"><g transform="translate(-54.616083,-75.548914)"><path style="fill:#00FF00; opacity:0.3;" d="M 55,85 L 60,75 L 65,85 Z"/></g></svg>',
           sell: '<svg id="Capa_1" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10"><g transform="translate(-54.616083,-75.548914)"><path style="fill:#FF0000;" d="M 55,75 L 60,85 L 65,75 Z"/></g></svg>',
           bearish:
-            '<svg id="Capa_1" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10"><g transform="translate(-54.616083,-75.548914)"><path style="fill:#FF0000;" d="M 55,75 L 60,85 L 65,75 Z"/></g></svg>',
+            '<svg id="Capa_1" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10"><g transform="translate(-54.616083,-75.548914)"><path style="fill:#FF0000; opacity:0.3;" d="M 55,75 L 60,85 L 65,75 Z"/></g></svg>',
           circle: `<svg id="Capa_1" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" style="fill:#${bullishColor};fill-opacity:0.34117647;stroke:#${bullishColor};stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" /></svg>`,
         },
       };
@@ -470,6 +472,7 @@ function initSciChart(data) {
 
       // TP/SL Validation: ========================================
       // Function to check all TP/SL hit:
+      // TODO: Pretty sure that we can reduce and optimze this function.
       const checkForTPSLHit = (d, dataIndex) => {
         return ordersHistory.forEach((order) => {
           switch (order.direction) {
@@ -477,17 +480,19 @@ function initSciChart(data) {
               if (d[EnumMT5OHLC.HIGH] >= order.tp && !order.closed) {
                 order.closed = true;
                 order.closedPrice = order.tp;
-                order.closedTime = d[EnumMT5OHLC.TIME];
-                (order.orderStatus = EnumOrderStatus.CLOSED_BY_TP),
-                  sciChartSurface.annotations.add(
-                    new CustomAnnotation({
-                      x1: convertMT5DateToUnix(order.closedTime),
-                      y1: order.tp,
-                      verticalAnchorPoint: EVerticalAnchorPoint.Center,
-                      horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
-                      svgString: signalAnnotation.svgString.sell,
-                    })
-                  );
+                order.closedTime = `${d[EnumMT5OHLC.DATE]} ${
+                  d[EnumMT5OHLC.TIME]
+                }`;
+                order.orderStatus = EnumOrderStatus.CLOSED_BY_TP;
+                sciChartSurface.annotations.add(
+                  new CustomAnnotation({
+                    x1: convertMT5DateToUnix(order.closedTime),
+                    y1: order.tp,
+                    verticalAnchorPoint: EVerticalAnchorPoint.Center,
+                    horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
+                    svgString: signalAnnotation.svgString.sell,
+                  })
+                );
                 sciChartSurface.annotations.add(
                   new LineAnnotation({
                     stroke: `#${greyColor}`,
@@ -503,17 +508,19 @@ function initSciChart(data) {
               if (d[EnumMT5OHLC.LOW] <= order.sl && !order.closed) {
                 order.closed = true;
                 order.closedPrice = order.sl;
-                order.closedTime = d[EnumMT5OHLC.TIME];
-                (order.orderStatus = EnumOrderStatus.CLOSED_BY_SL),
-                  sciChartSurface.annotations.add(
-                    new CustomAnnotation({
-                      x1: convertMT5DateToUnix(order.closedTime),
-                      y1: order.sl,
-                      verticalAnchorPoint: EVerticalAnchorPoint.Center,
-                      horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
-                      svgString: signalAnnotation.svgString.sell,
-                    })
-                  );
+                order.closedTime = `${d[EnumMT5OHLC.DATE]} ${
+                  d[EnumMT5OHLC.TIME]
+                }`;
+                order.orderStatus = EnumOrderStatus.CLOSED_BY_SL;
+                sciChartSurface.annotations.add(
+                  new CustomAnnotation({
+                    x1: convertMT5DateToUnix(order.closedTime),
+                    y1: order.sl,
+                    verticalAnchorPoint: EVerticalAnchorPoint.Center,
+                    horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
+                    svgString: signalAnnotation.svgString.sell,
+                  })
+                );
                 sciChartSurface.annotations.add(
                   new LineAnnotation({
                     stroke: `#${greyColor}`,
@@ -531,17 +538,19 @@ function initSciChart(data) {
               if (d[EnumMT5OHLC.LOW] <= order.tp && !order.closed) {
                 order.closed = true;
                 order.closedPrice = order.tp;
-                order.closedTime = d[EnumMT5OHLC.TIME];
-                (order.orderStatus = EnumOrderStatus.CLOSED_BY_TP),
-                  sciChartSurface.annotations.add(
-                    new CustomAnnotation({
-                      x1: convertMT5DateToUnix(order.closedTime),
-                      y1: order.tp,
-                      verticalAnchorPoint: EVerticalAnchorPoint.Center,
-                      horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
-                      svgString: signalAnnotation.svgString.sell,
-                    })
-                  );
+                order.closedTime = `${d[EnumMT5OHLC.DATE]} ${
+                  d[EnumMT5OHLC.TIME]
+                }`;
+                order.orderStatus = EnumOrderStatus.CLOSED_BY_TP;
+                sciChartSurface.annotations.add(
+                  new CustomAnnotation({
+                    x1: convertMT5DateToUnix(order.closedTime),
+                    y1: order.tp,
+                    verticalAnchorPoint: EVerticalAnchorPoint.Center,
+                    horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
+                    svgString: signalAnnotation.svgString.sell,
+                  })
+                );
                 sciChartSurface.annotations.add(
                   new LineAnnotation({
                     stroke: `#${greyColor}`,
@@ -557,17 +566,19 @@ function initSciChart(data) {
               if (d[EnumMT5OHLC.HIGH] >= order.sl && !order.closed) {
                 order.closed = true;
                 order.closedPrice = order.sl;
-                order.closedTime = d[EnumMT5OHLC.TIME];
-                (order.orderStatus = EnumOrderStatus.CLOSED_BY_SL),
-                  sciChartSurface.annotations.add(
-                    new CustomAnnotation({
-                      x1: convertMT5DateToUnix(order.closedTime),
-                      y1: order.sl,
-                      verticalAnchorPoint: EVerticalAnchorPoint.Center,
-                      horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
-                      svgString: signalAnnotation.svgString.sell,
-                    })
-                  );
+                order.closedTime = `${d[EnumMT5OHLC.DATE]} ${
+                  d[EnumMT5OHLC.TIME]
+                }`;
+                order.orderStatus = EnumOrderStatus.CLOSED_BY_SL;
+                sciChartSurface.annotations.add(
+                  new CustomAnnotation({
+                    x1: convertMT5DateToUnix(order.closedTime),
+                    y1: order.sl,
+                    verticalAnchorPoint: EVerticalAnchorPoint.Center,
+                    horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
+                    svgString: signalAnnotation.svgString.sell,
+                  })
+                );
                 sciChartSurface.annotations.add(
                   new LineAnnotation({
                     stroke: `#${greyColor}`,
@@ -638,7 +649,7 @@ function initSciChart(data) {
             // Add order to history:
             ordersHistory.push({
               id: ordersHistory.length + 1,
-              time: candle[EnumMT5OHLC.TIME],
+              time: `${candle[EnumMT5OHLC.DATE]} ${candle[EnumMT5OHLC.TIME]}`,
               price: candle[EnumMT5OHLC.CLOSE],
               orderStatus: EnumOrderStatus.PENDING,
               ...orderOptionsBasedDirection(tradeDirection),
@@ -790,20 +801,22 @@ function initSciChart(data) {
 
           // For swing high, current candle high is less than or equal to the previous candle high and the previous candle high is greater than the previous candle open:
           isSwingHigh =
-            selectedCandleForAnalisis[EnumOHLC.HIGH] <=
-              swhlPrevCandle[EnumOHLC.HIGH] &&
-            swhlPrevCandle2[EnumOHLC.OPEN] < swhlPrevCandle[EnumOHLC.OPEN] &&
-            selectedCandleForAnalisis[EnumOHLC.HIGH] >=
-              swhlNextCandle[EnumOHLC.HIGH] &&
-            getCandleDirection(selectedCandleForAnalisis) == 'BEAR';
+            selectedCandleForAnalisis[EnumMT5OHLC.HIGH] <=
+              swhlPrevCandle[EnumMT5OHLC.HIGH] &&
+            swhlPrevCandle2[EnumMT5OHLC.OPEN] <
+              swhlPrevCandle[EnumMT5OHLC.OPEN] &&
+            selectedCandleForAnalisis[EnumMT5OHLC.HIGH] >=
+              swhlNextCandle[EnumMT5OHLC.HIGH] &&
+            getCandleDirection(selectedCandleForAnalisis) == EnumDirection.BEAR;
           // For swing low, current candle low is greater than or equal to the previous candle low and the previous candle low is less than the previous candle close:
           isSwingLow =
-            selectedCandleForAnalisis[EnumOHLC.LOW] >=
-              swhlPrevCandle[EnumOHLC.LOW] &&
-            swhlPrevCandle2[EnumOHLC.CLOSE] > swhlPrevCandle[EnumOHLC.CLOSE] &&
-            selectedCandleForAnalisis[EnumOHLC.LOW] <=
-              swhlNextCandle[EnumOHLC.LOW] &&
-            getCandleDirection(selectedCandleForAnalisis) == 'BULL';
+            selectedCandleForAnalisis[EnumMT5OHLC.LOW] >=
+              swhlPrevCandle[EnumMT5OHLC.LOW] &&
+            swhlPrevCandle2[EnumMT5OHLC.CLOSE] >
+              swhlPrevCandle[EnumMT5OHLC.CLOSE] &&
+            selectedCandleForAnalisis[EnumMT5OHLC.LOW] <=
+              swhlNextCandle[EnumMT5OHLC.LOW] &&
+            getCandleDirection(selectedCandleForAnalisis) == EnumDirection.BULL;
 
           return isSwingLow || isSwingHigh;
         };
@@ -812,19 +825,19 @@ function initSciChart(data) {
           swingHighLowHistory.push({
             time: swhlPrevCandle[0],
             maxReachedPrice: isSwingHigh
-              ? selectedCandleForAnalisis[EnumOHLC.HIGH]
-              : selectedCandleForAnalisis[EnumOHLC.LOW], // Represents the highest/lowest price that was reached.
+              ? selectedCandleForAnalisis[EnumMT5OHLC.HIGH]
+              : selectedCandleForAnalisis[EnumMT5OHLC.LOW], // Represents the highest/lowest price that was reached.
             type: isSwingHigh ? 'HIGH' : 'LOW', // Represents the type of the swing (HIGH or LOW) its the position and NOT the candle direction.
           });
 
           sciChartSurface.annotations.add(
             new CustomAnnotation({
               x1: convertMT5DateToUnix(
-                selectedCandleForAnalisis[EnumOHLC.TIME]
+                selectedCandleForAnalisis[EnumMT5OHLC.TIME]
               ),
               y1: isSwingHigh
-                ? selectedCandleForAnalisis[EnumOHLC.HIGH]
-                : selectedCandleForAnalisis[EnumOHLC.LOW],
+                ? selectedCandleForAnalisis[EnumMT5OHLC.HIGH]
+                : selectedCandleForAnalisis[EnumMT5OHLC.LOW],
               verticalAnchorPoint: isSwingHigh
                 ? EVerticalAnchorPoint.Bottom
                 : EVerticalAnchorPoint.Top,
@@ -1093,23 +1106,26 @@ function initSciChart(data) {
 
         // Calculate highest high and lowest low in the lookback period except the current candle:
         const candleDirection = (candle) =>
-          getCandleDirection2(candle['<OPEN>'], candle['<CLOSE>']);
+          getCandleDirection2(
+            candle[EnumMT5OHLC.OPEN],
+            candle[EnumMT5OHLC.CLOSE]
+          );
 
         const highPrices = CSIDLookbackCandleSerie.slice(
           CSIDLookbackCandleSerie.length - 1 - lookbackPeriod
         ).map((candle) =>
-          candleDirection(candle) == 'BULL'
-            ? candle['<CLOSE>']
-            : candle['<OPEN>']
+          candleDirection(candle) == EnumDirection.BULL
+            ? candle[EnumMT5OHLC.CLOSE]
+            : candle[EnumMT5OHLC.OPEN]
         );
         highestHighLong.push(Math.max(...highPrices));
 
         const lowPrices = CSIDLookbackCandleSerie.slice(
           CSIDLookbackCandleSerie.length - 1 - lookbackPeriod
         ).map((candle) =>
-          candleDirection(candle) == 'BULL'
-            ? candle['<OPEN>']
-            : candle['<CLOSE>']
+          candleDirection(candle) == EnumDirection.BULL
+            ? candle[EnumMT5OHLC.OPEN]
+            : candle[EnumMT5OHLC.CLOSE]
         );
         lowestLowShort.push(Math.min(...lowPrices));
 
@@ -1134,9 +1150,9 @@ function initSciChart(data) {
 
         // Check for CSID breakout conditions (breakout of the highest high or lowest low && slope is less than threshold (consistency))
         const bullishCSID =
-          d['<CLOSE>'] > highestHighLong[highestHighLong.length - 2]; // && Math.abs(slopeHighestHighLong) < slopeThreshold
+          d[EnumMT5OHLC.CLOSE] > highestHighLong[highestHighLong.length - 2]; // && Math.abs(slopeHighestHighLong) < slopeThreshold
         const bearishCSID =
-          d['<CLOSE>'] < lowestLowShort[lowestLowShort.length - 2]; // && Math.abs(slopeLowestLowShort) < slopeThreshold
+          d[EnumMT5OHLC.CLOSE] < lowestLowShort[lowestLowShort.length - 2]; // && Math.abs(slopeLowestLowShort) < slopeThreshold
 
         // CSID Graph Related Annotations: ========================================
         // Add a new CSID Data for our line annotations:
@@ -1167,10 +1183,10 @@ function initSciChart(data) {
           if (bullishCSID) {
             const buySignal = new CustomAnnotation({
               x1: convertMT5DateToUnix(d['<DATE>'] + ' ' + d['<TIME>']),
-              y1: d['<OPEN>'],
+              y1: d[EnumMT5OHLC.OPEN],
               verticalAnchorPoint: EVerticalAnchorPoint.Center,
               horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
-              svgString: signalAnnotation.svgString.buy,
+              svgString: signalAnnotation.svgString.bullish,
             });
             sciChartSurface.annotations.add(buySignal);
             AddActionOnChart(
@@ -1182,10 +1198,10 @@ function initSciChart(data) {
           if (bearishCSID) {
             const sellSignal = new CustomAnnotation({
               x1: convertMT5DateToUnix(d['<DATE>'] + ' ' + d['<TIME>']),
-              y1: d['<OPEN>'],
+              y1: d[EnumMT5OHLC.OPEN],
               verticalAnchorPoint: EVerticalAnchorPoint.Center,
               horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
-              svgString: signalAnnotation.svgString.sell,
+              svgString: signalAnnotation.svgString.bearish,
             });
             sciChartSurface.annotations.add(sellSignal);
             AddActionOnChart(
