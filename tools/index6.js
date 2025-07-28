@@ -127,13 +127,16 @@ const EnumMT5OHLC = {
   CLOSE: '<CLOSE>',
 };
 
-// Probably deprecated in the future:
-const getCandleDirection = (candle) => {
-  return candle[4] > candle[1] ? EnumDirection.BULL : EnumDirection.BEAR;
-};
-const getCandleDirection2 = (openPrice, closePrice) => {
+// Get candle direction based on open and close prices:
+const getCandleDirection = (openPrice = 0, closePrice = 0) => {
+  if (openPrice == 0 || closePrice == 0) {
+    return EnumDirection.BULL; // Default to BULL if no prices are provided
+  }
   return closePrice > openPrice ? EnumDirection.BULL : EnumDirection.BEAR;
 };
+// Get candle direction from candle object:
+const getCandleDirectionFromCandle = (candle) =>
+  getCandleDirection(candle[EnumMT5OHLC.OPEN], candle[EnumMT5OHLC.CLOSE]);
 
 const getCandleChartAxisLocationFromDate = (date) => {
   return new Date(date).getTime() / 1000;
@@ -434,14 +437,13 @@ function initSciChart(data) {
       const lowestLowShort = [];
       // End of Variables initialization =========================
 
+      const signalOffset = 20;
       const signalAnnotation = {
         svgString: {
           buy: '<svg id="Capa_1" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10"><g transform="translate(-54.616083,-75.548914)"><path style="fill:#0000FF;" d="M 55,85 L 60,75 L 65,85 Z"/></g></svg>',
-          bullish:
-            '<svg id="Capa_1" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10"><g transform="translate(-54.616083,-75.548914)"><path style="fill:#00FF00; opacity:0.3;" d="M 55,85 L 60,75 L 65,85 Z"/></g></svg>',
+          bullish: `<svg id="Capa_1" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10" transform="translate(0, ${signalOffset})"><g transform="translate(-54.616083,-75.548914)"><path style="fill:#00FF00; opacity:0.3;" d="M 55,85 L 60,75 L 65,85 Z"/></g></svg>`,
           sell: '<svg id="Capa_1" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10"><g transform="translate(-54.616083,-75.548914)"><path style="fill:#FF0000;" d="M 55,75 L 60,85 L 65,75 Z"/></g></svg>',
-          bearish:
-            '<svg id="Capa_1" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10"><g transform="translate(-54.616083,-75.548914)"><path style="fill:#FF0000; opacity:0.3;" d="M 55,75 L 60,85 L 65,75 Z"/></g></svg>',
+          bearish: `<svg id="Capa_1" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10" transform="translate(0, -${signalOffset})"><g transform="translate(-54.616083,-75.548914)"><path style="fill:#FF0000; opacity:0.3;" d="M 55,75 L 60,85 L 65,75 Z"/></g></svg>`,
           circle: `<svg id="Capa_1" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" style="fill:#${bullishColor};fill-opacity:0.34117647;stroke:#${bullishColor};stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" /></svg>`,
         },
       };
@@ -709,50 +711,10 @@ function initSciChart(data) {
       };
       // End of AddActionOnChart ========================================
 
-      // For testing purposes:
-      const rdata = [
-        ['2021.06.29', '00:00:00', 1.23456, 1.23456, 1.23456, 1.23456],
-        ['2021.06.29', '00:01:00', 1.23456, 1.23456, 1.23456, 1.23456],
-        ['2021.06.29', '00:02:00', 1.23456, 1.23456, 1.23456, 1.23456],
-        ['2021.06.29', '00:03:00', 1.23456, 1.23456, 1.23456, 1.23456],
-        ['2021.06.29', '00:04:00', 1.23456, 1.23456, 1.23456, 1.23456],
-        ['2021.06.29', '00:05:00', 1.23456, 1.23456, 1.23456, 1.23456],
-        ['2021.06.29', '00:06:00', 1.23456, 1.23456, 1.23456, 1.23456],
-        ['2021.06.29', '00:07:00', 1.23456, 1.23456, 1.23456, 1.23456],
-        ['2021.06.29', '00:08:00', 1.23456, 1.23456, 1.23456, 1.23456],
-        ['2021.06.29', '00:09:00', 1.23456, 1.23456, 1.23456, 1.23456],
-        ['2021.06.29', '00:10:00', 1.23456, 1.23456, 1.23456, 1.23456],
-        ['2021.06.29', '00:11:00', 1.23456, 1.23456, 1.23456, 1.23456],
-      ];
-
-      const ohlcData = rdata.map((row) => {
-        /*https://developers.binance.com/docs/binance-spot-api-docs/rest-api#klinecandlestick-data*/
-        /*
-              return {
-                time: row[0],
-                open: parseFloat(row[1]),
-                high: parseFloat(row[2]),
-                low: parseFloat(row[3]),
-                close: parseFloat(row[4])
-              }
-            */
-
-        /* MT5 exported CSV format: */
-        return {
-          time: `${row[0]} ${row[1]}`,
-          open: parseFloat(row[2]),
-          high: parseFloat(row[3]),
-          low: parseFloat(row[4]),
-          close: parseFloat(row[5]),
-        };
-      });
-
       let canTakeATrade = true;
       let inRange = false;
       let swingHighLowHistory = [];
       let fvgHistory = [];
-      const minDate = new Date(ohlcData[0].time);
-      const maxDate = new Date(ohlcData[ohlcData.length - 1].time);
       const offsetCandleDateTimeStamp = (candleDateTimeStamp) =>
         candleDateTimeStamp; // - 3600 * 1; // !! offseting candle position in X axis by -1h to match tradingView (The correct way would be to offset the axis labels, but dont know how to do it yet)
 
@@ -772,8 +734,6 @@ function initSciChart(data) {
         const hourMinutes = () => candle[0].split(' ')[1].slice(0, 5);
         let arrayOfSignals = [];
         const candlePosition = convertMT5DateToUnix(candle[0]);
-        const prevCandle = ohlcData[index - 1];
-        const nextCandle = ohlcData[index + 1];
 
         // candle[0] === "2025.01.10 21:10:00" && AddActionOnChart(candle, EnumActionType.VERTICAL_LINE);
 
@@ -807,7 +767,8 @@ function initSciChart(data) {
               swhlPrevCandle[EnumMT5OHLC.OPEN] &&
             selectedCandleForAnalisis[EnumMT5OHLC.HIGH] >=
               swhlNextCandle[EnumMT5OHLC.HIGH] &&
-            getCandleDirection(selectedCandleForAnalisis) == EnumDirection.BEAR;
+            getCandleDirectionFromCandle(selectedCandleForAnalisis) ==
+              EnumDirection.BEAR;
           // For swing low, current candle low is greater than or equal to the previous candle low and the previous candle low is less than the previous candle close:
           isSwingLow =
             selectedCandleForAnalisis[EnumMT5OHLC.LOW] >=
@@ -816,7 +777,8 @@ function initSciChart(data) {
               swhlPrevCandle[EnumMT5OHLC.CLOSE] &&
             selectedCandleForAnalisis[EnumMT5OHLC.LOW] <=
               swhlNextCandle[EnumMT5OHLC.LOW] &&
-            getCandleDirection(selectedCandleForAnalisis) == EnumDirection.BULL;
+            getCandleDirectionFromCandle(selectedCandleForAnalisis) ==
+              EnumDirection.BULL;
 
           return isSwingLow || isSwingHigh;
         };
@@ -1092,7 +1054,6 @@ function initSciChart(data) {
         dataSeries: CSIDDataSerieFromLows,
         opacity: 0.6,
       });
-
       sciChartSurface.renderableSeries.add(CSIDHighline);
       sciChartSurface.renderableSeries.add(CSIDLowline);
 
@@ -1105,16 +1066,10 @@ function initSciChart(data) {
         CSIDLookbackCandleSerie.push(d);
 
         // Calculate highest high and lowest low in the lookback period except the current candle:
-        const candleDirection = (candle) =>
-          getCandleDirection2(
-            candle[EnumMT5OHLC.OPEN],
-            candle[EnumMT5OHLC.CLOSE]
-          );
-
         const highPrices = CSIDLookbackCandleSerie.slice(
           CSIDLookbackCandleSerie.length - 1 - lookbackPeriod
         ).map((candle) =>
-          candleDirection(candle) == EnumDirection.BULL
+          getCandleDirectionFromCandle(candle) == EnumDirection.BULL
             ? candle[EnumMT5OHLC.CLOSE]
             : candle[EnumMT5OHLC.OPEN]
         );
@@ -1123,30 +1078,32 @@ function initSciChart(data) {
         const lowPrices = CSIDLookbackCandleSerie.slice(
           CSIDLookbackCandleSerie.length - 1 - lookbackPeriod
         ).map((candle) =>
-          candleDirection(candle) == EnumDirection.BULL
+          getCandleDirectionFromCandle(candle) == EnumDirection.BULL
             ? candle[EnumMT5OHLC.OPEN]
             : candle[EnumMT5OHLC.CLOSE]
         );
         lowestLowShort.push(Math.min(...lowPrices));
 
-        // Calculate slope:
-        const slopeHighestHighLong =
-          (highestHighLong[highestHighLong.length - 1] - highestHighLong[0]) /
-          lookbackPeriod;
-        const slopeLowestLowShort =
-          (lowestLowShort[lowestLowShort.length - 1] - lowestLowShort[0]) /
-          lookbackPeriod;
-
-        // Flat line detection, mostly for UI styling:
         /*
-                flatThreshold = 0.00001 // Adjust this value depending on how flat the line is
-                isFlatHigh = Math.abs(highestHighLong - highestHighLong[1]) < flatThreshold
-                isFlatLow = Math.abs(lowestLowShort - lowestLowShort[1]) < flatThreshold
+          // Calculate slope:
+          const slopeHighestHighLong =
+            (highestHighLong[highestHighLong.length - 1] - highestHighLong[0]) /
+            lookbackPeriod;
+          const slopeLowestLowShort =
+            (lowestLowShort[lowestLowShort.length - 1] - lowestLowShort[0]) /
+            lookbackPeriod;
+        */
 
-                if (isFlatHigh || isFlatLow) {
-                  debugger
-                }
-              */
+        /*
+          // Flat line detection, mostly for UI styling:
+            flatThreshold = 0.00001 // Adjust this value depending on how flat the line is
+            isFlatHigh = Math.abs(highestHighLong - highestHighLong[1]) < flatThreshold
+            isFlatLow = Math.abs(lowestLowShort - lowestLowShort[1]) < flatThreshold
+
+            if (isFlatHigh || isFlatLow) {
+              debugger
+            }
+        */
 
         // Check for CSID breakout conditions (breakout of the highest high or lowest low && slope is less than threshold (consistency))
         const bullishCSID =
@@ -1157,11 +1114,11 @@ function initSciChart(data) {
         // CSID Graph Related Annotations: ========================================
         // Add a new CSID Data for our line annotations:
         CSIDDataSerieFromHighs.append(
-          convertMT5DateToUnix(d['<DATE>'] + ' ' + d['<TIME>']),
+          convertMT5DateToUnix(d[EnumMT5OHLC.DATE] + ' ' + d[EnumMT5OHLC.TIME]),
           highestHighLong[highestHighLong.length - 1]
         );
         CSIDDataSerieFromLows.append(
-          convertMT5DateToUnix(d['<DATE>'] + ' ' + d['<TIME>']),
+          convertMT5DateToUnix(d[EnumMT5OHLC.DATE] + ' ' + d[EnumMT5OHLC.TIME]),
           lowestLowShort[lowestLowShort.length - 1]
         );
 
@@ -1180,36 +1137,25 @@ function initSciChart(data) {
         if (bullishCSID || bearishCSID) {
           CSIDSignalTriggered = true;
 
-          if (bullishCSID) {
-            const buySignal = new CustomAnnotation({
-              x1: convertMT5DateToUnix(d['<DATE>'] + ' ' + d['<TIME>']),
-              y1: d[EnumMT5OHLC.OPEN],
-              verticalAnchorPoint: EVerticalAnchorPoint.Center,
-              horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
-              svgString: signalAnnotation.svgString.bullish,
-            });
-            sciChartSurface.annotations.add(buySignal);
-            AddActionOnChart(
-              d,
-              EnumActionType.TAKE_A_TRADE,
-              EnumDirection.BULL
-            );
-          }
-          if (bearishCSID) {
-            const sellSignal = new CustomAnnotation({
-              x1: convertMT5DateToUnix(d['<DATE>'] + ' ' + d['<TIME>']),
-              y1: d[EnumMT5OHLC.OPEN],
-              verticalAnchorPoint: EVerticalAnchorPoint.Center,
-              horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
-              svgString: signalAnnotation.svgString.bearish,
-            });
-            sciChartSurface.annotations.add(sellSignal);
-            AddActionOnChart(
-              d,
-              EnumActionType.TAKE_A_TRADE,
-              EnumDirection.BEAR
-            );
-          }
+          const isBull = bullishCSID;
+          const svgString = isBull
+            ? signalAnnotation.svgString.bullish
+            : signalAnnotation.svgString.bearish;
+          const svgCandleLocation = isBull ? EnumMT5OHLC.LOW : EnumMT5OHLC.HIGH;
+          const direction = isBull ? EnumDirection.BULL : EnumDirection.BEAR;
+
+          const signal = new CustomAnnotation({
+            x1: convertMT5DateToUnix(
+              d[EnumMT5OHLC.DATE] + ' ' + d[EnumMT5OHLC.TIME]
+            ),
+            y1: d[svgCandleLocation],
+            verticalAnchorPoint: EVerticalAnchorPoint.Center,
+            horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
+            svgString,
+          });
+
+          sciChartSurface.annotations.add(signal);
+          AddActionOnChart(d, EnumActionType.TAKE_A_TRADE, direction);
         }
         // End of CSID Graph Related Annotations ========================================
       };
