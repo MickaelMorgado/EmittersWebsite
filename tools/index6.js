@@ -478,138 +478,63 @@ function initSciChart(data) {
       // Function to check all TP/SL hit:
       // TODO: Pretty sure that we can reduce and optimze this function.
       const checkForTPSLHit = (d, dataIndex) => {
-        return ordersHistory.forEach((order) => {
-          switch (order.direction) {
-            case EnumDirection.BULL:
-              if (d[EnumMT5OHLC.HIGH] >= order.tp && !order.closed) {
-                order.closed = true;
-                order.closedPrice = order.tp;
-                order.closedTime = `${d[EnumMT5OHLC.DATE]} ${
-                  d[EnumMT5OHLC.TIME]
-                }`;
-                order.orderStatus = EnumOrderStatus.CLOSED_BY_TP;
-                sciChartSurface.annotations.add(
-                  new CustomAnnotation({
-                    x1: convertMT5DateToUnix(order.closedTime),
-                    y1: order.tp,
-                    verticalAnchorPoint: EVerticalAnchorPoint.Center,
-                    horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
-                    svgString: signalAnnotation.svgString.sell,
-                  }),
-                  new TextAnnotation({
-                    text: order.id,
-                    horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
-                    verticalAnchorPoint: EVerticalAnchorPoint.Bottom,
-                    x1: convertMT5DateToUnix(order.closedTime),
-                    y1: order.tp,
-                  }),
-                );
-                sciChartSurface.annotations.add(
-                  new LineAnnotation({
-                    stroke: `#${bullishColor}`,
-                    strokeThickness: 1,
-                    strokeDashArray: [5, 5],
-                    x1: convertMT5DateToUnix(order.time),
-                    x2: convertMT5DateToUnix(order.closedTime),
-                    y1: order.price,
-                    y2: order.closedPrice,
-                  })
-                );
-              }
-              if (d[EnumMT5OHLC.LOW] <= order.sl && !order.closed) {
-                order.closed = true;
-                order.closedPrice = order.sl;
-                order.closedTime = `${d[EnumMT5OHLC.DATE]} ${
-                  d[EnumMT5OHLC.TIME]
-                }`;
-                order.orderStatus = EnumOrderStatus.CLOSED_BY_SL;
-                sciChartSurface.annotations.add(
-                  new CustomAnnotation({
-                    x1: convertMT5DateToUnix(order.closedTime),
-                    y1: order.sl,
-                    verticalAnchorPoint: EVerticalAnchorPoint.Center,
-                    horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
-                    svgString: signalAnnotation.svgString.sell,
-                  })
-                );
-                sciChartSurface.annotations.add(
-                  new LineAnnotation({
-                    stroke: `#${bearishColor}`,
-                    strokeThickness: 1,
-                    strokeDashArray: [5, 5],
-                    x1: convertMT5DateToUnix(order.time),
-                    x2: convertMT5DateToUnix(order.closedTime),
-                    y1: order.price,
-                    y2: order.closedPrice,
-                  })
-                );
-              }
-              break;
-            case EnumDirection.BEAR:
-              if (d[EnumMT5OHLC.LOW] <= order.tp && !order.closed) {
-                order.closed = true;
-                order.closedPrice = order.tp;
-                order.closedTime = `${d[EnumMT5OHLC.DATE]} ${
-                  d[EnumMT5OHLC.TIME]
-                }`;
-                order.orderStatus = EnumOrderStatus.CLOSED_BY_TP;
-                sciChartSurface.annotations.add(
-                  new CustomAnnotation({
-                    x1: convertMT5DateToUnix(order.closedTime),
-                    y1: order.tp,
-                    verticalAnchorPoint: EVerticalAnchorPoint.Center,
-                    horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
-                    svgString: signalAnnotation.svgString.sell,
-                  }),
-                  new TextAnnotation({
-                    text: order.id,
-                    horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
-                    verticalAnchorPoint: EVerticalAnchorPoint.Bottom,
-                    x1: convertMT5DateToUnix(order.closedTime),
-                    y1: order.tp,
-                  }),
-                );
-                sciChartSurface.annotations.add(
-                  new LineAnnotation({
-                    stroke: `#${bullishColor}`,
-                    strokeThickness: 1,
-                    strokeDashArray: [5, 5],
-                    x1: convertMT5DateToUnix(order.time),
-                    x2: convertMT5DateToUnix(order.closedTime),
-                    y1: order.price,
-                    y2: order.closedPrice,
-                  })
-                );
-              }
-              if (d[EnumMT5OHLC.HIGH] >= order.sl && !order.closed) {
-                order.closed = true;
-                order.closedPrice = order.sl;
-                order.closedTime = `${d[EnumMT5OHLC.DATE]} ${
-                  d[EnumMT5OHLC.TIME]
-                }`;
-                order.orderStatus = EnumOrderStatus.CLOSED_BY_SL;
-                sciChartSurface.annotations.add(
-                  new CustomAnnotation({
-                    x1: convertMT5DateToUnix(order.closedTime),
-                    y1: order.sl,
-                    verticalAnchorPoint: EVerticalAnchorPoint.Center,
-                    horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
-                    svgString: signalAnnotation.svgString.sell,
-                  })
-                );
-                sciChartSurface.annotations.add(
-                  new LineAnnotation({
-                    stroke: `#${bearishColor}`,
-                    strokeThickness: 1,
-                    strokeDashArray: [5, 5],
-                    x1: convertMT5DateToUnix(order.time),
-                    x2: convertMT5DateToUnix(order.closedTime),
-                    y1: order.price,
-                    y2: order.closedPrice,
-                  })
-                );
-              }
-              break;
+        ordersHistory.forEach((order) => {
+          if (order.closed) return;
+
+          const isBull = order.direction === EnumDirection.BULL;
+          const high = d[EnumMT5OHLC.HIGH];
+          const low = d[EnumMT5OHLC.LOW];
+          const currentTime = `${d[EnumMT5OHLC.DATE]} ${d[EnumMT5OHLC.TIME]}`;
+          const orderOpenTime = convertMT5DateToUnix(order.time);
+
+          const closeOrder = (level, status, color) => {
+            order.closed = true;
+            order.closedPrice = level;
+            order.closedTime = currentTime;
+            order.orderStatus = status;
+
+            const orderCloseTime = convertMT5DateToUnix(order.closedTime);
+
+            // Marker + Label
+            sciChartSurface.annotations.add(
+              new CustomAnnotation({
+                x1: orderCloseTime,
+                y1: level,
+                verticalAnchorPoint: EVerticalAnchorPoint.Center,
+                horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
+                svgString: signalAnnotation.svgString.sell,
+              }),
+              new TextAnnotation({
+                text: order.id,
+                horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
+                verticalAnchorPoint: EVerticalAnchorPoint.Bottom,
+                x1: orderCloseTime,
+                y1: level,
+              })
+            );
+
+            // Line
+            sciChartSurface.annotations.add(
+              new LineAnnotation({
+                stroke: `#${color}`,
+                strokeThickness: 1,
+                strokeDashArray: [5, 5],
+                x1: orderOpenTime,
+                x2: orderCloseTime,
+                y1: order.price,
+                y2: level,
+              })
+            );
+          };
+
+          // Check TP
+          if ((isBull && high >= order.tp) || (!isBull && low <= order.tp)) {
+            closeOrder(order.tp, EnumOrderStatus.CLOSED_BY_TP, bullishColor);
+          }
+
+          // Check SL
+          if ((isBull && low <= order.sl) || (!isBull && high >= order.sl)) {
+            closeOrder(order.sl, EnumOrderStatus.CLOSED_BY_SL, bearishColor);
           }
         });
       };
@@ -956,7 +881,9 @@ function initSciChart(data) {
         });
 
         const profitabilityChartOptions = {
-          //animation,
+          animation: {
+            duration: 0
+          },
           responsive: false,
           elements: {
             point: {
