@@ -13,19 +13,31 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: #333;
+  background-color: var(--dark3);
   border-radius: 10px;
-  border: 3px solid #000;
+  border: 3px solid var(--dark1);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: #555;
+  background-color: var(--grey1);
 }
 
 html,
 body {
   margin: 0;
   padding: 0;
+}
+
+table {
+  width: 100%;
+}
+
+table tr {
+  display: flex;
+  padding: 8px;
+  border: 1px solid var(--dark3);
+  border-radius: var(--radius);
+  justify-content: space-between;
 }
 
 #upload-section {
