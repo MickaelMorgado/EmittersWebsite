@@ -218,6 +218,8 @@ const handleFileAndInitGraph = (file, trades = [], onCandleDrawn) => {
         appendIndicatorsToChart(results.data, csvDataIndex);
         // Run the Check for TP/SL hit function on every drawn candle:
         checkForTPSLHit(results.data, csvDataIndex);
+        
+        profitabilityCalculation();
 
         // Match trades based on the opening time
         /*trades.forEach(trade => {
@@ -277,7 +279,6 @@ const handleFileAndInitGraph = (file, trades = [], onCandleDrawn) => {
         }, readingSpeed);
       },
       complete: function (results, file) {
-        profitabilityCalculation();
         // Remove visible class from loading element
         document.getElementById('loading-element').classList.remove('visible');
       },
@@ -329,6 +330,7 @@ function initSciChart(data) {
     LineAnnotation,
     AxisMarkerAnnotation,
     CustomAnnotation,
+    TextAnnotation,
     EVerticalAnchorPoint,
     EHorizontalAnchorPoint,
     ENumericFormat,
@@ -440,9 +442,9 @@ function initSciChart(data) {
       const signalOffset = 20;
       const signalAnnotation = {
         svgString: {
-          buy: '<svg id="Capa_1" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10"><g transform="translate(-54.616083,-75.548914)"><path style="fill:#0000FF;" d="M 55,85 L 60,75 L 65,85 Z"/></g></svg>',
+          buy: `<svg id="Capa_1" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10"><g transform="translate(-54.616083,-75.548914)"><path style="fill:#0000FF;" d="M 55,85 L 60,75 L 65,85 Z"/></g></svg>`,
           bullish: `<svg id="Capa_1" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10" transform="translate(0, ${signalOffset})"><g transform="translate(-54.616083,-75.548914)"><path style="fill:#00FF00; opacity:0.3;" d="M 55,85 L 60,75 L 65,85 Z"/></g></svg>`,
-          sell: '<svg id="Capa_1" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10"><g transform="translate(-54.616083,-75.548914)"><path style="fill:#FF0000;" d="M 55,75 L 60,85 L 65,75 Z"/></g></svg>',
+          sell: `<svg id="Capa_1" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10"><g transform="translate(-54.616083,-75.548914)"><path style="fill:#FF0000;" d="M 55,75 L 60,85 L 65,75 Z"/></g></svg>`,
           bearish: `<svg id="Capa_1" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10" transform="translate(0, -${signalOffset})"><g transform="translate(-54.616083,-75.548914)"><path style="fill:#FF0000; opacity:0.3;" d="M 55,75 L 60,85 L 65,75 Z"/></g></svg>`,
           circle: `<svg id="Capa_1" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" style="fill:#${bullishColor};fill-opacity:0.34117647;stroke:#${bullishColor};stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" /></svg>`,
         },
@@ -493,11 +495,18 @@ function initSciChart(data) {
                     verticalAnchorPoint: EVerticalAnchorPoint.Center,
                     horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
                     svgString: signalAnnotation.svgString.sell,
-                  })
+                  }),
+                  new TextAnnotation({
+                    text: order.id,
+                    horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
+                    verticalAnchorPoint: EVerticalAnchorPoint.Bottom,
+                    x1: convertMT5DateToUnix(order.closedTime),
+                    y1: order.tp,
+                  }),
                 );
                 sciChartSurface.annotations.add(
                   new LineAnnotation({
-                    stroke: `#${greyColor}`,
+                    stroke: `#${bullishColor}`,
                     strokeThickness: 1,
                     strokeDashArray: [5, 5],
                     x1: convertMT5DateToUnix(order.time),
@@ -525,7 +534,7 @@ function initSciChart(data) {
                 );
                 sciChartSurface.annotations.add(
                   new LineAnnotation({
-                    stroke: `#${greyColor}`,
+                    stroke: `#${bearishColor}`,
                     strokeThickness: 1,
                     strokeDashArray: [5, 5],
                     x1: convertMT5DateToUnix(order.time),
@@ -551,11 +560,18 @@ function initSciChart(data) {
                     verticalAnchorPoint: EVerticalAnchorPoint.Center,
                     horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
                     svgString: signalAnnotation.svgString.sell,
-                  })
+                  }),
+                  new TextAnnotation({
+                    text: order.id,
+                    horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
+                    verticalAnchorPoint: EVerticalAnchorPoint.Bottom,
+                    x1: convertMT5DateToUnix(order.closedTime),
+                    y1: order.tp,
+                  }),
                 );
                 sciChartSurface.annotations.add(
                   new LineAnnotation({
-                    stroke: `#${greyColor}`,
+                    stroke: `#${bullishColor}`,
                     strokeThickness: 1,
                     strokeDashArray: [5, 5],
                     x1: convertMT5DateToUnix(order.time),
@@ -583,7 +599,7 @@ function initSciChart(data) {
                 );
                 sciChartSurface.annotations.add(
                   new LineAnnotation({
-                    stroke: `#${greyColor}`,
+                    stroke: `#${bearishColor}`,
                     strokeThickness: 1,
                     strokeDashArray: [5, 5],
                     x1: convertMT5DateToUnix(order.time),
