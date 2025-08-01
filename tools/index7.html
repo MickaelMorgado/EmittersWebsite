@@ -87,6 +87,10 @@
     textarea {
       font-family: 'ui-monospace', monospace !important;
     }
+    .file-unavailable {
+      opacity: 0.5;
+      filter: grayscale(0.7);
+    }
   </style>
   <script>
     // Your web app's Firebase configuration
@@ -258,12 +262,21 @@
           fileList.innerHTML = '';
 
           if (response.rows && response.rows.length > 0) {
-            response.rows.forEach(file => {
+            // Sort: pinned files first, unpinned (date_unpinned != null) last
+            const sortedRows = response.rows.slice().sort((a, b) => {
+              const aUnpinned = !!a.date_unpinned;
+              const bUnpinned = !!b.date_unpinned;
+              if (aUnpinned === bUnpinned) return 0;
+              return aUnpinned ? 1 : -1;
+            });
+            
+            sortedRows.forEach(file => {
               const title = file.metadata.name || file.ipfs_pin_hash;
               const type = file.mime_type || 'Unknown';
               const date = new Date(file.date_pinned).toLocaleString();
               const size = file.size;
               const hash = `https://ipfs.io/ipfs/${file.ipfs_pin_hash}`;
+              const isUnavailable = !!file.date_unpinned;
 
               const typeNumber = 0;
               const errorCorrectionLevel = 'L';
@@ -272,7 +285,7 @@
               qr.make();
 
               const listItemHTML = `
-                <div class='flex flex-wrap flex-col md:flex-row items-stretch md:items-center gap-4 justify-between items-center bg-dark rounded-xl p-4 break-words'>
+                <div class='flex flex-wrap flex-col md:flex-row items-stretch md:items-center gap-4 justify-between items-center bg-dark rounded-xl p-4 break-words${isUnavailable ? " file-unavailable" : ""}'>
                   <div class='flex items-center gap-12'>
                     <div>
                       <i class="fa fa-${iconByType(type)} text-4xl pl-6"></i>
@@ -282,6 +295,7 @@
                       <div>Type: ${type}</div>
                       <div>Date: ${date}</div>
                       <div>Size: ${size}</div>
+                      ${isUnavailable ? `<div class="text-red-500 font-bold">Unavailable (Unpinned)</div>` : ""}
                     </div>
                   </div>
                   <span class="max-w-[100%] md:max-w-none"><a href="${hash}" target="_blank">${hash}</a></span>
