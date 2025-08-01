@@ -58,6 +58,36 @@
   <script src="https://www.gstatic.com/firebasejs/12.0.0/firebase-app-compat.js"></script>
   <!-- Add Firestore SDK -->
   <script src="https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore-compat.js"></script>
+  <style>
+    .file-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .file-item button {
+      background-color: transparent;
+      border: none;
+      color: #ff394a;
+      cursor: pointer;
+      font-weight: bold;
+      padding: 0 5px;
+      font-size: 0.9em;
+    }
+    .file-item button:hover {
+      text-decoration: underline;
+      color: #ff0000;
+    }
+    .note-action-btn {
+      @apply px-3 py-1 rounded border border-grey_dark bg-black text-white text-xs font-semibold mr-2;
+    }
+    .note-action-btn-primary {
+      @apply bg-primary text-white;
+    }
+    textarea {
+      font-family: 'ui-monospace', monospace !important;
+    }
+  </style>
   <script>
     // Your web app's Firebase configuration
     const firebaseConfig = {
@@ -112,13 +142,13 @@
             <!-- Sidebar -->
             <div class="w-1/4 min-w-[150px] bg-dark rounded-xl p-4">
               <h2 class="text-xl font-bold mb-4">Files</h2>
-              <div class="flex items-center justify-between mb-2">
-                <span class="text-lg font-semibold">Files</span>
-                <button class="px-2 py-1 bg-primary text-white rounded text-xs" onclick="openAddFileDialog()">+ Add</button>
-              </div>
               <ul id="files-list" class="space-y-2">
                 <!-- Files will be loaded here from Firestore -->
               </ul>
+              <div class="flex items-center justify-between mt-12">
+                <span class="text-lg font-semibold"></span>
+                <button class="px-2 py-1 bg-primary text-white rounded text-xs" onclick="openAddFileDialog()">+ Add</button>
+              </div>
               <!-- Add File Dialog -->
               <div id="add-file-dialog" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
                 <div class="bg-dark p-6 rounded-xl w-80 flex flex-col gap-4">
@@ -135,8 +165,13 @@
             <!-- Content Display -->
             <div class="w-3/4 relative bg-dark rounded-xl p-4">
               <h2 class="text-xl font-bold mb-4" id="file-title">Select a file</h2>
-              <pre class="bg-black rounded p-4 overflow-x-auto border-b-[200px] border-black" id="file-content" style="min-height:200px;max-width:100%">// File content will appear here</pre>
-              <div id="file-qrcode" class="absolute right-4 bottom-4 z-10"></div>
+              <div class="">
+                <div id="note-content-container" class="relative bg-black rounded p-4">
+                  <pre class="bg-black rounded p-4 overflow-x-auto border-b-[200px] border-black" id="file-content" style="min-height:200px;max-width:100%">// File content will appear here</pre>
+                  <div id="edit-controls" class="mt-4"></div>
+                </div>
+                <div id="file-qrcode" class="absolute invert right-4 bottom-4 z-10"></div>
+              </div>
             </div>
           </div>
         </div>
@@ -295,6 +330,7 @@
     // --- Notes/Code Files Section Logic ---
     let notesList = [];
     let notesMap = {};
+    let editingNoteId = null;
 
     // Fetch notes list from Firestore and render sidebar
     function loadNotesList(selectedFileId) {
@@ -309,12 +345,31 @@
           notesList.push(note);
           notesMap[note.id] = note;
           const li = document.createElement('li');
-          li.className = "cursor-pointer hover:text-primary";
-          li.textContent = note.name;
-          li.onclick = () => showFile(note.id);
-          if (selectedFileId && note.id === selectedFileId) {
+          li.className = "file-item";
+          const span = document.createElement('span');
+          span.className = "cursor-pointer hover:text-primary";
+          span.textContent = note.name;
+          span.onclick = () => showFile(note.id);
+          const delBtn = document.createElement('button');
+          delBtn.textContent = "Delete";
+          delBtn.title = "Delete this note";
+          delBtn.onclick = (e) => {
+            e.stopPropagation();
+            if (confirm(`Delete note "${note.name}"?`)) {
+              db.collection("notes").doc(note.id).delete();
+              if (document.getElementById('file-title').innerText === note.name) {
+                document.getElementById('file-title').innerText = "Select a file";
+                document.getElementById('file-content').innerText = "// File content will appear here";
+                document.getElementById('file-qrcode').innerHTML = "";
+                document.getElementById('edit-controls').innerHTML = "";
+              }
+            }
+          };
+          li.appendChild(span);
+          li.appendChild(delBtn);
+          /*if (selectedFileId && note.id === selectedFileId) {
             li.classList.add("text-primary", "font-bold");
-          }
+          }*/
           filesList.appendChild(li);
         });
         // If a file is selected in URL, show it
@@ -328,8 +383,15 @@
     function showFile(fileId) {
       const note = notesMap[fileId];
       if (!note) return;
+      editingNoteId = null;
       document.getElementById('file-title').innerText = note.name || "File";
-      document.getElementById('file-content').innerText = note.content || "// No content";
+      // Show content in <pre>
+      document.getElementById('note-content-container').innerHTML = `
+        <pre class="bg-black rounded p-4 overflow-x-auto border-b-[200px] border-black" id="file-content" style="min-height:200px;max-width:100%">${note.content || "// No content"}</pre>
+        <div id="edit-controls" class="mt-4">
+          <button class="note-action-btn note-action-btn-primary" onclick="startEditNote('${note.id}')">Edit</button>
+        </div>
+      `;
       // Update URL params for sharing
       const url = new URL(window.location);
       url.searchParams.set('tab', 'files');
@@ -343,6 +405,36 @@
       qr.addData(url.toString());
       qr.make();
       qrDiv.innerHTML = `<div class="flex flex-col p-6">${qr.createImgTag(4, 8)}</div>`;
+    }
+
+    // Start editing a note
+    function startEditNote(noteId) {
+      const note = notesMap[noteId];
+      if (!note) return;
+      editingNoteId = noteId;
+      document.getElementById('file-title').innerText = note.name || "File";
+      document.getElementById('note-content-container').innerHTML = `
+        <textarea id="edit-note-content" class="bg-black rounded p-4 w-full text-white border border-grey_dark" style="min-height:200px;max-width:100%">${note.content || ""}</textarea>
+        <div id="edit-controls" class="mt-4">
+          <button class="note-action-btn note-action-btn-primary" onclick="saveEditNote('${note.id}')">Save</button>
+          <button class="note-action-btn" onclick="cancelEditNote('${note.id}')">Cancel</button>
+        </div>
+      `;
+    }
+
+    // Save edited note
+    function saveEditNote(noteId) {
+      const newContent = document.getElementById('edit-note-content').value;
+      db.collection("notes").doc(noteId).update({ content: newContent }).then(() => {
+        editingNoteId = null;
+        showFile(noteId);
+      });
+    }
+
+    // Cancel editing
+    function cancelEditNote(noteId) {
+      editingNoteId = null;
+      showFile(noteId);
     }
 
     // Add file dialog logic
