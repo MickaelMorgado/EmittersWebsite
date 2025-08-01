@@ -54,13 +54,38 @@
   <script src="https://unpkg.com/helia/dist/index.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" integrity="sha512-ZDSPMa/JM1D+7kdg2x3BsruQ6T/JpJo3jWDWkCZsP+5yVyp1KfESqLI+7RqB5k24F7p2cV7i2YHh/890y6P6Sw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <!-- Firebase App (the core Firebase SDK) -->
+  <script src="https://www.gstatic.com/firebasejs/12.0.0/firebase-app-compat.js"></script>
+  <!-- Add Firestore SDK -->
+  <script src="https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore-compat.js"></script>
+  <script>
+    // Your web app's Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyCErSPWbOTUkz77o3GS1AvFFAq2WXntP_A",
+      authDomain: "emitterswebsite.firebaseapp.com",
+      projectId: "emitterswebsite",
+      storageBucket: "emitterswebsite.appspot.com",
+      messagingSenderId: "710446328984",
+      appId: "1:710446328984:web:a8fbc029f225c162aeb4ed"
+    };
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    // Initialize Firestore
+    const db = firebase.firestore();
+  </script>
 </head>
 <body class="font-saira bg-no-repeat h-full w-full bg-gradient-to-br from-black via-black to-secondary text-grey bg-fixed">
   <a href="./" title="back" class="fixed top-10 left-10 w-10 h-10 transition-all bg-grey_dark p-2 rounded-full text-center leading-5 font-bold text-xl shadow-[0_0_70px_0_currentColor] cursor-pointer z-10 hover:no-underline hover:text-white"><</a>
   <div class="p-10">
     <div class="container m-auto">
+      <!-- Tab Navigation -->
+      <div class="h-padded flex gap-4 mb-6">
+        <button id="tab-ipfs" class="tab-btn px-4 py-2 rounded-t bg-dark text-white font-bold border-b-2 border-primary" onclick="switchTab('ipfs')">IPFS</button>
+        <button id="tab-files" class="tab-btn px-4 py-2 rounded-t bg-dark text-white font-bold border-b-2 border-transparent" onclick="switchTab('files')">Code / Text / Notes</button>
+      </div>
       <div id="upload-section" class="w-full">
-        <div class="h-padded">
+        <!-- IPFS Section -->
+        <div class="h-padded" id="ipfs-section">
           <div class="h-flex h-flex--column">
             <h1 class="text-4xl mb-4 font-bold">IPFS FILES</h1>
             <div class="bg-dark rounded-xl p-4">
@@ -77,6 +102,41 @@
             </div>
             <div id="fileList">
               <div class="loader m-auto my-12 text-secondary"></div>
+            </div>
+          </div>
+        </div>
+        <!-- Notes/Code Files Section -->
+        <div id="notes-section" class="h-padded hidden">
+          <h1 class="text-4xl mb-4 font-bold">NOTES</h1>
+          <div class="flex gap-6 mt-10">
+            <!-- Sidebar -->
+            <div class="w-1/4 min-w-[150px] bg-dark rounded-xl p-4">
+              <h2 class="text-xl font-bold mb-4">Files</h2>
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-lg font-semibold">Files</span>
+                <button class="px-2 py-1 bg-primary text-white rounded text-xs" onclick="openAddFileDialog()">+ Add</button>
+              </div>
+              <ul id="files-list" class="space-y-2">
+                <!-- Files will be loaded here from Firestore -->
+              </ul>
+              <!-- Add File Dialog -->
+              <div id="add-file-dialog" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+                <div class="bg-dark p-6 rounded-xl w-80 flex flex-col gap-4">
+                  <h3 class="text-lg font-bold">Add New File</h3>
+                  <input id="new-file-name" class="p-2 rounded border border-grey_dark bg-black text-white" placeholder="File name (e.g. note1.txt)">
+                  <textarea id="new-file-content" class="p-2 rounded border border-grey_dark bg-black text-white" rows="4" placeholder="File content"></textarea>
+                  <div class="flex gap-2 justify-end">
+                    <button onclick="closeAddFileDialog()" class="px-3 py-1 bg-grey_dark text-white rounded">Cancel</button>
+                    <button onclick="addFileToFirestore()" class="px-3 py-1 bg-primary text-white rounded">Add</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Content Display -->
+            <div class="w-3/4 relative bg-dark rounded-xl p-4">
+              <h2 class="text-xl font-bold mb-4" id="file-title">Select a file</h2>
+              <pre class="bg-black rounded p-4 overflow-x-auto border-b-[200px] border-black" id="file-content" style="min-height:200px;max-width:100%">// File content will appear here</pre>
+              <div id="file-qrcode" class="absolute right-4 bottom-4 z-10"></div>
             </div>
           </div>
         </div>
@@ -219,12 +279,137 @@
             Authorization: `Bearer ${JWT}`,
           }
         });
-        const response = await request.json();
-        console.log(response);
+        // Pinata returns 200 with empty body on success
+        if (request.ok) {
+          document.getElementById('result').innerText = 'File deleted successfully.';
+          listFiles();
+        } else {
+          document.getElementById('result').innerText = 'Error deleting file.';
+        }
       } catch (error) {
+        document.getElementById('result').innerText = 'Error deleting file.';
         console.log(error);
       }
     }
+
+    // --- Notes/Code Files Section Logic ---
+    let notesList = [];
+    let notesMap = {};
+
+    // Fetch notes list from Firestore and render sidebar
+    function loadNotesList(selectedFileId) {
+      db.collection("notes").orderBy("name").onSnapshot((querySnapshot) => {
+        notesList = [];
+        notesMap = {};
+        const filesList = document.getElementById('files-list');
+        filesList.innerHTML = "";
+        querySnapshot.forEach((doc) => {
+          const note = doc.data();
+          note.id = doc.id;
+          notesList.push(note);
+          notesMap[note.id] = note;
+          const li = document.createElement('li');
+          li.className = "cursor-pointer hover:text-primary";
+          li.textContent = note.name;
+          li.onclick = () => showFile(note.id);
+          if (selectedFileId && note.id === selectedFileId) {
+            li.classList.add("text-primary", "font-bold");
+          }
+          filesList.appendChild(li);
+        });
+        // If a file is selected in URL, show it
+        if (selectedFileId && notesMap[selectedFileId]) {
+          showFile(selectedFileId);
+        }
+      });
+    }
+
+    // Show file content from Firestore
+    function showFile(fileId) {
+      const note = notesMap[fileId];
+      if (!note) return;
+      document.getElementById('file-title').innerText = note.name || "File";
+      document.getElementById('file-content').innerText = note.content || "// No content";
+      // Update URL params for sharing
+      const url = new URL(window.location);
+      url.searchParams.set('tab', 'files');
+      url.searchParams.set('file', fileId);
+      window.history.replaceState({}, '', url);
+
+      // Generate QR code for current URL
+      const qrDiv = document.getElementById('file-qrcode');
+      qrDiv.innerHTML = "";
+      const qr = qrcode(0, 'L');
+      qr.addData(url.toString());
+      qr.make();
+      qrDiv.innerHTML = `<div class="flex flex-col p-6">${qr.createImgTag(4, 8)}</div>`;
+    }
+
+    // Add file dialog logic
+    function openAddFileDialog() {
+      document.getElementById('add-file-dialog').classList.remove('hidden');
+    }
+    function closeAddFileDialog() {
+      document.getElementById('add-file-dialog').classList.add('hidden');
+      document.getElementById('new-file-name').value = "";
+      document.getElementById('new-file-content').value = "";
+    }
+    function addFileToFirestore() {
+      const name = document.getElementById('new-file-name').value.trim();
+      const content = document.getElementById('new-file-content').value;
+      if (!name) {
+        alert("File name is required.");
+        return;
+      }
+      db.collection("notes").add({ name, content }).then(() => {
+        closeAddFileDialog();
+      });
+    }
+
+    // Tab switching logic
+    function switchTab(tab) {
+      const ipfsSection = document.getElementById('ipfs-section');
+      const notesSection = document.getElementById('notes-section');
+      const tabIpfs = document.getElementById('tab-ipfs');
+      const tabFiles = document.getElementById('tab-files');
+      if (tab === 'files') {
+        ipfsSection.classList.add('hidden');
+        notesSection.classList.remove('hidden');
+        tabIpfs.classList.remove('border-primary');
+        tabIpfs.classList.add('border-transparent');
+        tabFiles.classList.add('border-primary');
+        tabFiles.classList.remove('border-transparent');
+        // Load notes list from Firestore
+        const params = new URLSearchParams(window.location.search);
+        const file = params.get('file');
+        loadNotesList(file);
+      } else {
+        notesSection.classList.add('hidden');
+        ipfsSection.classList.remove('hidden');
+        tabFiles.classList.remove('border-primary');
+        tabFiles.classList.add('border-transparent');
+        tabIpfs.classList.add('border-primary');
+        tabIpfs.classList.remove('border-transparent');
+      }
+      // Update URL param
+      const url = new URL(window.location);
+      url.searchParams.set('tab', tab);
+      if (tab !== 'files') url.searchParams.delete('file');
+      window.history.replaceState({}, '', url);
+    }
+
+    // On page load, check URL params for tab and file
+    window.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(window.location.search);
+      const tab = params.get('tab') || 'ipfs';
+      switchTab(tab);
+      // If files tab, load notes list
+      if (tab === 'files') {
+        const file = params.get('file');
+        loadNotesList(file);
+      }
+    });
+    // --- End Notes/Code Files Section Logic ---
   </script>
 </body>
 </html>
