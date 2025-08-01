@@ -67,6 +67,10 @@ table tr {
   margin-left: var(--main-width);
 }
 
+#themeSelector {
+  width: 100%;
+}
+
 #scichart-root {
   flex-grow: 1;
 }

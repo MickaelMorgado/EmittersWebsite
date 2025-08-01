@@ -8,7 +8,7 @@
 // Result Panel Related Actions / Triggers:
 const resultPanel = document.querySelector('#result-panel');
 const $csvRefresh = document.querySelector('#csvRefresh');
-const $csvDataField = document.getElementById('csvContent');
+//const $csvDataField = document.getElementById('csvContent');
 const $csvFileInput = document.getElementById('csvFileInput');
 const toolbarToggler = document.querySelector('#result-panel-toolbar-toggler');
 const $navigateTroughtDates = document.getElementById('NavigateTroughtDates');
@@ -141,8 +141,6 @@ const getCandleDirectionFromCandle = (candle) =>
 const getCandleChartAxisLocationFromDate = (date) => {
   return new Date(date).getTime() / 1000;
 };
-
-// Window assignments:
 window.getCandleChartAxisLocationFromDate = getCandleChartAxisLocationFromDate;
 
 function formatDateFromUnix(unixTime) {
@@ -178,7 +176,7 @@ const convertMT5DateToUnix = (candleTime) => {
 
 initSciChart();
 
-const readingSpeed = 0.0001; // Speed of reading the CSV file in milliseconds
+const readingSpeed = 0; // Speed of reading the CSV file in milliseconds
 
 const csvData = [];
 let CSIDLookbackCandleSerie = [];
@@ -218,7 +216,7 @@ const handleFileAndInitGraph = (file, trades = [], onCandleDrawn) => {
         appendIndicatorsToChart(results.data, csvDataIndex);
         // Run the Check for TP/SL hit function on every drawn candle:
         checkForTPSLHit(results.data, csvDataIndex);
-        
+        // Calculate and Display profitability statistics: 
         profitabilityCalculation();
 
         // Match trades based on the opening time
@@ -429,6 +427,7 @@ function initSciChart(data) {
 
       // Variables initialization =========================
       let annotations = [];
+      let arrayOfSignals = [false, true]; // 2 signals required
       // Variables initialization for CSID:
       let rollingHighestHighDataSeries = null;
       let rollingLowestLowDataSeries = null;
@@ -472,6 +471,14 @@ function initSciChart(data) {
           yMin,
           yMax
         );
+      }
+
+      // Take trades when signals are valid:
+      const checkSignalsForTrade = (d, direction) => {
+        const takeTradeSignal = arrayOfSignals[0] == true && arrayOfSignals[1] == true;
+        if (takeTradeSignal) {
+          AddActionOnChart(d, EnumActionType.TAKE_A_TRADE, direction);
+        }
       }
 
       // TP/SL Validation: ========================================
@@ -573,17 +580,18 @@ function initSciChart(data) {
             );
             break;
           case 'TAKE_A_TRADE':
+            const definedCandleMoment = EnumMT5OHLC.OPEN
             const orderOptionsBasedDirection = (tradeDirection) => {
               if (tradeDirection == EnumDirection.BULL) {
                 return {
-                  sl: candle[EnumMT5OHLC.CLOSE] - slSize(),
-                  tp: candle[EnumMT5OHLC.CLOSE] + tpSize(),
+                  sl: candle[definedCandleMoment] - slSize(),
+                  tp: candle[definedCandleMoment] + tpSize(),
                   direction: EnumDirection.BULL,
                 };
               } else {
                 return {
-                  sl: candle[EnumMT5OHLC.CLOSE] + slSize(),
-                  tp: candle[EnumMT5OHLC.CLOSE] - tpSize(),
+                  sl: candle[definedCandleMoment] + slSize(),
+                  tp: candle[definedCandleMoment] - tpSize(),
                   direction: EnumDirection.BEAR,
                 };
               }
@@ -593,7 +601,7 @@ function initSciChart(data) {
             ordersHistory.push({
               id: ordersHistory.length + 1,
               time: `${candle[EnumMT5OHLC.DATE]} ${candle[EnumMT5OHLC.TIME]}`,
-              price: candle[EnumMT5OHLC.CLOSE],
+              price: candle[definedCandleMoment],
               orderStatus: EnumOrderStatus.PENDING,
               ...orderOptionsBasedDirection(tradeDirection),
             });
@@ -603,7 +611,7 @@ function initSciChart(data) {
             sciChartSurface.annotations.add(
               new CustomAnnotation({
                 x1: candlePosition,
-                y1: candle[EnumMT5OHLC.CLOSE],
+                y1: candle[definedCandleMoment],
                 verticalAnchorPoint: EVerticalAnchorPoint.Center,
                 horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
                 svgString: signalAnnotation.svgString.buy,
@@ -614,14 +622,14 @@ function initSciChart(data) {
             const orderOptionsBasedDirection2 = (tradeDirection) => {
               if (tradeDirection == EnumDirection.BULL) {
                 return {
-                  sl: candle[EnumMT5OHLC.CLOSE],
-                  tp: candle[EnumMT5OHLC.CLOSE],
+                  sl: candle[definedCandleMoment],
+                  tp: candle[definedCandleMoment],
                   direction: EnumDirection.BULL,
                 };
               } else {
                 return {
-                  sl: candle[EnumMT5OHLC.CLOSE],
-                  tp: candle[EnumMT5OHLC.CLOSE],
+                  sl: candle[definedCandleMoment],
+                  tp: candle[definedCandleMoment],
                   direction: EnumDirection.BEAR,
                 };
               }
@@ -630,7 +638,7 @@ function initSciChart(data) {
             ordersHistory.push({
               id: ordersHistory.length + 1,
               time: candle[EnumMT5OHLC.TIME],
-              price: candle[EnumMT5OHLC.CLOSE],
+              price: candle[definedCandleMoment],
               orderStatus: EnumOrderStatus.PENDING,
               ...orderOptionsBasedDirection2(tradeDirection),
             });
@@ -641,7 +649,7 @@ function initSciChart(data) {
             sciChartSurface.annotations.add(
               new CustomAnnotation({
                 x1: candlePosition,
-                y1: candle[EnumMT5OHLC.CLOSE],
+                y1: candle[definedCandleMoment],
                 verticalAnchorPoint: EVerticalAnchorPoint.Center,
                 horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
                 svgString: signalAnnotation.svgString.buy,
@@ -654,6 +662,7 @@ function initSciChart(data) {
 
       let canTakeATrade = true;
       let inRange = false;
+      let savedTradeDirectionForNextCandleEntry = null;
       let swingHighLowHistory = [];
       let fvgHistory = [];
       const offsetCandleDateTimeStamp = (candleDateTimeStamp) =>
@@ -981,6 +990,18 @@ function initSciChart(data) {
           })*/
       //sciChartSurface.annotations.insert(0, verticalAnnotation); // Insert at index 0 to ensure it appears first
 
+      // TTR Indicator: ========================================
+      const inTradingTimeRange = (d) => {
+        const startRangeTime = new Date(`${d[EnumMT5OHLC.DATE]} 08:00:00`);
+        const endRangeTime = new Date(`${d[EnumMT5OHLC.DATE]} 09:00:00`);
+        const currentTime =  new Date(`${d[EnumMT5OHLC.DATE]} ${d[EnumMT5OHLC.TIME]}`);
+        const inTradingTimeRange = currentTime >= startRangeTime && currentTime <= endRangeTime;
+        console.table([startRangeTime, currentTime, endRangeTime, currentTime >= startRangeTime && currentTime <= endRangeTime, inTradingTimeRange, arrayOfSignals]);
+        arrayOfSignals[1] = inTradingTimeRange;
+      }
+      window.inTradingTimeRange = inTradingTimeRange;
+      // End of TTR Indicator: ========================================
+
       // CSID Indicator: ========================================
       const CSIDDataSerieFromHighs = new XyDataSeries(wasmContext);
       const CSIDDataSerieFromLows = new XyDataSeries(wasmContext);
@@ -1002,6 +1023,13 @@ function initSciChart(data) {
 
       const updateCSIDLineAnnotation = (d, dataIndex) => {
         const index = dataIndex || 0;
+        // This validation to fake next candle:
+        if (arrayOfSignals[0] == true) {
+          checkSignalsForTrade(d, savedTradeDirectionForNextCandleEntry);
+          arrayOfSignals[0] = false;
+        } else {
+          arrayOfSignals[0] = false;
+        }
 
         if (index < lookbackPeriod) return; // Ensure we have enough data for CSID calculation
 
@@ -1096,9 +1124,13 @@ function initSciChart(data) {
             horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
             svgString,
           });
-
           sciChartSurface.annotations.add(signal);
-          AddActionOnChart(d, EnumActionType.TAKE_A_TRADE, direction);
+
+          // Update first signal then check signals validation: 
+          arrayOfSignals[0] = true;
+          savedTradeDirectionForNextCandleEntry = direction;
+          //checkSignalsForTrade(d, direction);
+          //AddActionOnChart(d, EnumActionType.TAKE_A_TRADE, direction);
         }
         // End of CSID Graph Related Annotations ========================================
       };
@@ -1442,6 +1474,7 @@ const appendIndicatorsToChart = (d, dataIndex) => {
   // Example of appending indicators to the chart
   // This is a placeholder function, you can implement your own logic
   CSIDIndicator(d, dataIndex);
+  inTradingTimeRange(d);
 };
 
 // Historical Trades Textarea Change Handler
