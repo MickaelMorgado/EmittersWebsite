@@ -126,15 +126,15 @@
               <option value="?bullishColor=FFFF00&bearishColor=00FFFF">Yellow / Cyan</option>
               <option value="?bullishColor=00cdff&bearishColor=555555">Light Blue / Grey</option>
               <option value="?bullishColor=FF5500&bearishColor=444444">Volcanic</option>
+              <option value="?bullishColor=FFFFFF&bearishColor=FF0000">Devil</option>
             </select>
-
             <script>
-            function applyTheme() {
-              const themeSelector = document.getElementById('themeSelector');
-              const selectedTheme = themeSelector.value;
-              const currentUrl = window.location.href.split('?')[0];
-              window.location.href = currentUrl + selectedTheme;
-            }
+              function applyTheme() {
+                const themeSelector = document.getElementById('themeSelector');
+                const selectedTheme = themeSelector.value;
+                const currentUrl = window.location.href.split('?')[0];
+                window.location.href = currentUrl + selectedTheme;
+              }
             </script>
         </div>
         <hr class="h-hr" />
