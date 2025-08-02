@@ -189,7 +189,7 @@ window.ordersHistory = ordersHistory;
 
 const handleFileAndInitGraph = (file, trades = [], onCandleDrawn) => {
   if (file) {
-    clearAndDeleteChart();
+    reinitializeChart();
 
     // Clear orders history
     ordersHistory = [];
@@ -1137,16 +1137,18 @@ function initSciChart(data) {
       window.updateCSIDLineAnnotation = updateCSIDLineAnnotation;
       // End of CSID Indicator: ========================================
 
-      const clearAndDeleteChart = () => {
+      const reinitializeChart = () => {
         // Clear the select element:
         $navigateTroughtDates.innerHTML = '';
-
-        if (ohlcDataSeries) {
-          ohlcDataSeries.clear();
-          //sciChartSurface.annotations.clear();
-        }
+        //sciChartSurface.annotations.clear();
+        //sciChartSurface.renderableSeries.clear() // Clear the series, like chart and indicators
+        //sciChartSurface.renderableSeries.remove(CSIDHighline);
+        //sciChartSurface.renderableSeries.remove(CSIDLowline);
+        //console.log('RS: Chart cleared');
+        //initSciChart();
+        //initializeCSIDIndicator();
       };
-      window.clearAndDeleteChart = clearAndDeleteChart;
+      window.reinitializeChart = reinitializeChart;
       // End of Window assigned custom scichart functions: ========================
 
       // Add CursorModifier for crosshair
@@ -1532,139 +1534,3 @@ document
       console.error('Error updating chart:', error);
     }
   });
-
-// Placeholder function for chart update
-function updateChartWithTrades(trades) {
-  console.log('Updating chart with trades:', trades);
-
-  // Log trades to a dedicated div for visibility
-  const tradeHistoryDiv = document.getElementById(
-    'backtestingResultOrderHistory'
-  );
-  if (tradeHistoryDiv) {
-    tradeHistoryDiv.innerHTML = trades
-      .map(
-        (trade) =>
-          `<div class='trade-entry'>
-            <span>Symbol: ${trade.symbol}</span>
-            <span>Type: ${trade.type}</span>
-            <span>Open: ${trade.openPrice}</span>
-            <span>Close: ${trade.closePrice}</span>
-            <span>Profit: ${trade.profit}</span>
-          </div>`
-      )
-      .join('');
-  }
-
-  // Attempt to update chart if possible
-  try {
-    // Fallback methods for chart update
-    if (typeof addNewCandleToChart === 'function') {
-      trades.forEach((trade, index) => {
-        addNewCandleToChart(
-          [
-            trade.timestamp,
-            trade.openPrice,
-            trade.high || trade.openPrice,
-            trade.low || trade.closePrice,
-            trade.closePrice,
-          ],
-          index
-        );
-      });
-    } else if (
-      typeof sciChartSurface !== 'undefined' &&
-      sciChartSurface.annotations
-    ) {
-      // Minimal SciChart interaction if available
-      //sciChartSurface.annotations.clear();
-    }
-  } catch (error) {
-    console.error('Error updating chart with trades:', error);
-  }
-}
-
-// Aggressive error prevention for chart-related functions
-(function () {
-  // Create a proxy to intercept and suppress onCandleDrawn calls
-  const handler = {
-    get: function (target, prop) {
-      if (prop === 'onCandleDrawn') {
-        return function () {
-          console.log('Suppressed onCandleDrawn call');
-          return true; // Return a truthy value to prevent errors
-        };
-      }
-      return target[prop];
-    },
-  };
-
-  // Wrap window with a proxy to intercept function calls
-  window = new Proxy(window, {
-    get: function (target, prop) {
-      if (prop === 'onCandleDrawn') {
-        return function () {
-          console.log('Suppressed onCandleDrawn call');
-          return true; // Return a truthy value to prevent errors
-        };
-      }
-      return target[prop];
-    },
-  });
-
-  // Ensure AddActionOnChart is a safe function
-  if (typeof window.AddActionOnChart !== 'function') {
-    window.AddActionOnChart = function (trade, action) {
-      // Log detailed trade information
-      console.log('Trade Action:', {
-        symbol: trade.symbol || 'Unknown',
-        direction: action,
-        openPrice: trade.entryPrice || trade.openPrice,
-        time: trade.openedTradeDateTime || new Date().toISOString(),
-        lotSize: trade.lotSize || 0,
-      });
-
-      // Try to update trade history display
-      const tradeHistoryDiv = document.getElementById(
-        'backtestingResultOrderHistory'
-      );
-      if (tradeHistoryDiv) {
-        const tradeEntry = document.createElement('div');
-        tradeEntry.className =
-          'trade-entry ' +
-          (action === EnumDirection.BULL ? 'bullish' : 'bearish');
-        tradeEntry.innerHTML = `
-              <span>Symbol: ${trade.symbol || 'N/A'}</span>
-              <span>Direction: ${action}</span>
-              <span>Price: ${
-                trade.entryPrice || trade.openPrice || 'N/A'
-              }</span>
-              <span>Time: ${trade.openedTradeDateTime || 'N/A'}</span>
-            `;
-        tradeHistoryDiv.appendChild(tradeEntry);
-      }
-
-      return true;
-    };
-  }
-
-  // Override global function definitions
-  function onCandleDrawn() {
-    console.log('Suppressed onCandleDrawn call');
-    return true;
-  }
-
-  function AddActionOnChart(trade, action) {
-    console.log('Placeholder AddActionOnChart called:', { trade, action });
-    return true;
-  }
-
-  // Attempt to modify prototype chains to prevent errors
-  try {
-    if (window.hasOwnProperty('onCandleDrawn')) {
-      delete window.onCandleDrawn;
-    }
-  } catch (error) {
-    console.error('Error removing onCandleDrawn:', error);
-  }
-})();
