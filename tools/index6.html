@@ -143,13 +143,16 @@
         <label for="backTestingPauseButton">Stop BackTesting</label>
         <input type="checkbox" name="backTestingPauseButton" id="backTestingPauseButton" />
         <hr class="h-hr" />
-        <label>File Reading Status</label>
+        <label>File Reading Progression</label>
         <div class="flex">
           <span id="firstDate"></span>
           <span> - </span>
           <span id="currentReadingDate" class="notify-bullet"></span>
           <span> - </span>
           <span id="lastDate"></span>
+        </div>
+        <div id="fileReadingProgression">
+          <div class="progression"></div>
         </div>
         <hr class="h-hr" />
         <label for="backtesting-hour">CSV Data</label>
