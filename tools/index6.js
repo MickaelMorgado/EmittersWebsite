@@ -64,35 +64,6 @@ document
       .querySelectorAll('.result-panel-content')[2]
       .classList.remove('h-hide');
   });
-
-$csvRefresh.addEventListener('click', () => {
-  const file = $csvFileInput.files[0];
-  handleFileAndInitGraph(file);
-});
-
-$textareaHistoricalTradesLines.addEventListener('change', () => {
-  const lines = $textareaHistoricalTradesLines.value.split('\n'); // Split lines by newline
-  const trades = lines.map((line) => {
-    const parts = line.split('\t'); // Split each line by tab character
-
-    return {
-      openedTradeDateTime: parts[0],
-      closedTradeDateTime: parts[1],
-      symbol: parts[2],
-      orderDirection: parts[3],
-      lotSize: parseFloat(parts[4]),
-      slPrice: parts[5] === '-' ? null : parseFloat(parts[5]),
-      tpPrice: parts[6] === '-' ? null : parseFloat(parts[6]),
-      entryPrice: parseFloat(parts[7]),
-      closePrice: parseFloat(parts[8]),
-    };
-  });
-
-  // Re-trigger the CSV processing with the trades data
-  const file = $csvFileInput.files[0];
-  handleFileAndInitGraph(file, trades);
-});
-
 /* ---- */
 
 const decimals = 5;
@@ -187,7 +158,7 @@ let numbDays = 0;
 let ordersHistory = [];
 window.ordersHistory = ordersHistory;
 
-const handleFileAndInitGraph = (file, trades = [], onCandleDrawn) => {
+const handleFileAndInitGraph = (file) => {
   if (file) {
     reinitializeChart();
 
@@ -219,60 +190,7 @@ const handleFileAndInitGraph = (file, trades = [], onCandleDrawn) => {
         // Calculate and Display profitability statistics: 
         profitabilityCalculation();
 
-        // Match trades based on the opening time
-        /*trades.forEach(trade => {
-              const tradeTime = convertMT5DateToUnix(trade.openedTradeDateTime);
-              const candleTime = convertMT5DateToUnix(`${row["<DATE>"]} ${row["<TIME>"]}`);
-
-              if (tradeTime === candleTime) {
-                // Enhanced trade matching logging
-                console.group('Trade Matching');
-                console.log('Matched Trade Details:', {
-                  tradeTime: new Date(tradeTime * 1000).toISOString(),
-                  candleTime: new Date(candleTime * 1000).toISOString(),
-                  trade: trade,
-                  row: row
-                });
-
-                const candle = {
-                  [EnumOHLC.TIME]: trade.openedTradeDateTime,
-                  [EnumOHLC.CLOSE]: trade.entryPrice,
-                  // Add more candle details if available
-                  [EnumOHLC.OPEN]: row['<OPEN>'],
-                  [EnumOHLC.HIGH]: row['<HIGH>'],
-                  [EnumOHLC.LOW]: row['<LOW>']
-                };
-
-                const tradeDirection = trade.orderDirection === 'Buy' ? EnumDirection.BULL : EnumDirection.BEAR;
-                
-                console.log('Candle and Trade Direction:', {
-                  candle: candle,
-                  direction: tradeDirection
-                });
-
-                // Safely handle chart-related actions
-                try {
-                  // Check if AddActionOnChart exists before calling
-                  if (typeof AddActionOnChart === 'function') {
-                    AddActionOnChart(trade, 'REVIEW_A_TRADE', tradeDirection);
-                  }
-                  
-                  // Log if onCandleDrawn is called but not defined
-                  if (typeof onCandleDrawn === 'function') {
-                    onCandleDrawn(candle, csvDataIndex, candlesFromBuffer);
-                  } else {
-                    console.warn('onCandleDrawn is not a function');
-                  }
-                } catch (error) {
-                  console.error('Error processing trade:', error);
-                } finally {
-                  console.groupEnd();
-                }
-              }
-            });*/
-
         setTimeout(() => {
-          // Resume parsing after a short delay to allow UI updates
           parser.resume();
         }, readingSpeed);
       },
@@ -293,6 +211,11 @@ const handleFileAndInitGraph = (file, trades = [], onCandleDrawn) => {
 
 $csvFileInput.addEventListener('change', function loadcsv(event) {
   const file = event.target.files[0];
+  handleFileAndInitGraph(file);
+});
+
+$csvRefresh.addEventListener('click', () => {
+  const file = $csvFileInput.files[0];
   handleFileAndInitGraph(file);
 });
 
@@ -885,7 +808,7 @@ function initSciChart(data) {
           borderWidth: 1,
           order: 1,
           fill: false,
-          tension: 0.5,
+          tension: .5,
           pointStyle: false,
         });
 
@@ -934,14 +857,14 @@ function initSciChart(data) {
                     ${ordersHistory
                       .map(
                         (order) => `
-                      <tr>
+                      <tr class="historical-order-line">
                         <td>${order.id}</td>
                         <td>${order.time}</td>
                         <td>${order.price.toFixed(5)}</td>
                         <td>${order.sl.toFixed(5)}</td>
                         <td>${order.tp.toFixed(5)}</td>
                         <td>${order.direction}</td>
-                        <td>${order.orderStatus}</td>
+                        <td class="order-status-${order.orderStatus}">${order.orderStatus}</td>
                         <td>${order.closedPrice || ''}</td>
                         <td>${order.closedTime || ''}</td>
                       </tr>
@@ -1142,10 +1065,10 @@ function initSciChart(data) {
         $navigateTroughtDates.innerHTML = '';
         //sciChartSurface.annotations.clear();
         //sciChartSurface.renderableSeries.clear() // Clear the series, like chart and indicators
-        //sciChartSurface.renderableSeries.remove(CSIDHighline);
-        //sciChartSurface.renderableSeries.remove(CSIDLowline);
+        sciChartSurface.renderableSeries.remove(CSIDHighline);
+        sciChartSurface.renderableSeries.remove(CSIDLowline);
         //console.log('RS: Chart cleared');
-        //initSciChart();
+        initSciChart();
         //initializeCSIDIndicator();
       };
       window.reinitializeChart = reinitializeChart;
@@ -1196,14 +1119,6 @@ function initSciChart(data) {
       // End of Navigate Trought Dates ========================================
 
       // Tools: ========================================
-      const refreshAnnotations = () => {
-        annotations.forEach((annotation) => {
-          console.log(annotation);
-          /*document.getElementById('annotations').value = annotations
-                  .map((a) => JSON.stringify(a))
-                  .join('\n');*/
-        });
-      };
       const RRToolBoxAnnotation = (xGraphValue, yGraphValue, options) =>
         new BoxAnnotation({
           ...RRToolStyles,

@@ -40,6 +40,18 @@ table tr {
   justify-content: space-between;
 }
 
+.historical-order-line:hover {
+  background: var(--dark2);  
+}
+
+.order-status-CLOSED_BY_SL {
+  color: var(--red);
+}
+
+.order-status-CLOSED_BY_TP {
+  color: var(--green);
+}
+
 #upload-section {
   position: fixed;
   height: 100%;
