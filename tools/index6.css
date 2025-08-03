@@ -40,6 +40,32 @@ table tr {
   justify-content: space-between;
 }
 
+.notify-bullet {
+  position: relative;
+}
+
+.notify-bullet:before {
+  opacity: 0;
+  content: "";
+  display: block;
+  position: absolute;
+  z-index: 1;
+  top: -5px;
+  right: -5px;
+  width: 10px;
+  height: 10px;
+  border-radius: 100%;
+  border: 1px solid red;
+  background-color: var(--black);
+  box-shadow: 0 0 10px red;
+  animation: scaletrans 0.6s ease-out infinite alternate;
+  transform: scale(1);
+}
+
+.notify-bullet.active:before {
+  opacity: 1;
+}
+
 .historical-order-line:hover {
   background: var(--dark2);  
 }
