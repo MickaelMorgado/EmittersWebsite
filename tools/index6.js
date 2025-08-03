@@ -12,9 +12,18 @@ const $csvRefresh = document.querySelector('#csvRefresh');
 const $csvFileInput = document.getElementById('csvFileInput');
 const toolbarToggler = document.querySelector('#result-panel-toolbar-toggler');
 const $navigateTroughtDates = document.getElementById('NavigateTroughtDates');
+const $SLPointsInput = document.getElementById('SLPoints');
+const $TPPointsInput = document.getElementById('TPPoints');
+const $LotSizeInput = document.getElementById('LotSize');
 const $textareaHistoricalTradesLines = document.getElementById(
   'textareaHistoricalTradesLines'
 );
+const $firstDate = document.getElementById('firstDate');
+const $lastDate = document.getElementById('lastDate');
+const $currentReadingDate = document.getElementById('currentReadingDate');
+//const audioTick = new Audio('squirrel_404_click_tick.wav');
+const audioNotify = new Audio('joseegn_ui_sound_select.wav');
+
 function toggleHeight() {
   resultPanel.classList.toggle('active');
 }
@@ -64,14 +73,24 @@ document
       .querySelectorAll('.result-panel-content')[2]
       .classList.remove('h-hide');
   });
+
+$SLPointsInput.addEventListener('change', () => {
+  animateActiveClass($csvRefresh);
+})
+$TPPointsInput.addEventListener('change', () => {
+  animateActiveClass($csvRefresh);
+})
+$LotSizeInput.addEventListener('change', () => {
+  animateActiveClass($csvRefresh);
+})
 /* ---- */
 
 const decimals = 5;
 let candlesFromBuffer = [];
 const MAX_BUFFER_SIZE = 10;
-let slSize = () => parseFloat(document.getElementById('SLPoints').value);
-let tpSize = () => parseFloat(document.getElementById('TPPoints').value);
-let lotSize = () => parseFloat(document.getElementById('LotSize').value);
+let slSize = () => parseFloat($SLPointsInput.value);
+let tpSize = () => parseFloat($TPPointsInput.value);
+let lotSize = () => parseFloat($LotSizeInput.value);
 let bullishColor = '00FF00';
 let bearishColor = 'FF0000';
 let greyColor = '999999';
@@ -173,6 +192,23 @@ const handleFileAndInitGraph = (file) => {
     // Add visible class to loading element
     document.getElementById('loading-element').classList.add('visible');
 
+    // Read the CSV file just to get the first and last dates:
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      const text = e.target.result;
+      const lines = text.split(/\r?\n/).filter(Boolean);
+
+      const firstLine = lines[1];
+      const lastLine = lines[lines.length - 1];
+
+      const firstDate = firstLine.split('\t')[0];
+      const lastDate = lastLine.split('\t')[0];
+
+      $firstDate.textContent = firstDate;
+      $lastDate.textContent = lastDate;
+    };
+    reader.readAsText(file);
+
     Papa.parse(file, {
       header: true,
       dynamicTyping: true,
@@ -181,14 +217,20 @@ const handleFileAndInitGraph = (file) => {
         csvDataIndex += 1;
 
         parser.pause();
+        // Dynamic infos:
+        updateDynamicInfos(results.data, csvDataIndex);
         // Append data to the chart:
         appendDataToChart(results.data, csvDataIndex);
+        // Backtesting date time logics (annotation on chart and select element population): 
+        addBacktestingDateTimeToChart(results.data, csvDataIndex);
         // Plot real-time indicators:
         appendIndicatorsToChart(results.data, csvDataIndex);
         // Run the Check for TP/SL hit function on every drawn candle:
         checkForTPSLHit(results.data, csvDataIndex);
         // Calculate and Display profitability statistics: 
         profitabilityCalculation();
+
+        //audioTick.play();
 
         setTimeout(() => {
           parser.resume();
@@ -686,24 +728,6 @@ function initSciChart(data) {
         // End of Swing High/Low Logic: ========================================
 
         eval(algoEditorTextareaMain1.value);
-
-        // Backtesting dates ====================================
-        let candleDateTime = candle[EnumOHLC.TIME]; // excepted format: "1970.01.01 00:00:00"
-        let unixTime = convertMT5DateToUnix(candleDateTime); // format: 1624982400 for 2021-06-29 00:00:00
-        let candleTime = candleDateTime.split(' ')[1]; // get the time from the date string (00:00:00)
-        let backTestTime = getCandleChartAxisLocationFromDate(candleDateTime); // + 3600; // Actually the same as above (candleDateTimeStamp)
-
-        var selectedTime = document.getElementById('backtesting-hour').value;
-
-        if (candleTime == selectedTime) {
-          numbDays = numbDays + 1;
-          let btt = backTestTime; // * 1000;
-          let formatedDate = formatDateFromUnix(btt);
-
-          // Display Backtesting dates on the select element:
-          $navigateTroughtDates.innerHTML += `<option value="${unixTime}">${candleDateTime}</option>`;
-        }
-        // End of Backtesting dates ====================================
       };
 
       const profitabilityCalculation = () => {
@@ -717,7 +741,7 @@ function initSciChart(data) {
           return acc;
         }, 0);
 
-        console.log('Orders History:', ordersHistory);
+        //console.log('Orders History:', ordersHistory);
         const winRate =
           ordersHistory.length > 0
             ? (
@@ -913,13 +937,29 @@ function initSciChart(data) {
           })*/
       //sciChartSurface.annotations.insert(0, verticalAnnotation); // Insert at index 0 to ensure it appears first
 
+      // Create a vertical line annotation for backtesting date time:
+      const bttVerticalLineAnnotation = (btt) => {
+        const bttLine = new VerticalLineAnnotation({
+          labelPlacement: ELabelPlacement.TopRight,
+          showLabel: true,
+          stroke: "#666666",
+          strokeThickness: 2,
+          x1: btt,
+          axisLabelFill: "#666666",
+          axisLabelStroke: "#333",
+        });
+        sciChartSurface.annotations.add(bttLine);
+        animateActiveClass(document.getElementById('ntd-notify'));
+      }
+      window.bttVerticalLineAnnotation = bttVerticalLineAnnotation;
+
       // TTR Indicator: ========================================
       const inTradingTimeRange = (d) => {
-        const startRangeTime = new Date(`${d[EnumMT5OHLC.DATE]} 08:00:00`);
-        const endRangeTime = new Date(`${d[EnumMT5OHLC.DATE]} 09:00:00`);
+        const startRangeTime = new Date(`${d[EnumMT5OHLC.DATE]} 01:00:00`);
+        const endRangeTime = new Date(`${d[EnumMT5OHLC.DATE]} 23:00:00`);
         const currentTime =  new Date(`${d[EnumMT5OHLC.DATE]} ${d[EnumMT5OHLC.TIME]}`);
         const inTradingTimeRange = currentTime >= startRangeTime && currentTime <= endRangeTime;
-        console.table([startRangeTime, currentTime, endRangeTime, currentTime >= startRangeTime && currentTime <= endRangeTime, inTradingTimeRange, arrayOfSignals]);
+        //console.table([startRangeTime, currentTime, endRangeTime, currentTime >= startRangeTime && currentTime <= endRangeTime, inTradingTimeRange, arrayOfSignals]);
         arrayOfSignals[1] = inTradingTimeRange;
       }
       window.inTradingTimeRange = inTradingTimeRange;
@@ -1368,6 +1408,25 @@ function initSciChart(data) {
     });
 }
 
+// Notify ===============================
+const animateActiveClass = (element) => {
+  audioNotify.play();
+  element.classList.add('active');
+  setTimeout(() => {
+    element.classList.remove('active');
+  }, 3000);
+};
+// End of Notify ===============================
+
+let prevDate = null;
+const updateDynamicInfos = (d) => {
+  if (prevDate !== d['<DATE>']) {
+    $currentReadingDate.innerText = d['<DATE>'];
+    animateActiveClass($currentReadingDate);
+    prevDate = d['<DATE>'];
+  }
+};
+
 const appendDataToChart = (d, dataIndex) => {
   //$csvDataField.value += JSON.stringify(d);
   addNewCandleToChart(
@@ -1380,6 +1439,28 @@ const appendDataToChart = (d, dataIndex) => {
     ],
     dataIndex
   );
+};
+
+const addBacktestingDateTimeToChart = (d, dataIndex) => {
+  // Backtesting dates ====================================
+  let candleDateTime = `${d[EnumMT5OHLC.DATE]} ${d[EnumMT5OHLC.TIME]}`; // excepted format: "1970.01.01 00:00:00"
+  let unixTime = convertMT5DateToUnix(candleDateTime); // format: 1624982400 for 2021-06-29 00:00:00
+  let candleTime = candleDateTime.split(' ')[1]; // get the time from the date string (00:00:00)
+  let backTestTime = getCandleChartAxisLocationFromDate(candleDateTime); // + 3600; // Actually the same as above (candleDateTimeStamp)
+  
+  var selectedTime = document.getElementById('backtesting-hour').value;
+  
+  if (candleTime == selectedTime) {
+    numbDays = numbDays + 1;
+    let btt = backTestTime; // * 1000;
+    let formatedDate = formatDateFromUnix(btt);
+
+    // Display Backtesting dates on the chart:
+    bttVerticalLineAnnotation(btt);
+    // Display Backtesting dates on the select element:
+    $navigateTroughtDates.innerHTML += `<option value="${unixTime}">${candleDateTime}</option>`;
+  }
+  // End of Backtesting dates ====================================
 };
 
 const CSIDIndicator = (d, dataIndex) => {

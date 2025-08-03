@@ -36,7 +36,7 @@
         <label for="">Upload CSV bars</label>
         <div class="h-flex">
           <input type="file" id="csvFileInput" accept=".csv" class="h-input-effects" style="width: 80%"/>
-          <button id="csvRefresh" title="Refresh" class="mybutton h-input-effects">
+          <button id="csvRefresh" title="Refresh" class="mybutton h-input-effects notify-bullet">
             <i class="fas fa-repeat"></i>
           </button>
         </div>
@@ -50,7 +50,9 @@
           </div>
           <div class="h-form-group">
             <label for="NavigateTroughtDates">Navigate trought dates</label>
-            <select id="NavigateTroughtDates" class="h-input-effects"></select>
+            <div id="ntd-notify" class="notify-bullet">
+              <select id="NavigateTroughtDates" class="h-input-effects" style="width: 100%;"></select>
+            </div>
           </div>
           <div class="h-form-group">
             <label for="nextDate">Next</label>
@@ -136,6 +138,15 @@
                 window.location.href = currentUrl + selectedTheme;
               }
             </script>
+        </div>
+        <hr class="h-hr" />
+        <label>File Reading Status</label>
+        <div class="flex">
+          <span id="firstDate"></span>
+          <span> - </span>
+          <span id="currentReadingDate" class="notify-bullet"></span>
+          <span> - </span>
+          <span id="lastDate"></span>
         </div>
         <hr class="h-hr" />
         <label for="backtesting-hour">CSV Data</label>
@@ -405,8 +416,8 @@ if (currentTime >= time1 && currentTime <= time2) {
               <label for="LotSize">Lot Size</label>
               <input id="LotSize" type="number" value="1.0" class="h-input-effects" />
               <label for="">RR (SL Points | TP Points)</label>
-              <input id="SLPoints" type="number" value="0.0001" class="h-input-effects" />
-              <input id="TPPoints" type="number" value="0.0003" class="h-input-effects" />
+              <input id="SLPoints" type="number" value="0.0001" step="0.0001" class="h-input-effects" />
+              <input id="TPPoints" type="number" value="0.0003" step="0.0001" class="h-input-effects" />
             </div>
           </div>
           <textarea id="backtestingResult" rows="10" style="flex-grow: 1; min-width: 20%" class="h-field"></textarea>
