@@ -113,10 +113,7 @@ select:disabled:hover,
 }
 
 pre code {
-  //background-color: var(--dark3);
   color: #e83e8c;
-  //padding: var(--padding);
-  //border-radius: var(--border);
 }
 
 .h-btn {
