@@ -60,10 +60,38 @@ table tr {
   box-shadow: 0 0 10px red;
   animation: scaletrans 0.6s ease-out infinite alternate;
   transform: scale(1);
+  transition: opacity .25s ease-in;
 }
 
 .notify-bullet.active:before {
   opacity: 1;
+}
+
+#currentReadingDate {
+  color: var(--grey1);
+}
+
+#fileReadingProgression {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 5px;
+  border-radius: 3px;
+  background-color: var(--grey1);
+}
+
+#fileReadingProgression .progression {
+  content: "";
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--progress, 0%);
+  height: 100%;
+  border-radius: 3px;
+  background-color: var(--green);
+  box-shadow: 0 0 15px 1px var(--green);
+  transition: all 1s ease-out;
 }
 
 .historical-order-line:hover {

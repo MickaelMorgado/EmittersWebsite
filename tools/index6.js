@@ -185,6 +185,8 @@ let CSIDCoolddownSignal = 5;
 let csvDataIndex = 0;
 let numbDays = 0;
 let ordersHistory = [];
+let firstDate = new Date();
+let lastDate = new Date();
 window.ordersHistory = ordersHistory;
 
 const handleFileAndInitGraph = (file) => {
@@ -211,8 +213,8 @@ const handleFileAndInitGraph = (file) => {
       const firstLine = lines[1];
       const lastLine = lines[lines.length - 1];
 
-      const firstDate = firstLine.split('\t')[0];
-      const lastDate = lastLine.split('\t')[0];
+      firstDate = firstLine.split('\t')[0];
+      lastDate = lastLine.split('\t')[0];
 
       $firstDate.textContent = firstDate;
       $lastDate.textContent = lastDate;
@@ -1436,10 +1438,21 @@ const animateActiveClass = (element) => {
 };
 // End of Notify ===============================
 
+function updateFileReadingProgression(valueInPercentage) {
+  const progressionBar = document.querySelector('#fileReadingProgression .progression');
+  progressionBar.style.width = `${valueInPercentage}%`;
+}
+window.updateFileReadingProgression = updateFileReadingProgression;
+
 let prevDate = null;
 const updateDynamicInfos = (d) => {
   if (prevDate !== d['<DATE>']) {
     $currentReadingDate.innerText = d['<DATE>'];
+
+    // Update progression bar:
+    const numberOfDays = Math.ceil((new Date(lastDate) - new Date(firstDate)) / (1000 * 60 * 60 * 24));
+    updateFileReadingProgression(numbDays * 100 / numberOfDays);
+    
     animateActiveClass($currentReadingDate);
     prevDate = d['<DATE>'];
   }
@@ -1459,7 +1472,7 @@ const appendDataToChart = (d, dataIndex) => {
   );
 };
 
-const addBacktestingDateTimeToChart = (d, dataIndex) => {
+const addBacktestingDateTimeToChart = (d) => {
   // Backtesting dates ====================================
   let candleDateTime = `${d[EnumMT5OHLC.DATE]} ${d[EnumMT5OHLC.TIME]}`; // excepted format: "1970.01.01 00:00:00"
   let unixTime = convertMT5DateToUnix(candleDateTime); // format: 1624982400 for 2021-06-29 00:00:00
@@ -1471,9 +1484,8 @@ const addBacktestingDateTimeToChart = (d, dataIndex) => {
   if (candleTime == selectedTime) {
     numbDays = numbDays + 1;
     let btt = backTestTime; // * 1000;
-    let formatedDate = formatDateFromUnix(btt);
-
-    // Display Backtesting dates on the chart:
+    //let formatedDate = formatDateFromUnix(btt);
+    
     bttVerticalLineAnnotation(btt);
     // Display Backtesting dates on the select element:
     $navigateTroughtDates.innerHTML += `<option value="${unixTime}">${candleDateTime}</option>`;
