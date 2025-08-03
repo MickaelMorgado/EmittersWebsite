@@ -975,8 +975,8 @@ function initSciChart(data) {
 
       // TTR Indicator: ========================================
       const inTradingTimeRange = (d) => {
-        const startRangeTime = new Date(`${d[EnumMT5OHLC.DATE]} 01:00:00`);
-        const endRangeTime = new Date(`${d[EnumMT5OHLC.DATE]} 23:00:00`);
+        const startRangeTime = new Date(`${d[EnumMT5OHLC.DATE]} 09:50:00`);
+        const endRangeTime = new Date(`${d[EnumMT5OHLC.DATE]} 12:00:00`);
         const currentTime =  new Date(`${d[EnumMT5OHLC.DATE]} ${d[EnumMT5OHLC.TIME]}`);
         const inTradingTimeRange = currentTime >= startRangeTime && currentTime <= endRangeTime;
         //console.table([startRangeTime, currentTime, endRangeTime, currentTime >= startRangeTime && currentTime <= endRangeTime, inTradingTimeRange, arrayOfSignals]);
