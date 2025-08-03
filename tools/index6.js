@@ -24,6 +24,9 @@ const $currentReadingDate = document.getElementById('currentReadingDate');
 //const audioTick = new Audio('squirrel_404_click_tick.wav');
 const audioNotify = new Audio('joseegn_ui_sound_select.wav');
 
+const $backTestingPauseButton = document.getElementById('backTestingPauseButton');
+let backTestingPaused = $backTestingPauseButton.checked;
+
 function toggleHeight() {
   resultPanel.classList.toggle('active');
 }
@@ -83,6 +86,13 @@ $TPPointsInput.addEventListener('change', () => {
 $LotSizeInput.addEventListener('change', () => {
   animateActiveClass($csvRefresh);
 })
+$backTestingPauseButton.addEventListener('change', () => {
+  backTestingPaused = $backTestingPauseButton.checked;
+
+  if (!backTestingPaused) {
+    animateActiveClass($csvRefresh);
+  }
+});
 /* ---- */
 
 const decimals = 5;
@@ -213,6 +223,13 @@ const handleFileAndInitGraph = (file) => {
       header: true,
       dynamicTyping: true,
       step: function (results, parser) {
+
+        if (backTestingPaused) {
+          parser.pause();
+          document.getElementById('loading-element').classList.remove('visible');
+          return;
+        }
+
         const row = results.data;
         csvDataIndex += 1;
 
@@ -258,6 +275,7 @@ $csvFileInput.addEventListener('change', function loadcsv(event) {
 
 $csvRefresh.addEventListener('click', () => {
   const file = $csvFileInput.files[0];
+  $backTestingPauseButton.checked = false;
   handleFileAndInitGraph(file);
 });
 
