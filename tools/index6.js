@@ -24,7 +24,9 @@ const $currentReadingDate = document.getElementById('currentReadingDate');
 //const audioTick = new Audio('squirrel_404_click_tick.wav');
 const audioNotify = new Audio('joseegn_ui_sound_select.wav');
 
-const $backTestingPauseButton = document.getElementById('backTestingPauseButton');
+const $backTestingPauseButton = document.getElementById(
+  'backTestingPauseButton'
+);
 let backTestingPaused = $backTestingPauseButton.checked;
 
 function toggleHeight() {
@@ -79,13 +81,13 @@ document
 
 $SLPointsInput.addEventListener('change', () => {
   animateActiveClass($csvRefresh);
-})
+});
 $TPPointsInput.addEventListener('change', () => {
   animateActiveClass($csvRefresh);
-})
+});
 $LotSizeInput.addEventListener('change', () => {
   animateActiveClass($csvRefresh);
-})
+});
 $backTestingPauseButton.addEventListener('change', () => {
   backTestingPaused = $backTestingPauseButton.checked;
 
@@ -225,10 +227,11 @@ const handleFileAndInitGraph = (file) => {
       header: true,
       dynamicTyping: true,
       step: function (results, parser) {
-
         if (backTestingPaused) {
           parser.pause();
-          document.getElementById('loading-element').classList.remove('visible');
+          document
+            .getElementById('loading-element')
+            .classList.remove('visible');
           return;
         }
 
@@ -240,13 +243,13 @@ const handleFileAndInitGraph = (file) => {
         updateDynamicInfos(results.data, csvDataIndex);
         // Append data to the chart:
         appendDataToChart(results.data, csvDataIndex);
-        // Backtesting date time logics (annotation on chart and select element population): 
+        // Backtesting date time logics (annotation on chart and select element population):
         addBacktestingDateTimeToChart(results.data, csvDataIndex);
         // Plot real-time indicators:
         appendIndicatorsToChart(results.data, csvDataIndex);
         // Run the Check for TP/SL hit function on every drawn candle:
         checkForTPSLHit(results.data, csvDataIndex);
-        // Calculate and Display profitability statistics: 
+        // Calculate and Display profitability statistics:
         profitabilityCalculation();
 
         //audioTick.play();
@@ -460,11 +463,14 @@ function initSciChart(data) {
 
       // Take trades when signals are valid:
       const checkSignalsForTrade = (d, direction) => {
-        const takeTradeSignal = arrayOfSignals[0] == true && arrayOfSignals[1] == true;
+        const takeTradeSignal =
+          arrayOfSignals[0] == true &&
+          arrayOfSignals[1] == true &&
+          arrayOfSignals[2] == true; // CSID, TTR, ATR
         if (takeTradeSignal) {
           AddActionOnChart(d, EnumActionType.TAKE_A_TRADE, direction);
         }
-      }
+      };
 
       // TP/SL Validation: ========================================
       // Function to check all TP/SL hit:
@@ -565,7 +571,7 @@ function initSciChart(data) {
             );
             break;
           case 'TAKE_A_TRADE':
-            const definedCandleMoment = EnumMT5OHLC.OPEN
+            const definedCandleMoment = EnumMT5OHLC.OPEN;
             const orderOptionsBasedDirection = (tradeDirection) => {
               if (tradeDirection == EnumDirection.BULL) {
                 return {
@@ -852,13 +858,13 @@ function initSciChart(data) {
           borderWidth: 1,
           order: 1,
           fill: false,
-          tension: .5,
+          tension: 0.5,
           pointStyle: false,
         });
 
         const profitabilityChartOptions = {
           animation: {
-            duration: 0
+            duration: 0,
           },
           responsive: false,
           elements: {
@@ -908,7 +914,9 @@ function initSciChart(data) {
                         <td>${order.sl.toFixed(5)}</td>
                         <td>${order.tp.toFixed(5)}</td>
                         <td>${order.direction}</td>
-                        <td class="order-status-${order.orderStatus}">${order.orderStatus}</td>
+                        <td class="order-status-${order.orderStatus}">${
+                          order.orderStatus
+                        }</td>
                         <td>${order.closedPrice || ''}</td>
                         <td>${order.closedTime || ''}</td>
                       </tr>
@@ -932,18 +940,18 @@ function initSciChart(data) {
       sciChartSurface.renderableSeries.add(FCRS);
 
       // Start of Window assigned custom scichart functions: ========================
-      const addNewCandleToChart = (ohlcDataRow, dataIndex) => {
+      const addNewCandleToChart = (d, dataIndex) => {
         if (candlesFromBuffer.length >= MAX_BUFFER_SIZE) {
           candlesFromBuffer.shift(); // Remove the oldest element if the buffer is full to save memory
         }
-        candlesFromBuffer.push(ohlcDataRow);
+        candlesFromBuffer.push(d);
 
         ohlcDataSeries.append(
-          convertMT5DateToUnix(ohlcDataRow[0]),
-          ohlcDataRow[1],
-          ohlcDataRow[2],
-          ohlcDataRow[3],
-          ohlcDataRow[4]
+          convertMT5DateToUnix(`${d[EnumMT5OHLC.DATE]} ${d[EnumMT5OHLC.TIME]}`),
+          d[EnumMT5OHLC.OPEN],
+          d[EnumMT5OHLC.HIGH],
+          d[EnumMT5OHLC.LOW],
+          d[EnumMT5OHLC.CLOSE]
         );
       };
       window.addNewCandleToChart = addNewCandleToChart;
@@ -962,26 +970,60 @@ function initSciChart(data) {
         const bttLine = new VerticalLineAnnotation({
           labelPlacement: ELabelPlacement.TopRight,
           showLabel: true,
-          stroke: "#666666",
+          stroke: '#666666',
           strokeThickness: 2,
           x1: btt,
-          axisLabelFill: "#666666",
-          axisLabelStroke: "#333",
+          axisLabelFill: '#666666',
+          axisLabelStroke: '#333',
         });
         sciChartSurface.annotations.add(bttLine);
         animateActiveClass(document.getElementById('ntd-notify'));
-      }
+      };
       window.bttVerticalLineAnnotation = bttVerticalLineAnnotation;
+
+      // ATR Indicator: ========================================
+      const calcATR = (d, dataIndex) => {
+        const ATRLength = MAX_BUFFER_SIZE; // ATR period
+
+        if (dataIndex < ATRLength) return; // Ensure we have enough data for ATR calculation
+
+        //console.log('candlesFromBuffer:', candlesFromBuffer); // candlesFromBuffer
+
+        // Calculate True Range (TR) for each candle
+        const tr = candlesFromBuffer.map((c, i) => {
+          if (i === 0) return 0; // No TR for the first candle
+          const prevCandle = candlesFromBuffer[i - 1];
+          return Math.max(
+            c[EnumMT5OHLC.HIGH] - c[EnumMT5OHLC.LOW],
+            Math.abs(c[EnumMT5OHLC.HIGH] - prevCandle[EnumMT5OHLC.CLOSE]),
+            Math.abs(c[EnumMT5OHLC.LOW] - prevCandle[EnumMT5OHLC.CLOSE])
+          );
+        });
+        // console.log('tr:', tr); // tr
+
+        // Calculate Average True Range (ATR)
+        const atr = tr.reduce((acc, val) => acc + val, 0) / ATRLength;
+        // // TODO: this is currently the average and not current candle institutional move (comparing current candle against atr)
+        const atrAboveThreshold = atr > 0.0001; // Example threshold, adjust as needed
+        //console.table([atr, atrAboveThreshold]); // atr
+
+        arrayOfSignals[2] = atrAboveThreshold;
+      };
+      window.calcATR = calcATR;
+      // End of ATR Indicator: ========================================
 
       // TTR Indicator: ========================================
       const inTradingTimeRange = (d) => {
         const startRangeTime = new Date(`${d[EnumMT5OHLC.DATE]} 09:50:00`);
         const endRangeTime = new Date(`${d[EnumMT5OHLC.DATE]} 12:00:00`);
-        const currentTime =  new Date(`${d[EnumMT5OHLC.DATE]} ${d[EnumMT5OHLC.TIME]}`);
-        const inTradingTimeRange = currentTime >= startRangeTime && currentTime <= endRangeTime;
+        const currentTime = new Date(
+          `${d[EnumMT5OHLC.DATE]} ${d[EnumMT5OHLC.TIME]}`
+        );
+        const inTradingTimeRange =
+          currentTime >= startRangeTime && currentTime <= endRangeTime;
         //console.table([startRangeTime, currentTime, endRangeTime, currentTime >= startRangeTime && currentTime <= endRangeTime, inTradingTimeRange, arrayOfSignals]);
         arrayOfSignals[1] = inTradingTimeRange;
-      }
+      };
       window.inTradingTimeRange = inTradingTimeRange;
       // End of TTR Indicator: ========================================
 
@@ -1109,7 +1151,7 @@ function initSciChart(data) {
           });
           sciChartSurface.annotations.add(signal);
 
-          // Update first signal then check signals validation: 
+          // Update first signal then check signals validation:
           arrayOfSignals[0] = true;
           savedTradeDirectionForNextCandleEntry = direction;
           //checkSignalsForTrade(d, direction);
@@ -1132,7 +1174,6 @@ function initSciChart(data) {
         //initializeCSIDIndicator();
       };
       window.reinitializeChart = reinitializeChart;
-      // End of Window assigned custom scichart functions: ========================
 
       // Add CursorModifier for crosshair
       sciChartSurface.chartModifiers.add(
@@ -1439,7 +1480,9 @@ const animateActiveClass = (element) => {
 // End of Notify ===============================
 
 function updateFileReadingProgression(valueInPercentage) {
-  const progressionBar = document.querySelector('#fileReadingProgression .progression');
+  const progressionBar = document.querySelector(
+    '#fileReadingProgression .progression'
+  );
   progressionBar.style.width = `${valueInPercentage}%`;
 }
 window.updateFileReadingProgression = updateFileReadingProgression;
@@ -1450,9 +1493,11 @@ const updateDynamicInfos = (d) => {
     $currentReadingDate.innerText = d['<DATE>'];
 
     // Update progression bar:
-    const numberOfDays = Math.ceil((new Date(lastDate) - new Date(firstDate)) / (1000 * 60 * 60 * 24));
-    updateFileReadingProgression(numbDays * 100 / numberOfDays);
-    
+    const numberOfDays = Math.ceil(
+      (new Date(lastDate) - new Date(firstDate)) / (1000 * 60 * 60 * 24)
+    );
+    updateFileReadingProgression((numbDays * 100) / numberOfDays);
+
     animateActiveClass($currentReadingDate);
     prevDate = d['<DATE>'];
   }
@@ -1460,16 +1505,7 @@ const updateDynamicInfos = (d) => {
 
 const appendDataToChart = (d, dataIndex) => {
   //$csvDataField.value += JSON.stringify(d);
-  addNewCandleToChart(
-    [
-      `${d['<DATE>']} ${d['<TIME>']}`,
-      d['<OPEN>'],
-      d['<HIGH>'],
-      d['<LOW>'],
-      d['<CLOSE>'],
-    ],
-    dataIndex
-  );
+  addNewCandleToChart(d, dataIndex);
 };
 
 const addBacktestingDateTimeToChart = (d) => {
@@ -1478,14 +1514,14 @@ const addBacktestingDateTimeToChart = (d) => {
   let unixTime = convertMT5DateToUnix(candleDateTime); // format: 1624982400 for 2021-06-29 00:00:00
   let candleTime = candleDateTime.split(' ')[1]; // get the time from the date string (00:00:00)
   let backTestTime = getCandleChartAxisLocationFromDate(candleDateTime); // + 3600; // Actually the same as above (candleDateTimeStamp)
-  
+
   var selectedTime = document.getElementById('backtesting-hour').value;
-  
+
   if (candleTime == selectedTime) {
     numbDays = numbDays + 1;
     let btt = backTestTime; // * 1000;
     //let formatedDate = formatDateFromUnix(btt);
-    
+
     bttVerticalLineAnnotation(btt);
     // Display Backtesting dates on the select element:
     $navigateTroughtDates.innerHTML += `<option value="${unixTime}">${candleDateTime}</option>`;
@@ -1503,6 +1539,7 @@ const appendIndicatorsToChart = (d, dataIndex) => {
   // This is a placeholder function, you can implement your own logic
   CSIDIndicator(d, dataIndex);
   inTradingTimeRange(d);
+  calcATR(d, dataIndex);
 };
 
 // Historical Trades Textarea Change Handler
