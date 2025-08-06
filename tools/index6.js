@@ -424,6 +424,7 @@ function initSciChart(data) {
       const lookbackPeriodForCSIDLow = 9;
       const highestHighLong = [];
       const lowestLowShort = [];
+      let listeningATR = true; // Flag to check if we listening for ATR
       // End of Variables initialization =========================
 
       const signalOffset = 20;
@@ -469,6 +470,7 @@ function initSciChart(data) {
           arrayOfSignals[2] == true; // CSID, TTR, ATR
         if (takeTradeSignal) {
           AddActionOnChart(d, EnumActionType.TAKE_A_TRADE, direction);
+          listeningATR = true; // Start listening for ATR again once we open position
         }
       };
 
@@ -983,9 +985,10 @@ function initSciChart(data) {
 
       // ATR Indicator: ========================================
       const calcATR = (d, dataIndex) => {
-        const ATRLength = MAX_BUFFER_SIZE; // ATR period
+        const atrMultiplierThreshold = 2.5; // ATR multiplier threshold
+        const ATRLength = MAX_BUFFER_SIZE / 2; // ATR period
 
-        if (dataIndex < ATRLength) return; // Ensure we have enough data for ATR calculation
+        if (dataIndex < ATRLength || !listeningATR) return; // Ensure we have enough data for ATR calculation
 
         //console.log('candlesFromBuffer:', candlesFromBuffer); // candlesFromBuffer
 
@@ -999,15 +1002,35 @@ function initSciChart(data) {
             Math.abs(c[EnumMT5OHLC.LOW] - prevCandle[EnumMT5OHLC.CLOSE])
           );
         });
-        // console.log('tr:', tr); // tr
 
-        // Calculate Average True Range (ATR)
         const atr = tr.reduce((acc, val) => acc + val, 0) / ATRLength;
-        // // TODO: this is currently the average and not current candle institutional move (comparing current candle against atr)
-        const atrAboveThreshold = atr > 0.0001; // Example threshold, adjust as needed
-        //console.table([atr, atrAboveThreshold]); // atr
 
-        arrayOfSignals[2] = atrAboveThreshold;
+        // Calculate True Range (TR) for the last candle
+        const lastIndex = candlesFromBuffer.length - 1;
+        const currCandle = candlesFromBuffer[lastIndex];
+        const prevCandle = candlesFromBuffer[lastIndex - 1];
+
+        const currTR = Math.max(
+          currCandle[EnumMT5OHLC.HIGH] - currCandle[EnumMT5OHLC.LOW],
+          Math.abs(
+            currCandle[EnumMT5OHLC.HIGH] - prevCandle[EnumMT5OHLC.CLOSE]
+          ),
+          Math.abs(currCandle[EnumMT5OHLC.LOW] - prevCandle[EnumMT5OHLC.CLOSE])
+        );
+
+        const atrAboveThreshold = currTR > atr * atrMultiplierThreshold;
+
+        // console.log('Listening for ATR:', atr, atrAboveThreshold);
+
+        // As soon we have the first ATR signal we stop listening for it until we take a trade
+        if (atrAboveThreshold) {
+          console.log('Stop listening for ATR:', atr, atrAboveThreshold);
+          //debugger;
+
+          listeningATR = false;
+          arrayOfSignals[2] = atrAboveThreshold;
+          return;
+        }
       };
       window.calcATR = calcATR;
       // End of ATR Indicator: ========================================
