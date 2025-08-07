@@ -416,6 +416,7 @@ function initSciChart(data) {
       // Variables initialization =========================
       let annotations = [];
       let arrayOfSignals = [false, true]; // 2 signals required
+      let tradeCount = 0;
       // Variables initialization for CSID:
       let rollingHighestHighDataSeries = null;
       let rollingLowestLowDataSeries = null;
@@ -424,6 +425,7 @@ function initSciChart(data) {
       const lookbackPeriodForCSIDLow = 9;
       const highestHighLong = [];
       const lowestLowShort = [];
+      // Variables initialization for ATR:
       let listeningATR = true; // Flag to check if we listening for ATR
       // End of Variables initialization =========================
 
@@ -469,8 +471,13 @@ function initSciChart(data) {
           arrayOfSignals[1] == true &&
           arrayOfSignals[2] == true; // CSID, TTR, ATR
         if (takeTradeSignal) {
+          tradeCount++;
           AddActionOnChart(d, EnumActionType.TAKE_A_TRADE, direction);
           listeningATR = true; // Start listening for ATR again once we open position
+          if (tradeCount >= 3) {
+            console.log('Reached 3 trades max');
+            arrayOfSignals[2] = false; // Reset ATR signal after 3 trades max
+          }
         }
       };
 
@@ -985,10 +992,11 @@ function initSciChart(data) {
 
       // ATR Indicator: ========================================
       const calcATR = (d, dataIndex) => {
-        const atrMultiplierThreshold = 2.5; // ATR multiplier threshold
-        const ATRLength = MAX_BUFFER_SIZE / 2; // ATR period
+        const atrMultiplierThreshold = 1.2; // ATR multiplier threshold
+        const ATRLength = 5; // ATR period (number of candles for average calculation)
 
-        if (dataIndex < ATRLength || !listeningATR) return; // Ensure we have enough data for ATR calculation
+        if (dataIndex < ATRLength || !listeningATR || !arrayOfSignals[1])
+          return; // Ensure we have enough data for ATR calculation and we are in the trading time range only
 
         //console.log('candlesFromBuffer:', candlesFromBuffer); // candlesFromBuffer
 
@@ -1021,14 +1029,28 @@ function initSciChart(data) {
         const atrAboveThreshold = currTR > atr * atrMultiplierThreshold;
 
         // console.log('Listening for ATR:', atr, atrAboveThreshold);
+        // console.log('ArrayOfSignals ATR:', arrayOfSignals[2]);
 
         // As soon we have the first ATR signal we stop listening for it until we take a trade
         if (atrAboveThreshold) {
           console.log('Stop listening for ATR:', atr, atrAboveThreshold);
-          //debugger;
+
+          // Create a vertical line annotation for ATR:
+          const atrLine = new VerticalLineAnnotation({
+            labelPlacement: ELabelPlacement.TopRight,
+            showLabel: true,
+            stroke: '#FF0000',
+            strokeThickness: 2,
+            x1: convertMT5DateToUnix(
+              `${currCandle[EnumMT5OHLC.DATE]} ${currCandle[EnumMT5OHLC.TIME]}`
+            ),
+            axisLabelFill: '#FF0000',
+            axisLabelStroke: '#333',
+          });
+          sciChartSurface.annotations.add(atrLine);
 
           listeningATR = false;
-          arrayOfSignals[2] = atrAboveThreshold;
+          arrayOfSignals[2] = true;
           return;
         }
       };
@@ -1038,7 +1060,7 @@ function initSciChart(data) {
       // TTR Indicator: ========================================
       const inTradingTimeRange = (d) => {
         const startRangeTime = new Date(`${d[EnumMT5OHLC.DATE]} 09:50:00`);
-        const endRangeTime = new Date(`${d[EnumMT5OHLC.DATE]} 12:00:00`);
+        const endRangeTime = new Date(`${d[EnumMT5OHLC.DATE]} 11:00:00`);
         const currentTime = new Date(
           `${d[EnumMT5OHLC.DATE]} ${d[EnumMT5OHLC.TIME]}`
         );
