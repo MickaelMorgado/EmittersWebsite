@@ -94,9 +94,69 @@ table tr {
   transition: all 1s ease-out;
 }
 
+
+.historical-order-table-header th {
+  text-align: left;
+}
+
 .historical-order-line:hover {
   background: var(--dark2);  
 }
+
+.historical-order-line td:nth-child(1),
+.historical-order-table-header th:nth-child(1) {
+  width: 3%;
+}
+.historical-order-line td:nth-child(2),
+.historical-order-table-header th:nth-child(2) {
+  width: 20%;
+}
+.historical-order-line td:nth-child(3),
+.historical-order-table-header th:nth-child(3) {
+  width: 5%;
+}
+.historical-order-line td:nth-child(4),
+.historical-order-table-header th:nth-child(4) {
+  width: 5%;
+}
+.historical-order-line td:nth-child(5),
+.historical-order-table-header th:nth-child(5) {
+  width: 5%;
+}
+.historical-order-line td:nth-child(6),
+.historical-order-table-header th:nth-child(6) {
+  width: 10%;
+}
+.historical-order-line td:nth-child(7),
+.historical-order-table-header th:nth-child(7) {
+  width: 12%;
+}
+.historical-order-line td:nth-child(8),
+.historical-order-table-header th:nth-child(8) {
+  width: 12%;
+}
+.historical-order-line td:nth-child(9),
+.historical-order-table-header th:nth-child(9) {
+  width: 18%;
+}
+.historical-order-line td:nth-child(10),
+.historical-order-table-header th:nth-child(10) {
+  width: 10%;
+}
+
+table {
+  position: relative;
+}
+.sticky {
+  position: sticky;
+  top: 70px;
+  left: 0;
+  background: black;
+  box-shadow: 0 0 15px -5px grey;
+  right: 0;
+  z-index: 10000;
+}
+
 
 .order-status-CLOSED_BY_SL {
   color: var(--red);
@@ -104,6 +164,18 @@ table tr {
 
 .order-status-CLOSED_BY_TP {
   color: var(--green);
+}
+
+.trade-result-LOSS {
+  color: var(--red);
+}
+
+.trade-result-WIN {
+  color: var(--green);
+}
+
+.trade-result-BE {
+  color: yellow;
 }
 
 #upload-section {
@@ -161,6 +233,7 @@ table tr {
   background: var(--dark);
   box-shadow: 0 10px 20px -5px var(--dark3);
   box-sizing: border-box;
+  z-index: 2;
 }
 
 .result-panel-content {

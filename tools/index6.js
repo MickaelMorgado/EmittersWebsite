@@ -15,12 +15,14 @@ const $navigateTroughtDates = document.getElementById('NavigateTroughtDates');
 const $SLPointsInput = document.getElementById('SLPoints');
 const $TPPointsInput = document.getElementById('TPPoints');
 const $LotSizeInput = document.getElementById('LotSize');
+const $TSIncrementInput = document.getElementById('TSIncrement');
 const $textareaHistoricalTradesLines = document.getElementById(
   'textareaHistoricalTradesLines'
 );
 const $firstDate = document.getElementById('firstDate');
 const $lastDate = document.getElementById('lastDate');
 const $currentReadingDate = document.getElementById('currentReadingDate');
+const $resultPanelContent = document.querySelectorAll('.result-panel-content'); //result-panel-content
 //const audioTick = new Audio('squirrel_404_click_tick.wav');
 const audioNotify = new Audio('joseegn_ui_sound_select.wav');
 
@@ -33,6 +35,17 @@ function toggleHeight() {
   resultPanel.classList.toggle('active');
 }
 toolbarToggler.addEventListener('click', toggleHeight);
+
+function stickyTableHeaders(parentElement) {
+  const header = document.querySelector('table thead');
+  
+  const scrollTop = parentElement.scrollTop;
+  if (scrollTop > 408) {
+    header.classList.add('sticky');
+  } else {
+    header.classList.remove('sticky');
+  }
+}
 
 document
   .getElementById('result-panel-toolbar-content-toggler-algo-editor')
@@ -79,6 +92,11 @@ document
       .classList.remove('h-hide');
   });
 
+resultPanel.addEventListener('scroll', function() {
+  // Run table header sticky function
+  stickyTableHeaders(this);
+});
+
 $SLPointsInput.addEventListener('change', () => {
   animateActiveClass($csvRefresh);
 });
@@ -110,11 +128,16 @@ const EnumDirection = {
   BULL: 'BULL',
   BEAR: 'BEAR',
 };
-const EnumOrderStatus = {
+const EnumclosedOrderType = {
   PENDING: 'PENDING',
   CLOSED_BY_TP: 'CLOSED_BY_TP',
   CLOSED_BY_SL: 'CLOSED_BY_SL',
 };
+const EnumTradeResult = {
+  WIN: 'WIN',
+  LOSS: 'LOSS',
+  BE: 'BE',
+}
 const EnumActionType = {
   VERTICAL_LINE: 'VERTICAL_LINE',
   DRAW_A_CIRCLE: 'DRAW_A_CIRCLE',
@@ -432,6 +455,8 @@ function initSciChart(data) {
       const signalOffset = 20;
       const signalAnnotation = {
         svgString: {
+          orderEntryBuy: `<svg id="Capa_1" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10"><g transform="translate(-54.616083,-75.548914)"><path style="fill:#0000FF;" d="M 55,85 L 60,75 L 65,85 Z"/></g></svg>`,
+          orderEntrySell: `<svg id="Capa_1" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10"><g transform="translate(-54.616083,-75.548914)"><path style="fill:#0000FF;" d="M 55,75 L 60,85 L 65,75 Z"/></g></svg>`,
           buy: `<svg id="Capa_1" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10"><g transform="translate(-54.616083,-75.548914)"><path style="fill:#0000FF;" d="M 55,85 L 60,75 L 65,85 Z"/></g></svg>`,
           bullish: `<svg id="Capa_1" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10" transform="translate(0, ${signalOffset})"><g transform="translate(-54.616083,-75.548914)"><path style="fill:#00FF00; opacity:0.3;" d="M 55,85 L 60,75 L 65,85 Z"/></g></svg>`,
           sell: `<svg id="Capa_1" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10"><g transform="translate(-54.616083,-75.548914)"><path style="fill:#FF0000;" d="M 55,75 L 60,85 L 65,75 Z"/></g></svg>`,
@@ -497,11 +522,36 @@ function initSciChart(data) {
           const currentTime = `${d[EnumMT5OHLC.DATE]} ${d[EnumMT5OHLC.TIME]}`;
           const orderOpenTime = convertMT5DateToUnix(order.time);
 
-          const closeOrder = (level, status, color) => {
+          const tradeResult = () => {
+            if (order.pnlPoints > 0) {
+              return EnumTradeResult.WIN;
+            } else if (order.pnlPoints < -0.0001) {
+              return EnumTradeResult.LOSS;
+            } else {
+              return EnumTradeResult.BE;
+            }
+          };
+
+          const tradeResultColor = () => {
+            switch (order.tradeResult) {
+              case EnumTradeResult.WIN:
+                return bullishColor;
+              case EnumTradeResult.LOSS:
+                return bearishColor;
+              case EnumTradeResult.BE:
+                return 'FFFF00';
+              default:
+                return '666666';
+            }
+          }
+
+          const closeOrder = (level, status) => {
             order.closed = true;
             order.closedPrice = level;
             order.closedTime = currentTime;
-            order.orderStatus = status;
+            order.closedOrderType = status;
+            order.pnlPoints = order.direction == EnumDirection.BULL ? level - order.price : order.price - level;
+            order.tradeResult = tradeResult();
 
             const orderCloseTime = convertMT5DateToUnix(order.closedTime);
 
@@ -524,9 +574,10 @@ function initSciChart(data) {
             );
 
             // Line
+            const tradeResultedColor = tradeResultColor();
             sciChartSurface.annotations.add(
               new LineAnnotation({
-                stroke: `#${color}`,
+                stroke: `#${tradeResultedColor}`,
                 strokeThickness: 1,
                 strokeDashArray: [5, 5],
                 x1: orderOpenTime,
@@ -540,33 +591,43 @@ function initSciChart(data) {
           // Modify SL (Trailing Stop)
           if (candlesFromBuffer.length < 2) return;
 
-          const trailingStopSize = 0.00001;
+          const trailingStopSize = parseFloat($TSIncrementInput.value) || 0.0001;
 
           const previousCandle =
             candlesFromBuffer[candlesFromBuffer.length - 2];
 
-          if (isBull) {
+          /*if (isBull) {
             if (
               getCandleDirectionFromCandle(previousCandle) == EnumDirection.BULL
             ) {
+              console.log('Moving SL of ', order.id, ' from ', order.sl, ' to ',  order.sl + trailingStopSize);
+              debugger
               order.sl = order.sl + trailingStopSize; // Move SL by trailingStopSize (up side)
-            }
-          } else if (isBear) {
+            //}
+          //} else if (isBear) {
             if (
               getCandleDirectionFromCandle(previousCandle) == EnumDirection.BEAR
             ) {
               order.sl = order.sl - trailingStopSize; // Move SL by trailingStopSize (down side)
-            }
+            //}
+          //}*/
+          
+          if (order.direction == EnumDirection.BULL) {
+            //console.log('Moving SL of ', order.id, ' from ', order.sl, ' to ',  order.sl + trailingStopSize);
+            order.sl = order.sl + trailingStopSize; // Move SL by trailingStopSize (up side)
+          } else if (order.direction == EnumDirection.BEAR) {
+            //console.log('Moving SL of ', order.id, ' from ', order.sl, ' to ',  order.sl - trailingStopSize);
+            order.sl = order.sl - trailingStopSize; // Move SL by trailingStopSize (down side)
           }
 
           // Check TP
           if ((isBull && high >= order.tp) || (!isBull && low <= order.tp)) {
-            closeOrder(order.tp, EnumOrderStatus.CLOSED_BY_TP, bullishColor);
+            closeOrder(order.tp, EnumclosedOrderType.CLOSED_BY_TP);
           }
 
           // Check SL
           if ((isBull && low <= order.sl) || (!isBull && high >= order.sl)) {
-            closeOrder(order.sl, EnumOrderStatus.CLOSED_BY_SL, bearishColor);
+            closeOrder(order.sl, EnumclosedOrderType.CLOSED_BY_SL);
           }
         });
       };
@@ -627,19 +688,19 @@ function initSciChart(data) {
               id: ordersHistory.length + 1,
               time: `${candle[EnumMT5OHLC.DATE]} ${candle[EnumMT5OHLC.TIME]}`,
               price: candle[definedCandleMoment],
-              orderStatus: EnumOrderStatus.PENDING,
+              closedOrderType: EnumclosedOrderType.PENDING,
               ...orderOptionsBasedDirection(tradeDirection),
             });
             window.ordersHistory = ordersHistory;
 
-            // Add annotation from entry:
+            // Add annotation for orders history:
             sciChartSurface.annotations.add(
               new CustomAnnotation({
                 x1: candlePosition,
                 y1: candle[definedCandleMoment],
                 verticalAnchorPoint: EVerticalAnchorPoint.Center,
                 horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
-                svgString: signalAnnotation.svgString.buy,
+                svgString: tradeDirection == EnumDirection.BULL ? signalAnnotation.svgString.orderEntryBuy : signalAnnotation.svgString.orderEntrySell,
               })
             );
             break;
@@ -664,7 +725,7 @@ function initSciChart(data) {
               id: ordersHistory.length + 1,
               time: candle[EnumMT5OHLC.TIME],
               price: candle[definedCandleMoment],
-              orderStatus: EnumOrderStatus.PENDING,
+              closedOrderType: EnumclosedOrderType.PENDING,
               ...orderOptionsBasedDirection2(tradeDirection),
             });
 
@@ -792,10 +853,10 @@ function initSciChart(data) {
 
       const profitabilityCalculation = () => {
         const profitsInPoints = ordersHistory.reduce((acc, order) => {
-          if (order.orderStatus == EnumOrderStatus.CLOSED_BY_TP) {
+          if (order.closedOrderType == EnumclosedOrderType.CLOSED_BY_TP) {
             return acc + tpSize();
           }
-          if (order.orderStatus == EnumOrderStatus.CLOSED_BY_SL) {
+          if (order.closedOrderType == EnumclosedOrderType.CLOSED_BY_SL) {
             return acc - slSize();
           }
           return acc;
@@ -806,7 +867,7 @@ function initSciChart(data) {
           ordersHistory.length > 0
             ? (
                 (ordersHistory.filter(
-                  (order) => order.orderStatus == EnumOrderStatus.CLOSED_BY_TP
+                  (order) => order.tradeResult == EnumTradeResult.WIN
                 ).length /
                   ordersHistory.length) *
                 100
@@ -832,9 +893,12 @@ function initSciChart(data) {
         var datasets = [];
         var values = ordersHistory.map((order) => {
           const pnlvar =
-            order.orderStatus == EnumOrderStatus.CLOSED_BY_TP
+            order.pnlPoints
+            /*
+            order.closedOrderType == EnumclosedOrderType.CLOSED_BY_TP
               ? tpSize()
               : -slSize();
+            */
           return [pnlvar];
         });
         var labels = ordersHistory.map((order) => order.id);
@@ -925,16 +989,17 @@ function initSciChart(data) {
         document.getElementById('backtestingResultOrderHistory').innerHTML = `
                 <table>
                   <thead>
-                    <tr>
+                    <tr class="historical-order-table-header">
                       <th>ID</th>
                       <th>Time</th>
                       <th>Price</th>
                       <th>SL</th>
                       <th>TP</th>
                       <th>Direction</th>
-                      <th>Order Status</th>
+                      <th>Closed Order Type</th>
                       <th>Closed Price</th>
                       <th>Closed Time</th>
+                      <th>P/L (Points)</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -948,11 +1013,12 @@ function initSciChart(data) {
                         <td>${order.sl.toFixed(5)}</td>
                         <td>${order.tp.toFixed(5)}</td>
                         <td>${order.direction}</td>
-                        <td class="order-status-${order.orderStatus}">${
-                          order.orderStatus
+                        <td class="order-status-${order.closedOrderType}">${
+                          order.closedOrderType
                         }</td>
                         <td>${order.closedPrice || ''}</td>
                         <td>${order.closedTime || ''}</td>
+                        <td class="trade-result-${order.tradeResult}" title="${order.tradeResult}">${order.pnlPoints !== undefined ? order.pnlPoints.toFixed(5) : ''}</td>
                       </tr>
                     `
                       )
