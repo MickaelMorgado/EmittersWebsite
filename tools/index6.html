@@ -119,26 +119,26 @@
           }
         </script-->
         <hr class="h-hr" />
-        <label for="colorSettingsTutorial">Customize the chart colors theme</label>
+        <label for="colorSettingsTutorial">Application theme</label>
         <div>
-            <select id="themeSelector" class="h-input-effects" onchange="applyTheme()">
-              <option value="">-</option>
-              <option value="?bullishColor=00FF00&bearishColor=FF0000">Green / Red</option>
-              <option value="?bullishColor=0000FF&bearishColor=FF00FF">Blue / Magenta</option>
-              <option value="?bullishColor=FFFF00&bearishColor=00FFFF">Yellow / Cyan</option>
-              <option value="?bullishColor=00cdff&bearishColor=555555">Light Blue / Grey</option>
-              <option value="?bullishColor=FF5500&bearishColor=444444">Volcanic</option>
-              <option value="?bullishColor=FFFFFF&bearishColor=FF0000">Devil</option>
-              <option value="?bullishColor=03A062&bearishColor=222222">Matrix</option>
-            </select>
-            <script>
-              function applyTheme() {
-                const themeSelector = document.getElementById('themeSelector');
-                const selectedTheme = themeSelector.value;
-                const currentUrl = window.location.href.split('?')[0];
-                window.location.href = currentUrl + selectedTheme;
-              }
-            </script>
+          <select id="themeSelector" class="h-input-effects" onchange="applyTheme()">
+            <option value="">-</option>
+            <option value="?bullishColor=00FF00&bearishColor=FF0000">Green / Red</option>
+            <option value="?bullishColor=0000FF&bearishColor=FF00FF">Blue / Magenta</option>
+            <option value="?bullishColor=FFFF00&bearishColor=00FFFF">Yellow / Cyan</option>
+            <option value="?bullishColor=00cdff&bearishColor=555555">Light Blue / Grey</option>
+            <option value="?bullishColor=FF5500&bearishColor=444444">Volcanic</option>
+            <option value="?bullishColor=FFFFFF&bearishColor=FF0000">Devil</option>
+            <option value="?bullishColor=03A062&bearishColor=222222">Matrix</option>
+          </select>
+          <script>
+            function applyTheme() {
+              const themeSelector = document.getElementById('themeSelector');
+              const selectedTheme = themeSelector.value;
+              const currentUrl = window.location.href.split('?')[0];
+              window.location.href = currentUrl + selectedTheme;
+            }
+          </script>
         </div>
         <hr class="h-hr" />
         <label for="backTestingPauseButton">Stop BackTesting</label>
@@ -425,7 +425,34 @@ if (currentTime >= time1 && currentTime <= time2) {
               <label for="">RR (SL Points | TP Points)</label>
               <input id="SLPoints" type="number" value="0.0001" step="0.0001" class="h-input-effects" />
               <input id="TPPoints" type="number" value="0.0003" step="0.0001" class="h-input-effects" />
+              <label for="TSIncrement">TS Increment</label>
+              <input id="TSIncrement" type="number" value="0.0001" step="0.0001" class="h-input-effects" title="Size of trailing stop increment after each candle" />
+              <div class="h-flex">
+                <button onclick="saveConfigs()" class="mybutton h-input-effects" title="Save Configurations For Next Time"><i class="far fa-save"></i></button>
+              </div>
             </div>
+            <script>
+              const BTTInput = document.getElementById('backtesting-hour');
+              const LotSizeInput = document.getElementById('LotSize');
+              const SLPointsInput = document.getElementById('SLPoints');
+              const TPPointsInput = document.getElementById('TPPoints');
+              const TSIncrementInput = document.getElementById('TSIncrement');
+
+              
+
+              function saveConfigs() {
+                const currentUrl = window.location.href.split('?')[0];
+                const urlParams = new URLSearchParams(window.location.search);
+              
+                urlParams.set('btt', BTTInput.value);
+                urlParams.set('lotsize', LotSizeInput.value);
+                urlParams.set('slpoints', SLPointsInput.value);
+                urlParams.set('tppoints', TPPointsInput.value);
+                urlParams.set('tsincrement', TSIncrementInput.value);
+
+                window.location.search = urlParams;
+              }
+            </script>
           </div>
           <textarea id="backtestingResult" rows="10" style="flex-grow: 1; min-width: 20%" class="h-field"></textarea>
           <div id="myChartContainer" styles="flex-grow: 3; width: 700px">
