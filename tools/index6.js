@@ -361,12 +361,13 @@ function initSciChart(data) {
     .then(({ sciChartSurface, wasmContext }) => {
       // Extract URL parameters
       const urlParams = new URLSearchParams(window.location.search);
-      bullishColor = decodeURIComponent(
-        urlParams.get('bullishColor') || bullishColor
-      );
-      bearishColor = decodeURIComponent(
-        urlParams.get('bearishColor') || bearishColor
-      );
+
+      // Get and parse "theme" param if exists
+      const themeParams = new URLSearchParams(urlParams.get('theme') || '');
+
+      // Extract colors with fallback to existing vars
+      bullishColor = themeParams.get('bullishColor') || bullishColor;
+      bearishColor = themeParams.get('bearishColor') || bearishColor;
 
       // Create a custom theme by implementing all the properties from IThemeProvider
       const customTheme = {
