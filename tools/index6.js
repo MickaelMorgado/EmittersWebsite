@@ -927,7 +927,7 @@ function initSciChart(data) {
           const newCanvas = document.createElement('canvas');
           newCanvas.id = 'myChart';
           newCanvas.width = 700;
-          newCanvas.height = 300;
+          newCanvas.height = 320;
           document.getElementById('myChartContainer').appendChild(newCanvas);
           myChart = document.getElementById('myChart');
           ctx = myChart.getContext('2d');
@@ -1626,8 +1626,8 @@ window.updateFileReadingProgression = updateFileReadingProgression;
 
 let prevDate = null;
 const updateDynamicInfos = (d) => {
-  if (prevDate !== d['<DATE>']) {
-    $currentReadingDate.innerText = d['<DATE>'];
+  if (prevDate !== d[EnumMT5OHLC.DATE]) {
+    $currentReadingDate.innerText = d[EnumMT5OHLC.DATE];
 
     // Update progression bar:
     const numberOfDays = Math.ceil(
@@ -1636,7 +1636,7 @@ const updateDynamicInfos = (d) => {
     updateFileReadingProgression((numbDays * 100) / numberOfDays);
 
     animateActiveClass($currentReadingDate);
-    prevDate = d['<DATE>'];
+    prevDate = d[EnumMT5OHLC.DATE];
   }
 };
 
