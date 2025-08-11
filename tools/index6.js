@@ -265,7 +265,7 @@ const handleFileAndInitGraph = (file) => {
         // Dynamic infos:
         updateDynamicInfos(results.data, csvDataIndex);
         // Append data to the chart:
-        appendDataToChart(results.data, csvDataIndex);
+        appendDataToChart(results.data);
         // Backtesting date time logics (annotation on chart and select element population):
         addBacktestingDateTimeToChart(results.data, csvDataIndex);
         // Plot real-time indicators:
@@ -424,14 +424,12 @@ function initSciChart(data) {
       const growBy = new NumberRange(0.2, 0.2);
       const xAxis = new DateTimeNumericAxis(wasmContext, {
         growBy,
-        id: 'xAxisId', // A fix for cursor labels??
       });
       xAxis.labelProvider.formatCursorLabel = (dataValue) => {
         const unixDateStamp = Math.floor(dataValue); // Flooring it to remove milliseconds from that cursor data, as it is too much precise // - 3600;
         return formatDateFromUnix(unixDateStamp);
       };
       const yAxis = new NumericAxis(wasmContext, {
-        id: 'yAxisId',
         labelPrecision: decimals,
         autoRange: EAutoRange.Once,
         // visibleRangeLimit: new NumberRange(1.02, 1.03),
@@ -478,21 +476,21 @@ function initSciChart(data) {
         opacity: '50',
       };
 
-      function ceilToDecimalPlaces(num, decimalPlaces) {
-        const factor = Math.pow(10, decimalPlaces); // Calculate 10^decimalPlaces
-        return Math.ceil(num * factor) / factor; // Ceil and then divide
-      }
+      // function ceilToDecimalPlaces(num, decimalPlaces) {
+      //   const factor = Math.pow(10, decimalPlaces); // Calculate 10^decimalPlaces
+      //   return Math.ceil(num * factor) / factor; // Ceil and then divide
+      // }
 
       // Function to update Y-axis range dynamically
-      function updateYAxisRange() {
-        const yMin = 1.034; // ohlcDataSeries.getNativeYMin();
-        const yMax = 1.042; // ohlcDataSeries.getNativeYMax();
+      // function updateYAxisRange() {
+      //   const yMin = 1.034; // ohlcDataSeries.getNativeYMin();
+      //   const yMax = 1.042; // ohlcDataSeries.getNativeYMax();
 
-        sciChartSurface.yAxes.get(0).visibleRangeLimit = new NumberRange(
-          yMin,
-          yMax
-        );
-      }
+      //   sciChartSurface.yAxes.get(0).visibleRangeLimit = new NumberRange(
+      //     yMin,
+      //     yMax
+      //   );
+      // }
 
       // Take trades when signals are valid:
       const checkSignalsForTrade = (d, direction) => {
@@ -772,6 +770,7 @@ function initSciChart(data) {
       };
 
       // Second function to be executed after the candle is drawn, you can add annotations here:
+      /*
       const onCandleDrawn = (candle, index, candlesFromBuffer) => {
         const algoEditorTextareaMain0 = document.getElementById(
           'algoEditorTextareaMain0'
@@ -804,7 +803,8 @@ function initSciChart(data) {
           candlesFromBuffer[selectedIndexForSelectedCandleForAnalisis + 1];
 
         const SignalSwingHighLow = () => {
-          if (index < 4 /*|| index > candlesFromBuffer.length - 3*/)
+          // if (index < 4 || index > candlesFromBuffer.length - 3)
+          if (index < 4)
             return false;
 
           // For swing high, current candle high is less than or equal to the previous candle high and the previous candle high is greater than the previous candle open:
@@ -862,6 +862,7 @@ function initSciChart(data) {
 
         eval(algoEditorTextareaMain1.value);
       };
+      */
 
       const profitabilityCalculation = () => {
         const profitsInPoints = ordersHistory.reduce((acc, order) => {
@@ -1057,7 +1058,7 @@ function initSciChart(data) {
       sciChartSurface.renderableSeries.add(FCRS);
 
       // Start of Window assigned custom scichart functions: ========================
-      const addNewCandleToChart = (d, dataIndex) => {
+      const addNewCandleToChart = (d) => {
         if (candlesFromBuffer.length >= MAX_BUFFER_SIZE) {
           candlesFromBuffer.shift(); // Remove the oldest element if the buffer is full to save memory
         }
@@ -1331,10 +1332,8 @@ function initSciChart(data) {
       // Add CursorModifier for crosshair
       sciChartSurface.chartModifiers.add(
         new CursorModifier({
-          xAxisId: 'xAxisId', // A fix for cursor labels??
-          yAxisId: 'yAxisId',
           // Optional properties to configure what parts are shown
-          showTooltip: false,
+          // showTooltip: true,
           showAxisLabels: true,
           showXLine: true,
           showYLine: true,
@@ -1658,9 +1657,9 @@ const updateDynamicInfos = (d) => {
   }
 };
 
-const appendDataToChart = (d, dataIndex) => {
+const appendDataToChart = (d) => {
   //$csvDataField.value += JSON.stringify(d);
-  addNewCandleToChart(d, dataIndex);
+  addNewCandleToChart(d);
 };
 
 const addBacktestingDateTimeToChart = (d) => {
