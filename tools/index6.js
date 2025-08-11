@@ -38,7 +38,7 @@ toolbarToggler.addEventListener('click', toggleHeight);
 
 function stickyTableHeaders(parentElement) {
   const header = document.querySelector('table thead');
-  
+
   const scrollTop = parentElement.scrollTop;
   if (scrollTop > 408) {
     header.classList.add('sticky');
@@ -92,7 +92,7 @@ document
       .classList.remove('h-hide');
   });
 
-resultPanel.addEventListener('scroll', function() {
+resultPanel.addEventListener('scroll', function () {
   // Run table header sticky function
   stickyTableHeaders(this);
 });
@@ -137,7 +137,7 @@ const EnumTradeResult = {
   WIN: 'WIN',
   LOSS: 'LOSS',
   BE: 'BE',
-}
+};
 const EnumActionType = {
   VERTICAL_LINE: 'VERTICAL_LINE',
   DRAW_A_CIRCLE: 'DRAW_A_CIRCLE',
@@ -422,12 +422,16 @@ function initSciChart(data) {
 
       // Cursor labels:
       const growBy = new NumberRange(0.2, 0.2);
-      const xAxis = new DateTimeNumericAxis(wasmContext, { growBy });
+      const xAxis = new DateTimeNumericAxis(wasmContext, {
+        growBy,
+        id: 'xAxisId', // A fix for cursor labels??
+      });
       xAxis.labelProvider.formatCursorLabel = (dataValue) => {
         const unixDateStamp = Math.floor(dataValue); // Flooring it to remove milliseconds from that cursor data, as it is too much precise // - 3600;
         return formatDateFromUnix(unixDateStamp);
       };
       const yAxis = new NumericAxis(wasmContext, {
+        id: 'yAxisId',
         labelPrecision: decimals,
         autoRange: EAutoRange.Once,
         // visibleRangeLimit: new NumberRange(1.02, 1.03),
@@ -544,14 +548,17 @@ function initSciChart(data) {
               default:
                 return '666666';
             }
-          }
+          };
 
           const closeOrder = (level, status) => {
             order.closed = true;
             order.closedPrice = level;
             order.closedTime = currentTime;
             order.closedOrderType = status;
-            order.pnlPoints = order.direction == EnumDirection.BULL ? level - order.price : order.price - level;
+            order.pnlPoints =
+              order.direction == EnumDirection.BULL
+                ? level - order.price
+                : order.price - level;
             order.tradeResult = tradeResult();
 
             const orderCloseTime = convertMT5DateToUnix(order.closedTime);
@@ -592,7 +599,8 @@ function initSciChart(data) {
           // Modify SL (Trailing Stop)
           if (candlesFromBuffer.length < 2) return;
 
-          const trailingStopSize = parseFloat($TSIncrementInput.value) || 0.0001;
+          const trailingStopSize =
+            parseFloat($TSIncrementInput.value) || 0.0001;
 
           const previousCandle =
             candlesFromBuffer[candlesFromBuffer.length - 2];
@@ -612,7 +620,7 @@ function initSciChart(data) {
               order.sl = order.sl - trailingStopSize; // Move SL by trailingStopSize (down side)
             //}
           //}*/
-          
+
           if (order.direction == EnumDirection.BULL) {
             //console.log('Moving SL of ', order.id, ' from ', order.sl, ' to ',  order.sl + trailingStopSize);
             order.sl = order.sl + trailingStopSize; // Move SL by trailingStopSize (up side)
@@ -701,7 +709,10 @@ function initSciChart(data) {
                 y1: candle[definedCandleMoment],
                 verticalAnchorPoint: EVerticalAnchorPoint.Center,
                 horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
-                svgString: tradeDirection == EnumDirection.BULL ? signalAnnotation.svgString.orderEntryBuy : signalAnnotation.svgString.orderEntrySell,
+                svgString:
+                  tradeDirection == EnumDirection.BULL
+                    ? signalAnnotation.svgString.orderEntryBuy
+                    : signalAnnotation.svgString.orderEntrySell,
               })
             );
             break;
@@ -893,9 +904,8 @@ function initSciChart(data) {
         var ctx = myChart.getContext('2d');
         var datasets = [];
         var values = ordersHistory.map((order) => {
-          const pnlvar =
-            order.pnlPoints
-            /*
+          const pnlvar = order.pnlPoints;
+          /*
             order.closedOrderType == EnumclosedOrderType.CLOSED_BY_TP
               ? tpSize()
               : -slSize();
@@ -1019,7 +1029,13 @@ function initSciChart(data) {
                         }</td>
                         <td>${order.closedPrice || ''}</td>
                         <td>${order.closedTime || ''}</td>
-                        <td class="trade-result-${order.tradeResult}" title="${order.tradeResult}">${order.pnlPoints !== undefined ? order.pnlPoints.toFixed(5) : ''}</td>
+                        <td class="trade-result-${order.tradeResult}" title="${
+                          order.tradeResult
+                        }">${
+                          order.pnlPoints !== undefined
+                            ? order.pnlPoints.toFixed(5)
+                            : ''
+                        }</td>
                       </tr>
                     `
                       )
@@ -1315,6 +1331,8 @@ function initSciChart(data) {
       // Add CursorModifier for crosshair
       sciChartSurface.chartModifiers.add(
         new CursorModifier({
+          xAxisId: 'xAxisId', // A fix for cursor labels??
+          yAxisId: 'yAxisId',
           // Optional properties to configure what parts are shown
           showTooltip: false,
           showAxisLabels: true,
