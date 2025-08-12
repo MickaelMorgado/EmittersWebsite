@@ -8,6 +8,15 @@
 // Result Panel Related Actions / Triggers:
 const resultPanel = document.querySelector('#result-panel');
 const $csvRefresh = document.querySelector('#csvRefresh');
+const $resultPanelToolbarContentTogglerAlgoEditor = document.getElementById(
+  'result-panel-toolbar-content-toggler-algo-editor'
+);
+const $resultPanelToolbarContentTogglerAlgo = document.getElementById(
+  'result-panel-toolbar-content-toggler-algo'
+);
+const $resultPanelToolbarContentTogglerReview = document.getElementById(
+  'result-panel-toolbar-content-toggler-review'
+);
 //const $csvDataField = document.getElementById('csvContent');
 const $csvFileInput = document.getElementById('csvFileInput');
 const toolbarToggler = document.querySelector('#result-panel-toolbar-toggler');
@@ -34,7 +43,7 @@ let backTestingPaused = $backTestingPauseButton.checked;
 function toggleHeight() {
   resultPanel.classList.toggle('active');
 }
-toolbarToggler.addEventListener('click', toggleHeight);
+toolbarToggler?.addEventListener('click', toggleHeight);
 
 function stickyTableHeaders(parentElement) {
   const header = document.querySelector('table thead');
@@ -47,66 +56,48 @@ function stickyTableHeaders(parentElement) {
   }
 }
 
-document
-  .getElementById('result-panel-toolbar-content-toggler-algo-editor')
-  .addEventListener('click', () => {
-    resultPanel.classList.add('active');
-    document
-      .querySelectorAll('.result-panel-content')[0]
-      .classList.remove('h-hide');
-    document
-      .querySelectorAll('.result-panel-content')[1]
-      .classList.add('h-hide');
-    document
-      .querySelectorAll('.result-panel-content')[2]
-      .classList.add('h-hide');
-  });
+$resultPanelToolbarContentTogglerAlgoEditor?.addEventListener('click', () => {
+  resultPanel.classList.add('active');
+  document
+    .querySelectorAll('.result-panel-content')[0]
+    .classList.remove('h-hide');
+  document.querySelectorAll('.result-panel-content')[1].classList.add('h-hide');
+  document.querySelectorAll('.result-panel-content')[2].classList.add('h-hide');
+});
 
-document
-  .getElementById('result-panel-toolbar-content-toggler-algo')
-  .addEventListener('click', () => {
-    resultPanel.classList.add('active');
-    document
-      .querySelectorAll('.result-panel-content')[0]
-      .classList.add('h-hide');
-    document
-      .querySelectorAll('.result-panel-content')[1]
-      .classList.remove('h-hide');
-    document
-      .querySelectorAll('.result-panel-content')[2]
-      .classList.add('h-hide');
-  });
+$resultPanelToolbarContentTogglerAlgo?.addEventListener('click', () => {
+  resultPanel.classList.add('active');
+  document.querySelectorAll('.result-panel-content')[0].classList.add('h-hide');
+  document
+    .querySelectorAll('.result-panel-content')[1]
+    .classList.remove('h-hide');
+  document.querySelectorAll('.result-panel-content')[2].classList.add('h-hide');
+});
 
-document
-  .getElementById('result-panel-toolbar-content-toggler-review')
-  .addEventListener('click', () => {
-    resultPanel.classList.add('active');
-    document
-      .querySelectorAll('.result-panel-content')[0]
-      .classList.add('h-hide');
-    document
-      .querySelectorAll('.result-panel-content')[1]
-      .classList.add('h-hide');
-    document
-      .querySelectorAll('.result-panel-content')[2]
-      .classList.remove('h-hide');
-  });
+$resultPanelToolbarContentTogglerReview?.addEventListener('click', () => {
+  resultPanel.classList.add('active');
+  document.querySelectorAll('.result-panel-content')[0].classList.add('h-hide');
+  document.querySelectorAll('.result-panel-content')[1].classList.add('h-hide');
+  document
+    .querySelectorAll('.result-panel-content')[2]
+    .classList.remove('h-hide');
+});
 
 resultPanel.addEventListener('scroll', function () {
   // Run table header sticky function
   stickyTableHeaders(this);
 });
 
-$SLPointsInput.addEventListener('change', () => {
+$SLPointsInput?.addEventListener('change', () => {
   animateActiveClass($csvRefresh);
 });
-$TPPointsInput.addEventListener('change', () => {
+$TPPointsInput?.addEventListener('change', () => {
   animateActiveClass($csvRefresh);
 });
-$LotSizeInput.addEventListener('change', () => {
+$LotSizeInput?.addEventListener('change', () => {
   animateActiveClass($csvRefresh);
 });
-$backTestingPauseButton.addEventListener('change', () => {
+$backTestingPauseButton?.addEventListener('change', () => {
   backTestingPaused = $backTestingPauseButton.checked;
 
   if (!backTestingPaused) {
@@ -290,9 +281,7 @@ const handleFileAndInitGraph = (file) => {
       },
     });
 
-    document
-      .getElementById('result-panel-toolbar-content-toggler-algo')
-      .click();
+    $resultPanelToolbarContentTogglerAlgo?.click();
   }
 };
 
@@ -347,6 +336,7 @@ function initSciChart(data) {
     Point,
     FastLineRenderableSeries,
     XyDataSeries,
+    EAxisAlignment,
     // GlowEffect,
     // ShadowEffect,
   } = SciChart;
@@ -424,16 +414,18 @@ function initSciChart(data) {
       const growBy = new NumberRange(0.2, 0.2);
       const xAxis = new DateTimeNumericAxis(wasmContext, {
         growBy,
+        axisAlignment: EAxisAlignment.Bottom,
       });
       xAxis.labelProvider.formatCursorLabel = (dataValue) => {
         const unixDateStamp = Math.floor(dataValue); // Flooring it to remove milliseconds from that cursor data, as it is too much precise // - 3600;
         return formatDateFromUnix(unixDateStamp);
       };
       const yAxis = new NumericAxis(wasmContext, {
+        growBy,
         labelPrecision: decimals,
         autoRange: EAutoRange.Once,
         // visibleRangeLimit: new NumberRange(1.02, 1.03),
-        growBy,
+        axisAlignment: EAxisAlignment.Right,
       });
 
       sciChartSurface.xAxes.add(xAxis);
@@ -1697,57 +1689,55 @@ const appendIndicatorsToChart = (d, dataIndex) => {
 };
 
 // Historical Trades Textarea Change Handler
-document
-  .getElementById('textareaHistoricalTradesLines')
-  .addEventListener('change', function (event) {
-    const tradesData = event.target.value;
-    const rows = tradesData.split('\n');
+$textareaHistoricalTradesLines?.addEventListener('change', function (event) {
+  const tradesData = event.target.value;
+  const rows = tradesData.split('\n');
 
-    // Clear previous chart data
-    chartData = [];
+  // Clear previous chart data
+  chartData = [];
 
-    // Parse trades data
-    rows.forEach((row) => {
-      if (row.trim()) {
-        // Split by tab for myfxbook format
-        const trade = row.split('\t');
+  // Parse trades data
+  rows.forEach((row) => {
+    if (row.trim()) {
+      // Split by tab for myfxbook format
+      const trade = row.split('\t');
 
-        // Validate trade data
-        if (trade.length >= 10) {
-          const tradeObj = {
-            timestamp: trade[0] ? trade[0].trim() : '',
-            // Assuming the format is: Date Time, Symbol, Type, Lot Size, Open Price, -, Close Price, -, Profit, ...
-            symbol: trade[2] ? trade[2].trim() : '',
-            type: trade[3] ? trade[3].trim() : '',
-            lotSize: trade[4] ? parseFloat(trade[4].trim()) : 0,
-            openPrice: trade[5] ? parseFloat(trade[5].trim()) : 0,
-            closePrice: trade[7] ? parseFloat(trade[7].trim()) : 0,
-            profit: trade[9] ? parseFloat(trade[9].trim()) : 0,
-          };
+      // Validate trade data
+      if (trade.length >= 10) {
+        const tradeObj = {
+          timestamp: trade[0] ? trade[0].trim() : '',
+          // Assuming the format is: Date Time, Symbol, Type, Lot Size, Open Price, -, Close Price, -, Profit, ...
+          symbol: trade[2] ? trade[2].trim() : '',
+          type: trade[3] ? trade[3].trim() : '',
+          lotSize: trade[4] ? parseFloat(trade[4].trim()) : 0,
+          openPrice: trade[5] ? parseFloat(trade[5].trim()) : 0,
+          closePrice: trade[7] ? parseFloat(trade[7].trim()) : 0,
+          profit: trade[9] ? parseFloat(trade[9].trim()) : 0,
+        };
 
-          // Add trade to chart data
-          chartData.push(tradeObj);
-        } else {
-          console.warn('Invalid trade data:', row);
-        }
+        // Add trade to chart data
+        chartData.push(tradeObj);
+      } else {
+        console.warn('Invalid trade data:', row);
       }
-    });
-
-    // Attempt to update chart if possible
-    try {
-      // Check for custom chart update function
-      if (typeof updateChartWithTrades === 'function') {
-        updateChartWithTrades(chartData);
-      }
-      // Fallback to global chart update methods
-      else if (window.updateChart) {
-        window.updateChart(chartData);
-      }
-      // If no update method, log warning
-      else {
-        console.warn('No chart update method available');
-      }
-    } catch (error) {
-      console.error('Error updating chart:', error);
     }
   });
+
+  // Attempt to update chart if possible
+  try {
+    // Check for custom chart update function
+    if (typeof updateChartWithTrades === 'function') {
+      updateChartWithTrades(chartData);
+    }
+    // Fallback to global chart update methods
+    else if (window.updateChart) {
+      window.updateChart(chartData);
+    }
+    // If no update method, log warning
+    else {
+      console.warn('No chart update method available');
+    }
+  } catch (error) {
+    console.error('Error updating chart:', error);
+  }
+});
