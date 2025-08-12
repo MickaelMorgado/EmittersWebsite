@@ -188,7 +188,6 @@
       <i class="fa-regular fa-square"></i>
     </button>
   </div>
-  <div id="hidder"></div>
   <div class="chart-section">
     <div id="loading-element" class="loading-element">
       <span class="spinner"></span>
@@ -223,82 +222,82 @@
           Your code below must require the following structure: <br/>
           <pre>
             <code>
-// Some variables you can use:
-let arrayOfSignals = [false, false]; // Represents 2 signals
+              // Some variables you can use:
+              let arrayOfSignals = [false, false]; // Represents 2 signals
 
-... // Your code here
+              ... // Your code here
 
-EnumActionType
-  .VERTICAL_LINE
-  .DRAW_A_CIRCLE
-  .TAKE_A_TRADE
+              EnumActionType
+                .VERTICAL_LINE
+                .DRAW_A_CIRCLE
+                .TAKE_A_TRADE
             </code>
           </pre>
         </div>
         <div class="h-flex">
           <textarea name="signal-condition" id="algoEditorTextareaMain0" width="100%" rows="3" style="width: 100%; white-space: nowrap;">
-// Represents 2 signals:
-arrayOfSignals.push(false);
-arrayOfSignals.push(false);
+            // Represents 2 signals:
+            arrayOfSignals.push(false);
+            arrayOfSignals.push(false);
           </textarea>
         </div>
         <div class="h-flex">
           <textarea name="signal-condition-1-code" id="algoEditorTextareaMain1" width="100%" rows="10" style="width: 100%; white-space: nowrap;">
-const currentTime = hourMinutes();
-const time1 = '10:10'
-const time2 = '10:45'
+            const currentTime = hourMinutes();
+            const time1 = '10:10'
+            const time2 = '10:45'
 
-// Check if the current time is within the trading window
-if (currentTime >= time1 && currentTime <= time2) {
-  arrayOfSignals[0] = true;
-  
-  // Ensure SignalSwingHighLow runs and updates the swingHighLowHistory
-  if (SignalSwingHighLow()) {
-    const swingHistory = swingHighLowHistory.slice(-2); // Get the last two swings
-    
-    if (swingHistory.length === 2) {
-      const [firstSwing, secondSwing] = swingHistory;
-      let tradeDirection = EnumDirection.BULL;
+            // Check if the current time is within the trading window
+            if (currentTime >= time1 && currentTime <= time2) {
+              arrayOfSignals[0] = true;
+              
+              // Ensure SignalSwingHighLow runs and updates the swingHighLowHistory
+              if (SignalSwingHighLow()) {
+                const swingHistory = swingHighLowHistory.slice(-2); // Get the last two swings
+                
+                if (swingHistory.length === 2) {
+                  const [firstSwing, secondSwing] = swingHistory;
+                  let tradeDirection = EnumDirection.BULL;
 
-      if (
-        (firstSwing.type === 'LOW' && secondSwing.type === 'LOW' && firstSwing.maxReachedPrice < secondSwing.maxReachedPrice) ||
-        (firstSwing.type === 'HIGH' && secondSwing.type === 'HIGH' && firstSwing.maxReachedPrice > secondSwing.maxReachedPrice)
-      ) {
-        if (firstSwing.maxReachedPrice < secondSwing.maxReachedPrice) {
-          tradeDirection = EnumDirection.BULL;
-        }
-        else if (firstSwing.maxReachedPrice > secondSwing.maxReachedPrice) {
-          tradeDirection = EnumDirection.BEAR;
-        }
-        arrayOfSignals[0] = true; // Mark swing point detection signal as valid
-        // Limit to one trade per trading window
-        if (!arrayOfSignals[1]) {
-          arrayOfSignals[1] = true;
-          AddActionOnChart(
-            candlesFromBuffer[selectedIndexForSelectedCandleForAnalisis],
-            EnumActionType.TAKE_A_TRADE,
-            tradeDirection,
-          );
-        }
-      } else {
-        arrayOfSignals[0] = false; // Reset signal if conditions are not met
-      }
-    }
-  }
-  
-  // Add an additional time-based signal for the end of the trading window
-  if (currentTime === time1) {
-    AddActionOnChart(EnumActionType.VERTICAL_LINE);
-  }
-  if (currentTime === time2) {
-    AddActionOnChart(EnumActionType.VERTICAL_LINE);
-  }
-} else {
-  // Reset signals outside the time range
-  arrayOfSignals[0] = false;
-  arrayOfSignals[1] = false;
-}
-          
+                  if (
+                    (firstSwing.type === 'LOW' && secondSwing.type === 'LOW' && firstSwing.maxReachedPrice < secondSwing.maxReachedPrice) ||
+                    (firstSwing.type === 'HIGH' && secondSwing.type === 'HIGH' && firstSwing.maxReachedPrice > secondSwing.maxReachedPrice)
+                  ) {
+                    if (firstSwing.maxReachedPrice < secondSwing.maxReachedPrice) {
+                      tradeDirection = EnumDirection.BULL;
+                    }
+                    else if (firstSwing.maxReachedPrice > secondSwing.maxReachedPrice) {
+                      tradeDirection = EnumDirection.BEAR;
+                    }
+                    arrayOfSignals[0] = true; // Mark swing point detection signal as valid
+                    // Limit to one trade per trading window
+                    if (!arrayOfSignals[1]) {
+                      arrayOfSignals[1] = true;
+                      AddActionOnChart(
+                        candlesFromBuffer[selectedIndexForSelectedCandleForAnalisis],
+                        EnumActionType.TAKE_A_TRADE,
+                        tradeDirection,
+                      );
+                    }
+                  } else {
+                    arrayOfSignals[0] = false; // Reset signal if conditions are not met
+                  }
+                }
+              }
+              
+              // Add an additional time-based signal for the end of the trading window
+              if (currentTime === time1) {
+                AddActionOnChart(EnumActionType.VERTICAL_LINE);
+              }
+              if (currentTime === time2) {
+                AddActionOnChart(EnumActionType.VERTICAL_LINE);
+              }
+            } else {
+              // Reset signals outside the time range
+              arrayOfSignals[0] = false;
+              arrayOfSignals[1] = false;
+            }
+                      
           </textarea>
         </div>
         <div>
@@ -333,88 +332,6 @@ if (currentTime >= time1 && currentTime <= time2) {
             });
           </script>
         </div>
-        <!--div class="accordion">
-          <div class="accordion-item">
-            <div class="accordion-header" id="headingOne">
-              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                Signal Condition 1
-              </button>
-            </div>
-            <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
-              <div class="accordion-body">
-                <label for="signal-condition-1-code">Make sure to return a boolean value (that's what makes the signal to take trade), You can set a debugger / pause execution near SignalCondition2() function to see how it works and debug all variables:</label>
-                <textarea name="signal-condition-1-code" id="algoEditorTextarea" width="100%" rows="10">hourMinutes() == '10:10';</textarea>
-                <label for="signal-condition-1-annotation">Signal Display Type (Signal representation on chart after valid condition from above returned code):</label>
-                <select name="signal-condition-1-annotation" id="signalCondition1Annotation">
-                  <option value="vertical-line">Vertical Line</option>
-                  <option value="draw-a-circle">Draw a circle</option>
-                  <option value="take-a-trade">Take a Trade</option>
-                </select>
-              </div>
-            </div>
-          </div>
-          <div class="accordion-item">
-            <div class="accordion-header" id="headingTwo">
-              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                Signal Condition 2
-              </button>
-            </div>
-            <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#accordionExample">
-              <div class="accordion-body">
-                <label for="signal-condition-2-code">Make sure to return a boolean value (that's what makes the signal to take trade), You can set a debugger / pause execution near SignalCondition2() function to see how it works and debug all variables:</label>
-                <textarea name="signal-condition-2-code" id="algoEditorTextarea2" width="100%" rows="10">hourMinutes() == '10:45' && hourMinutes() >= '10:10'; // TODO: replace 'true' buy previous returned result</textarea>
-                <label for="signal-condition-2-annotation">Signal Display Type (Signal representation on chart after valid condition from above returned code):</label>
-                <select name="signal-condition-2-annotation" id="signalCondition2Annotation">
-                  <option value="vertical-line">Vertical Line</option>
-                  <option value="draw-a-circle">Draw a circle</option>
-                  <option value="take-a-trade">Take a Trade</option>
-                </select>
-              </div>
-            </div>
-          </div>
-          <div class="accordion-item">
-            <div class="accordion-header" id="headingThree">
-              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-                Signal Condition 3
-              </button>
-            </div>
-            <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#accordionExample">
-              <div class="accordion-body">
-                <label for="signal-condition-3-code">Make sure to return a boolean value (that's what makes the signal to take trade), You can set a debugger / pause execution near SignalCondition2() function to see how it works and debug all variables:</label>
-                <textarea name="signal-condition-3-code" id="algoEditorTextarea3" width="100%" rows="10">hourMinutes() == '10:45' && SignalCondition2(); // TODO: replace 'true' buy previous returned result</textarea>
-                <label for="signal-condition-3-annotation">Signal Display Type (Signal representation on chart after valid condition from above returned code):</label>
-                <select name="signal-condition-3-annotation" id="signalCondition3Annotation">
-                  <option value="vertical-line">Vertical Line</option>
-                  <option value="draw-a-circle">Draw a circle</option>
-                  <option value="take-a-trade">Take a Trade</option>
-                </select>
-              </div>
-            </div>
-          </div>
-        </div>
-        <script>
-          document.querySelectorAll('.accordion-button').forEach(button => {
-            button.addEventListener('click', () => {
-              const accordionItem = button.closest('.accordion-item');
-              const collapseElement = accordionItem.querySelector('.accordion-collapse');
-
-              if (collapseElement.classList.contains('show')) {
-                collapseElement.style.height = `${collapseElement.scrollHeight}px`;
-                setTimeout(() => {
-                  collapseElement.style.height = '0';
-                }, 0);
-                collapseElement.classList.remove('show');
-              } else {
-                document.querySelectorAll('.accordion-collapse.show').forEach(openItem => {
-                  openItem.style.height = '0';
-                  openItem.classList.remove('show');
-                });
-                collapseElement.classList.add('show');
-                collapseElement.style.height = `${collapseElement.scrollHeight}px`;
-              }
-            });
-          });
-        </script-->
       </div>
       <div class="result-panel-content h-flex h-flex--column">
         <h5 for="backtesting-hour">Backtesting Result (Algo)</h5>
@@ -506,7 +423,8 @@ if (currentTime >= time1 && currentTime <= time2) {
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/scichart/index.min.js"></script>
+  <!-- Using specific version of scichart for working AxisLabels alignments -->
+  <script src="https://cdn.jsdelivr.net/npm/scichart@3.5.782/index.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script src="index6.js"></script>
 </body>
