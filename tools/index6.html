@@ -337,10 +337,14 @@
         <h5 for="backtesting-hour">Backtesting Result (Algo)</h5>
         <div class="h-flex h-flex--row">
           <div class="h-flex h-flex--column">
-            <div class="h-flex h-flex--column">
-              <label for="backtesting-hour">Prefered Backtesting Session Time (add 2h to match MT5 data)</label>
-              <input id="backtesting-hour" class="h-input-effects" type="text" value="10:00:00" />
-            </div>
+<div class="h-flex h-flex--column">
+  <label for="backtesting-hour">Session Start Time (add 2h to match MT5 data)</label>
+  <input id="backtesting-hour" class="h-input-effects" type="text" value="09:50:00" />
+</div>
+<div class="h-flex h-flex--column">
+  <label for="backtesting-end">Session End Time (add 2h to match MT5 data)</label>
+  <input id="backtesting-end" class="h-input-effects" type="text" value="11:00:00" />
+</div>
             <div class="h-flex h-flex--column">
               <label for="LotSize">Lot Size</label>
               <input id="LotSize" type="number" value="1.0" class="h-input-effects" />
@@ -355,9 +359,10 @@
               </div>
             </div>
             <script>
-              const ThemeInput = document.getElementById('themeSelector');
-              const BTTInput = document.getElementById('backtesting-hour');
-              const LotSizeInput = document.getElementById('LotSize');
+const ThemeInput = document.getElementById('themeSelector');
+const BTTInput = document.getElementById('backtesting-hour');
+const ETTInput = document.getElementById('backtesting-end');
+const LotSizeInput = document.getElementById('LotSize');
               const SLPointsInput = document.getElementById('SLPoints');
               const TPPointsInput = document.getElementById('TPPoints');
               const TSIncrementInput = document.getElementById('TSIncrement');
@@ -367,9 +372,12 @@
               if (urlParams.has('theme')) {
                 ThemeInput.value = urlParams.get('theme');
               }
-              if (urlParams.has('btt')) {
-                BTTInput.value = urlParams.get('btt');
-              }
+if (urlParams.has('btt')) {
+  BTTInput.value = urlParams.get('btt');
+}
+if (urlParams.has('ett')) {
+  ETTInput.value = urlParams.get('ett');
+}
               if (urlParams.has('lotsize')) {
                 LotSizeInput.value = urlParams.get('lotsize');
               }
@@ -388,8 +396,9 @@
                 const urlParams = new URLSearchParams(window.location.search);
               
                 urlParams.set('theme', ThemeInput.value);
-                urlParams.set('btt', BTTInput.value);
-                urlParams.set('lotsize', LotSizeInput.value);
+urlParams.set('btt', BTTInput.value);
+urlParams.set('ett', ETTInput.value);
+urlParams.set('lotsize', LotSizeInput.value);
                 urlParams.set('slpoints', SLPointsInput.value);
                 urlParams.set('tppoints', TPPointsInput.value);
                 urlParams.set('tsincrement', TSIncrementInput.value);

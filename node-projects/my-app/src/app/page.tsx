@@ -48,7 +48,7 @@ export default function Home() {
         </div>
       </section>
       <section className="mt-12">
-        <TypographyH1>Hips tests</TypographyH1>
+        <TypographyH1>Tests</TypographyH1>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-6">
           <Link href="/threejs" className="h-full">
             <Card className="h-full flex flex-col hover:shadow-md transition-shadow">

@@ -39,6 +39,8 @@ const $backTestingPauseButton = document.getElementById(
   'backTestingPauseButton'
 );
 let backTestingPaused = $backTestingPauseButton.checked;
+const $sessionStartInput = document.getElementById('backtesting-hour');
+const $sessionEndInput = document.getElementById('backtesting-end');
 
 function toggleHeight() {
   resultPanel.classList.toggle('active');
@@ -1141,7 +1143,7 @@ function initSciChart(data) {
           const atrLine = new VerticalLineAnnotation({
             labelPlacement: ELabelPlacement.TopRight,
             showLabel: true,
-            stroke: '#FF0000',
+            stroke: '#FF000022',
             strokeThickness: 2,
             x1: convertMT5DateToUnix(
               `${currCandle[EnumMT5OHLC.DATE]} ${currCandle[EnumMT5OHLC.TIME]}`
@@ -1161,8 +1163,8 @@ function initSciChart(data) {
 
       // TTR Indicator: ========================================
       const inTradingTimeRange = (d) => {
-        const startRangeTime = new Date(`${d[EnumMT5OHLC.DATE]} 09:50:00`);
-        const endRangeTime = new Date(`${d[EnumMT5OHLC.DATE]} 11:00:00`);
+        const startRangeTime = new Date(`${d[EnumMT5OHLC.DATE]} ${$sessionStartInput.value}`);
+        const endRangeTime = new Date(`${d[EnumMT5OHLC.DATE]} ${$sessionEndInput.value}`);
         const currentTime = new Date(
           `${d[EnumMT5OHLC.DATE]} ${d[EnumMT5OHLC.TIME]}`
         );
