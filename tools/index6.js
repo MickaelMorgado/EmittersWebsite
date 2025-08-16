@@ -494,10 +494,10 @@ function initSciChart(data) {
           tradeCount++;
           AddActionOnChart(d, EnumActionType.TAKE_A_TRADE, direction);
           listeningATR = true; // Start listening for ATR again once we open position
-          if (tradeCount >= 3) {
-            // console.log('Reached 3 trades max');
-            arrayOfSignals[2] = false; // Reset ATR signal after 3 trades max
-          }
+          //if (tradeCount >= 3) {
+          // console.log('Reached 3 trades max');
+          arrayOfSignals[2] = false; // Reset ATR signal after 3 trades max
+          //}
         }
       };
 
@@ -924,6 +924,7 @@ function initSciChart(data) {
           });
         };
 
+        // TODO: we might not destroy it but update, cus when getting out of memory and still want to vizualize the chart, it will not work anymore.
         // Check if there is an existing chart instance and destroy it:
         if (typeof myChart !== 'undefined' && myChart !== null) {
           myChart.remove();
