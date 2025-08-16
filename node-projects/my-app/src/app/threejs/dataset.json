@@ -1,0 +1,83 @@
+{
+  "btc": {
+    "name": "bitcoin",
+    "blockchain": "Bitcoin"
+  },
+  "eth": {
+    "name": "ethereum",
+    "blockchain": "Ethereum",
+    "child": {
+      "erc20": {
+        "usdc": {
+          "name": "usd coin",
+          "blockchain": "Ethereum",
+          "token": "ERC20"
+        },
+        "usdt": {
+          "name": "tether",
+          "blockchain": "Ethereum",
+          "token": "ERC20"
+        },
+        "link": {
+          "name": "chainlink",
+          "blockchain": "Ethereum",
+          "token": "ERC20"
+        },
+        "uni": {
+          "name": "uniswap",
+          "blockchain": "Ethereum",
+          "token": "ERC20"
+        }
+      },
+      "erc721": {
+        "cryptopunks": {
+          "name": "CryptoPunks",
+          "blockchain": "Ethereum",
+          "token": "ERC721"
+        },
+        "bayc": {
+          "name": "Bored Ape Yacht Club",
+          "blockchain": "Ethereum",
+          "token": "ERC721"
+        }
+      },
+      "erc1155": {
+        "sandbox_items": {
+          "name": "The Sandbox Game Items",
+          "blockchain": "Ethereum",
+          "token": "ERC1155"
+        }
+      }
+    }
+  },
+  "xrp": {
+    "name": "xrp",
+    "blockchain": "XRP"
+  },
+  "bnb": {
+    "name": "binance coin",
+    "blockchain": "Binance Chain"
+  },
+  "stock_tokens": {
+    "coin": {
+      "name": "coinbase",
+      "blockchain": "Stock Token"
+    },
+    "msft": {
+      "name": "microsoft",
+      "blockchain": "Stock Token"
+    },
+    "aapl": {
+      "name": "apple",
+      "blockchain": "Stock Token"
+    },
+    "tsla": {
+      "name": "tesla",
+      "blockchain": "Stock Token"
+    },
+    "googl": {
+      "name": "alphabet",
+      "blockchain": "Stock Token"
+    }
+  }
+}
