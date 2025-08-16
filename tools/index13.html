@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Data Graph Visualizer</title>
+<style>
+  body {
+    margin: 0;
+    background: black;
+    color: white;
+    font-family: sans-serif;
+  }
+  .container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+  .canvas-container {
+    position: relative;
+    flex: 1;
+    overflow: hidden;
+  }
+  canvas {
+    width: 100%;
+    height: 100%;
+    background: black;
+    display: block;
+  }
+  .controls {
+    background: black;
+    padding: 10px;
+  }
+  .controls input, .controls button {
+    padding: 5px;
+    border: none;
+    outline: none;
+    font-size: 14px;
+  }
+  .controls input {
+    background: #111;
+    color: white;
+  }
+  .controls button {
+    cursor: pointer;
+    border-radius: 4px;
+  }
+  .green { background: #0a0; color: white; }
+  .green:hover { background: #0c0; }
+  .blue { background: #06c; color: white; }
+  .blue:hover { background: #08f; }
+  .red { background: #c00; color: white; }
+  .red:hover { background: #e00; }
+  .gray { background: #333; color: #ccc; }
+  .gray:hover { background: #444; }
+</style>
+</head>
+<body>
+<div id="status" style="color:white;background:#111;padding:5px;">Disconnected</div>
+<div id="eventLog" style="max-height:200px;overflow:auto;color:white;background:#222;padding:5px;margin-top:5px;"></div>
+<div class="container">
+  <div class="canvas-container">
+    <canvas id="graphCanvas"></canvas>
+  </div>
+  <div class="controls">
+      <div id="scoreboard" style="color:white;padding:5px;">Team areas: 1:0%, 2:0%, 3:0%, 4:0%</div>
+      <div style="margin-top:5px; display:flex; justify-content:space-between;">
+        <div>
+          <button id="resetBtn" class="gray">Reset</button>
+        </div>
+      </div>
+    </div>
+</div>
+
+<script>
+/* WebSocket connection with auto-reconnect and event logging */
+let websocket = null;
+function connect() {
+  if (websocket) return;
+  websocket = new WebSocket("ws://localhost:21213/");
+  websocket.onopen = () => document.getElementById("status").innerHTML = "Connected";
+  websocket.onclose = () => {
+      document.getElementById("status").innerHTML = "Disconnected";
+      websocket = null;
+      setTimeout(connect, 1000);
+  };
+  websocket.onerror = () => {
+      document.getElementById("status").innerHTML = "Connection Failed";
+      websocket = null;
+      setTimeout(connect, 1000);
+  };
+  websocket.onmessage = (e) => {
+    let parsedData = JSON.parse(e.data); // Parse the JSON data
+
+    console.log("Data received", parsedData);
+    const dt = parsedData.data;
+    const event = parsedData.event;
+
+    /*
+    if (event === "roomUser") {
+      const username = dt.nickname;
+
+      console.log(`${username} joined the stream!`);
+      window.addUser(`${username}`);
+    }
+    */
+
+    if (event === "like") {
+      const username = dt.nickname;
+
+      console.log(`${username} liked the stream!`);
+      window.addUser(`${username}`);
+      window.incrementUser(`${username}`, dt.likeCount);
+    }
+  };
+};
+window.addEventListener("load", connect);
+
+const COLORS = [
+  "#FF0080","#00FF80","#8000FF","#FF8000","#0080FF","#FF0040","#40FF00","#FF4000","#0040FF",
+  "#FF00C0","#C0FF00","#00C0FF","#FF6000","#6000FF","#00FF40","#FF0060","#60FF00","#0060FF","#FF00A0","#A0FF00",
+  "#FFA500","#00FFFF","#FF00FF","#FFFF00","#800080","#008080"
+];
+
+const canvas = document.getElementById("graphCanvas");
+const ctx = canvas.getContext("2d");
+
+let users = new Map();
+let currentStep = 0;
+let newlyAddedUser = null;
+let animationRef;
+let lastTime = 0;
+let waves = [];
+const INACTIVITY_THRESHOLD = 10000;
+const FADE_DURATION = 2000;
+const EDGE_DISTANCE = 100;  // expanded threshold for visible connections
+const CONNECTION_OPACITY_MULTIPLIER = 1;  // full opacity for connections
+const CONNECTION_LINE_WIDTH = 1;          // thicker connection lines
+const soundMedia = "joseegn_ui_sound_select.wav";
+let waveCount = 0;
+
+function resizeCanvas(){
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * window.devicePixelRatio;
+  canvas.height = rect.height * window.devicePixelRatio;
+  ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+}
+window.addEventListener("resize", resizeCanvas);
+resizeCanvas();
+
+// Territory control buffer setup
+const TERRITORY_RES = 4;
+let gridW, gridH, intensity;
+function initIntensityBuffer(){
+  gridW = Math.ceil(canvas.clientWidth / TERRITORY_RES);
+  gridH = Math.ceil(canvas.clientHeight / TERRITORY_RES);
+  intensity = [];
+  for (let i = 0; i < 4; i++){
+    intensity[i] = new Float32Array(gridW * gridH);
+  }
+}
+window.addEventListener("resize", initIntensityBuffer);
+initIntensityBuffer();
+let lastLeader = -1;
+
+function updateScoreboard(){
+  const total = gridW * gridH;
+  const perc = intensity.map(arr => {
+    let sum = 0;
+    for (let i = 0; i < arr.length; i++) sum += arr[i];
+    return Math.round(sum / total * 100);
+  });
+document.getElementById("scoreboard").textContent =
+    `Team areas: ${perc[0]}%, ${perc[1]}%, ${perc[2]}%, ${perc[3]}%`;
+  return perc;
+}
+
+function createWave(x, y, color, name){
+  waves.push({x, y, color, name, startTime: Date.now(), duration: 1000});
+
+  const sound = new Audio(soundMedia);
+  sound.volume = Math.random() * 0.5 + 0.2;
+  sound.playbackRate = Math.random() * 0.4 + 0.8;
+  // sound.play();
+}
+
+function updatePositions(deltaTime){
+  users.forEach(u=>{
+    u.x += (u.targetX - u.x) * 0.02;
+    u.y += (u.targetY - u.y) * 0.02;
+    u.vx += (Math.random()-0.5) * 0.2;
+    u.vy += (Math.random()-0.5) * 0.2;
+    u.vx *= 0.95;
+    u.vy *= 0.95;
+    u.x += u.vx * deltaTime * 0.01;
+    u.y += u.vy * deltaTime * 0.01;
+  });
+}
+
+function render(timestamp){
+  const deltaTime = timestamp - lastTime;
+  lastTime = timestamp;
+  updatePositions(deltaTime);
+
+  ctx.fillStyle = "#000";
+ctx.fillRect(0,0,canvas.width,canvas.height);
+const perc = updateScoreboard();
+let leader = perc.indexOf(Math.max(...perc));
+if (leader !== lastLeader) {
+  lastLeader = leader;
+  new Audio(soundMedia).play();
+}
+
+  // Decay intensity channels
+  for (let t = 0; t < intensity.length; t++) {
+    const arr = intensity[t];
+    for (let j = 0; j < arr.length; j++) {
+      arr[j] *= 0.99;
+    }
+  }
+  // Draw territory overlay
+  for (let gy = 0; gy < gridH; gy++) {
+    for (let gx = 0; gx < gridW; gx++) {
+      let maxVal = 0, team = -1;
+      for (let tt = 0; tt < 4; tt++) {
+        const v = intensity[tt][gy * gridW + gx];
+        if (v > maxVal) { maxVal = v; team = tt; }
+      }
+      if (team >= 0) {
+        ctx.fillStyle = COLORS[team] + "22";
+        ctx.fillRect(gx * TERRITORY_RES, gy * TERRITORY_RES, TERRITORY_RES, TERRITORY_RES);
+      }
+    }
+  }
+
+  // Decay intensity channels
+  for (let t = 0; t < intensity.length; t++) {
+    const arr = intensity[t];
+    for (let j = 0; j < arr.length; j++) {
+      arr[j] *= 0.99;
+    }
+  }
+  // Draw territory overlay
+  for (let gy = 0; gy < gridH; gy++) {
+    for (let gx = 0; gx < gridW; gx++) {
+      let maxVal = 0, team = -1;
+      for (let t = 0; t < 4; t++) {
+        const v = intensity[t][gy * gridW + gx];
+        if (v > maxVal) { maxVal = v; team = t; }
+      }
+      if (team >= 0) {
+        ctx.fillStyle = COLORS[team] + "22";
+        ctx.fillRect(gx * TERRITORY_RES, gy * TERRITORY_RES, TERRITORY_RES, TERRITORY_RES);
+      }
+    }
+  }
+
+  const currentTime = Date.now();
+  waves = waves.filter(w=>{
+    const elapsed = currentTime - w.startTime;
+    if (elapsed > w.duration) return false;
+    const progress = elapsed / w.duration;
+    const radius = progress * 80;
+    const opacity = Math.max(0, 1-progress)*0.6;
+    ctx.globalAlpha = opacity;
+    ctx.strokeStyle = w.color;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(w.x, w.y, radius, 0, Math.PI*2);
+    ctx.stroke();
+    if (w.name) {
+      ctx.globalAlpha = opacity;
+      ctx.fillStyle = "#fff";
+      ctx.font = "12px Arial";
+      ctx.textAlign = "center";
+      ctx.fillText(w.name, w.x, w.y - radius - 10);
+    }
+    return true;
+  });
+
+  ctx.globalAlpha = 0.3;
+  const arr = Array.from(users.values());
+  const connectionCounts = {};
+  arr.forEach(u => connectionCounts[u.name] = 0);
+  for(let i=0;i<arr.length;i++){
+    for(let j=i+1;j<arr.length;j++){
+      const u1=arr[i], u2=arr[j];
+      const dist = Math.hypot(u1.x-u2.x, u1.y-u2.y);
+      if (dist<EDGE_DISTANCE){
+        if (connectionCounts[u1.name] >= 3 || connectionCounts[u2.name] >= 3) {
+          // skip extra connections
+        } else {
+      const opacity = Math.max(0, 1 - dist/EDGE_DISTANCE);
+      ctx.globalAlpha = opacity * CONNECTION_OPACITY_MULTIPLIER;
+          const grad = ctx.createLinearGradient(u1.x,u1.y,u2.x,u2.y);
+          grad.addColorStop(0,u1.color);
+          grad.addColorStop(1,u2.color);
+          ctx.strokeStyle = grad;
+      ctx.lineWidth = CONNECTION_LINE_WIDTH;
+          ctx.beginPath();
+          ctx.moveTo(u1.x,u1.y);
+          ctx.lineTo(u2.x,u2.y);
+          ctx.stroke();
+          connectionCounts[u1.name]++; 
+          connectionCounts[u2.name]++;
+        }
+      }
+    }
+  }
+
+  ctx.globalAlpha = 1;
+  users.forEach(u=>{
+    const radius = Math.max(3, u.activityCount*0.5+5);
+    const isSpotlighted = u.name === newlyAddedUser;
+    const glowRadius = radius + (isSpotlighted ? 15 : 8);
+    const gradient = ctx.createRadialGradient(u.x,u.y,0,u.x,u.y,glowRadius);
+    gradient.addColorStop(0, u.color+"80");
+    gradient.addColorStop(0.5, u.color+"40");
+    gradient.addColorStop(1, u.color+"00");
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(u.x,u.y,glowRadius,0,Math.PI*2);
+    ctx.fill();
+
+    // semi-transparent fill with solid border
+    ctx.fillStyle = u.color;
+    ctx.globalAlpha = 0.2;
+    ctx.beginPath();
+    ctx.arc(u.x,u.y,radius,0,Math.PI*2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    ctx.strokeStyle = u.color;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(u.x,u.y,radius,0,Math.PI*2);
+    ctx.stroke();
+
+    // persistent name fading
+    if (u.lastPulseTime) {
+      const elapsed = Date.now() - u.lastPulseTime;
+      if (elapsed > INACTIVITY_THRESHOLD) {
+        const fadeElapsed = elapsed - INACTIVITY_THRESHOLD;
+        if (fadeElapsed < FADE_DURATION) {
+          const labelOpacity = 1 - (fadeElapsed / FADE_DURATION);
+          ctx.globalAlpha = labelOpacity;
+          ctx.fillStyle = "#fff";
+          ctx.font = "12px Arial";
+          ctx.textAlign = "center";
+          ctx.fillText(u.name, u.x, u.y - radius - 10);
+          ctx.globalAlpha = 1;
+        } else {
+          users.delete(u.name);
+          return;
+        }
+      } else {
+        ctx.fillStyle = "#fff";
+        ctx.font = "12px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText(u.name, u.x, u.y - radius - 10);
+      }
+    }
+
+    if (isSpotlighted){
+      ctx.fillStyle = "#fff";
+      ctx.font = "12px Arial";
+      ctx.textAlign = "center";
+      ctx.fillText(u.name, u.x, u.y - radius - 10);
+    }
+  });
+
+
+  animationRef = requestAnimationFrame(render);
+}
+animationRef = requestAnimationFrame(render);
+
+function calculateAveragePosition(){
+  if (users.size === 0) return 0;
+  let total=0;
+  users.forEach(u=>total += u.currentPosition);
+  return total / users.size;
+}
+
+function addUser(name){
+  if (!name || users.has(name)) return;
+  const randomColorIndex = Math.floor(Math.random()*COLORS.length);
+  const x = Math.random()*(canvas.clientWidth-40)+20;
+  const y = Math.random()*(canvas.clientHeight-40)+20;
+  users.set(name, {
+    name,
+    currentPosition: 0,
+    color: COLORS[randomColorIndex],
+    history: [{step: currentStep, position: 0}],
+    activityCount: 0,
+    x, y,
+    targetX: x,
+    targetY: y,
+    vx:0, vy:0,
+    lastPulseTime: Date.now()
+  });
+  newlyAddedUser = name;
+  setTimeout(()=>newlyAddedUser=null,3000);
+}
+
+function processInput(str){
+const match = str.trim().match(/^([^:]+):\s*([1-4])$/);
+  if (!match) return;
+  const name = match[1].trim();
+  const value = parseInt(match[2]);
+  const existingUser = users.get(name);
+  currentStep++;
+  if (existingUser){
+    const newPos = value===1 ? existingUser.currentPosition - 1 : existingUser.currentPosition + 1;
+    createWave(existingUser.x, existingUser.y, existingUser.color, existingUser.name);
+    existingUser.currentPosition = newPos;
+    existingUser.history.push({step: currentStep, position: newPos});
+
+      existingUser.activityCount++;
+existingUser.lastPulseTime = Date.now();
+paintTeam(existingUser.x, existingUser.y, value);
+  } else {
+    const randomColorIndex = Math.floor(Math.random()*COLORS.length);
+    const newPos = value===1 ? -1 : 1;
+    const x = Math.random()*(canvas.clientWidth-40)+20;
+    const y = Math.random()*(canvas.clientHeight-40)+20;
+      paintTeam(x, y, value);
+      users.set(name, {
+        name: name,
+        currentPosition: newPos,
+        color: COLORS[randomColorIndex],
+        history: [{step: 0, position: 0}, {step: currentStep, position: newPos}],
+        activityCount: 1,
+        x: x,
+        y: y,
+        targetX: x,
+        targetY: y,
+        vx: 0,
+        vy: 0
+      });
+  }
+}
+
+function resetGraph(){
+  users.clear();
+  currentStep=0;
+  isAutoTesting=false;
+}
+
+function toggleAutoTesting(){ return;
+  if (isAutoTesting){
+    clearInterval(autoTestInterval);
+    isAutoTesting=false;
+    document.getElementById("autoTestBtn").textContent="Auto Test";
+    document.getElementById("autoTestBtn").className="green";
+    return;
+  }
+  isAutoTesting=true;
+  document.getElementById("autoTestBtn").textContent="Stop Test";
+  document.getElementById("autoTestBtn").className="red";
+  autoTestInterval = setInterval(()=>{
+    if (currentStep>=4000){
+      toggleAutoTesting();
+      return;
+    }
+    const baseName = testUserNames[Math.floor(Math.random()*testUserNames.length)];
+    let randomUser = baseName;
+    let suffix=1;
+    while(users.has(randomUser) && suffix<=20){
+      suffix++;
+      randomUser=`${baseName}_${suffix}`;
+    }
+    if (users.has(randomUser)){
+      const keys = Array.from(users.keys());
+      randomUser = keys[Math.floor(Math.random()*keys.length)];
+    }
+    const randomValue = Math.floor(Math.random()*2);
+    const existingUser = users.get(randomUser);
+    currentStep++;
+    if (existingUser){
+      const newPos = randomValue===1 ? existingUser.currentPosition - 1 : existingUser.currentPosition + 1;
+      const targetX = existingUser.targetX + (Math.random()-0.5)*40;
+      const targetY = existingUser.targetY + (Math.random()-0.5)*40;
+      createWave(existingUser.x, existingUser.y, existingUser.color, existingUser.name);
+      existingUser.currentPosition = newPos;
+      existingUser.history.push({step: currentStep, position: newPos});
+      existingUser.activityCount++;
+      existingUser.targetX = Math.max(50, Math.min(canvas.clientWidth-50, targetX));
+      existingUser.targetY = Math.max(50, Math.min(canvas.clientHeight-50, targetY));
+    } else {
+      const randomColorIndex = Math.floor(Math.random()*COLORS.length);
+      const newPos = randomValue===1 ? -1 : 1;
+      const x = Math.random()*(canvas.clientWidth-40)+20;
+      const y = Math.random()*(canvas.clientHeight-40)+20;
+      users.set(randomUser,{
+        name:randomUser,
+        currentPosition:newPos,
+        color:COLORS[randomColorIndex],
+        history:[{step:0,position:0},{step:currentStep,position:newPos}],
+        activityCount:1,
+        x,y,
+        targetX:x,targetY:y,
+        vx:0,vy:0
+      });
+      newlyAddedUser = randomUser;
+      setTimeout(()=>newlyAddedUser=null,2000);
+    }
+    document.getElementById("stepInfo").textContent = `Step: ${currentStep}/4000`;
+  },15);
+}
+
+document.getElementById("resetBtn").onclick=resetGraph;
+window.addUser = addUser;
+window.incrementUser = function(name, delta) {
+  if (!users.has(name)) return;
+  const existingUser = users.get(name);
+  const change = parseInt(delta, 10);
+  if (isNaN(change)) return;
+  currentStep++;
+  existingUser.currentPosition += change;
+  existingUser.activityCount++;
+  existingUser.lastPulseTime = Date.now();
+  createWave(existingUser.x, existingUser.y, existingUser.color, existingUser.name);
+};
+
+// timed random incoming users and increments
+const testUserNames = ["Alice","Bob","Charlie","Diana","Eve","Frank","Grace","Henry","Iris","Jack","Kate","Liam","Maya","Noah","Olivia","Paul","Quinn","Ruby","Sam","Tara","Uma","Victor","Wendy","Xander","Yara"];
+function randomizeIncoming() {
+  const name = testUserNames[Math.floor(Math.random()*testUserNames.length)];
+  if (!users.has(name)) {
+    addUser(name);
+  } else {
+    incrementUser(name, 1);
+  }
+}
+window.startRandomizing = function(ms = 100) {
+  window.randomInterval = setInterval(randomizeIncoming, ms);
+};
+window.stopRandomizing = function() {
+  clearInterval(window.randomInterval);
+};
+
+// auto-start random interactions
+startRandomizing(1000);
+
+ // simulate random inactivity only for idle users
+ setInterval(() => {
+   const now = Date.now();
+   // only consider users idle beyond half threshold
+   const idle = Array.from(users.values()).filter(u => now - u.lastPulseTime > INACTIVITY_THRESHOLD / 2);
+   if (idle.length === 0 || Math.random() >= 0.1) return;
+   const u = idle[Math.floor(Math.random() * idle.length)];
+   u.lastPulseTime = now - (INACTIVITY_THRESHOLD + FADE_DURATION + 1);
+   console.log(`Simulating inactivity for ${u.name}`);
+ }, 2000);
+</script>
+</body>
+</html>
