@@ -1,77 +1,118 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="../assets/css.css" />
+    <link rel="stylesheet" href="../assets/reusables.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+    <link
+      rel="icon"
+      href="https://ui-avatars.com/api/?name=H&rounded=true&background=000000&color=ffffff"
+      type="image/png"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="../assets/reusables.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        document.title = `HYTEK - ${
+          document.getElementsByTagName('h1')[0].innerText
+        }`;
+      });
+    </script>
+    <link rel="stylesheet" href="index6.css" />
+  </head>
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="../assets/css.css" />
-  <link rel="stylesheet" href="../assets/reusables.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
-  <link rel="icon" href="https://ui-avatars.com/api/?name=H&rounded=true&background=000000&color=ffffff" type="image/png">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="../assets/reusables.js"></script>
-  <script>document.addEventListener('DOMContentLoaded', function() { document.title = `HYTEK - ${document.getElementsByTagName("h1")[0].innerText}` });</script>
-  <link rel="stylesheet" href="index6.css" />
-</head>
-
-<body class="h-style">
-  <div id="upload-section">
-    <div class="h-padded">
-      <div class="h-flex h-flex--column">
-        <div>
-          <h1>BackTesting</h1>
-          <p>
-            Export MT5 bars by using CTRL+U then go to Bars tab, filter the
-            range and export, then upload it here:
-          </p>
-          <p>
-            More info:
-            <a target="_blank" href="https://myforex.com/en/mt5guide/export-historicaldata.html">Export Historical
-              Data</a>
-            <a target="_blank" href="https://www.mql5.com/en/forum/356227">Limited History Issue</a>
-          </p>
-        </div>
-        <hr class="h-hr" />
-        <label for="">Upload CSV bars</label>
-        <div class="h-flex">
-          <input type="file" id="csvFileInput" accept=".csv" class="h-input-effects" style="width: 80%"/>
-          <button id="csvRefresh" title="Refresh" class="mybutton h-input-effects notify-bullet">
-            <i class="fas fa-repeat"></i>
-          </button>
-        </div>
-        <hr class="h-hr" />
-        <div class="h-flex">
-          <div class="h-form-group">
-            <label for="prevDate">Prev</label>
-            <button id="prevDate" title="Previous Date" class="mybutton h-input-effects" onclick="changeDate(-1)">
-              <i class="fas fa-arrow-left"></i>
+  <body class="h-style">
+    <div id="upload-section">
+      <div class="h-padded">
+        <div class="h-flex h-flex--column">
+          <div>
+            <h1>BackTesting</h1>
+            <p>
+              Export MT5 bars by using CTRL+U then go to Bars tab, filter the
+              range and export, then upload it here:
+            </p>
+            <p>
+              More info:
+              <a
+                target="_blank"
+                href="https://myforex.com/en/mt5guide/export-historicaldata.html"
+                >Export Historical Data</a
+              >
+              <a target="_blank" href="https://www.mql5.com/en/forum/356227"
+                >Limited History Issue</a
+              >
+            </p>
+          </div>
+          <hr class="h-hr" />
+          <label for="">Upload CSV bars</label>
+          <div class="h-flex">
+            <input
+              type="file"
+              id="csvFileInput"
+              accept=".csv"
+              class="h-input-effects"
+              style="width: 80%"
+            />
+            <button
+              id="csvRefresh"
+              title="Refresh"
+              class="mybutton h-input-effects notify-bullet"
+            >
+              <i class="fas fa-repeat"></i>
             </button>
           </div>
-          <div class="h-form-group">
-            <label for="NavigateTroughtDates">Navigate trought session</label>
-            <div id="ntd-notify" class="notify-bullet">
-              <select id="NavigateTroughtDates" class="h-input-effects" style="width: 100%;"></select>
+          <hr class="h-hr" />
+          <div class="h-flex">
+            <div class="h-form-group">
+              <label for="prevDate">Prev</label>
+              <button
+                id="prevDate"
+                title="Previous Date"
+                class="mybutton h-input-effects"
+                onclick="changeDate(-1)"
+              >
+                <i class="fas fa-arrow-left"></i>
+              </button>
+            </div>
+            <div class="h-form-group">
+              <label for="NavigateTroughtDates">Navigate trought session</label>
+              <div id="ntd-notify" class="notify-bullet">
+                <select
+                  id="NavigateTroughtDates"
+                  class="h-input-effects"
+                  style="width: 100%"
+                ></select>
+              </div>
+            </div>
+            <div class="h-form-group">
+              <label for="nextDate">Next</label>
+              <button
+                id="nextDate"
+                title="Next Date"
+                class="mybutton h-input-effects"
+                onclick="changeDate(1)"
+              >
+                <i class="fas fa-arrow-right"></i>
+              </button>
             </div>
           </div>
-          <div class="h-form-group">
-            <label for="nextDate">Next</label>
-            <button id="nextDate" title="Next Date" class="mybutton h-input-effects" onclick="changeDate(1)">
-              <i class="fas fa-arrow-right"></i>
-            </button>
-          </div>
-        </div>
-        <script>
-          function changeDate(direction) {
-            const select = document.getElementById('NavigateTroughtDates');
-            let newIndex = select.selectedIndex + direction;
-            if (newIndex >= 0 && newIndex < select.options.length) {
-              select.selectedIndex = newIndex;
-              select.dispatchEvent(new Event('change'));
+          <script>
+            function changeDate(direction) {
+              const select = document.getElementById('NavigateTroughtDates');
+              let newIndex = select.selectedIndex + direction;
+              if (newIndex >= 0 && newIndex < select.options.length) {
+                select.selectedIndex = newIndex;
+                select.dispatchEvent(new Event('change'));
+              }
             }
-          }
-        </script>
-        <!--hr class="h-hr" />
+          </script>
+          <!--hr class="h-hr" />
         <label for="">Hidder</label>
         <div class="h-flex">
           <button id="hidderReset" title="Restart" class="mybutton h-input-effects" onclick="hidderRestart()">
@@ -118,109 +159,181 @@
             hidder.style.left = "800px";
           }
         </script-->
-        <hr class="h-hr" />
-        <label for="colorSettingsTutorial">Application theme</label>
-        <div>
-          <select id="themeSelector" class="h-input-effects" onchange="applyTheme()">
-            <option value="">-</option>
-            <option value="bullishColor=00FF00&bearishColor=FF0000">Green / Red</option>
-            <option value="bullishColor=0000FF&bearishColor=FF00FF">Blue / Magenta</option>
-            <option value="bullishColor=FFFF00&bearishColor=00FFFF">Yellow / Cyan</option>
-            <option value="bullishColor=00cdff&bearishColor=555555">Light Blue / Grey</option>
-            <option value="bullishColor=FF5500&bearishColor=444444">Volcanic</option>
-            <option value="bullishColor=FFFFFF&bearishColor=FF0000">Devil</option>
-            <option value="bullishColor=03A062&bearishColor=222222">Matrix</option>
-          </select>
-          <script>
-            function applyTheme() {
-              const urlParams = new URLSearchParams(window.location.search);
+          <hr class="h-hr" />
+          <label for="colorSettingsTutorial">Application theme</label>
+          <div>
+            <select
+              id="themeSelector"
+              class="h-input-effects"
+              onchange="applyTheme()"
+            >
+              <option value="">-</option>
+              <option value="bullishColor=00FF00&bearishColor=FF0000">
+                Green / Red
+              </option>
+              <option value="bullishColor=0000FF&bearishColor=FF00FF">
+                Blue / Magenta
+              </option>
+              <option value="bullishColor=FFFF00&bearishColor=00FFFF">
+                Yellow / Cyan
+              </option>
+              <option value="bullishColor=00cdff&bearishColor=555555">
+                Light Blue / Grey
+              </option>
+              <option value="bullishColor=FF5500&bearishColor=444444">
+                Volcanic
+              </option>
+              <option value="bullishColor=FFFFFF&bearishColor=FF0000">
+                Devil
+              </option>
+              <option value="bullishColor=03A062&bearishColor=222222">
+                Matrix
+              </option>
+            </select>
+            <script>
+              function applyTheme() {
+                const urlParams = new URLSearchParams(window.location.search);
 
-              const themeSelector = document.getElementById('themeSelector');
-              const selectedTheme = themeSelector.value;
-              //const currentUrl = window.location.href.split('?')[0];
-              //window.location.href = currentUrl + selectedTheme;
+                const themeSelector = document.getElementById('themeSelector');
+                const selectedTheme = themeSelector.value;
+                //const currentUrl = window.location.href.split('?')[0];
+                //window.location.href = currentUrl + selectedTheme;
 
-              urlParams.set('theme', selectedTheme);
-              window.location.search = urlParams;
-            }
-          </script>
-        </div>
-        <hr class="h-hr" />
-        <label for="backTestingPauseButton">Stop BackTesting</label>
-        <input type="checkbox" name="backTestingPauseButton" id="backTestingPauseButton" />
-        <hr class="h-hr" />
-        <label>File Reading Progression</label>
-        <div class="flex">
-          <span id="firstDate"></span>
-          <span> - </span>
-          <span id="currentReadingDate" class="notify-bullet"></span>
-          <span> - </span>
-          <span id="lastDate"></span>
-        </div>
-        <div id="fileReadingProgression">
-          <div class="progression"></div>
-        </div>
-        <hr class="h-hr" />
-        <label for="backtesting-hour">CSV Data</label>
-        <div>
-          <textarea id="csvContent" rows="10" style="width: 100%"></textarea>
+                urlParams.set('theme', selectedTheme);
+                window.location.search = urlParams;
+              }
+            </script>
+          </div>
+          <hr class="h-hr" />
+          <label for="backTestingPauseButton">Stop BackTesting</label>
+          <input
+            type="checkbox"
+            name="backTestingPauseButton"
+            id="backTestingPauseButton"
+          />
+          <hr class="h-hr" />
+          <label>File Reading Progression</label>
+          <div class="flex">
+            <span id="firstDate"></span>
+            <span> - </span>
+            <span id="currentReadingDate" class="notify-bullet"></span>
+            <span> - </span>
+            <span id="lastDate"></span>
+          </div>
+          <div id="fileReadingProgression">
+            <div class="progression"></div>
+          </div>
+          <hr class="h-hr" />
+          <label for="backtesting-hour">CSV Data</label>
+          <div>
+            <textarea id="csvContent" rows="10" style="width: 100%"></textarea>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-  <div class="tools">
-    <button class="mybutton h-input-effects" data-anotation="RRBuy" title="RR Tool (Buy)" disabled>
-      <i class="fas fa-ruler-combined"></i>
-    </button>
-    <button class="mybutton h-input-effects" data-anotation="RRSell" title="RR Tool (Sell)" disabled>
-      <i class="fas fa-ruler-combined"></i>
-    </button>
-    <button class="mybutton h-input-effects" data-anotation="line" title="Line Tool" disabled>
-      <i class="fas fa-grip-lines"></i>
-    </button>
-    <button class="mybutton h-input-effects" data-anotation="BOS" title="BOS Tool" disabled>
-      <i class="fas fa-grip-lines"></i>
-    </button>
-    <button class="mybutton h-input-effects" data-anotation="Circle" title="Circle Tool" disabled>
-      <i class="fas fa-circle"></i>
-    </button>
-    <button class="mybutton h-input-effects" data-anotation="rectangle" title="Rectangle Tool" disabled>
-      <i class="fa-regular fa-square"></i>
-    </button>
-  </div>
-  <div class="chart-section">
-    <div id="loading-element" class="loading-element">
-      <span class="spinner"></span>
-      Backtesting is running ...
+    <div class="tools">
+      <button
+        class="mybutton h-input-effects"
+        data-anotation="RRBuy"
+        title="RR Tool (Buy)"
+        disabled
+      >
+        <i class="fas fa-ruler-combined"></i>
+      </button>
+      <button
+        class="mybutton h-input-effects"
+        data-anotation="RRSell"
+        title="RR Tool (Sell)"
+        disabled
+      >
+        <i class="fas fa-ruler-combined"></i>
+      </button>
+      <button
+        class="mybutton h-input-effects"
+        data-anotation="line"
+        title="Line Tool"
+        disabled
+      >
+        <i class="fas fa-grip-lines"></i>
+      </button>
+      <button
+        class="mybutton h-input-effects"
+        data-anotation="BOS"
+        title="BOS Tool"
+        disabled
+      >
+        <i class="fas fa-grip-lines"></i>
+      </button>
+      <button
+        class="mybutton h-input-effects"
+        data-anotation="Circle"
+        title="Circle Tool"
+        disabled
+      >
+        <i class="fas fa-circle"></i>
+      </button>
+      <button
+        class="mybutton h-input-effects"
+        data-anotation="rectangle"
+        title="Rectangle Tool"
+        disabled
+      >
+        <i class="fa-regular fa-square"></i>
+      </button>
     </div>
-    <div id="scichart-root"></div>
-    <div id="result-panel" class="result-panel">
-      <div class="result-panel-toolbar">
-        <button disabled id="result-panel-toolbar-content-toggler-algo-editor" class="mybutton h-input-effects result-panel-toolbar-toggler">
-          Algo Editor
-        </button>
-        <button id="result-panel-toolbar-content-toggler-algo" class="mybutton h-input-effects result-panel-toolbar-toggler">
-          Backtesting results (Algo)
-        </button>
-        <button disabled id="result-panel-toolbar-content-toggler-review" class="mybutton h-input-effects result-panel-toolbar-toggler">
-          Review From Historical Trades
-        </button>
-        <button disabled id="result-panel-toolbar-content-toggler-manual" class="mybutton h-input-effects result-panel-toolbar-toggler">
-          Backtesting results (Manual)
-        </button>
-        <div class="spacer"></div>
-        <button id="result-panel-toolbar-toggler" class="mybutton h-input-effects result-panel-toolbar-toggler">
-          <span><i class="fas fa-arrow-up"></i></span>
-          <span><i class="fas fa-arrow-down"></i></span>
-        </button>
+    <div class="chart-section">
+      <div id="loading-element" class="loading-element">
+        <span class="spinner"></span>
+        Backtesting is running ...
       </div>
-      <div class="result-panel-content h-hide h-flex h-flex--column">
-        <h3>Algo editor</h3>
-        <div>
-          The code field (textarea) below is completely customisable and runs on each candles draw, <br/>
-          you can use multiple already made functions/variables and set debuggers in strategic spots. <br/>
-          Your code below must require the following structure: <br/>
-          <pre>
+      <div id="scichart-root"></div>
+      <div id="result-panel" class="result-panel">
+        <div class="result-panel-toolbar">
+          <button
+            disabled
+            id="result-panel-toolbar-content-toggler-algo-editor"
+            class="mybutton h-input-effects result-panel-toolbar-toggler"
+          >
+            Algo Editor
+          </button>
+          <button
+            id="result-panel-toolbar-content-toggler-algo"
+            class="mybutton h-input-effects result-panel-toolbar-toggler"
+          >
+            Backtesting results (Algo)
+          </button>
+          <button
+            disabled
+            id="result-panel-toolbar-content-toggler-review"
+            class="mybutton h-input-effects result-panel-toolbar-toggler"
+          >
+            Review From Historical Trades
+          </button>
+          <button
+            disabled
+            id="result-panel-toolbar-content-toggler-manual"
+            class="mybutton h-input-effects result-panel-toolbar-toggler"
+          >
+            Backtesting results (Manual)
+          </button>
+          <div class="spacer"></div>
+          <button
+            id="result-panel-toolbar-toggler"
+            class="mybutton h-input-effects result-panel-toolbar-toggler"
+          >
+            <span><i class="fas fa-arrow-up"></i></span>
+            <span><i class="fas fa-arrow-down"></i></span>
+          </button>
+        </div>
+        <div class="result-panel-content h-hide h-flex h-flex--column">
+          <h3>Algo editor</h3>
+          <div>
+            The code field (textarea) below is completely customisable and runs
+            on each candles draw, <br />
+            you can use multiple already made functions/variables and set
+            debuggers in strategic spots. <br />
+            Your code below must require the following structure: <br />
+            <pre>
             <code>
               // Some variables you can use:
               let arrayOfSignals = [false, false]; // Represents 2 signals
@@ -233,16 +346,29 @@
                 .TAKE_A_TRADE
             </code>
           </pre>
-        </div>
-        <div class="h-flex">
-          <textarea name="signal-condition" id="algoEditorTextareaMain0" width="100%" rows="3" style="width: 100%; white-space: nowrap;">
+          </div>
+          <div class="h-flex">
+            <textarea
+              name="signal-condition"
+              id="algoEditorTextareaMain0"
+              width="100%"
+              rows="3"
+              style="width: 100%; white-space: nowrap"
+            >
             // Represents 2 signals:
             arrayOfSignals.push(false);
             arrayOfSignals.push(false);
-          </textarea>
-        </div>
-        <div class="h-flex">
-          <textarea name="signal-condition-1-code" id="algoEditorTextareaMain1" width="100%" rows="10" style="width: 100%; white-space: nowrap;">
+          </textarea
+            >
+          </div>
+          <div class="h-flex">
+            <textarea
+              name="signal-condition-1-code"
+              id="algoEditorTextareaMain1"
+              width="100%"
+              rows="10"
+              style="width: 100%; white-space: nowrap"
+            >
             const currentTime = hourMinutes();
             const time1 = '10:10'
             const time2 = '10:45'
@@ -298,20 +424,32 @@
               arrayOfSignals[1] = false;
             }
                       
-          </textarea>
-        </div>
-        <div>
-          <hr class="h-hr">
-        </div>
-        <div class="h-flex" style="position: relative;">
-          <pre><code data="chatGPT-container"></code></pre>
-          <textarea width="100%" rows="5" style="width: 100%; white-space: nowrap;" name="promptAI" id="promptAI" placeholder="ASK AI to build a strategy and click on button ->"></textarea>
-          <button id="chatGPTFloatingIconButtonForModal"></button>
-          <script>
-            document.getElementById('chatGPTFloatingIconButtonForModal').addEventListener('click', () => {
-              const providedCode = document.getElementById('algoEditorTextareaMain1').value;
-              const userInput = document.getElementById('promptAI').value;
-              const prompt = `
+          </textarea
+            >
+          </div>
+          <div>
+            <hr class="h-hr" />
+          </div>
+          <div class="h-flex" style="position: relative">
+            <pre><code data="chatGPT-container"></code></pre>
+            <textarea
+              width="100%"
+              rows="5"
+              style="width: 100%; white-space: nowrap"
+              name="promptAI"
+              id="promptAI"
+              placeholder="ASK AI to build a strategy and click on button ->"
+            ></textarea>
+            <button id="chatGPTFloatingIconButtonForModal"></button>
+            <script>
+              document
+                .getElementById('chatGPTFloatingIconButtonForModal')
+                .addEventListener('click', () => {
+                  const providedCode = document.getElementById(
+                    'algoEditorTextareaMain1'
+                  ).value;
+                  const userInput = document.getElementById('promptAI').value;
+                  const prompt = `
                 ${providedCode}
 
                 The code I provided to you runs on each new candle drawn on chart, and the code will be user inserted (via textarea) to make different trading strategies.
@@ -328,114 +466,179 @@
 
                 ${userInput}
               `;
-              chatGPTRequest(prompt);
-            });
-          </script>
-        </div>
-      </div>
-      <div class="result-panel-content h-flex h-flex--column">
-        <h5 for="backtesting-hour">Backtesting Result (Algo)</h5>
-        <div class="h-flex h-flex--row">
-          <div class="h-flex h-flex--column">
-<div class="h-flex h-flex--column">
-  <label for="backtesting-hour">Session Start Time (add 2h to match MT5 data)</label>
-  <input id="backtesting-hour" class="h-input-effects" type="text" value="09:50:00" />
-</div>
-<div class="h-flex h-flex--column">
-  <label for="backtesting-end">Session End Time (add 2h to match MT5 data)</label>
-  <input id="backtesting-end" class="h-input-effects" type="text" value="11:00:00" />
-</div>
-            <div class="h-flex h-flex--column">
-              <label for="LotSize">Lot Size</label>
-              <input id="LotSize" type="number" value="1.0" class="h-input-effects" />
-              <label for="">RR (SL Points | TP Points)</label>
-              <input id="SLPoints" type="number" value="0.0001" step="0.0001" class="h-input-effects" />
-              <input id="TPPoints" type="number" value="0.0003" step="0.0001" class="h-input-effects" />
-              <label for="TSIncrement">TS Increment</label>
-              <input id="TSIncrement" type="number" value="0.0001" step="0.0001" class="h-input-effects" title="Size of trailing stop increment after each candle" />
-              <div class="h-flex h-flex--center">
-                <button onclick="saveConfigs()" class="mybutton h-input-effects" title="Save Configurations For Next Time"><i class="far fa-save"></i></button>
-                <label for="">Save Configurations</label>
-              </div>
-            </div>
-            <script>
-const ThemeInput = document.getElementById('themeSelector');
-const BTTInput = document.getElementById('backtesting-hour');
-const ETTInput = document.getElementById('backtesting-end');
-const LotSizeInput = document.getElementById('LotSize');
-              const SLPointsInput = document.getElementById('SLPoints');
-              const TPPointsInput = document.getElementById('TPPoints');
-              const TSIncrementInput = document.getElementById('TSIncrement');
-
-              // Load URL parameters into inputs on page load
-              const urlParams = new URLSearchParams(window.location.search);
-              if (urlParams.has('theme')) {
-                ThemeInput.value = urlParams.get('theme');
-              }
-if (urlParams.has('btt')) {
-  BTTInput.value = urlParams.get('btt');
-}
-if (urlParams.has('ett')) {
-  ETTInput.value = urlParams.get('ett');
-}
-              if (urlParams.has('lotsize')) {
-                LotSizeInput.value = urlParams.get('lotsize');
-              }
-              if (urlParams.has('slpoints')) {
-                SLPointsInput.value = urlParams.get('slpoints');
-              }
-              if (urlParams.has('tppoints')) {
-                TPPointsInput.value = urlParams.get('tppoints');
-              }
-              if (urlParams.has('tsincrement')) {
-                TSIncrementInput.value = urlParams.get('tsincrement');
-              }
-              
-              function saveConfigs() {
-                const currentUrl = window.location.href.split('?')[0];
-                const urlParams = new URLSearchParams(window.location.search);
-              
-                urlParams.set('theme', ThemeInput.value);
-urlParams.set('btt', BTTInput.value);
-urlParams.set('ett', ETTInput.value);
-urlParams.set('lotsize', LotSizeInput.value);
-                urlParams.set('slpoints', SLPointsInput.value);
-                urlParams.set('tppoints', TPPointsInput.value);
-                urlParams.set('tsincrement', TSIncrementInput.value);
-
-                window.location.search = urlParams;
-              }
+                  chatGPTRequest(prompt);
+                });
             </script>
           </div>
-          <textarea id="backtestingResult" rows="10" style="flex-grow: 1; min-width: 20%" class="h-field"></textarea>
-          <div id="myChartContainer" styles="flex-grow: 3; width: 700px">
-            <canvas id="myChart" width="700px" height="320px"></canvas>
+        </div>
+        <div class="result-panel-content h-flex h-flex--column">
+          <h5 for="backtesting-hour">Backtesting Result (Algo)</h5>
+          <div class="h-flex h-flex--row">
+            <div class="h-flex h-flex--column">
+              <div class="h-flex h-flex--column">
+                <label for="backtesting-hour"
+                  >Session Start Time (add 2h to match MT5 data)</label
+                >
+                <input
+                  id="backtesting-hour"
+                  class="h-input-effects"
+                  type="text"
+                  value="09:50:00"
+                />
+              </div>
+              <div class="h-flex h-flex--column">
+                <label for="backtesting-end"
+                  >Session End Time (add 2h to match MT5 data)</label
+                >
+                <input
+                  id="backtesting-end"
+                  class="h-input-effects"
+                  type="text"
+                  value="11:00:00"
+                />
+              </div>
+              <div class="h-flex h-flex--column">
+                <label for="LotSize">Lot Size</label>
+                <input
+                  id="LotSize"
+                  type="number"
+                  value="1.0"
+                  class="h-input-effects"
+                />
+                <label for="">RR (SL Points | TP Points)</label>
+                <input
+                  id="SLPoints"
+                  type="number"
+                  value="0.0001"
+                  step="0.0001"
+                  class="h-input-effects"
+                />
+                <input
+                  id="TPPoints"
+                  type="number"
+                  value="0.0003"
+                  step="0.0001"
+                  class="h-input-effects"
+                />
+                <label for="TSIncrement">TS Increment</label>
+                <input
+                  id="TSIncrement"
+                  type="number"
+                  value="0.0001"
+                  step="0.0001"
+                  class="h-input-effects"
+                  title="Size of trailing stop increment after each candle"
+                />
+                <div class="h-flex h-flex--center">
+                  <button
+                    onclick="saveConfigs()"
+                    class="mybutton h-input-effects"
+                    title="Save Configurations For Next Time"
+                  >
+                    <i class="far fa-save"></i>
+                  </button>
+                  <label for="">Save Configurations</label>
+                </div>
+              </div>
+              <script>
+                const ThemeInput = document.getElementById('themeSelector');
+                const BTTInput = document.getElementById('backtesting-hour');
+                const ETTInput = document.getElementById('backtesting-end');
+                const LotSizeInput = document.getElementById('LotSize');
+                const SLPointsInput = document.getElementById('SLPoints');
+                const TPPointsInput = document.getElementById('TPPoints');
+                const TSIncrementInput = document.getElementById('TSIncrement');
+
+                // Load URL parameters into inputs on page load
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.has('theme')) {
+                  ThemeInput.value = urlParams.get('theme');
+                }
+                if (urlParams.has('btt')) {
+                  BTTInput.value = urlParams.get('btt');
+                }
+                if (urlParams.has('ett')) {
+                  ETTInput.value = urlParams.get('ett');
+                }
+                if (urlParams.has('lotsize')) {
+                  LotSizeInput.value = urlParams.get('lotsize');
+                }
+                if (urlParams.has('slpoints')) {
+                  SLPointsInput.value = urlParams.get('slpoints');
+                }
+                if (urlParams.has('tppoints')) {
+                  TPPointsInput.value = urlParams.get('tppoints');
+                }
+                if (urlParams.has('tsincrement')) {
+                  TSIncrementInput.value = urlParams.get('tsincrement');
+                }
+
+                function saveConfigs() {
+                  const currentUrl = window.location.href.split('?')[0];
+                  const urlParams = new URLSearchParams(window.location.search);
+
+                  urlParams.set('theme', ThemeInput.value);
+                  urlParams.set('btt', BTTInput.value);
+                  urlParams.set('ett', ETTInput.value);
+                  urlParams.set('lotsize', LotSizeInput.value);
+                  urlParams.set('slpoints', SLPointsInput.value);
+                  urlParams.set('tppoints', TPPointsInput.value);
+                  urlParams.set('tsincrement', TSIncrementInput.value);
+
+                  window.location.search = urlParams;
+                }
+              </script>
+            </div>
+            <div class="back-testing-results">
+              <label for="backtestingResult">Performance Results: </label>
+              <textarea
+                id="backtestingResult"
+                rows="10"
+                class="h-field"
+              ></textarea>
+              <label for="exportableCSVField">CSV Exportable text: </label>
+              <textarea
+                id="exportableCSVField"
+                rows="2"
+                class="h-field"
+              ></textarea>
+            </div>
+            <div id="myChartContainer" styles="flex-grow: 3; width: 700px">
+              <canvas id="myChart" width="700px" height="320px"></canvas>
+            </div>
+          </div>
+          <div>
+            <h5 for="backtesting-hour">Order History</h5>
+            <div id="backtestingResultOrderHistory" class="h-field"></div>
           </div>
         </div>
-        <div>
-          <h5 for="backtesting-hour">Order History</h5>
-          <div id="backtestingResultOrderHistory" class="h-field"></div>
-        </div>
-      </div>
-      <div class="result-panel-content h-flex h-flex--column">
-        <h5 for="backtesting-hour">Review Historical Trade</h5>
-        <div class="h-flex h-flex--row">
-          <div class="h-flex h-flex--column">
-            <label for="textareaHistoricalTradesLines">Paste your historical lines (myfxbook for now)</label>
-            <textarea id="textareaHistoricalTradesLines" rows="10" style="flex-grow: 1; min-width: 600px" class="h-field">2025.05.13 10:17:00	2025.05.13 10:18:00	EURUSD	Sell	1.00	1.11078	-	1.11064	1.11078	-1.4	-16.60	1m	-0.03%	-4.0000</textarea>
+        <div class="result-panel-content h-flex h-flex--column">
+          <h5 for="backtesting-hour">Review Historical Trade</h5>
+          <div class="h-flex h-flex--row">
+            <div class="h-flex h-flex--column">
+              <label for="textareaHistoricalTradesLines"
+                >Paste your historical lines (myfxbook for now)</label
+              >
+              <textarea
+                id="textareaHistoricalTradesLines"
+                rows="10"
+                style="flex-grow: 1; min-width: 600px"
+                class="h-field"
+              >
+2025.05.13 10:17:00	2025.05.13 10:18:00	EURUSD	Sell	1.00	1.11078	-	1.11064	1.11078	-1.4	-16.60	1m	-0.03%	-4.0000</textarea
+              >
+            </div>
           </div>
-        </div>
-        <div>
-          <div id="backtestingResultOrderHistory" class="h-field"></div>
+          <div>
+            <div id="backtestingResultOrderHistory" class="h-field"></div>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Using specific version of scichart for working AxisLabels alignments -->
-  <script src="https://cdn.jsdelivr.net/npm/scichart@3.5.782/index.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-  <script src="index6.js"></script>
-</body>
-
+    <!-- Using specific version of scichart for working AxisLabels alignments -->
+    <script src="https://cdn.jsdelivr.net/npm/scichart@3.5.782/index.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="index6.js"></script>
+  </body>
 </html>

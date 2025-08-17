@@ -6,7 +6,7 @@
 */
 
 // Result Panel Related Actions / Triggers:
-const resultPanel = document.querySelector('#result-panel');
+const $resultPanel = document.querySelector('#result-panel');
 const $csvRefresh = document.querySelector('#csvRefresh');
 const $resultPanelToolbarContentTogglerAlgoEditor = document.getElementById(
   'result-panel-toolbar-content-toggler-algo-editor'
@@ -18,8 +18,10 @@ const $resultPanelToolbarContentTogglerReview = document.getElementById(
   'result-panel-toolbar-content-toggler-review'
 );
 //const $csvDataField = document.getElementById('csvContent');
+const $backTestingResult = document.getElementById('backtestingResult');
+const $exportableCSVField = document.getElementById('exportableCSVField');
 const $csvFileInput = document.getElementById('csvFileInput');
-const toolbarToggler = document.querySelector('#result-panel-toolbar-toggler');
+const $toolbarToggler = document.querySelector('#result-panel-toolbar-toggler');
 const $navigateTroughtDates = document.getElementById('NavigateTroughtDates');
 const $SLPointsInput = document.getElementById('SLPoints');
 const $TPPointsInput = document.getElementById('TPPoints');
@@ -42,10 +44,38 @@ let backTestingPaused = $backTestingPauseButton.checked;
 const $sessionStartInput = document.getElementById('backtesting-hour');
 const $sessionEndInput = document.getElementById('backtesting-end');
 
+const revealAlgoEditor = () => {
+  $resultPanel.classList.add('active');
+  document
+    .querySelectorAll('.result-panel-content')[0]
+    .classList.remove('h-hide');
+  document.querySelectorAll('.result-panel-content')[1].classList.add('h-hide');
+  document.querySelectorAll('.result-panel-content')[2].classList.add('h-hide');
+};
+revealAlgoEditor();
+
+const revealAglo = () => {
+  $resultPanel.classList.add('active');
+  document.querySelectorAll('.result-panel-content')[0].classList.add('h-hide');
+  document
+    .querySelectorAll('.result-panel-content')[1]
+    .classList.remove('h-hide');
+  document.querySelectorAll('.result-panel-content')[2].classList.add('h-hide');
+};
+
+const revealReview = () => {
+  $resultPanel.classList.add('active');
+  document.querySelectorAll('.result-panel-content')[0].classList.add('h-hide');
+  document.querySelectorAll('.result-panel-content')[1].classList.add('h-hide');
+  document
+    .querySelectorAll('.result-panel-content')[2]
+    .classList.remove('h-hide');
+};
+
 function toggleHeight() {
-  resultPanel.classList.toggle('active');
+  $resultPanel.classList.toggle('active');
 }
-toolbarToggler?.addEventListener('click', toggleHeight);
+$toolbarToggler?.addEventListener('click', toggleHeight);
 
 function stickyTableHeaders(parentElement) {
   const header = document.querySelector('table thead');
@@ -58,36 +88,18 @@ function stickyTableHeaders(parentElement) {
   }
 }
 
-$resultPanelToolbarContentTogglerAlgoEditor?.addEventListener('click', () => {
-  resultPanel.classList.add('active');
-  document
-    .querySelectorAll('.result-panel-content')[0]
-    .classList.remove('h-hide');
-  document.querySelectorAll('.result-panel-content')[1].classList.add('h-hide');
-  document.querySelectorAll('.result-panel-content')[2].classList.add('h-hide');
-});
+$resultPanelToolbarContentTogglerAlgoEditor?.addEventListener('click', () =>
+  revealAlgoEditor()
+);
+$resultPanelToolbarContentTogglerAlgo?.addEventListener('click', () =>
+  revealAglo()
+);
+$resultPanelToolbarContentTogglerReview?.addEventListener('click', () =>
+  revealReview()
+);
 
-$resultPanelToolbarContentTogglerAlgo?.addEventListener('click', () => {
-  resultPanel.classList.add('active');
-  document.querySelectorAll('.result-panel-content')[0].classList.add('h-hide');
-  document
-    .querySelectorAll('.result-panel-content')[1]
-    .classList.remove('h-hide');
-  document.querySelectorAll('.result-panel-content')[2].classList.add('h-hide');
-});
-
-$resultPanelToolbarContentTogglerReview?.addEventListener('click', () => {
-  resultPanel.classList.add('active');
-  document.querySelectorAll('.result-panel-content')[0].classList.add('h-hide');
-  document.querySelectorAll('.result-panel-content')[1].classList.add('h-hide');
-  document
-    .querySelectorAll('.result-panel-content')[2]
-    .classList.remove('h-hide');
-});
-
-resultPanel.addEventListener('scroll', function () {
-  // Run table header sticky function
-  stickyTableHeaders(this);
+$resultPanel.addEventListener('scroll', (event) => {
+  stickyTableHeaders(event.target);
 });
 
 $SLPointsInput?.addEventListener('change', () => {
@@ -114,6 +126,7 @@ const MAX_BUFFER_SIZE = 10;
 let slSize = () => parseFloat($SLPointsInput.value);
 let tpSize = () => parseFloat($TPPointsInput.value);
 let lotSize = () => parseFloat($LotSizeInput.value);
+let tsSize = () => parseFloat($TSIncrementInput.value);
 let bullishColor = '00FF00';
 let bearishColor = 'FF0000';
 let greyColor = '999999';
@@ -216,7 +229,7 @@ const handleFileAndInitGraph = (file) => {
     numbDays = 0;
 
     // Reset portfolio graph and order history display
-    document.getElementById('backtestingResult').value = '';
+    $backTestingResult.value = '';
     document.getElementById('backtestingResultOrderHistory').innerHTML = '';
 
     // Add visible class to loading element
@@ -885,6 +898,52 @@ function initSciChart(data) {
           (lotSize() * 10) *
           10000
         ).toFixed(2);
+        const resultToCSV = () => {
+          let csv = '';
+          const csvFileName = $csvFileInput.value.split('\\')[2].split('.')[0];
+
+          const { startDate, endDate } = (() => {
+            // csvFileName: EURUSD_M5_202506020000_202508082355
+            const sd = csvFileName.split('_')[2]; // eg: 202506020000
+            const ed = csvFileName.split('_')[3]; // eg: 202508082355
+
+            const sdYear = sd.slice(0, 4); // eg: 2025
+            const sdMonth = sd.slice(4, 6); // eg: 06
+            const sdDay = sd.slice(6, 8); // eg: 02
+
+            const edYear = ed.slice(0, 4); // eg: 2025
+            const edMonth = ed.slice(4, 6); // eg: 08
+            const edDay = ed.slice(6, 8); // eg: 08
+
+            const sdt = `${sdYear}\/${sdMonth}\/${sdDay}`; // 2025\06\02
+            const edt = `${edYear}\/${edMonth}\/${edDay}`; // 2025\08\08
+
+            return {
+              startDate: sdt,
+              endDate: edt,
+            };
+          })();
+
+          csv += `\t\t${csvFileName}\t`; // File name
+          csv += `CSID\t`; // Strategy name
+          csv += `${startDate}\t`; // Start date
+          csv += `${endDate}\t`; // End date
+          csv += `${numbDays}\t`; // Number of days
+          csv += `${$sessionStartInput.value}\t`; // Start range time
+          csv += `${$sessionEndInput.value}\t`; // End range time
+          csv += `${tradeCount}\t`; // Number of trades
+          csv += `${winRate}%\t`; // Win rate
+          csv += `${moneyEquivalent}\t`; // Money equivalent
+          csv += `${profitsInPoints}\t`; // Profits in points
+          // csv += `${(profitsInPoints / 0.0001).toFixed(2)}\t`; // Profits in pips
+          // csv += `${(profitsInPoints / 0.01).toFixed(2)}\t`; // Profits in ticks
+          csv += `${lotSize()}\t`; // Lot size
+          csv += `${tpSize()}\t`; // TP size
+          csv += `${slSize()}\t`; // SL size
+          csv += `${tsSize()}\t`; // TS size
+
+          return csv;
+        };
         const result = `Check console for orders history\n\nTrade Taken: ${
           ordersHistory.length
         } (in ${numbDays} days)\nWin Rate: ${winRate}% \n\nProfits: \n Money: ${moneyEquivalent}$\n Points: ${profitsInPoints.toFixed(
@@ -892,7 +951,8 @@ function initSciChart(data) {
         )} \n Pips: ${(profitsInPoints / 0.0001).toFixed(2)} \n Ticks: ${(
           profitsInPoints / 0.01
         ).toFixed(2)}`;
-        document.getElementById('backtestingResult').value = result;
+        $backTestingResult.value = result;
+        $exportableCSVField.value = resultToCSV();
 
         // Profitability Chart: ========================================
         let myChart = document.getElementById('myChart');
@@ -1163,8 +1223,12 @@ function initSciChart(data) {
 
       // TTR Indicator: ========================================
       const inTradingTimeRange = (d) => {
-        const startRangeTime = new Date(`${d[EnumMT5OHLC.DATE]} ${$sessionStartInput.value}`);
-        const endRangeTime = new Date(`${d[EnumMT5OHLC.DATE]} ${$sessionEndInput.value}`);
+        const startRangeTime = new Date(
+          `${d[EnumMT5OHLC.DATE]} ${$sessionStartInput.value}`
+        );
+        const endRangeTime = new Date(
+          `${d[EnumMT5OHLC.DATE]} ${$sessionEndInput.value}`
+        );
         const currentTime = new Date(
           `${d[EnumMT5OHLC.DATE]} ${d[EnumMT5OHLC.TIME]}`
         );
