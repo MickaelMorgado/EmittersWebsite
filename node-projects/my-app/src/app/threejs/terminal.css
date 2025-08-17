@@ -1,0 +1,12 @@
+.terminal {
+  animation: pulse 3s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    text-shadow: 0 0 20px orange, 0 0 2px orange;
+  }
+  50% {
+    text-shadow: 0 0 40px orange, 0 0 5px orange;
+  }
+}
