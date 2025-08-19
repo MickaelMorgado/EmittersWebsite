@@ -956,76 +956,59 @@ function initSciChart(data) {
 
         // Profitability Chart: ========================================
         let myChart = document.getElementById('myChart');
-        var ctx = myChart.getContext('2d');
-        var datasets = [];
-        var values = ordersHistory.map((order) => {
-          const pnlvar = order.pnlPoints;
-          /*
-            order.closedOrderType == EnumclosedOrderType.CLOSED_BY_TP
-              ? tpSize()
-              : -slSize();
-            */
-          return [pnlvar];
-        });
-        var labels = ordersHistory.map((order) => order.id);
+        let ctx = myChart.getContext('2d');
 
-        const pnlsum = () => {
-          let sum = 0;
-          return values.map((value) => {
-            var a = (sum += parseFloat(value));
-            return a;
-          });
-        };
-
-        const equityPnL = () => {
-          let equitySum = 0;
-          const commission = 0.00005; // TODO: Currently high for testing and handicap the results
-          return values.map((value) => {
-            var a = (equitySum += parseFloat(value - commission));
-            return a;
-          });
-        };
-
-        // TODO: we might not destroy it but update, cus when getting out of memory and still want to vizualize the chart, it will not work anymore.
-        // Check if there is an existing chart instance and destroy it:
-        if (typeof myChart !== 'undefined' && myChart !== null) {
-          myChart.remove();
-          const newCanvas = document.createElement('canvas');
-          newCanvas.id = 'myChart';
-          newCanvas.width = 700;
-          newCanvas.height = 320;
-          document.getElementById('myChartContainer').appendChild(newCanvas);
-          myChart = document.getElementById('myChart');
-          ctx = myChart.getContext('2d');
-          //myChart.destroy();
+        // ✅ Properly destroy any existing chart instance
+        const existingChart = Chart.getChart(myChart);
+        if (existingChart) {
+          existingChart.destroy();
         }
 
-        gradient = ctx.createLinearGradient(0, 25, 0, 300);
+        const labels = [];
+        const pnlData = [];
+        const equityData = [];
+
+        let sum = 0;
+        let equitySumPoints = 0;
+        const commissionPoints = 0.00005;
+
+        for (const { id, pnlPoints } of ordersHistory) {
+          labels.push(id);
+
+          sum += +pnlPoints;
+          pnlData.push(sum);
+
+          equitySumPoints += +pnlPoints - commissionPoints;
+          equityData.push(equitySumPoints);
+        }
+
+        // Gradient
+        const gradient = ctx.createLinearGradient(0, 25, 0, 300);
         gradient.addColorStop(0, `#${bullishColor}${RRToolStyles.opacity}`);
         gradient.addColorStop(1, `#${bearishColor}${RRToolStyles.opacity}`);
 
-        datasets.push({
-          type: 'line',
-          label: 'Strategy Performance (Accumulated Points)',
-          data: pnlsum(),
-          borderColor: `#${bullishColor}`,
-          backgroundColor: gradient,
-          borderWidth: 1,
-          order: 0,
-          fill: true,
-        });
-
-        datasets.push({
-          type: 'line',
-          label: 'Portfolio Performance (Equity Curve)',
-          data: equityPnL(),
-          borderColor: `#${bearishColor}`,
-          borderWidth: 1,
-          order: 1,
-          fill: false,
-          tension: 0.5,
-          pointStyle: false,
-        });
+        const datasets = [
+          {
+            type: 'line',
+            label: 'Strategy Performance (Accumulated Points)',
+            data: pnlData,
+            borderColor: `#${bullishColor}`,
+            backgroundColor: gradient,
+            borderWidth: 1,
+            order: 0,
+            fill: true,
+          },
+          {
+            type: 'line',
+            label: 'Portfolio Performance (Equity Curve)',
+            data: equityData,
+            borderColor: `#${bearishColor}`,
+            borderWidth: 1,
+            order: 1,
+            fill: false,
+            tension: 0.5,
+          },
+        ];
 
         const profitabilityChartOptions = {
           animation: {
