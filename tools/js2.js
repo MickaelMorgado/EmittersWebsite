@@ -1,4 +1,4 @@
-$(document).ready(function () {
+$(document).ready(() => {
   var greenProbability = 0.25; // Default value
   var reward = 2;
 
@@ -24,20 +24,20 @@ $(document).ready(function () {
   elements.stop.hidden = true;
 
   // Call the main function when the button is clicked
-  elements.button.onclick = function () {
+  elements.button.onclick = () => {
     mainFunction();
   };
 
-  elements.stop.onclick = function () {
+  elements.stop.onclick = () => {
     stopFunction();
   };
 
   // Function to generate a random number between +1 and -1 with a given probability
-  function randomPositiveOrNegative(probability) {
+  const randomPositiveOrNegative = (probability) => {
     var genNumb = Math.random();
     // console.log(`${genNumb} <= ${probability} : ${genNumb <= probability}`);
     return genNumb <= probability ? 1 : -1;
-  }
+  };
 
   // Main function to be executed
   const mainFunction = () => {
@@ -85,9 +85,7 @@ $(document).ready(function () {
     clearInterval(myInterval);
   };
 
-  winLossClass = (value) => {
-    return value > 0 ? 'win' : value < 0 ? 'loss' : '';
-  };
+  winLossClass = (value) => (value > 0 ? 'win' : value < 0 ? 'loss' : '');
 
   /*
   window.preview = (url) => {
@@ -120,11 +118,11 @@ $(document).ready(function () {
           targetElement.innerHTML += `<tr class='generated-table'>
             <td class="column1">${values[i][0]}</td>
             <td class="column2 ${winLossClass(values[i][1])}">${
-            values[i][1]
-          }</td>
+              values[i][1]
+            }</td>
             <td class="column3 ${values[i][2] > 0 ? 'loss' : ''}">${
-            values[i][2]
-          }</td>
+              values[i][2]
+            }</td>
             <td class="column4 ${
               values[i][5] > 0 ? 'win' : values[i][5] < 0 ? 'loss' : ''
             }">${values[i][5]}</td>
@@ -139,8 +137,8 @@ $(document).ready(function () {
               </a>
             </td>
             <td class="column7 ellipsis" title="${values[i][12]}">${
-            values[i][12]
-          }</td>
+              values[i][12]
+            }</td>
             <td class="column8">${values[i][6]}</td>
             <td class="column9">${values[i][10]}</td>
             <td class="column10">${
@@ -169,7 +167,7 @@ $(document).ready(function () {
     'A13:Z260',
     elements.mySheet1
   );
-  async function runProcess() {
+  const runProcess = async () => {
     const sheet2Data = await sheet(
       '19Xef2pU1IGmlTo07YvrCO1cMlB0QgBwkMQ3Xy7xo1Tc',
       'EURUSD - Trading History LDN Scalp',
@@ -213,12 +211,12 @@ $(document).ready(function () {
         threejs(imgscr);
       })
     );
-  }
+  };
 
   runProcess();
 
   // Function to calculate cosine similarity between two vectors
-  function cosineSimilarity(vector1, vector2) {
+  const cosineSimilarity = (vector1, vector2) => {
     // Calculate dot product of the two vectors
     let dotProduct = 0;
     for (let i = 0; i < vector1.length; i++) {
@@ -239,9 +237,9 @@ $(document).ready(function () {
     const similarity = dotProduct / (magnitude1 * magnitude2);
 
     return similarity;
-  }
+  };
 
-  function findMostSimilarSentences(text, numSentences) {
+  const findMostSimilarSentences = (text, numSentences) => {
     // Split the text into an array of non-empty sentences
     const sentences = text.toLowerCase().match(/[^.!?]+[.!?]+/g);
 
@@ -281,9 +279,9 @@ $(document).ready(function () {
     const mostSimilarPairs = similarities.slice(0, numSentences);
 
     return mostSimilarPairs;
-  }
+  };
 
-  function delayedFunction() {
+  const delayedFunction = () => {
     // Check if any elements are found before trying to iterate over them
     const el = document.querySelectorAll('.column7.ellipsis');
     if (el.length > 0) {
@@ -302,12 +300,12 @@ $(document).ready(function () {
         'No elements found matching the selector .column7.ellipsis'
       );
     }
-  }
+  };
 
   setTimeout(delayedFunction, 2000); // 2000 milliseconds = 2 seconds
 
   // --- Three.js --------------------------------------------------------------------
-  function threejs(imageSrcs) {
+  const threejs = (imageSrcs) => {
     // Create a scene
     const scene = new THREE.Scene();
 
@@ -333,7 +331,7 @@ $(document).ready(function () {
     const maxDistance = 80;
 
     // Function to load textures with delay
-    function loadTexturesWithDelay(index) {
+    const loadTexturesWithDelay = (index) => {
       if (index < numImages) {
         setTimeout(() => {
           const x = Math.random() * volumeSize - volumeSize / 2;
@@ -355,7 +353,7 @@ $(document).ready(function () {
           loadTexturesWithDelay(index + 1);
         }, 1000); // Adjust the delay time (in milliseconds) as needed
       }
-    }
+    };
 
     // Start loading textures
     loadTexturesWithDelay(0);
@@ -376,7 +374,7 @@ $(document).ready(function () {
     document.addEventListener('keydown', onKeyDown);
     document.addEventListener('keyup', onKeyUp);
 
-    function onKeyDown(event) {
+    const onKeyDown = (event) => {
       switch (event.key) {
         case 'w':
           keys.w = true;
@@ -397,9 +395,9 @@ $(document).ready(function () {
           keys.q = true;
           break;
       }
-    }
+    };
 
-    function onKeyUp(event) {
+    const onKeyUp = (event) => {
       switch (event.key) {
         case 'w':
           keys.w = false;
@@ -420,13 +418,13 @@ $(document).ready(function () {
           keys.q = false;
           break;
       }
-    }
+    };
 
     document.addEventListener('mousemove', onMouseMove);
     let prevMouseX = null;
     let prevMouseY = null;
 
-    function onMouseMove(event) {
+    const onMouseMove = (event) => {
       if (prevMouseX !== null && prevMouseY !== null) {
         const deltaX = event.clientX - prevMouseX;
         const deltaY = event.clientY - prevMouseY;
@@ -437,7 +435,7 @@ $(document).ready(function () {
 
       prevMouseX = event.clientX;
       prevMouseY = event.clientY;
-    }
+    };
 
     document.addEventListener('mouseup', () => {
       prevMouseX = null;
@@ -445,7 +443,7 @@ $(document).ready(function () {
     });
 
     // Animation loop
-    function animate() {
+    const animate = () => {
       requestAnimationFrame(animate);
 
       if (keys.w) camera.position.z -= moveSpeed;
@@ -456,8 +454,8 @@ $(document).ready(function () {
       if (keys.q) camera.position.y -= moveSpeed;
 
       renderer.render(scene, camera);
-    }
+    };
 
     animate();
-  }
+  };
 });

@@ -34,7 +34,7 @@ const $firstDate = document.getElementById('firstDate');
 const $lastDate = document.getElementById('lastDate');
 const $currentReadingDate = document.getElementById('currentReadingDate');
 const $resultPanelContent = document.querySelectorAll('.result-panel-content'); //result-panel-content
-//const audioTick = new Audio('squirrel_404_click_tick.wav');
+const audioSuccess = new Audio('squirrel_404_click_tick.wav');
 const audioNotify = new Audio('joseegn_ui_sound_select.wav');
 
 const $backTestingPauseButton = document.getElementById(
@@ -72,21 +72,23 @@ const revealReview = () => {
     .classList.remove('h-hide');
 };
 
-function toggleHeight() {
+const toggleHeight = () => {
   $resultPanel.classList.toggle('active');
-}
+};
 $toolbarToggler?.addEventListener('click', toggleHeight);
 
-function stickyTableHeaders(parentElement) {
-  const header = document.querySelector('table thead');
+const stickyTableHeaders = (parentElement) => {
+  const $orderHistoryHeader = document.querySelector('table thead');
 
   const scrollTop = parentElement.scrollTop;
-  if (scrollTop > 408) {
-    header.classList.add('sticky');
-  } else {
-    header.classList.remove('sticky');
+  if ($orderHistoryHeader) {
+    if (scrollTop > 408) {
+      $orderHistoryHeader.classList.add('sticky');
+    } else {
+      $orderHistoryHeader.classList.remove('sticky');
+    }
   }
-}
+};
 
 $resultPanelToolbarContentTogglerAlgoEditor?.addEventListener('click', () =>
   revealAlgoEditor()
@@ -97,11 +99,9 @@ $resultPanelToolbarContentTogglerAlgo?.addEventListener('click', () =>
 $resultPanelToolbarContentTogglerReview?.addEventListener('click', () =>
   revealReview()
 );
-
 $resultPanel.addEventListener('scroll', (event) => {
   stickyTableHeaders(event.target);
 });
-
 $SLPointsInput?.addEventListener('change', () => {
   animateActiveClass($csvRefresh);
 });
@@ -169,12 +169,11 @@ const getCandleDirection = (openPrice = 0, closePrice = 0) => {
 const getCandleDirectionFromCandle = (candle) =>
   getCandleDirection(candle[EnumMT5OHLC.OPEN], candle[EnumMT5OHLC.CLOSE]);
 
-const getCandleChartAxisLocationFromDate = (date) => {
-  return new Date(date).getTime() / 1000;
-};
+const getCandleChartAxisLocationFromDate = (date) =>
+  new Date(date).getTime() / 1000;
 window.getCandleChartAxisLocationFromDate = getCandleChartAxisLocationFromDate;
 
-function formatDateFromUnix(unixTime) {
+const formatDateFromUnix = (unixTime) => {
   const options = {
     year: 'numeric',
     month: 'numeric',
@@ -185,12 +184,10 @@ function formatDateFromUnix(unixTime) {
     hour12: false,
   };
   return new Date(unixTime * 1000).toLocaleDateString('en-GB', options); // Multiply by 1000 to convert to milliseconds because JS Date works with milliseconds.
-}
+};
 
 // Handy function to execute actions step by step:
-const stepByStep = (step, actions) => {
-  return actions[step - 1]();
-};
+const stepByStep = (step, actions) => actions[step - 1]();
 
 const convertMT5DateToUnix = (candleTime) => {
   if (!candleTime) {
@@ -204,8 +201,6 @@ const convertMT5DateToUnix = (candleTime) => {
   const ct = candleTime.replaceAll('.', '-');
   return new Date(ct).getTime() / 1000; // - 3600 * 2; // divided by 1000 to convert from milliseconds to seconds as Unix time only accepts seconds, while JS Date is more precise as working with milliseconds.
 };
-
-initSciChart();
 
 const readingSpeed = 0; // Speed of reading the CSV file in milliseconds
 
@@ -237,7 +232,7 @@ const handleFileAndInitGraph = (file) => {
 
     // Read the CSV file just to get the first and last dates:
     const reader = new FileReader();
-    reader.onload = function (e) {
+    reader.onload = (e) => {
       const text = e.target.result;
       const lines = text.split(/\r?\n/).filter(Boolean);
 
@@ -255,7 +250,7 @@ const handleFileAndInitGraph = (file) => {
     Papa.parse(file, {
       header: true,
       dynamicTyping: true,
-      step: function (results, parser) {
+      step: (results, parser) => {
         if (backTestingPaused) {
           parser.pause();
           document
@@ -281,17 +276,17 @@ const handleFileAndInitGraph = (file) => {
         // Calculate and Display profitability statistics:
         profitabilityCalculation();
 
-        //audioTick.play();
-
+        //audioSuccess.play();
         setTimeout(() => {
           parser.resume();
         }, readingSpeed);
       },
-      complete: function (results, file) {
+      complete: (results, file) => {
         // Remove visible class from loading element
         document.getElementById('loading-element').classList.remove('visible');
+        audioSuccess.play();
       },
-      error: function (error) {
+      error: (error) => {
         console.error('Error parsing CSV:', error);
       },
     });
@@ -300,7 +295,7 @@ const handleFileAndInitGraph = (file) => {
   }
 };
 
-$csvFileInput.addEventListener('change', function loadcsv(event) {
+$csvFileInput.addEventListener('change', (event) => {
   const file = event.target.files[0];
   handleFileAndInitGraph(file);
 });
@@ -312,7 +307,7 @@ $csvRefresh.addEventListener('click', () => {
 });
 
 // Define the initSciChart function
-function initSciChart(data) {
+const initSciChart = (data) => {
   const {
     SciChartSurface,
     NumericAxis,
@@ -902,8 +897,9 @@ function initSciChart(data) {
           let csv = '';
           const csvFileName = $csvFileInput.value.split('\\')[2].split('.')[0];
 
-          const { startDate, endDate } = (() => {
+          const { timeframe, startDate, endDate } = (() => {
             // csvFileName: EURUSD_M5_202506020000_202508082355
+            const timeframe = csvFileName.split('_')[1]; // eg: M5
             const sd = csvFileName.split('_')[2]; // eg: 202506020000
             const ed = csvFileName.split('_')[3]; // eg: 202508082355
 
@@ -919,12 +915,14 @@ function initSciChart(data) {
             const edt = `${edYear}\/${edMonth}\/${edDay}`; // 2025\08\08
 
             return {
+              timeframe,
               startDate: sdt,
               endDate: edt,
             };
           })();
 
           csv += `\t\t${csvFileName}\t`; // File name
+          csv += `${timeframe}\t`; // Timeframe
           csv += `CSID\t`; // Strategy name
           csv += `${startDate}\t`; // Start date
           csv += `${endDate}\t`; // End date
@@ -1398,7 +1396,7 @@ function initSciChart(data) {
       );
 
       // Navigate Trought Dates: ========================================
-      $navigateTroughtDates.addEventListener('change', function (event) {
+      $navigateTroughtDates.addEventListener('change', (event) => {
         const getCandleNumberByDay = (days) => 86400 * days; // Get the number of candles in a day (candle count for a entire day)
         const selectedDate = event.target.value;
         const rangeMinDate = parseInt(selectedDate) - 1800; // + half an hour
@@ -1663,7 +1661,9 @@ function initSciChart(data) {
     .catch((error) => {
       console.error('Error initializing SciChart:', error);
     });
-}
+};
+
+initSciChart();
 
 // Notify ===============================
 const animateActiveClass = (element) => {
@@ -1675,12 +1675,12 @@ const animateActiveClass = (element) => {
 };
 // End of Notify ===============================
 
-function updateFileReadingProgression(valueInPercentage) {
+const updateFileReadingProgression = (valueInPercentage) => {
   const progressionBar = document.querySelector(
     '#fileReadingProgression .progression'
   );
   progressionBar.style.width = `${valueInPercentage}%`;
-}
+};
 window.updateFileReadingProgression = updateFileReadingProgression;
 
 let prevDate = null;
@@ -1739,7 +1739,7 @@ const appendIndicatorsToChart = (d, dataIndex) => {
 };
 
 // Historical Trades Textarea Change Handler
-$textareaHistoricalTradesLines?.addEventListener('change', function (event) {
+$textareaHistoricalTradesLines?.addEventListener('change', (event) => {
   const tradesData = event.target.value;
   const rows = tradesData.split('\n');
 
