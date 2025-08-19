@@ -1005,6 +1005,7 @@ const initSciChart = (data) => {
             order: 1,
             fill: false,
             tension: 0.5,
+            pointStyle: false, // As its currently displaying equity in points for a better visualization and adaptability chart (y-axis), we can remove points hover representation.
           },
         ];
 
