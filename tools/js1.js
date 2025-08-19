@@ -2,7 +2,7 @@
 // Google Sheet API key: https://console.cloud.google.com/apis/credentials/key/
 
 // Function to fetch data from Google Sheets
-function fetchData(googleSheetId, chartType, minValue, maxValue) {
+const fetchData = (googleSheetId, chartType, minValue, maxValue) => {
   var params = new URLSearchParams(window.location.search);
   var sheetIdFromURL = params.get('sheetId');
 
@@ -137,7 +137,7 @@ function fetchData(googleSheetId, chartType, minValue, maxValue) {
     .catch((error) => {
       console.error('Error fetching data:', error);
     });
-}
+};
 
 const animation = {
   x: {
@@ -148,15 +148,15 @@ const animation = {
   },
 };
 // Function to generate a random color in RGB format
-function getRandomColor() {
+const getRandomColor = () => {
   var r = Math.floor(Math.random() * 256);
   var g = Math.floor(Math.random() * 256);
   var b = Math.floor(Math.random() * 256);
   return r + ',' + g + ',' + b;
-}
+};
 
 // Function to calculate portfolio growth from given values
-function calculatePortfolioGrowth(values) {
+const calculatePortfolioGrowth = (values) => {
   // Convert values to numbers
   const numericValues = values.map(parseFloat);
 
@@ -164,10 +164,10 @@ function calculatePortfolioGrowth(values) {
   const pnlValues = numericValues.map((value) => (sum += values[i]));
 
   return pnlValues;
-}
+};
 
 // Call the fetchData function when the page loads
-window.onload = function () {
+window.onload = () => {
   // Check if there's a Google Sheet ID in the URL parameters
   var params = new URLSearchParams(window.location.search);
   var googleSheetId = params.get('sheetId');
