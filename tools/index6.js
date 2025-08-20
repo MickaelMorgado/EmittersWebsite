@@ -6,89 +6,112 @@
 */
 
 // Result Panel Related Actions / Triggers:
-const resultPanel = document.querySelector('#result-panel');
+const $resultPanel = document.querySelector('#result-panel');
 const $csvRefresh = document.querySelector('#csvRefresh');
+const $resultPanelToolbarContentTogglerAlgoEditor = document.getElementById(
+  'result-panel-toolbar-content-toggler-algo-editor'
+);
+const $resultPanelToolbarContentTogglerAlgo = document.getElementById(
+  'result-panel-toolbar-content-toggler-algo'
+);
+const $resultPanelToolbarContentTogglerReview = document.getElementById(
+  'result-panel-toolbar-content-toggler-review'
+);
 //const $csvDataField = document.getElementById('csvContent');
+const $backTestingResult = document.getElementById('backtestingResult');
+const $exportableCSVField = document.getElementById('exportableCSVField');
 const $csvFileInput = document.getElementById('csvFileInput');
-const toolbarToggler = document.querySelector('#result-panel-toolbar-toggler');
+const $toolbarToggler = document.querySelector('#result-panel-toolbar-toggler');
 const $navigateTroughtDates = document.getElementById('NavigateTroughtDates');
 const $SLPointsInput = document.getElementById('SLPoints');
 const $TPPointsInput = document.getElementById('TPPoints');
 const $LotSizeInput = document.getElementById('LotSize');
+const $TSIncrementInput = document.getElementById('TSIncrement');
 const $textareaHistoricalTradesLines = document.getElementById(
   'textareaHistoricalTradesLines'
 );
 const $firstDate = document.getElementById('firstDate');
 const $lastDate = document.getElementById('lastDate');
 const $currentReadingDate = document.getElementById('currentReadingDate');
-//const audioTick = new Audio('squirrel_404_click_tick.wav');
+const $resultPanelContent = document.querySelectorAll('.result-panel-content'); //result-panel-content
+const audioSuccess = new Audio('squirrel_404_click_tick.wav');
 const audioNotify = new Audio('joseegn_ui_sound_select.wav');
 
 const $backTestingPauseButton = document.getElementById(
   'backTestingPauseButton'
 );
 let backTestingPaused = $backTestingPauseButton.checked;
+const $sessionStartInput = document.getElementById('backtesting-hour');
+const $sessionEndInput = document.getElementById('backtesting-end');
 
-function toggleHeight() {
-  resultPanel.classList.toggle('active');
-}
-toolbarToggler.addEventListener('click', toggleHeight);
+const revealAlgoEditor = () => {
+  $resultPanel.classList.add('active');
+  document
+    .querySelectorAll('.result-panel-content')[0]
+    .classList.remove('h-hide');
+  document.querySelectorAll('.result-panel-content')[1].classList.add('h-hide');
+  document.querySelectorAll('.result-panel-content')[2].classList.add('h-hide');
+};
+revealAlgoEditor();
 
-document
-  .getElementById('result-panel-toolbar-content-toggler-algo-editor')
-  .addEventListener('click', () => {
-    resultPanel.classList.add('active');
-    document
-      .querySelectorAll('.result-panel-content')[0]
-      .classList.remove('h-hide');
-    document
-      .querySelectorAll('.result-panel-content')[1]
-      .classList.add('h-hide');
-    document
-      .querySelectorAll('.result-panel-content')[2]
-      .classList.add('h-hide');
-  });
+const revealAglo = () => {
+  $resultPanel.classList.add('active');
+  document.querySelectorAll('.result-panel-content')[0].classList.add('h-hide');
+  document
+    .querySelectorAll('.result-panel-content')[1]
+    .classList.remove('h-hide');
+  document.querySelectorAll('.result-panel-content')[2].classList.add('h-hide');
+};
 
-document
-  .getElementById('result-panel-toolbar-content-toggler-algo')
-  .addEventListener('click', () => {
-    resultPanel.classList.add('active');
-    document
-      .querySelectorAll('.result-panel-content')[0]
-      .classList.add('h-hide');
-    document
-      .querySelectorAll('.result-panel-content')[1]
-      .classList.remove('h-hide');
-    document
-      .querySelectorAll('.result-panel-content')[2]
-      .classList.add('h-hide');
-  });
+const revealReview = () => {
+  $resultPanel.classList.add('active');
+  document.querySelectorAll('.result-panel-content')[0].classList.add('h-hide');
+  document.querySelectorAll('.result-panel-content')[1].classList.add('h-hide');
+  document
+    .querySelectorAll('.result-panel-content')[2]
+    .classList.remove('h-hide');
+};
 
-document
-  .getElementById('result-panel-toolbar-content-toggler-review')
-  .addEventListener('click', () => {
-    resultPanel.classList.add('active');
-    document
-      .querySelectorAll('.result-panel-content')[0]
-      .classList.add('h-hide');
-    document
-      .querySelectorAll('.result-panel-content')[1]
-      .classList.add('h-hide');
-    document
-      .querySelectorAll('.result-panel-content')[2]
-      .classList.remove('h-hide');
-  });
+const toggleHeight = () => {
+  $resultPanel.classList.toggle('active');
+};
+$toolbarToggler?.addEventListener('click', toggleHeight);
 
-$SLPointsInput.addEventListener('change', () => {
+const stickyTableHeaders = (parentElement) => {
+  const $orderHistoryHeader = document.querySelector('table thead');
+
+  const scrollTop = parentElement.scrollTop;
+  if ($orderHistoryHeader) {
+    if (scrollTop > 408) {
+      $orderHistoryHeader.classList.add('sticky');
+    } else {
+      $orderHistoryHeader.classList.remove('sticky');
+    }
+  }
+};
+
+$resultPanelToolbarContentTogglerAlgoEditor?.addEventListener('click', () =>
+  revealAlgoEditor()
+);
+$resultPanelToolbarContentTogglerAlgo?.addEventListener('click', () =>
+  revealAglo()
+);
+$resultPanelToolbarContentTogglerReview?.addEventListener('click', () =>
+  revealReview()
+);
+$resultPanel.addEventListener('scroll', (event) => {
+  stickyTableHeaders(event.target);
+});
+$SLPointsInput?.addEventListener('change', () => {
   animateActiveClass($csvRefresh);
 });
-$TPPointsInput.addEventListener('change', () => {
+$TPPointsInput?.addEventListener('change', () => {
   animateActiveClass($csvRefresh);
 });
-$LotSizeInput.addEventListener('change', () => {
+$LotSizeInput?.addEventListener('change', () => {
   animateActiveClass($csvRefresh);
 });
-$backTestingPauseButton.addEventListener('change', () => {
+$backTestingPauseButton?.addEventListener('change', () => {
   backTestingPaused = $backTestingPauseButton.checked;
 
   if (!backTestingPaused) {
@@ -103,6 +126,7 @@ const MAX_BUFFER_SIZE = 10;
 let slSize = () => parseFloat($SLPointsInput.value);
 let tpSize = () => parseFloat($TPPointsInput.value);
 let lotSize = () => parseFloat($LotSizeInput.value);
+let tsSize = () => parseFloat($TSIncrementInput.value);
 let bullishColor = '00FF00';
 let bearishColor = 'FF0000';
 let greyColor = '999999';
@@ -110,10 +134,15 @@ const EnumDirection = {
   BULL: 'BULL',
   BEAR: 'BEAR',
 };
-const EnumOrderStatus = {
+const EnumclosedOrderType = {
   PENDING: 'PENDING',
   CLOSED_BY_TP: 'CLOSED_BY_TP',
   CLOSED_BY_SL: 'CLOSED_BY_SL',
+};
+const EnumTradeResult = {
+  WIN: 'WIN',
+  LOSS: 'LOSS',
+  BE: 'BE',
 };
 const EnumActionType = {
   VERTICAL_LINE: 'VERTICAL_LINE',
@@ -140,12 +169,11 @@ const getCandleDirection = (openPrice = 0, closePrice = 0) => {
 const getCandleDirectionFromCandle = (candle) =>
   getCandleDirection(candle[EnumMT5OHLC.OPEN], candle[EnumMT5OHLC.CLOSE]);
 
-const getCandleChartAxisLocationFromDate = (date) => {
-  return new Date(date).getTime() / 1000;
-};
+const getCandleChartAxisLocationFromDate = (date) =>
+  new Date(date).getTime() / 1000;
 window.getCandleChartAxisLocationFromDate = getCandleChartAxisLocationFromDate;
 
-function formatDateFromUnix(unixTime) {
+const formatDateFromUnix = (unixTime) => {
   const options = {
     year: 'numeric',
     month: 'numeric',
@@ -156,12 +184,10 @@ function formatDateFromUnix(unixTime) {
     hour12: false,
   };
   return new Date(unixTime * 1000).toLocaleDateString('en-GB', options); // Multiply by 1000 to convert to milliseconds because JS Date works with milliseconds.
-}
+};
 
 // Handy function to execute actions step by step:
-const stepByStep = (step, actions) => {
-  return actions[step - 1]();
-};
+const stepByStep = (step, actions) => actions[step - 1]();
 
 const convertMT5DateToUnix = (candleTime) => {
   if (!candleTime) {
@@ -175,8 +201,6 @@ const convertMT5DateToUnix = (candleTime) => {
   const ct = candleTime.replaceAll('.', '-');
   return new Date(ct).getTime() / 1000; // - 3600 * 2; // divided by 1000 to convert from milliseconds to seconds as Unix time only accepts seconds, while JS Date is more precise as working with milliseconds.
 };
-
-initSciChart();
 
 const readingSpeed = 0; // Speed of reading the CSV file in milliseconds
 
@@ -200,7 +224,7 @@ const handleFileAndInitGraph = (file) => {
     numbDays = 0;
 
     // Reset portfolio graph and order history display
-    document.getElementById('backtestingResult').value = '';
+    $backTestingResult.value = '';
     document.getElementById('backtestingResultOrderHistory').innerHTML = '';
 
     // Add visible class to loading element
@@ -208,7 +232,7 @@ const handleFileAndInitGraph = (file) => {
 
     // Read the CSV file just to get the first and last dates:
     const reader = new FileReader();
-    reader.onload = function (e) {
+    reader.onload = (e) => {
       const text = e.target.result;
       const lines = text.split(/\r?\n/).filter(Boolean);
 
@@ -226,7 +250,7 @@ const handleFileAndInitGraph = (file) => {
     Papa.parse(file, {
       header: true,
       dynamicTyping: true,
-      step: function (results, parser) {
+      step: (results, parser) => {
         if (backTestingPaused) {
           parser.pause();
           document
@@ -242,7 +266,7 @@ const handleFileAndInitGraph = (file) => {
         // Dynamic infos:
         updateDynamicInfos(results.data, csvDataIndex);
         // Append data to the chart:
-        appendDataToChart(results.data, csvDataIndex);
+        appendDataToChart(results.data);
         // Backtesting date time logics (annotation on chart and select element population):
         addBacktestingDateTimeToChart(results.data, csvDataIndex);
         // Plot real-time indicators:
@@ -252,28 +276,26 @@ const handleFileAndInitGraph = (file) => {
         // Calculate and Display profitability statistics:
         profitabilityCalculation();
 
-        //audioTick.play();
-
+        //audioSuccess.play();
         setTimeout(() => {
           parser.resume();
         }, readingSpeed);
       },
-      complete: function (results, file) {
+      complete: (results, file) => {
         // Remove visible class from loading element
         document.getElementById('loading-element').classList.remove('visible');
+        audioSuccess.play();
       },
-      error: function (error) {
+      error: (error) => {
         console.error('Error parsing CSV:', error);
       },
     });
 
-    document
-      .getElementById('result-panel-toolbar-content-toggler-algo')
-      .click();
+    $resultPanelToolbarContentTogglerAlgo?.click();
   }
 };
 
-$csvFileInput.addEventListener('change', function loadcsv(event) {
+$csvFileInput.addEventListener('change', (event) => {
   const file = event.target.files[0];
   handleFileAndInitGraph(file);
 });
@@ -285,7 +307,7 @@ $csvRefresh.addEventListener('click', () => {
 });
 
 // Define the initSciChart function
-function initSciChart(data) {
+const initSciChart = (data) => {
   const {
     SciChartSurface,
     NumericAxis,
@@ -324,6 +346,7 @@ function initSciChart(data) {
     Point,
     FastLineRenderableSeries,
     XyDataSeries,
+    EAxisAlignment,
     // GlowEffect,
     // ShadowEffect,
   } = SciChart;
@@ -338,12 +361,13 @@ function initSciChart(data) {
     .then(({ sciChartSurface, wasmContext }) => {
       // Extract URL parameters
       const urlParams = new URLSearchParams(window.location.search);
-      bullishColor = decodeURIComponent(
-        urlParams.get('bullishColor') || bullishColor
-      );
-      bearishColor = decodeURIComponent(
-        urlParams.get('bearishColor') || bearishColor
-      );
+
+      // Get and parse "theme" param if exists
+      const themeParams = new URLSearchParams(urlParams.get('theme') || '');
+
+      // Extract colors with fallback to existing vars
+      bullishColor = themeParams.get('bullishColor') || bullishColor;
+      bearishColor = themeParams.get('bearishColor') || bearishColor;
 
       // Create a custom theme by implementing all the properties from IThemeProvider
       const customTheme = {
@@ -398,16 +422,20 @@ function initSciChart(data) {
 
       // Cursor labels:
       const growBy = new NumberRange(0.2, 0.2);
-      const xAxis = new DateTimeNumericAxis(wasmContext, { growBy });
+      const xAxis = new DateTimeNumericAxis(wasmContext, {
+        growBy,
+        axisAlignment: EAxisAlignment.Bottom,
+      });
       xAxis.labelProvider.formatCursorLabel = (dataValue) => {
         const unixDateStamp = Math.floor(dataValue); // Flooring it to remove milliseconds from that cursor data, as it is too much precise // - 3600;
         return formatDateFromUnix(unixDateStamp);
       };
       const yAxis = new NumericAxis(wasmContext, {
+        growBy,
         labelPrecision: decimals,
         autoRange: EAutoRange.Once,
         // visibleRangeLimit: new NumberRange(1.02, 1.03),
-        growBy,
+        axisAlignment: EAxisAlignment.Right,
       });
 
       sciChartSurface.xAxes.add(xAxis);
@@ -432,6 +460,8 @@ function initSciChart(data) {
       const signalOffset = 20;
       const signalAnnotation = {
         svgString: {
+          orderEntryBuy: `<svg id="Capa_1" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10"><g transform="translate(-54.616083,-75.548914)"><path style="fill:#0000FF;" d="M 55,85 L 60,75 L 65,85 Z"/></g></svg>`,
+          orderEntrySell: `<svg id="Capa_1" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10"><g transform="translate(-54.616083,-75.548914)"><path style="fill:#0000FF;" d="M 55,75 L 60,85 L 65,75 Z"/></g></svg>`,
           buy: `<svg id="Capa_1" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10"><g transform="translate(-54.616083,-75.548914)"><path style="fill:#0000FF;" d="M 55,85 L 60,75 L 65,85 Z"/></g></svg>`,
           bullish: `<svg id="Capa_1" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10" transform="translate(0, ${signalOffset})"><g transform="translate(-54.616083,-75.548914)"><path style="fill:#00FF00; opacity:0.3;" d="M 55,85 L 60,75 L 65,85 Z"/></g></svg>`,
           sell: `<svg id="Capa_1" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10"><g transform="translate(-54.616083,-75.548914)"><path style="fill:#FF0000;" d="M 55,75 L 60,85 L 65,75 Z"/></g></svg>`,
@@ -448,21 +478,21 @@ function initSciChart(data) {
         opacity: '50',
       };
 
-      function ceilToDecimalPlaces(num, decimalPlaces) {
-        const factor = Math.pow(10, decimalPlaces); // Calculate 10^decimalPlaces
-        return Math.ceil(num * factor) / factor; // Ceil and then divide
-      }
+      // function ceilToDecimalPlaces(num, decimalPlaces) {
+      //   const factor = Math.pow(10, decimalPlaces); // Calculate 10^decimalPlaces
+      //   return Math.ceil(num * factor) / factor; // Ceil and then divide
+      // }
 
       // Function to update Y-axis range dynamically
-      function updateYAxisRange() {
-        const yMin = 1.034; // ohlcDataSeries.getNativeYMin();
-        const yMax = 1.042; // ohlcDataSeries.getNativeYMax();
+      // function updateYAxisRange() {
+      //   const yMin = 1.034; // ohlcDataSeries.getNativeYMin();
+      //   const yMax = 1.042; // ohlcDataSeries.getNativeYMax();
 
-        sciChartSurface.yAxes.get(0).visibleRangeLimit = new NumberRange(
-          yMin,
-          yMax
-        );
-      }
+      //   sciChartSurface.yAxes.get(0).visibleRangeLimit = new NumberRange(
+      //     yMin,
+      //     yMax
+      //   );
+      // }
 
       // Take trades when signals are valid:
       const checkSignalsForTrade = (d, direction) => {
@@ -474,10 +504,10 @@ function initSciChart(data) {
           tradeCount++;
           AddActionOnChart(d, EnumActionType.TAKE_A_TRADE, direction);
           listeningATR = true; // Start listening for ATR again once we open position
-          if (tradeCount >= 3) {
-            console.log('Reached 3 trades max');
-            arrayOfSignals[2] = false; // Reset ATR signal after 3 trades max
-          }
+          //if (tradeCount >= 3) {
+          // console.log('Reached 3 trades max');
+          arrayOfSignals[2] = false; // Reset ATR signal after 3 trades max
+          //}
         }
       };
 
@@ -489,16 +519,47 @@ function initSciChart(data) {
           if (order.closed) return;
 
           const isBull = order.direction === EnumDirection.BULL;
+          const isBear = order.direction === EnumDirection.BEAR;
           const high = d[EnumMT5OHLC.HIGH];
           const low = d[EnumMT5OHLC.LOW];
+          const close = d[EnumMT5OHLC.CLOSE];
+          const open = d[EnumMT5OHLC.OPEN];
           const currentTime = `${d[EnumMT5OHLC.DATE]} ${d[EnumMT5OHLC.TIME]}`;
           const orderOpenTime = convertMT5DateToUnix(order.time);
 
-          const closeOrder = (level, status, color) => {
+          const tradeResult = () => {
+            if (order.pnlPoints > 0) {
+              return EnumTradeResult.WIN;
+            } else if (order.pnlPoints < -0.0001) {
+              return EnumTradeResult.LOSS;
+            } else {
+              return EnumTradeResult.BE;
+            }
+          };
+
+          const tradeResultColor = () => {
+            switch (order.tradeResult) {
+              case EnumTradeResult.WIN:
+                return bullishColor;
+              case EnumTradeResult.LOSS:
+                return bearishColor;
+              case EnumTradeResult.BE:
+                return 'FFFF00';
+              default:
+                return '666666';
+            }
+          };
+
+          const closeOrder = (level, status) => {
             order.closed = true;
             order.closedPrice = level;
             order.closedTime = currentTime;
-            order.orderStatus = status;
+            order.closedOrderType = status;
+            order.pnlPoints =
+              order.direction == EnumDirection.BULL
+                ? level - order.price
+                : order.price - level;
+            order.tradeResult = tradeResult();
 
             const orderCloseTime = convertMT5DateToUnix(order.closedTime);
 
@@ -521,9 +582,10 @@ function initSciChart(data) {
             );
 
             // Line
+            const tradeResultedColor = tradeResultColor();
             sciChartSurface.annotations.add(
               new LineAnnotation({
-                stroke: `#${color}`,
+                stroke: `#${tradeResultedColor}`,
                 strokeThickness: 1,
                 strokeDashArray: [5, 5],
                 x1: orderOpenTime,
@@ -534,14 +596,47 @@ function initSciChart(data) {
             );
           };
 
+          // Modify SL (Trailing Stop)
+          if (candlesFromBuffer.length < 2) return;
+
+          const trailingStopSize =
+            parseFloat($TSIncrementInput.value) || 0.0001;
+
+          const previousCandle =
+            candlesFromBuffer[candlesFromBuffer.length - 2];
+
+          /*if (isBull) {
+            if (
+              getCandleDirectionFromCandle(previousCandle) == EnumDirection.BULL
+            ) {
+              console.log('Moving SL of ', order.id, ' from ', order.sl, ' to ',  order.sl + trailingStopSize);
+              debugger
+              order.sl = order.sl + trailingStopSize; // Move SL by trailingStopSize (up side)
+            //}
+          //} else if (isBear) {
+            if (
+              getCandleDirectionFromCandle(previousCandle) == EnumDirection.BEAR
+            ) {
+              order.sl = order.sl - trailingStopSize; // Move SL by trailingStopSize (down side)
+            //}
+          //}*/
+
+          if (order.direction == EnumDirection.BULL) {
+            //console.log('Moving SL of ', order.id, ' from ', order.sl, ' to ',  order.sl + trailingStopSize);
+            order.sl = order.sl + trailingStopSize; // Move SL by trailingStopSize (up side)
+          } else if (order.direction == EnumDirection.BEAR) {
+            //console.log('Moving SL of ', order.id, ' from ', order.sl, ' to ',  order.sl - trailingStopSize);
+            order.sl = order.sl - trailingStopSize; // Move SL by trailingStopSize (down side)
+          }
+
           // Check TP
           if ((isBull && high >= order.tp) || (!isBull && low <= order.tp)) {
-            closeOrder(order.tp, EnumOrderStatus.CLOSED_BY_TP, bullishColor);
+            closeOrder(order.tp, EnumclosedOrderType.CLOSED_BY_TP);
           }
 
           // Check SL
           if ((isBull && low <= order.sl) || (!isBull && high >= order.sl)) {
-            closeOrder(order.sl, EnumOrderStatus.CLOSED_BY_SL, bearishColor);
+            closeOrder(order.sl, EnumclosedOrderType.CLOSED_BY_SL);
           }
         });
       };
@@ -602,19 +697,22 @@ function initSciChart(data) {
               id: ordersHistory.length + 1,
               time: `${candle[EnumMT5OHLC.DATE]} ${candle[EnumMT5OHLC.TIME]}`,
               price: candle[definedCandleMoment],
-              orderStatus: EnumOrderStatus.PENDING,
+              closedOrderType: EnumclosedOrderType.PENDING,
               ...orderOptionsBasedDirection(tradeDirection),
             });
             window.ordersHistory = ordersHistory;
 
-            // Add annotation from entry:
+            // Add annotation for orders history:
             sciChartSurface.annotations.add(
               new CustomAnnotation({
                 x1: candlePosition,
                 y1: candle[definedCandleMoment],
                 verticalAnchorPoint: EVerticalAnchorPoint.Center,
                 horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
-                svgString: signalAnnotation.svgString.buy,
+                svgString:
+                  tradeDirection == EnumDirection.BULL
+                    ? signalAnnotation.svgString.orderEntryBuy
+                    : signalAnnotation.svgString.orderEntrySell,
               })
             );
             break;
@@ -639,7 +737,7 @@ function initSciChart(data) {
               id: ordersHistory.length + 1,
               time: candle[EnumMT5OHLC.TIME],
               price: candle[definedCandleMoment],
-              orderStatus: EnumOrderStatus.PENDING,
+              closedOrderType: EnumclosedOrderType.PENDING,
               ...orderOptionsBasedDirection2(tradeDirection),
             });
 
@@ -674,6 +772,7 @@ function initSciChart(data) {
       };
 
       // Second function to be executed after the candle is drawn, you can add annotations here:
+      /*
       const onCandleDrawn = (candle, index, candlesFromBuffer) => {
         const algoEditorTextareaMain0 = document.getElementById(
           'algoEditorTextareaMain0'
@@ -706,7 +805,8 @@ function initSciChart(data) {
           candlesFromBuffer[selectedIndexForSelectedCandleForAnalisis + 1];
 
         const SignalSwingHighLow = () => {
-          if (index < 4 /*|| index > candlesFromBuffer.length - 3*/)
+          // if (index < 4 || index > candlesFromBuffer.length - 3)
+          if (index < 4)
             return false;
 
           // For swing high, current candle high is less than or equal to the previous candle high and the previous candle high is greater than the previous candle open:
@@ -764,179 +864,195 @@ function initSciChart(data) {
 
         eval(algoEditorTextareaMain1.value);
       };
+      */
 
       const profitabilityCalculation = () => {
+        let result = '';
+
+        // Total profits in points (strategy)
         const profitsInPoints = ordersHistory.reduce((acc, order) => {
-          if (order.orderStatus == EnumOrderStatus.CLOSED_BY_TP) {
+          if (order.closedOrderType === EnumclosedOrderType.CLOSED_BY_TP)
             return acc + tpSize();
-          }
-          if (order.orderStatus == EnumOrderStatus.CLOSED_BY_SL) {
+          if (order.closedOrderType === EnumclosedOrderType.CLOSED_BY_SL)
             return acc - slSize();
-          }
           return acc;
         }, 0);
 
-        //console.log('Orders History:', ordersHistory);
+        // Win rate
         const winRate =
           ordersHistory.length > 0
             ? (
                 (ordersHistory.filter(
-                  (order) => order.orderStatus == EnumOrderStatus.CLOSED_BY_TP
+                  (order) => order.tradeResult === EnumTradeResult.WIN
                 ).length /
                   ordersHistory.length) *
                 100
               ).toFixed(2)
             : 0;
-        const moneyEquivalent = (
-          profitsInPoints *
-          (lotSize() * 10) *
-          10000
-        ).toFixed(2);
-        const result = `Check console for orders history\n\nTrade Taken: ${
-          ordersHistory.length
-        } (in ${numbDays} days)\nWin Rate: ${winRate}% \n\nProfits: \n Money: ${moneyEquivalent}$\n Points: ${profitsInPoints.toFixed(
-          5
-        )} \n Pips: ${(profitsInPoints / 0.0001).toFixed(2)} \n Ticks: ${(
-          profitsInPoints / 0.01
-        ).toFixed(2)}`;
-        document.getElementById('backtestingResult').value = result;
 
-        // Profitability Chart: ========================================
-        let myChart = document.getElementById('myChart');
-        var ctx = myChart.getContext('2d');
-        var datasets = [];
-        var values = ordersHistory.map((order) => {
-          const pnlvar =
-            order.orderStatus == EnumOrderStatus.CLOSED_BY_TP
-              ? tpSize()
-              : -slSize();
-          return [pnlvar];
-        });
-        var labels = ordersHistory.map((order) => order.id);
+        // Profitability chart data
+        const labels = [];
+        const pnlData = [];
+        const equityData = []; // in points
+        const equityDataMoney = []; // in $
 
-        const pnlsum = () => {
-          let sum = 0;
-          return values.map((value) => {
-            var a = (sum += parseFloat(value));
-            return a;
-          });
-        };
+        let sum = 0;
+        let equitySumPoints = 0;
+        const commissionPoints = 0.00005;
 
-        const equityPnL = () => {
-          let equitySum = 0;
-          const commission = 0.00005; // TODO: Currently high for testing and handicap the results
-          return values.map((value) => {
-            var a = (equitySum += parseFloat(value - commission));
-            return a;
-          });
-        };
+        for (const { id, pnlPoints } of ordersHistory) {
+          labels.push(id);
 
-        // Check if there is an existing chart instance and destroy it:
-        if (typeof myChart !== 'undefined' && myChart !== null) {
-          myChart.remove();
-          const newCanvas = document.createElement('canvas');
-          newCanvas.id = 'myChart';
-          newCanvas.width = 700;
-          newCanvas.height = 300;
-          document.getElementById('myChartContainer').appendChild(newCanvas);
-          myChart = document.getElementById('myChart');
-          ctx = myChart.getContext('2d');
-          //myChart.destroy();
+          // Strategy cumulative (points)
+          sum += +pnlPoints;
+          pnlData.push(sum);
+
+          // Equity in points
+          equitySumPoints += +pnlPoints - commissionPoints;
+          equityData.push(equitySumPoints);
+
+          // Equity in $ (money equivalent)
+          equityDataMoney.push(equitySumPoints * 100000 * lotSize());
         }
 
-        gradient = ctx.createLinearGradient(0, 25, 0, 300);
+        // Money equivalent = last equity value
+        const moneyEquivalent =
+          equityDataMoney[equityDataMoney.length - 1] || 0;
+
+        //console.table([profitsInPoints, moneyEquivalent]);
+
+        // CSV builder
+        const resultToCSV = () => {
+          const csvFileName = $csvFileInput.value.split('\\')[2].split('.')[0];
+          const [_, timeframe, sd, ed] = csvFileName.split('_');
+          const sdt = `${sd.slice(0, 4)}/${sd.slice(4, 6)}/${sd.slice(6, 8)}`;
+          const edt = `${ed.slice(0, 4)}/${ed.slice(4, 6)}/${ed.slice(6, 8)}`;
+
+          return [
+            `\t\t${csvFileName}\t`,
+            `${timeframe}\t`,
+            `CSID\t`,
+            `${sdt}\t`,
+            `${edt}\t`,
+            `${numbDays}\t`,
+            `${$sessionStartInput.value}\t`,
+            `${$sessionEndInput.value}\t`,
+            `${tradeCount}\t`,
+            `${winRate}%\t`,
+            `${moneyEquivalent.toFixed(2)}\t`,
+            `${profitsInPoints}\t`,
+            `${lotSize()}\t`,
+            `${tpSize()}\t`,
+            `${slSize()}\t`,
+            `${tsSize()}\t`,
+          ].join('');
+        };
+
+        // Display textual result
+        result += `Check console for orders history\n`;
+        result += `\nTrade Taken: ${ordersHistory.length} (in ${numbDays} days)`;
+        result += `\nWin Rate: ${winRate}%\n`;
+        result += `\nProfits: `;
+        result += `\n Money: ${moneyEquivalent.toFixed(2)}$`;
+        result += `\n Points: ${profitsInPoints.toFixed(5)}`;
+        result += `\n Pips: ${(profitsInPoints / 0.0001).toFixed(2)}`;
+        result += `\n Ticks: ${(profitsInPoints / 0.01).toFixed(2)}`;
+
+        $backTestingResult.value = result;
+        $exportableCSVField.value = resultToCSV();
+
+        // Profitability Chart ========================================
+        const myChart = document.getElementById('myChart');
+        const ctx = myChart.getContext('2d');
+
+        const gradient = ctx.createLinearGradient(0, 25, 0, 300);
         gradient.addColorStop(0, `#${bullishColor}${RRToolStyles.opacity}`);
         gradient.addColorStop(1, `#${bearishColor}${RRToolStyles.opacity}`);
 
-        datasets.push({
-          type: 'line',
-          label: 'Strategy Performance (Accumulated Points)',
-          data: pnlsum(),
-          borderColor: `#${bullishColor}`,
-          backgroundColor: gradient,
-          borderWidth: 1,
-          order: 0,
-          fill: true,
-        });
+        // Destroy previous chart if exists
+        const existingChart = Chart.getChart(myChart);
+        if (existingChart) existingChart.destroy();
 
-        datasets.push({
-          type: 'line',
-          label: 'Portfolio Performance (Equity Curve)',
-          data: equityPnL(),
-          borderColor: `#${bearishColor}`,
-          borderWidth: 1,
-          order: 1,
-          fill: false,
-          tension: 0.5,
-          pointStyle: false,
-        });
-
-        const profitabilityChartOptions = {
-          animation: {
-            duration: 0,
+        const datasets = [
+          {
+            type: 'line',
+            label: 'Strategy Performance (Accumulated Points)',
+            data: pnlData,
+            borderColor: `#${bullishColor}`,
+            backgroundColor: gradient,
+            borderWidth: 1,
+            order: 0,
+            fill: true,
+            yAxisID: 'pointsAxis',
           },
-          responsive: false,
-          elements: {
-            point: {
-              radius: 1,
+          {
+            type: 'line',
+            label: 'Portfolio Performance (Equity Curve)',
+            data: equityData,
+            borderColor: `#${bearishColor}`,
+            borderWidth: 1,
+            order: 1,
+            fill: false,
+            tension: 0.5,
+            pointStyle: false,
+            yAxisID: 'pointsAxis',
+          },
+        ];
+
+        new Chart(ctx, {
+          type: 'line',
+          data: { labels, datasets },
+          options: {
+            animation: { duration: 0 },
+            responsive: false,
+            elements: { point: { radius: 1 } },
+            scales: {
+              pointsAxis: {
+                type: 'linear',
+                beginAtZero: false,
+                position: 'left',
+              },
             },
           },
-          scales: {
-            y: {
-              beginAtZero: false,
-            },
-          },
-        };
-
-        myChart = new Chart(ctx, {
-          type: 'line',
-          data: {
-            labels: labels,
-            datasets: datasets,
-          },
-          options: profitabilityChartOptions,
         });
 
+        // Historical Orders Table
         document.getElementById('backtestingResultOrderHistory').innerHTML = `
-                <table>
-                  <thead>
-                    <tr>
-                      <th>ID</th>
-                      <th>Time</th>
-                      <th>Price</th>
-                      <th>SL</th>
-                      <th>TP</th>
-                      <th>Direction</th>
-                      <th>Order Status</th>
-                      <th>Closed Price</th>
-                      <th>Closed Time</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    ${ordersHistory
-                      .map(
-                        (order) => `
-                      <tr class="historical-order-line">
-                        <td>${order.id}</td>
-                        <td>${order.time}</td>
-                        <td>${order.price.toFixed(5)}</td>
-                        <td>${order.sl.toFixed(5)}</td>
-                        <td>${order.tp.toFixed(5)}</td>
-                        <td>${order.direction}</td>
-                        <td class="order-status-${order.orderStatus}">${
-                          order.orderStatus
-                        }</td>
-                        <td>${order.closedPrice || ''}</td>
-                        <td>${order.closedTime || ''}</td>
-                      </tr>
-                    `
-                      )
-                      .join('')}
-                  </tbody>
-                </table>
-              `;
-        // End of Profitability Chart ========================================
+    <table>
+      <thead>
+        <tr class="historical-order-table-header">
+          <th>ID</th><th>Time</th><th>Price</th><th>SL</th><th>TP</th><th>Direction</th><th>Closed Order Type</th><th>Closed Price</th><th>Closed Time</th><th>P/L (Points)</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${ordersHistory
+          .map(
+            (order) => `
+          <tr class="historical-order-line">
+            <td>${order.id}</td>
+            <td>${order.time}</td>
+            <td>${order.price.toFixed(5)}</td>
+            <td>${order.sl.toFixed(5)}</td>
+            <td>${order.tp.toFixed(5)}</td>
+            <td>${order.direction}</td>
+            <td class="order-status-${order.closedOrderType}">${
+              order.closedOrderType
+            }</td>
+            <td>${order.closedPrice || ''}</td>
+            <td>${order.closedTime || ''}</td>
+            <td class="trade-result-${order.tradeResult}" title="${
+              order.tradeResult
+            }">${
+              order.pnlPoints !== undefined ? order.pnlPoints.toFixed(5) : ''
+            }</td>
+          </tr>`
+          )
+          .join('')}
+      </tbody>
+    </table>
+  `;
       };
+
       window.profitabilityCalculation = profitabilityCalculation;
 
       const ohlcDataSeries = new OhlcDataSeries(wasmContext);
@@ -949,7 +1065,7 @@ function initSciChart(data) {
       sciChartSurface.renderableSeries.add(FCRS);
 
       // Start of Window assigned custom scichart functions: ========================
-      const addNewCandleToChart = (d, dataIndex) => {
+      const addNewCandleToChart = (d) => {
         if (candlesFromBuffer.length >= MAX_BUFFER_SIZE) {
           candlesFromBuffer.shift(); // Remove the oldest element if the buffer is full to save memory
         }
@@ -992,8 +1108,8 @@ function initSciChart(data) {
 
       // ATR Indicator: ========================================
       const calcATR = (d, dataIndex) => {
+        const ATRLength = 20; // ATR period (number of candles for average calculation)
         const atrMultiplierThreshold = 1.2; // ATR multiplier threshold
-        const ATRLength = 5; // ATR period (number of candles for average calculation)
 
         if (dataIndex < ATRLength || !listeningATR || !arrayOfSignals[1])
           return; // Ensure we have enough data for ATR calculation and we are in the trading time range only
@@ -1033,13 +1149,13 @@ function initSciChart(data) {
 
         // As soon we have the first ATR signal we stop listening for it until we take a trade
         if (atrAboveThreshold) {
-          console.log('Stop listening for ATR:', atr, atrAboveThreshold);
+          // console.log('Stop listening for ATR:', atr, atrAboveThreshold);
 
           // Create a vertical line annotation for ATR:
           const atrLine = new VerticalLineAnnotation({
             labelPlacement: ELabelPlacement.TopRight,
             showLabel: true,
-            stroke: '#FF0000',
+            stroke: '#FF000022',
             strokeThickness: 2,
             x1: convertMT5DateToUnix(
               `${currCandle[EnumMT5OHLC.DATE]} ${currCandle[EnumMT5OHLC.TIME]}`
@@ -1059,8 +1175,12 @@ function initSciChart(data) {
 
       // TTR Indicator: ========================================
       const inTradingTimeRange = (d) => {
-        const startRangeTime = new Date(`${d[EnumMT5OHLC.DATE]} 09:50:00`);
-        const endRangeTime = new Date(`${d[EnumMT5OHLC.DATE]} 11:00:00`);
+        const startRangeTime = new Date(
+          `${d[EnumMT5OHLC.DATE]} ${$sessionStartInput.value}`
+        );
+        const endRangeTime = new Date(
+          `${d[EnumMT5OHLC.DATE]} ${$sessionEndInput.value}`
+        );
         const currentTime = new Date(
           `${d[EnumMT5OHLC.DATE]} ${d[EnumMT5OHLC.TIME]}`
         );
@@ -1224,7 +1344,7 @@ function initSciChart(data) {
       sciChartSurface.chartModifiers.add(
         new CursorModifier({
           // Optional properties to configure what parts are shown
-          showTooltip: false,
+          // showTooltip: true,
           showAxisLabels: true,
           showXLine: true,
           showYLine: true,
@@ -1247,7 +1367,7 @@ function initSciChart(data) {
       );
 
       // Navigate Trought Dates: ========================================
-      $navigateTroughtDates.addEventListener('change', function (event) {
+      $navigateTroughtDates.addEventListener('change', (event) => {
         const getCandleNumberByDay = (days) => 86400 * days; // Get the number of candles in a day (candle count for a entire day)
         const selectedDate = event.target.value;
         const rangeMinDate = parseInt(selectedDate) - 1800; // + half an hour
@@ -1512,7 +1632,9 @@ function initSciChart(data) {
     .catch((error) => {
       console.error('Error initializing SciChart:', error);
     });
-}
+};
+
+initSciChart();
 
 // Notify ===============================
 const animateActiveClass = (element) => {
@@ -1524,18 +1646,18 @@ const animateActiveClass = (element) => {
 };
 // End of Notify ===============================
 
-function updateFileReadingProgression(valueInPercentage) {
+const updateFileReadingProgression = (valueInPercentage) => {
   const progressionBar = document.querySelector(
     '#fileReadingProgression .progression'
   );
   progressionBar.style.width = `${valueInPercentage}%`;
-}
+};
 window.updateFileReadingProgression = updateFileReadingProgression;
 
 let prevDate = null;
 const updateDynamicInfos = (d) => {
-  if (prevDate !== d['<DATE>']) {
-    $currentReadingDate.innerText = d['<DATE>'];
+  if (prevDate !== d[EnumMT5OHLC.DATE]) {
+    $currentReadingDate.innerText = d[EnumMT5OHLC.DATE];
 
     // Update progression bar:
     const numberOfDays = Math.ceil(
@@ -1544,13 +1666,13 @@ const updateDynamicInfos = (d) => {
     updateFileReadingProgression((numbDays * 100) / numberOfDays);
 
     animateActiveClass($currentReadingDate);
-    prevDate = d['<DATE>'];
+    prevDate = d[EnumMT5OHLC.DATE];
   }
 };
 
-const appendDataToChart = (d, dataIndex) => {
+const appendDataToChart = (d) => {
   //$csvDataField.value += JSON.stringify(d);
-  addNewCandleToChart(d, dataIndex);
+  addNewCandleToChart(d);
 };
 
 const addBacktestingDateTimeToChart = (d) => {
@@ -1588,57 +1710,55 @@ const appendIndicatorsToChart = (d, dataIndex) => {
 };
 
 // Historical Trades Textarea Change Handler
-document
-  .getElementById('textareaHistoricalTradesLines')
-  .addEventListener('change', function (event) {
-    const tradesData = event.target.value;
-    const rows = tradesData.split('\n');
+$textareaHistoricalTradesLines?.addEventListener('change', (event) => {
+  const tradesData = event.target.value;
+  const rows = tradesData.split('\n');
 
-    // Clear previous chart data
-    chartData = [];
+  // Clear previous chart data
+  chartData = [];
 
-    // Parse trades data
-    rows.forEach((row) => {
-      if (row.trim()) {
-        // Split by tab for myfxbook format
-        const trade = row.split('\t');
+  // Parse trades data
+  rows.forEach((row) => {
+    if (row.trim()) {
+      // Split by tab for myfxbook format
+      const trade = row.split('\t');
 
-        // Validate trade data
-        if (trade.length >= 10) {
-          const tradeObj = {
-            timestamp: trade[0] ? trade[0].trim() : '',
-            // Assuming the format is: Date Time, Symbol, Type, Lot Size, Open Price, -, Close Price, -, Profit, ...
-            symbol: trade[2] ? trade[2].trim() : '',
-            type: trade[3] ? trade[3].trim() : '',
-            lotSize: trade[4] ? parseFloat(trade[4].trim()) : 0,
-            openPrice: trade[5] ? parseFloat(trade[5].trim()) : 0,
-            closePrice: trade[7] ? parseFloat(trade[7].trim()) : 0,
-            profit: trade[9] ? parseFloat(trade[9].trim()) : 0,
-          };
+      // Validate trade data
+      if (trade.length >= 10) {
+        const tradeObj = {
+          timestamp: trade[0] ? trade[0].trim() : '',
+          // Assuming the format is: Date Time, Symbol, Type, Lot Size, Open Price, -, Close Price, -, Profit, ...
+          symbol: trade[2] ? trade[2].trim() : '',
+          type: trade[3] ? trade[3].trim() : '',
+          lotSize: trade[4] ? parseFloat(trade[4].trim()) : 0,
+          openPrice: trade[5] ? parseFloat(trade[5].trim()) : 0,
+          closePrice: trade[7] ? parseFloat(trade[7].trim()) : 0,
+          profit: trade[9] ? parseFloat(trade[9].trim()) : 0,
+        };
 
-          // Add trade to chart data
-          chartData.push(tradeObj);
-        } else {
-          console.warn('Invalid trade data:', row);
-        }
+        // Add trade to chart data
+        chartData.push(tradeObj);
+      } else {
+        console.warn('Invalid trade data:', row);
       }
-    });
-
-    // Attempt to update chart if possible
-    try {
-      // Check for custom chart update function
-      if (typeof updateChartWithTrades === 'function') {
-        updateChartWithTrades(chartData);
-      }
-      // Fallback to global chart update methods
-      else if (window.updateChart) {
-        window.updateChart(chartData);
-      }
-      // If no update method, log warning
-      else {
-        console.warn('No chart update method available');
-      }
-    } catch (error) {
-      console.error('Error updating chart:', error);
     }
   });
+
+  // Attempt to update chart if possible
+  try {
+    // Check for custom chart update function
+    if (typeof updateChartWithTrades === 'function') {
+      updateChartWithTrades(chartData);
+    }
+    // Fallback to global chart update methods
+    else if (window.updateChart) {
+      window.updateChart(chartData);
+    }
+    // If no update method, log warning
+    else {
+      console.warn('No chart update method available');
+    }
+  } catch (error) {
+    console.error('Error updating chart:', error);
+  }
+});

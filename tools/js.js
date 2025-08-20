@@ -1,4 +1,4 @@
-$(document).ready(function () {
+$(document).ready(() => {
   window.elements = {
     button: $('#run')[0],
     die: $('#die')[0],

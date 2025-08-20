@@ -1,4 +1,4 @@
-$(document).ready(function () {
+$(document).ready(() => {
   getGoogleSheetData(
     '19Xef2pU1IGmlTo07YvrCO1cMlB0QgBwkMQ3Xy7xo1Tc',
     'EURUSD - Trading History LDN Scalp',

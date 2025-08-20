@@ -46,7 +46,7 @@ table tr {
 
 .notify-bullet:before {
   opacity: 0;
-  content: "";
+  content: '';
   display: block;
   position: absolute;
   z-index: 1;
@@ -60,7 +60,16 @@ table tr {
   box-shadow: 0 0 10px red;
   animation: scaletrans 0.6s ease-out infinite alternate;
   transform: scale(1);
-  transition: opacity .25s ease-in;
+  transition: opacity 0.25s ease-in;
+}
+
+.back-testing-results {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  gap: var(--padding);
 }
 
 .notify-bullet.active:before {
@@ -81,7 +90,7 @@ table tr {
 }
 
 #fileReadingProgression .progression {
-  content: "";
+  content: '';
   display: block;
   position: absolute;
   top: 0;
@@ -94,8 +103,66 @@ table tr {
   transition: all 1s ease-out;
 }
 
+.historical-order-table-header th {
+  text-align: left;
+}
+
 .historical-order-line:hover {
-  background: var(--dark2);  
+  background: var(--dark2);
+}
+
+.historical-order-line td:nth-child(1),
+.historical-order-table-header th:nth-child(1) {
+  width: 3%;
+}
+.historical-order-line td:nth-child(2),
+.historical-order-table-header th:nth-child(2) {
+  width: 20%;
+}
+.historical-order-line td:nth-child(3),
+.historical-order-table-header th:nth-child(3) {
+  width: 5%;
+}
+.historical-order-line td:nth-child(4),
+.historical-order-table-header th:nth-child(4) {
+  width: 5%;
+}
+.historical-order-line td:nth-child(5),
+.historical-order-table-header th:nth-child(5) {
+  width: 5%;
+}
+.historical-order-line td:nth-child(6),
+.historical-order-table-header th:nth-child(6) {
+  width: 10%;
+}
+.historical-order-line td:nth-child(7),
+.historical-order-table-header th:nth-child(7) {
+  width: 12%;
+}
+.historical-order-line td:nth-child(8),
+.historical-order-table-header th:nth-child(8) {
+  width: 12%;
+}
+.historical-order-line td:nth-child(9),
+.historical-order-table-header th:nth-child(9) {
+  width: 18%;
+}
+.historical-order-line td:nth-child(10),
+.historical-order-table-header th:nth-child(10) {
+  width: 10%;
+}
+
+table {
+  position: relative;
+}
+.sticky {
+  position: sticky;
+  top: 70px;
+  left: 0;
+  background: black;
+  box-shadow: 0 0 15px -5px grey;
+  right: 0;
+  z-index: 10000;
 }
 
 .order-status-CLOSED_BY_SL {
@@ -104,6 +171,18 @@ table tr {
 
 .order-status-CLOSED_BY_TP {
   color: var(--green);
+}
+
+.trade-result-LOSS {
+  color: var(--red);
+}
+
+.trade-result-WIN {
+  color: var(--green);
+}
+
+.trade-result-BE {
+  color: yellow;
 }
 
 #upload-section {
@@ -161,6 +240,7 @@ table tr {
   background: var(--dark);
   box-shadow: 0 10px 20px -5px var(--dark3);
   box-sizing: border-box;
+  z-index: 2;
 }
 
 .result-panel-content {
@@ -189,17 +269,6 @@ table tr {
   span:last-child {
     display: inline;
   }
-}
-
-#hidder {
-  display: none;
-  left: 800px;
-  right: 69px;
-  top: 0;
-  bottom: 24px;
-  background: #141515;
-  z-index: 1;
-  position: absolute;
 }
 
 .tools,
