@@ -867,104 +867,34 @@ const initSciChart = (data) => {
       */
 
       const profitabilityCalculation = () => {
+        let result = '';
+
+        // Total profits in points (strategy)
         const profitsInPoints = ordersHistory.reduce((acc, order) => {
-          if (order.closedOrderType == EnumclosedOrderType.CLOSED_BY_TP) {
+          if (order.closedOrderType === EnumclosedOrderType.CLOSED_BY_TP)
             return acc + tpSize();
-          }
-          if (order.closedOrderType == EnumclosedOrderType.CLOSED_BY_SL) {
+          if (order.closedOrderType === EnumclosedOrderType.CLOSED_BY_SL)
             return acc - slSize();
-          }
           return acc;
         }, 0);
 
-        //console.log('Orders History:', ordersHistory);
+        // Win rate
         const winRate =
           ordersHistory.length > 0
             ? (
                 (ordersHistory.filter(
-                  (order) => order.tradeResult == EnumTradeResult.WIN
+                  (order) => order.tradeResult === EnumTradeResult.WIN
                 ).length /
                   ordersHistory.length) *
                 100
               ).toFixed(2)
             : 0;
-        const moneyEquivalent = (
-          profitsInPoints *
-          (lotSize() * 10) *
-          10000
-        ).toFixed(2);
-        const resultToCSV = () => {
-          let csv = '';
-          const csvFileName = $csvFileInput.value.split('\\')[2].split('.')[0];
 
-          const { timeframe, startDate, endDate } = (() => {
-            // csvFileName: EURUSD_M5_202506020000_202508082355
-            const timeframe = csvFileName.split('_')[1]; // eg: M5
-            const sd = csvFileName.split('_')[2]; // eg: 202506020000
-            const ed = csvFileName.split('_')[3]; // eg: 202508082355
-
-            const sdYear = sd.slice(0, 4); // eg: 2025
-            const sdMonth = sd.slice(4, 6); // eg: 06
-            const sdDay = sd.slice(6, 8); // eg: 02
-
-            const edYear = ed.slice(0, 4); // eg: 2025
-            const edMonth = ed.slice(4, 6); // eg: 08
-            const edDay = ed.slice(6, 8); // eg: 08
-
-            const sdt = `${sdYear}\/${sdMonth}\/${sdDay}`; // 2025\06\02
-            const edt = `${edYear}\/${edMonth}\/${edDay}`; // 2025\08\08
-
-            return {
-              timeframe,
-              startDate: sdt,
-              endDate: edt,
-            };
-          })();
-
-          csv += `\t\t${csvFileName}\t`; // File name
-          csv += `${timeframe}\t`; // Timeframe
-          csv += `CSID\t`; // Strategy name
-          csv += `${startDate}\t`; // Start date
-          csv += `${endDate}\t`; // End date
-          csv += `${numbDays}\t`; // Number of days
-          csv += `${$sessionStartInput.value}\t`; // Start range time
-          csv += `${$sessionEndInput.value}\t`; // End range time
-          csv += `${tradeCount}\t`; // Number of trades
-          csv += `${winRate}%\t`; // Win rate
-          csv += `${moneyEquivalent}\t`; // Money equivalent
-          csv += `${profitsInPoints}\t`; // Profits in points
-          // csv += `${(profitsInPoints / 0.0001).toFixed(2)}\t`; // Profits in pips
-          // csv += `${(profitsInPoints / 0.01).toFixed(2)}\t`; // Profits in ticks
-          csv += `${lotSize()}\t`; // Lot size
-          csv += `${tpSize()}\t`; // TP size
-          csv += `${slSize()}\t`; // SL size
-          csv += `${tsSize()}\t`; // TS size
-
-          return csv;
-        };
-        const result = `Check console for orders history\n\nTrade Taken: ${
-          ordersHistory.length
-        } (in ${numbDays} days)\nWin Rate: ${winRate}% \n\nProfits: \n Money: ${moneyEquivalent}$\n Points: ${profitsInPoints.toFixed(
-          5
-        )} \n Pips: ${(profitsInPoints / 0.0001).toFixed(2)} \n Ticks: ${(
-          profitsInPoints / 0.01
-        ).toFixed(2)}`;
-        $backTestingResult.value = result;
-        $exportableCSVField.value = resultToCSV();
-
-        // Profitability Chart: ========================================
-        let myChart = document.getElementById('myChart');
-        let ctx = myChart.getContext('2d');
-
-        // ✅ Properly destroy any existing chart instance
-        const existingChart = Chart.getChart(myChart);
-        if (existingChart) {
-          existingChart.destroy();
-        }
-
+        // Profitability chart data
         const labels = [];
         const pnlData = [];
-        const equityData = [];
+        const equityData = []; // in points
+        const equityDataMoney = []; // in $
 
         let sum = 0;
         let equitySumPoints = 0;
@@ -973,17 +903,75 @@ const initSciChart = (data) => {
         for (const { id, pnlPoints } of ordersHistory) {
           labels.push(id);
 
+          // Strategy cumulative (points)
           sum += +pnlPoints;
           pnlData.push(sum);
 
+          // Equity in points
           equitySumPoints += +pnlPoints - commissionPoints;
           equityData.push(equitySumPoints);
+
+          // Equity in $ (money equivalent)
+          equityDataMoney.push(equitySumPoints * 100000 * lotSize());
         }
 
-        // Gradient
+        // Money equivalent = last equity value
+        const moneyEquivalent =
+          equityDataMoney[equityDataMoney.length - 1] || 0;
+
+        //console.table([profitsInPoints, moneyEquivalent]);
+
+        // CSV builder
+        const resultToCSV = () => {
+          const csvFileName = $csvFileInput.value.split('\\')[2].split('.')[0];
+          const [_, timeframe, sd, ed] = csvFileName.split('_');
+          const sdt = `${sd.slice(0, 4)}/${sd.slice(4, 6)}/${sd.slice(6, 8)}`;
+          const edt = `${ed.slice(0, 4)}/${ed.slice(4, 6)}/${ed.slice(6, 8)}`;
+
+          return [
+            `\t\t${csvFileName}\t`,
+            `${timeframe}\t`,
+            `CSID\t`,
+            `${sdt}\t`,
+            `${edt}\t`,
+            `${numbDays}\t`,
+            `${$sessionStartInput.value}\t`,
+            `${$sessionEndInput.value}\t`,
+            `${tradeCount}\t`,
+            `${winRate}%\t`,
+            `${moneyEquivalent.toFixed(2)}\t`,
+            `${profitsInPoints}\t`,
+            `${lotSize()}\t`,
+            `${tpSize()}\t`,
+            `${slSize()}\t`,
+            `${tsSize()}\t`,
+          ].join('');
+        };
+
+        // Display textual result
+        result += `Check console for orders history\n`;
+        result += `\nTrade Taken: ${ordersHistory.length} (in ${numbDays} days)`;
+        result += `\nWin Rate: ${winRate}%\n`;
+        result += `\nProfits: `;
+        result += `\n Money: ${moneyEquivalent.toFixed(2)}$`;
+        result += `\n Points: ${profitsInPoints.toFixed(5)}`;
+        result += `\n Pips: ${(profitsInPoints / 0.0001).toFixed(2)}`;
+        result += `\n Ticks: ${(profitsInPoints / 0.01).toFixed(2)}`;
+
+        $backTestingResult.value = result;
+        $exportableCSVField.value = resultToCSV();
+
+        // Profitability Chart ========================================
+        const myChart = document.getElementById('myChart');
+        const ctx = myChart.getContext('2d');
+
         const gradient = ctx.createLinearGradient(0, 25, 0, 300);
         gradient.addColorStop(0, `#${bullishColor}${RRToolStyles.opacity}`);
         gradient.addColorStop(1, `#${bearishColor}${RRToolStyles.opacity}`);
+
+        // Destroy previous chart if exists
+        const existingChart = Chart.getChart(myChart);
+        if (existingChart) existingChart.destroy();
 
         const datasets = [
           {
@@ -995,6 +983,7 @@ const initSciChart = (data) => {
             borderWidth: 1,
             order: 0,
             fill: true,
+            yAxisID: 'pointsAxis',
           },
           {
             type: 'line',
@@ -1005,84 +994,65 @@ const initSciChart = (data) => {
             order: 1,
             fill: false,
             tension: 0.5,
-            pointStyle: false, // As its currently displaying equity in points for a better visualization and adaptability chart (y-axis), we can remove points hover representation.
+            pointStyle: false,
+            yAxisID: 'pointsAxis',
           },
         ];
 
-        const profitabilityChartOptions = {
-          animation: {
-            duration: 0,
-          },
-          responsive: false,
-          elements: {
-            point: {
-              radius: 1,
-            },
-          },
-          scales: {
-            y: {
-              beginAtZero: false,
-            },
-          },
-        };
-
-        myChart = new Chart(ctx, {
+        new Chart(ctx, {
           type: 'line',
-          data: {
-            labels: labels,
-            datasets: datasets,
+          data: { labels, datasets },
+          options: {
+            animation: { duration: 0 },
+            responsive: false,
+            elements: { point: { radius: 1 } },
+            scales: {
+              pointsAxis: {
+                type: 'linear',
+                beginAtZero: false,
+                position: 'left',
+              },
+            },
           },
-          options: profitabilityChartOptions,
         });
 
+        // Historical Orders Table
         document.getElementById('backtestingResultOrderHistory').innerHTML = `
-                <table>
-                  <thead>
-                    <tr class="historical-order-table-header">
-                      <th>ID</th>
-                      <th>Time</th>
-                      <th>Price</th>
-                      <th>SL</th>
-                      <th>TP</th>
-                      <th>Direction</th>
-                      <th>Closed Order Type</th>
-                      <th>Closed Price</th>
-                      <th>Closed Time</th>
-                      <th>P/L (Points)</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    ${ordersHistory
-                      .map(
-                        (order) => `
-                      <tr class="historical-order-line">
-                        <td>${order.id}</td>
-                        <td>${order.time}</td>
-                        <td>${order.price.toFixed(5)}</td>
-                        <td>${order.sl.toFixed(5)}</td>
-                        <td>${order.tp.toFixed(5)}</td>
-                        <td>${order.direction}</td>
-                        <td class="order-status-${order.closedOrderType}">${
-                          order.closedOrderType
-                        }</td>
-                        <td>${order.closedPrice || ''}</td>
-                        <td>${order.closedTime || ''}</td>
-                        <td class="trade-result-${order.tradeResult}" title="${
-                          order.tradeResult
-                        }">${
-                          order.pnlPoints !== undefined
-                            ? order.pnlPoints.toFixed(5)
-                            : ''
-                        }</td>
-                      </tr>
-                    `
-                      )
-                      .join('')}
-                  </tbody>
-                </table>
-              `;
-        // End of Profitability Chart ========================================
+    <table>
+      <thead>
+        <tr class="historical-order-table-header">
+          <th>ID</th><th>Time</th><th>Price</th><th>SL</th><th>TP</th><th>Direction</th><th>Closed Order Type</th><th>Closed Price</th><th>Closed Time</th><th>P/L (Points)</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${ordersHistory
+          .map(
+            (order) => `
+          <tr class="historical-order-line">
+            <td>${order.id}</td>
+            <td>${order.time}</td>
+            <td>${order.price.toFixed(5)}</td>
+            <td>${order.sl.toFixed(5)}</td>
+            <td>${order.tp.toFixed(5)}</td>
+            <td>${order.direction}</td>
+            <td class="order-status-${order.closedOrderType}">${
+              order.closedOrderType
+            }</td>
+            <td>${order.closedPrice || ''}</td>
+            <td>${order.closedTime || ''}</td>
+            <td class="trade-result-${order.tradeResult}" title="${
+              order.tradeResult
+            }">${
+              order.pnlPoints !== undefined ? order.pnlPoints.toFixed(5) : ''
+            }</td>
+          </tr>`
+          )
+          .join('')}
+      </tbody>
+    </table>
+  `;
       };
+
       window.profitabilityCalculation = profitabilityCalculation;
 
       const ohlcDataSeries = new OhlcDataSeries(wasmContext);
