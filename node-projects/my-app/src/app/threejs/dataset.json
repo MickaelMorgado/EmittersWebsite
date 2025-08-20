@@ -1,0 +1,77 @@
+{
+  "btc": {
+    "name": "bitcoin"
+  },
+  "eth": {
+    "name": "ethereum",
+    "children": {
+      "erc20": {
+        "usdc": { "name": "usd coin", "token": "ERC20" },
+        "usdt": { "name": "tether", "token": "ERC20" },
+        "link": { "name": "chainlink", "token": "ERC20" },
+        "uni": {
+          "name": "uniswap",
+          "token": "ERC20",
+          "children": {
+            "uni_v2_lp": { "name": "Uniswap V2 LP Tokens", "token": "ERC20" },
+            "uni_v3_lp": { "name": "Uniswap V3 LP Tokens", "token": "ERC20" }
+          }
+        },
+        "aave": {
+          "name": "aave",
+          "token": "ERC20",
+          "children": {
+            "stk_aave": { "name": "Staked AAVE", "token": "ERC20" },
+            "aave_gov": { "name": "AAVE Governance Token", "token": "ERC20" }
+          }
+        },
+        "dai": { "name": "dai", "token": "ERC20" },
+        "comp": { "name": "compound", "token": "ERC20" },
+        "matic": { "name": "polygon", "token": "ERC20" },
+        "sushi": {
+          "name": "sushiswap",
+          "token": "ERC20",
+          "children": {
+            "sushi_lp": { "name": "Sushi LP Tokens", "token": "ERC20" },
+            "xsushi": { "name": "xSUSHI Staking Token", "token": "ERC20" }
+          }
+        },
+        "mana": { "name": "decentraland", "token": "ERC20" }
+      },
+      "erc721": {
+        "cryptopunks": { "name": "CryptoPunks", "token": "ERC721" },
+        "bayc": {
+          "name": "Bored Ape Yacht Club",
+          "token": "ERC721",
+          "children": {
+            "mayc": { "name": "Mutant Ape Yacht Club", "token": "ERC721" }
+          }
+        }
+      },
+      "erc1155": {
+        "sandbox_items": { "name": "The Sandbox Game Items", "token": "ERC1155" },
+        "axie_items": { "name": "Axie Infinity Items", "token": "ERC1155" }
+      }
+    }
+  },
+  "xrp": {
+    "name": "xrp"
+  },
+  "bnb": {
+    "name": "binance coin"
+  },
+  "stock_tokens": {
+    "children": {
+      "coin": { "name": "coinbase", "token": "ERC20" },
+      "msft": { "name": "microsoft", "token": "ERC20" },
+      "aapl": { "name": "apple", "token": "ERC20" },
+      "tsla": { "name": "tesla", "token": "ERC20" },
+      "googl": { "name": "alphabet", "token": "ERC20" },
+      "amzn": { "name": "amazon", "token": "ERC20" },
+      "fb": { "name": "meta platforms", "token": "ERC20" },
+      "nvda": { "name": "nvidia", "token": "ERC20" },
+      "dis": { "name": "disney", "token": "ERC20" },
+      "ko": { "name": "coca-cola", "token": "ERC20" }
+    }
+  }
+}

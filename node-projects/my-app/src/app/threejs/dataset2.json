@@ -1,0 +1,1082 @@
+{
+  "btc": {
+    "name": "bitcoin",
+    "details": {
+      "symbol": "BTC",
+      "price": "60000",
+      "market_cap": "1200000000000",
+      "volume_24h": "25000000000",
+      "circulating_supply": "19750000",
+      "total_supply": "19750000",
+      "max_supply": "21000000"
+    },
+    "children": {
+      "lightning": {
+        "name": "Bitcoin Lightning Network",
+        "type": "Layer 2"
+      },
+      "ordinals": {
+        "name": "Bitcoin Ordinals",
+        "type": "NFT Protocol"
+      },
+      "runes": {
+        "name": "Bitcoin Runes",
+        "type": "Fungible Token Protocol"
+      }
+    }
+  },
+  "eth": {
+    "name": "ethereum",
+    "details": {
+      "symbol": "ETH",
+      "price": "3500",
+      "market_cap": "420000000000",
+      "volume_24h": "15000000000",
+      "circulating_supply": "120000000",
+      "total_supply": "120000000",
+      "max_supply": null
+    },
+    "children": {
+      "erc20": {
+        "usdt": {
+          "name": "tether",
+          "token": "ERC20",
+          "details": {
+            "symbol": "USDT",
+            "price": "1.00",
+            "market_cap": "120000000000",
+            "type": "stablecoin"
+          }
+        },
+        "usdc": {
+          "name": "usd coin",
+          "token": "ERC20",
+          "details": {
+            "symbol": "USDC",
+            "price": "1.00",
+            "market_cap": "32000000000",
+            "type": "stablecoin"
+          }
+        },
+        "busd": {
+          "name": "binance usd",
+          "token": "ERC20",
+          "details": {
+            "symbol": "BUSD",
+            "price": "1.00",
+            "market_cap": "4000000000",
+            "type": "stablecoin"
+          }
+        },
+        "dai": {
+          "name": "dai",
+          "token": "ERC20",
+          "details": {
+            "symbol": "DAI",
+            "price": "1.00",
+            "market_cap": "4500000000",
+            "type": "decentralized_stablecoin"
+          }
+        },
+        "frax": {
+          "name": "frax",
+          "token": "ERC20",
+          "details": {
+            "symbol": "FRAX",
+            "price": "1.00",
+            "market_cap": "650000000",
+            "type": "algorithmic_stablecoin"
+          }
+        },
+        "link": {
+          "name": "chainlink",
+          "token": "ERC20",
+          "details": {
+            "symbol": "LINK",
+            "price": "14.50",
+            "market_cap": "8500000000",
+            "type": "oracle"
+          }
+        },
+        "uni": {
+          "name": "uniswap",
+          "token": "ERC20",
+          "details": {
+            "symbol": "UNI",
+            "price": "6.80",
+            "market_cap": "4100000000",
+            "type": "dex"
+          },
+          "children": {
+            "uni_v2_lp": { "name": "Uniswap V2 LP Tokens", "token": "ERC20" },
+            "uni_v3_lp": { "name": "Uniswap V3 LP Tokens", "token": "ERC20" }
+          }
+        },
+        "aave": {
+          "name": "aave",
+          "token": "ERC20",
+          "details": {
+            "symbol": "AAVE",
+            "price": "95.00",
+            "market_cap": "1400000000",
+            "type": "lending"
+          },
+          "children": {
+            "stk_aave": { "name": "Staked AAVE", "token": "ERC20" },
+            "aave_gov": { "name": "AAVE Governance Token", "token": "ERC20" }
+          }
+        },
+        "comp": {
+          "name": "compound",
+          "token": "ERC20",
+          "details": {
+            "symbol": "COMP",
+            "price": "45.00",
+            "market_cap": "250000000",
+            "type": "lending"
+          }
+        },
+        "mkr": {
+          "name": "maker",
+          "token": "ERC20",
+          "details": {
+            "symbol": "MKR",
+            "price": "1450.00",
+            "market_cap": "1350000000",
+            "type": "dao"
+          }
+        },
+        "crv": {
+          "name": "curve dao token",
+          "token": "ERC20",
+          "details": {
+            "symbol": "CRV",
+            "price": "0.35",
+            "market_cap": "380000000",
+            "type": "dex"
+          }
+        },
+        "sushi": {
+          "name": "sushiswap",
+          "token": "ERC20",
+          "details": {
+            "symbol": "SUSHI",
+            "price": "0.85",
+            "market_cap": "220000000",
+            "type": "dex"
+          },
+          "children": {
+            "sushi_lp": { "name": "Sushi LP Tokens", "token": "ERC20" },
+            "xsushi": { "name": "xSUSHI Staking Token", "token": "ERC20" }
+          }
+        },
+        "snx": {
+          "name": "synthetix",
+          "token": "ERC20",
+          "details": {
+            "symbol": "SNX",
+            "price": "2.15",
+            "market_cap": "680000000",
+            "type": "synthetic_assets"
+          }
+        },
+        "1inch": {
+          "name": "1inch",
+          "token": "ERC20",
+          "details": {
+            "symbol": "1INCH",
+            "price": "0.28",
+            "market_cap": "420000000",
+            "type": "dex_aggregator"
+          }
+        },
+        "bal": {
+          "name": "balancer",
+          "token": "ERC20",
+          "details": {
+            "symbol": "BAL",
+            "price": "2.45",
+            "market_cap": "140000000",
+            "type": "dex"
+          }
+        },
+        "yfi": {
+          "name": "yearn finance",
+          "token": "ERC20",
+          "details": {
+            "symbol": "YFI",
+            "price": "6800.00",
+            "market_cap": "250000000",
+            "type": "yield_farming"
+          }
+        },
+        "ldo": {
+          "name": "lido dao",
+          "token": "ERC20",
+          "details": {
+            "symbol": "LDO",
+            "price": "1.85",
+            "market_cap": "1650000000",
+            "type": "liquid_staking"
+          }
+        },
+        "rpl": {
+          "name": "rocket pool",
+          "token": "ERC20",
+          "details": {
+            "symbol": "RPL",
+            "price": "28.50",
+            "market_cap": "650000000",
+            "type": "liquid_staking"
+          }
+        },
+        "ens": {
+          "name": "ethereum name service",
+          "token": "ERC20",
+          "details": {
+            "symbol": "ENS",
+            "price": "12.80",
+            "market_cap": "420000000",
+            "type": "infrastructure"
+          }
+        },
+        "grt": {
+          "name": "the graph",
+          "token": "ERC20",
+          "details": {
+            "symbol": "GRT",
+            "price": "0.12",
+            "market_cap": "1150000000",
+            "type": "indexing"
+          }
+        },
+        "ftm": {
+          "name": "fantom",
+          "token": "ERC20",
+          "details": {
+            "symbol": "FTM",
+            "price": "0.45",
+            "market_cap": "1260000000",
+            "type": "layer1"
+          }
+        },
+        "matic": {
+          "name": "polygon",
+          "token": "ERC20",
+          "details": {
+            "symbol": "MATIC",
+            "price": "0.52",
+            "market_cap": "5100000000",
+            "type": "layer2"
+          }
+        },
+        "imx": {
+          "name": "immutable x",
+          "token": "ERC20",
+          "details": {
+            "symbol": "IMX",
+            "price": "1.25",
+            "market_cap": "2000000000",
+            "type": "layer2_gaming"
+          }
+        },
+        "lrc": {
+          "name": "loopring",
+          "token": "ERC20",
+          "details": {
+            "symbol": "LRC",
+            "price": "0.18",
+            "market_cap": "240000000",
+            "type": "layer2"
+          }
+        },
+        "mana": {
+          "name": "decentraland",
+          "token": "ERC20",
+          "details": {
+            "symbol": "MANA",
+            "price": "0.35",
+            "market_cap": "650000000",
+            "type": "metaverse"
+          }
+        },
+        "sand": {
+          "name": "the sandbox",
+          "token": "ERC20",
+          "details": {
+            "symbol": "SAND",
+            "price": "0.28",
+            "market_cap": "630000000",
+            "type": "metaverse"
+          }
+        },
+        "axs": {
+          "name": "axie infinity",
+          "token": "ERC20",
+          "details": {
+            "symbol": "AXS",
+            "price": "5.80",
+            "market_cap": "850000000",
+            "type": "gaming"
+          }
+        },
+        "ilv": {
+          "name": "illuvium",
+          "token": "ERC20",
+          "details": {
+            "symbol": "ILV",
+            "price": "42.00",
+            "market_cap": "420000000",
+            "type": "gaming"
+          }
+        },
+        "gala": {
+          "name": "gala",
+          "token": "ERC20",
+          "details": {
+            "symbol": "GALA",
+            "price": "0.018",
+            "market_cap": "650000000",
+            "type": "gaming"
+          }
+        },
+        "apt": {
+          "name": "aptos",
+          "token": "ERC20",
+          "details": {
+            "symbol": "APT",
+            "price": "8.50",
+            "market_cap": "3500000000",
+            "type": "layer1"
+          }
+        },
+        "arb": {
+          "name": "arbitrum",
+          "token": "ERC20",
+          "details": {
+            "symbol": "ARB",
+            "price": "0.85",
+            "market_cap": "2800000000",
+            "type": "layer2"
+          }
+        },
+        "op": {
+          "name": "optimism",
+          "token": "ERC20",
+          "details": {
+            "symbol": "OP",
+            "price": "1.65",
+            "market_cap": "1700000000",
+            "type": "layer2"
+          }
+        },
+        "pepe": {
+          "name": "pepe",
+          "token": "ERC20",
+          "details": {
+            "symbol": "PEPE",
+            "price": "0.0000085",
+            "market_cap": "3600000000",
+            "type": "meme"
+          }
+        },
+        "shib": {
+          "name": "shiba inu",
+          "token": "ERC20",
+          "details": {
+            "symbol": "SHIB",
+            "price": "0.0000085",
+            "market_cap": "5000000000",
+            "type": "meme"
+          }
+        },
+        "floki": {
+          "name": "floki inu",
+          "token": "ERC20",
+          "details": {
+            "symbol": "FLOKI",
+            "price": "0.00014",
+            "market_cap": "1300000000",
+            "type": "meme"
+          }
+        }
+      },
+      "erc721": {
+        "cryptopunks": {
+          "name": "CryptoPunks",
+          "token": "ERC721",
+          "details": {
+            "floor_price": "45.5",
+            "total_supply": "10000",
+            "type": "pfp"
+          }
+        },
+        "bayc": {
+          "name": "Bored Ape Yacht Club",
+          "token": "ERC721",
+          "details": {
+            "floor_price": "15.2",
+            "total_supply": "10000",
+            "type": "pfp"
+          },
+          "children": {
+            "mayc": {
+              "name": "Mutant Ape Yacht Club",
+              "token": "ERC721",
+              "details": {
+                "floor_price": "2.8",
+                "total_supply": "19423",
+                "type": "pfp"
+              }
+            },
+            "bakc": {
+              "name": "Bored Ape Kennel Club",
+              "token": "ERC721",
+              "details": {
+                "floor_price": "1.2",
+                "total_supply": "9602",
+                "type": "pfp"
+              }
+            }
+          }
+        },
+        "azuki": {
+          "name": "Azuki",
+          "token": "ERC721",
+          "details": {
+            "floor_price": "3.5",
+            "total_supply": "10000",
+            "type": "pfp"
+          }
+        },
+        "clone_x": {
+          "name": "CloneX",
+          "token": "ERC721",
+          "details": {
+            "floor_price": "2.1",
+            "total_supply": "19973",
+            "type": "pfp"
+          }
+        },
+        "doodles": {
+          "name": "Doodles",
+          "token": "ERC721",
+          "details": {
+            "floor_price": "1.8",
+            "total_supply": "10000",
+            "type": "pfp"
+          }
+        },
+        "coolcats": {
+          "name": "Cool Cats",
+          "token": "ERC721",
+          "details": {
+            "floor_price": "0.95",
+            "total_supply": "9999",
+            "type": "pfp"
+          }
+        },
+        "pudgypenguins": {
+          "name": "Pudgy Penguins",
+          "token": "ERC721",
+          "details": {
+            "floor_price": "8.5",
+            "total_supply": "8888",
+            "type": "pfp"
+          }
+        },
+        "moonbirds": {
+          "name": "Moonbirds",
+          "token": "ERC721",
+          "details": {
+            "floor_price": "1.3",
+            "total_supply": "10000",
+            "type": "pfp"
+          }
+        },
+        "artblocks": {
+          "name": "Art Blocks Curated",
+          "token": "ERC721",
+          "details": {
+            "floor_price": "0.8",
+            "total_supply": "variable",
+            "type": "generative_art"
+          }
+        },
+        "opensea_shared": {
+          "name": "OpenSea Shared Storefront",
+          "token": "ERC1155",
+          "details": {
+            "type": "marketplace_collection"
+          }
+        }
+      },
+      "erc1155": {
+        "sandbox_items": {
+          "name": "The Sandbox Game Items",
+          "token": "ERC1155",
+          "details": {
+            "type": "gaming_items"
+          }
+        },
+        "axie_items": {
+          "name": "Axie Infinity Items",
+          "token": "ERC1155",
+          "details": {
+            "type": "gaming_items"
+          }
+        },
+        "enjin_items": {
+          "name": "Enjin Multiverse Items",
+          "token": "ERC1155",
+          "details": {
+            "type": "gaming_items"
+          }
+        },
+        "horizon_items": {
+          "name": "Horizon Blockchain Games Items",
+          "token": "ERC1155",
+          "details": {
+            "type": "gaming_items"
+          }
+        }
+      }
+    }
+  },
+  "bnb": {
+    "name": "binance coin",
+    "details": {
+      "symbol": "BNB",
+      "price": "320.00",
+      "market_cap": "48000000000",
+      "volume_24h": "1500000000",
+      "circulating_supply": "150000000",
+      "total_supply": "150000000",
+      "max_supply": "200000000"
+    },
+    "children": {
+      "bep20": {
+        "cake": {
+          "name": "pancakeswap",
+          "token": "BEP20",
+          "details": {
+            "symbol": "CAKE",
+            "price": "2.10",
+            "market_cap": "680000000",
+            "type": "dex"
+          }
+        },
+        "bake": {
+          "name": "bakerytoken",
+          "token": "BEP20",
+          "details": {
+            "symbol": "BAKE",
+            "price": "0.25",
+            "market_cap": "45000000",
+            "type": "defi"
+          }
+        }
+      }
+    }
+  },
+  "xrp": {
+    "name": "xrp",
+    "details": {
+      "symbol": "XRP",
+      "price": "0.55",
+      "market_cap": "31000000000",
+      "volume_24h": "1200000000",
+      "circulating_supply": "56000000000",
+      "total_supply": "99987000000",
+      "max_supply": "100000000000"
+    }
+  },
+  "ada": {
+    "name": "cardano",
+    "details": {
+      "symbol": "ADA",
+      "price": "0.35",
+      "market_cap": "12500000000",
+      "volume_24h": "350000000",
+      "circulating_supply": "35700000000",
+      "total_supply": "45000000000",
+      "max_supply": "45000000000"
+    }
+  },
+  "sol": {
+    "name": "solana",
+    "details": {
+      "symbol": "SOL",
+      "price": "140.00",
+      "market_cap": "65000000000",
+      "volume_24h": "2500000000",
+      "circulating_supply": "464000000",
+      "total_supply": "580000000",
+      "max_supply": null
+    },
+    "children": {
+      "spl_tokens": {
+        "usdc_sol": {
+          "name": "usd coin (solana)",
+          "token": "SPL",
+          "details": {
+            "symbol": "USDC",
+            "type": "stablecoin"
+          }
+        },
+        "ray": {
+          "name": "raydium",
+          "token": "SPL",
+          "details": {
+            "symbol": "RAY",
+            "price": "1.85",
+            "market_cap": "420000000",
+            "type": "dex"
+          }
+        },
+        "srm": {
+          "name": "serum",
+          "token": "SPL",
+          "details": {
+            "symbol": "SRM",
+            "price": "0.08",
+            "market_cap": "40000000",
+            "type": "dex"
+          }
+        },
+        "bonk": {
+          "name": "bonk",
+          "token": "SPL",
+          "details": {
+            "symbol": "BONK",
+            "price": "0.000015",
+            "market_cap": "1200000000",
+            "type": "meme"
+          }
+        }
+      },
+      "nfts": {
+        "degods": {
+          "name": "DeGods",
+          "token": "NFT",
+          "details": {
+            "floor_price": "35.5",
+            "total_supply": "10000",
+            "type": "pfp"
+          }
+        },
+        "okay_bears": {
+          "name": "Okay Bears",
+          "token": "NFT",
+          "details": {
+            "floor_price": "12.2",
+            "total_supply": "10000",
+            "type": "pfp"
+          }
+        }
+      }
+    }
+  },
+  "dot": {
+    "name": "polkadot",
+    "details": {
+      "symbol": "DOT",
+      "price": "5.20",
+      "market_cap": "7800000000",
+      "volume_24h": "180000000",
+      "circulating_supply": "1500000000",
+      "total_supply": "1500000000",
+      "max_supply": null
+    }
+  },
+  "avax": {
+    "name": "avalanche",
+    "details": {
+      "symbol": "AVAX",
+      "price": "24.50",
+      "market_cap": "9800000000",
+      "volume_24h": "320000000",
+      "circulating_supply": "400000000",
+      "total_supply": "720000000",
+      "max_supply": "720000000"
+    },
+    "children": {
+      "avax_tokens": {
+        "joe": {
+          "name": "traderjoe",
+          "token": "AVAX-20",
+          "details": {
+            "symbol": "JOE",
+            "price": "0.35",
+            "market_cap": "105000000",
+            "type": "dex"
+          }
+        },
+        "png": {
+          "name": "pangolin",
+          "token": "AVAX-20",
+          "details": {
+            "symbol": "PNG",
+            "price": "0.08",
+            "market_cap": "18000000",
+            "type": "dex"
+          }
+        }
+      }
+    }
+  },
+  "doge": {
+    "name": "dogecoin",
+    "details": {
+      "symbol": "DOGE",
+      "price": "0.075",
+      "market_cap": "10800000000",
+      "volume_24h": "650000000",
+      "circulating_supply": "144000000000",
+      "total_supply": "144000000000",
+      "max_supply": null
+    }
+  },
+  "trx": {
+    "name": "tron",
+    "details": {
+      "symbol": "TRX",
+      "price": "0.095",
+      "market_cap": "8500000000",
+      "volume_24h": "420000000",
+      "circulating_supply": "89500000000",
+      "total_supply": "89500000000",
+      "max_supply": null
+    }
+  },
+  "ltc": {
+    "name": "litecoin",
+    "details": {
+      "symbol": "LTC",
+      "price": "68.00",
+      "market_cap": "5100000000",
+      "volume_24h": "420000000",
+      "circulating_supply": "75000000",
+      "total_supply": "75000000",
+      "max_supply": "84000000"
+    }
+  },
+  "bch": {
+    "name": "bitcoin cash",
+    "details": {
+      "symbol": "BCH",
+      "price": "125.00",
+      "market_cap": "2500000000",
+      "volume_24h": "180000000",
+      "circulating_supply": "20000000",
+      "total_supply": "20000000",
+      "max_supply": "21000000"
+    }
+  },
+  "atom": {
+    "name": "cosmos",
+    "details": {
+      "symbol": "ATOM",
+      "price": "8.50",
+      "market_cap": "3300000000",
+      "volume_24h": "150000000",
+      "circulating_supply": "390000000",
+      "total_supply": "390000000",
+      "max_supply": null
+    }
+  },
+  "algo": {
+    "name": "algorand",
+    "details": {
+      "symbol": "ALGO",
+      "price": "0.18",
+      "market_cap": "1400000000",
+      "volume_24h": "65000000",
+      "circulating_supply": "7800000000",
+      "total_supply": "10000000000",
+      "max_supply": "10000000000"
+    }
+  },
+  "vet": {
+    "name": "vechain",
+    "details": {
+      "symbol": "VET",
+      "price": "0.021",
+      "market_cap": "1600000000",
+      "volume_24h": "45000000",
+      "circulating_supply": "76000000000",
+      "total_supply": "86000000000",
+      "max_supply": "86000000000"
+    }
+  },
+  "layer2_solutions": {
+    "children": {
+      "arbitrum_ecosystem": {
+        "name": "Arbitrum Ecosystem",
+        "type": "Layer 2",
+        "children": {
+          "gmx": {
+            "name": "gmx",
+            "token": "ARB-20",
+            "details": {
+              "symbol": "GMX",
+              "price": "35.00",
+              "market_cap": "2100000000",
+              "type": "perpetual_dex"
+            }
+          },
+          "magic": {
+            "name": "magic",
+            "token": "ARB-20",
+            "details": {
+              "symbol": "MAGIC",
+              "price": "0.85",
+              "market_cap": "180000000",
+              "type": "gaming_ecosystem"
+            }
+          }
+        }
+      },
+      "optimism_ecosystem": {
+        "name": "Optimism Ecosystem",
+        "type": "Layer 2",
+        "children": {
+          "perp": {
+            "name": "perpetual protocol",
+            "token": "OP-20",
+            "details": {
+              "symbol": "PERP",
+              "price": "0.68",
+              "market_cap": "95000000",
+              "type": "perpetual_dex"
+            }
+          }
+        }
+      },
+      "polygon_ecosystem": {
+        "name": "Polygon Ecosystem",
+        "type": "Layer 2",
+        "children": {
+          "quick": {
+            "name": "quickswap",
+            "token": "MATIC-20",
+            "details": {
+              "symbol": "QUICK",
+              "price": "52.00",
+              "market_cap": "38000000",
+              "type": "dex"
+            }
+          },
+          "ghst": {
+            "name": "aavegotchi",
+            "token": "MATIC-20",
+            "details": {
+              "symbol": "GHST",
+              "price": "0.95",
+              "market_cap": "68000000",
+              "type": "gaming"
+            }
+          }
+        }
+      }
+    }
+  },
+  "defi_protocols": {
+    "children": {
+      "lending": {
+        "children": {
+          "aave": { "ref": "eth.children.erc20.aave" },
+          "comp": { "ref": "eth.children.erc20.comp" },
+          "euler": {
+            "name": "euler",
+            "token": "ERC20",
+            "details": {
+              "symbol": "EUL",
+              "price": "3.80",
+              "market_cap": "85000000",
+              "type": "lending"
+            }
+          },
+          "morpho": {
+            "name": "morpho",
+            "token": "ERC20",
+            "details": {
+              "symbol": "MORPHO",
+              "price": "1.25",
+              "market_cap": "125000000",
+              "type": "lending_optimizer"
+            }
+          }
+        }
+      },
+      "dex": {
+        "children": {
+          "uni": { "ref": "eth.children.erc20.uni" },
+          "sushi": { "ref": "eth.children.erc20.sushi" },
+          "crv": { "ref": "eth.children.erc20.crv" },
+          "dydx": {
+            "name": "dydx",
+            "token": "ERC20",
+            "details": {
+              "symbol": "DYDX",
+              "price": "1.85",
+              "market_cap": "1400000000",
+              "type": "perpetual_dex"
+            }
+          }
+        }
+      },
+      "yield_farming": {
+        "children": {
+          "yfi": { "ref": "eth.children.erc20.yfi" },
+          "cvx": {
+            "name": "convex finance",
+            "token": "ERC20",
+            "details": {
+              "symbol": "CVX",
+              "price": "2.15",
+              "market_cap": "220000000",
+              "type": "yield_optimizer"
+            }
+          }
+        }
+      }
+    }
+  },
+  "centralized_exchange_tokens": {
+    "children": {
+      "bnb": { "ref": "bnb" },
+      "cro": {
+        "name": "cronos",
+        "details": {
+          "symbol": "CRO",
+          "price": "0.085",
+          "market_cap": "2200000000",
+          "type": "exchange_token"
+        }
+      },
+      "ftt": {
+        "name": "ftx token",
+        "details": {
+          "symbol": "FTT",
+          "price": "1.25",
+          "market_cap": "42000000",
+          "type": "exchange_token"
+        }
+      },
+      "kcs": {
+        "name": "kucoin shares",
+        "details": {
+          "symbol": "KCS",
+          "price": "8.50",
+          "market_cap": "680000000",
+          "type": "exchange_token"
+        }
+      }
+    }
+  },
+  "stock_tokens": {
+    "children": {
+      "coin": {
+        "name": "coinbase",
+        "token": "ERC20",
+        "details": {
+          "symbol": "COIN",
+          "price": "185.00",
+          "market_cap": "45000000000",
+          "type": "stock_token"
+        }
+      },
+      "msft": {
+        "name": "microsoft",
+        "token": "ERC20",
+        "details": {
+          "symbol": "MSFT",
+          "price": "420.00",
+          "market_cap": "3100000000000",
+          "type": "stock_token"
+        }
+      },
+      "aapl": {
+        "name": "apple",
+        "token": "ERC20",
+        "details": {
+          "symbol": "AAPL",
+          "price": "195.00",
+          "market_cap": "3000000000000",
+          "type": "stock_token"
+        }
+      },
+      "tsla": {
+        "name": "tesla",
+        "token": "ERC20",
+        "details": {
+          "symbol": "TSLA",
+          "price": "250.00",
+          "market_cap": "800000000000",
+          "type": "stock_token"
+        }
+      },
+      "googl": {
+        "name": "alphabet",
+        "token": "ERC20",
+        "details": {
+          "symbol": "GOOGL",
+          "price": "175.00",
+          "market_cap": "2200000000000",
+          "type": "stock_token"
+        }
+      },
+      "amzn": {
+        "name": "amazon",
+        "token": "ERC20",
+        "details": {
+          "symbol": "AMZN",
+          "price": "180.00",
+          "market_cap": "1900000000000",
+          "type": "stock_token"
+        }
+      },
+      "meta": {
+        "name": "meta platforms",
+        "token": "ERC20",
+        "details": {
+          "symbol": "META",
+          "price": "520.00",
+          "market_cap": "1300000000000",
+          "type": "stock_token"
+        }
+      },
+      "nvda": {
+        "name": "nvidia",
+        "token": "ERC20",
+        "details": {
+          "symbol": "NVDA",
+          "price": "130.00",
+          "market_cap": "3200000000000",
+          "type": "stock_token"
+        }
+      },
+      "dis": {
+        "name": "disney",
+        "token": "ERC20",
+        "details": {
+          "symbol": "DIS",
+          "price": "95.00",
+          "market_cap": "175000000000",
+          "type": "stock_token"
+        }
+      },
+      "ko": {
+        "name": "coca-cola",
+        "token": "ERC20",
+        "details": {
+          "symbol": "KO",
+          "price": "62.00",
+          "market_cap": "270000000000",
+          "type": "stock_token"
+        }
+      }
+    }
+  }
+}
