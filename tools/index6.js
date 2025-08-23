@@ -891,14 +891,17 @@ const initSciChart = (data) => {
             : 0;
 
         // Profitability chart data
+        let sum = 0;
+        let equitySumPoints = 0;
+        const commissionPoints = 0.00005;
+
+        let grossProfit = 0;
+        let grossLoss = 0;
+
         const labels = [];
         const pnlData = [];
         const equityData = []; // in points
         const equityDataMoney = []; // in $
-
-        let sum = 0;
-        let equitySumPoints = 0;
-        const commissionPoints = 0.00005;
 
         for (const { id, pnlPoints } of ordersHistory) {
           labels.push(id);
@@ -912,7 +915,24 @@ const initSciChart = (data) => {
           equityData.push(equitySumPoints);
 
           // Equity in $ (money equivalent)
-          equityDataMoney.push(equitySumPoints * 100000 * lotSize());
+          const moneyResult = equitySumPoints * 100000 * lotSize();
+          equityDataMoney.push(moneyResult);
+
+          if (moneyResult > 0) {
+            grossProfit += moneyResult;
+          } else if (moneyResult < 0) {
+            grossLoss += Math.abs(moneyResult);
+          }
+        }
+
+        // Profit factor
+        let profitFactor;
+        if (grossProfit === 0 && grossLoss === 0) {
+          profitFactor = '0.00'; // no trades
+        } else if (grossLoss === 0) {
+          profitFactor = '∞'; // no losses
+        } else {
+          profitFactor = (grossProfit / grossLoss).toFixed(2);
         }
 
         // Money equivalent = last equity value
@@ -945,6 +965,7 @@ const initSciChart = (data) => {
             `${tpSize()}\t`,
             `${slSize()}\t`,
             `${tsSize()}\t`,
+            `${profitFactor}\t`,
           ].join('');
         };
 
@@ -957,6 +978,7 @@ const initSciChart = (data) => {
         result += `\n Points: ${profitsInPoints.toFixed(5)}`;
         result += `\n Pips: ${(profitsInPoints / 0.0001).toFixed(2)}`;
         result += `\n Ticks: ${(profitsInPoints / 0.01).toFixed(2)}`;
+        result += `\n Profit Factor: ${profitFactor}`;
 
         $backTestingResult.value = result;
         $exportableCSVField.value = resultToCSV();
