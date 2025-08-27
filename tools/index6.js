@@ -157,6 +157,10 @@ const EnumMT5OHLC = {
   LOW: '<LOW>',
   CLOSE: '<CLOSE>',
 };
+const EnumStrategy = {
+  CSID: 'CSID', // CSID price action breakout with Institutional candle move signal
+  CSID_W_MA: 'CSID_W_MA', // CSID price action breakout with Institutional candle move signal with moving average
+};
 
 // Get candle direction based on open and close prices:
 const getCandleDirection = (openPrice = 0, closePrice = 0) => {
@@ -203,6 +207,7 @@ const convertMT5DateToUnix = (candleTime) => {
 };
 
 const readingSpeed = 0; // Speed of reading the CSV file in milliseconds
+const strategy = EnumStrategy.CSID;
 
 const csvData = [];
 let CSIDLookbackCandleSerie = [];
@@ -951,7 +956,7 @@ const initSciChart = (data) => {
           return [
             `\t\t${csvFileName}\t`,
             `${timeframe}\t`,
-            `CSID\t`,
+            `${strategy}\t`,
             `${sdt}\t`,
             `${edt}\t`,
             `${numbDays}\t`,
