@@ -919,14 +919,16 @@ const initSciChart = (data) => {
           equitySumPoints += +pnlPoints - commissionPoints;
           equityData.push(equitySumPoints);
 
-          // Equity in $ (money equivalent)
-          const moneyResult = equitySumPoints * 100000 * lotSize();
-          equityDataMoney.push(moneyResult);
+          // Equity in $ (money equivalent, per trade)
+          const tradeMoney = (+pnlPoints - commissionPoints) * 100000 * lotSize();
+          equityDataMoney.push(
+            (equityDataMoney.at(-1) || 0) + tradeMoney // cumulative series
+          );
 
-          if (moneyResult > 0) {
-            grossProfit += moneyResult;
-          } else if (moneyResult < 0) {
-            grossLoss += Math.abs(moneyResult);
+          if (tradeMoney > 0) {
+            grossProfit += tradeMoney;
+          } else if (tradeMoney < 0) {
+            grossLoss += Math.abs(tradeMoney);
           }
         }
 
@@ -980,9 +982,9 @@ const initSciChart = (data) => {
         result += `\nWin Rate: ${winRate}%\n`;
         result += `\nProfits: `;
         result += `\n Money: ${moneyEquivalent.toFixed(2)}$`;
-        result += `\n Points: ${profitsInPoints.toFixed(5)}`;
-        result += `\n Pips: ${(profitsInPoints / 0.0001).toFixed(2)}`;
-        result += `\n Ticks: ${(profitsInPoints / 0.01).toFixed(2)}`;
+        // result += `\n Points: ${profitsInPoints.toFixed(5)}`;
+        // result += `\n Pips: ${(profitsInPoints / 0.0001).toFixed(2)}`;
+        // result += `\n Ticks: ${(profitsInPoints / 0.01).toFixed(2)}`;
         result += `\n Profit Factor: ${profitFactor}`;
 
         $backTestingResult.value = result;
