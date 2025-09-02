@@ -52,9 +52,8 @@ const revealAlgoEditor = () => {
   document.querySelectorAll('.result-panel-content')[1].classList.add('h-hide');
   document.querySelectorAll('.result-panel-content')[2].classList.add('h-hide');
 };
-revealAlgoEditor();
 
-const revealAglo = () => {
+const revealAlgo = () => {
   $resultPanel.classList.add('active');
   document.querySelectorAll('.result-panel-content')[0].classList.add('h-hide');
   document
@@ -62,6 +61,7 @@ const revealAglo = () => {
     .classList.remove('h-hide');
   document.querySelectorAll('.result-panel-content')[2].classList.add('h-hide');
 };
+revealAlgo();
 
 const revealReview = () => {
   $resultPanel.classList.add('active');
@@ -94,7 +94,7 @@ $resultPanelToolbarContentTogglerAlgoEditor?.addEventListener('click', () =>
   revealAlgoEditor()
 );
 $resultPanelToolbarContentTogglerAlgo?.addEventListener('click', () =>
-  revealAglo()
+  revealAlgo()
 );
 $resultPanelToolbarContentTogglerReview?.addEventListener('click', () =>
   revealReview()
