@@ -123,6 +123,7 @@ $backTestingPauseButton?.addEventListener('change', () => {
 const decimals = 5;
 let candlesFromBuffer = [];
 const MAX_BUFFER_SIZE = 10;
+const MA_PERIOD = 30;
 let slSize = () => parseFloat($SLPointsInput.value);
 let tpSize = () => parseFloat($TPPointsInput.value);
 let lotSize = () => parseFloat($LotSizeInput.value);
@@ -1135,6 +1136,25 @@ const initSciChart = (data) => {
       };
       window.bttVerticalLineAnnotation = bttVerticalLineAnnotation;
 
+      // Simple Moving Average Calculations. TODO might be expensive in memory:
+      const simpleMA = (vl, period) => {
+        let sma = [];
+
+        for (let i = 0; i < vl.length; i++) {
+          if (i < period - 1) {
+            sma.push(vl[EnumMT5OHLC.CLOSE]); // not enough data yet
+          } else {
+            let sum = 0;
+            for (let j = 0; j < period; j++) {
+              sum += vl[i - j][EnumMT5OHLC.CLOSE]; // take close directly
+            }
+            sma.push(sum / period);
+          }
+        }
+
+        return sma;
+      };
+
       // ATR Indicator: ========================================
       const calcATR = (d, dataIndex) => {
         const ATRLength = 20; // ATR period (number of candles for average calculation)
@@ -1224,6 +1244,7 @@ const initSciChart = (data) => {
       // CSID Indicator: ========================================
       const CSIDDataSerieFromHighs = new XyDataSeries(wasmContext);
       const CSIDDataSerieFromLows = new XyDataSeries(wasmContext);
+      const maDataSeries = new XyDataSeries(wasmContext);
 
       const CSIDHighline = new FastLineRenderableSeries(wasmContext, {
         stroke: '#FFF',
@@ -1237,8 +1258,16 @@ const initSciChart = (data) => {
         dataSeries: CSIDDataSerieFromLows,
         opacity: 0.6,
       });
+      const maLine = new FastLineRenderableSeries(wasmContext, {
+        stroke: `#${bearishColor}`,
+        strokeThickness: 2,
+        dataSeries: maDataSeries,
+        opacity: 0.8,
+      });
+
       sciChartSurface.renderableSeries.add(CSIDHighline);
       sciChartSurface.renderableSeries.add(CSIDLowline);
+      sciChartSurface.renderableSeries.add(maLine);
 
       const updateCSIDLineAnnotation = (d, dataIndex) => {
         const index = dataIndex || 0;
@@ -1310,6 +1339,10 @@ const initSciChart = (data) => {
         CSIDDataSerieFromLows.append(
           convertMT5DateToUnix(d[EnumMT5OHLC.DATE] + ' ' + d[EnumMT5OHLC.TIME]),
           lowestLowShort[lowestLowShort.length - 1]
+        );
+        maDataSeries.append(
+          convertMT5DateToUnix(d[EnumMT5OHLC.DATE] + ' ' + d[EnumMT5OHLC.TIME]),
+          simpleMA(CSIDLookbackCandleSerie, MA_PERIOD)[CSIDLookbackCandleSerie.length - 1]
         );
 
         // If previous candle was a breakout candle, we will not draw this new annotation,
