@@ -1329,6 +1329,10 @@ const initSciChart = (data) => {
           d[EnumMT5OHLC.CLOSE] > highestHighLong[highestHighLong.length - 2]; // && Math.abs(slopeHighestHighLong) < slopeThreshold
         const bearishCSID =
           d[EnumMT5OHLC.CLOSE] < lowestLowShort[lowestLowShort.length - 2]; // && Math.abs(slopeLowestLowShort) < slopeThreshold
+        
+        // Check if MA is trending in direction of planned trade, otherwise it will be always null (TODO)
+        const maTrending = EnumDirection.BULL || EnumDirection.BULL || null
+        // Then set a new Signal of SignalsArray (TODO)
 
         // CSID Graph Related Annotations: ========================================
         // Add a new CSID Data for our line annotations:
