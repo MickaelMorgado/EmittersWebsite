@@ -90,7 +90,7 @@ export default function GalaxyVisualization() {
   return (
     <div className="fixed inset-0 bg-black">
       <div className="absolute top-30 left-1/2 transform -translate-x-1/2 z-10 flex flex-col gap-4 bg-black/50 backdrop-blur-sm rounded-lg p-4">
-        <div className="flex">This is a data (counter) visualizer. <br />Tell me what number would you like to see!</div>
+        <div className="flex">This is a data (counter) visualizer. <br />Tell me what number (count, space or color) would you like to see!</div>
         <div className="flex gap-4 ">
           <div className="flex flex-col gap-1">
             <label className="text-white text-xs">Count</label>
