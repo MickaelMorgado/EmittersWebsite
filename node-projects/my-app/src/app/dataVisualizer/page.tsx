@@ -9,6 +9,39 @@ import { Button } from "../../components/ui/button"
 import { Input } from "../../components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select"
 
+const chatGPTRequest = async (message: string) => {
+    try {
+      //setIsLoading(true);
+
+      const response = await fetch(
+        'https://api.openai.com/v1/chat/completions',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer `,
+          },
+          body: JSON.stringify({
+            model: 'gpt-3.5-turbo',
+            messages: [{ role: 'user', content: message }],
+          }),
+        }
+      );
+
+      if (!response.ok) throw new Error('Error with the API request.');
+
+      const data = await response.json();
+      const reply = data.choices[0].message.content;
+
+      //appendMessage(reply, 'bot');
+      return reply;
+    } catch (error) {
+      //appendMessage('Error: Unable to fetch response.', 'bot');
+      console.error(error);
+    } finally {
+      //setIsLoading(false);
+    }
+  };
 
 interface GalaxyProps {
   count: number
@@ -33,7 +66,7 @@ function Galaxy({ count, spacing, color }: GalaxyProps) {
       const y = (Math.random() - 0.5) * (4 * spacing)
 
       temp.position.set(x, y, z)
-      temp.scale.setScalar(Math.random() * 0.5 + 0.5)
+      temp.scale.setScalar(Math.random() * 0.05 + 0.05)
       temp.updateMatrix()
 
       positions.push(temp.matrix.clone())
@@ -72,7 +105,7 @@ export default function GalaxyVisualization() {
     { value: "#ff6b6b", label: "Red" },
     { value: "#4ecdc4", label: "Cyan" },
     { value: "#45b7d1", label: "Blue" },
-    { value: "#96ceb4", label: "Green" },
+    { value: "#55FF55", label: "Green" },
     { value: "#feca57", label: "Yellow" },
     { value: "#ff9ff3", label: "Pink" },
     { value: "#a29bfe", label: "Purple" },
@@ -88,81 +121,117 @@ export default function GalaxyVisualization() {
   }
 
   return (
-    <div className="fixed inset-0 bg-black">
-      <div className="absolute top-30 left-1/2 transform -translate-x-1/2 z-10 flex flex-col gap-4 bg-black/50 backdrop-blur-sm rounded-lg p-4">
-        <div className="flex">This is a data (counter) visualizer. <br />Tell me what number (count, space or color) would you like to see!</div>
-        <div className="flex gap-4 ">
-          <div className="flex flex-col gap-1">
-            <label className="text-white text-xs">Count</label>
-            <Input
-              type="number"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              placeholder="Enter number (1-21,000,000)"
-              className="w-32 bg-white/10 border-white/20 text-white placeholder:text-white/60"
-              min="1"
-              max="21000000"
-            />
+    <>
+      <div className="fixed inset-0 bg-black">
+        <div className="absolute top-30 left-1/2 transform -translate-x-1/2 z-10 flex flex-col gap-4 bg-black/50 backdrop-blur-xs rounded-lg p-4">
+          <div className="flex">This is a data (counter) visualizer. <br />Tell me what number (count, space or color) would you like to see!</div>
+          <div className="flex gap-4 ">
+            <div className="flex flex-col gap-1">
+              <label className="text-white text-xs">Count</label>
+              <Input
+                type="number"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                placeholder="Enter number (1-21,000,000)"
+                className="w-32 bg-white/10 border-white/20 text-white placeholder:text-white/60"
+                min="1"
+                max="21000000"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-white text-xs">Space</label>
+              <Input
+                type="number"
+                value={spacing}
+                onChange={(e) => setSpacing(Number(e.target.value))}
+                placeholder="Spacing"
+                className="w-20 bg-white/10 border-white/20 text-white placeholder:text-white/60"
+                min="0.1"
+                max="5"
+                step="0.1"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-white text-xs">Color</label>
+              <Select value={selectedColor} onValueChange={setSelectedColor}>
+                <SelectTrigger className="w-24 bg-white/10 text-white border-white/20 ">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-white/10 border-white/20">
+                  {colorOptions.map((option) => (
+                    <SelectItem
+                      key={option.value}
+                      value={option.value}
+                      className="text-white hover:bg-white/20 focus:bg-white/20"
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: option.value }} />
+                        {option.label}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <Button onClick={handleVisualize} variant="secondary">
+              Visualize
+            </Button>
           </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-white text-xs">Space</label>
-            <Input
-              type="number"
-              value={spacing}
-              onChange={(e) => setSpacing(Number(e.target.value))}
-              placeholder="Spacing"
-              className="w-20 bg-white/10 border-white/20 text-white placeholder:text-white/60"
-              min="0.1"
-              max="5"
-              step="0.1"
-            />
+          <div id="chat-container" className="flex flex-col gap-2">
+            <div id="input-container" className="flex gap-2">
+              <input type="text" id="input" placeholder="Type your message here" className="flex-grow border rounded" />
+              <button
+                id="send"
+                className="border rounded"
+                onClick={async () => {
+                  const textArea = document.getElementById("messages") as HTMLTextAreaElement;
+                  const inputValue = (document.getElementById("input") as HTMLInputElement)?.value || "";
+                  const reply = await chatGPTRequest(
+                    `You are a numeric data responder.  
+Rules:  
+- Always reply in JSON format like { "value": xxxx, "description"?: xxxx }.  
+- Give me only a numeric integer value for the question I ask.  
+- If the number is very large and would break a data visualizer, reduce it so that the numeric part has at most 7 digits.  
+- Include in "description" the approximate multiplier needed to reconstruct the original value:  
+    - If the original value is around tens of millions, description should say "we might multiply this value by 100".  
+    - If the original value is around millions, description should say "we might multiply this value by 10".  
+    - For larger values, adapt the multiplier accordingly (*1000, *10000, etc.).  
+- No explanations, no text outside JSON.
+Question:
+ ${inputValue}`
+                  );
+                  if (textArea && reply) {
+                    textArea.value = reply;
+                  }
+                  setInputValue(JSON.parse(reply).value);
+                }}
+              >
+                Send
+              </button>
+            </div>
+            <textarea id="messages" className="flex-grow w-full h-[20px]"></textarea>
           </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-white text-xs">Color</label>
-            <Select value={selectedColor} onValueChange={setSelectedColor}>
-              <SelectTrigger className="w-24 bg-white/10 text-white border-white/20 ">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="bg-white/10 border-white/20">
-                {colorOptions.map((option) => (
-                  <SelectItem
-                    key={option.value}
-                    value={option.value}
-                    className="text-white hover:bg-white/20 focus:bg-white/20"
-                  >
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: option.value }} />
-                      {option.label}
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <Button onClick={handleVisualize} variant="secondary">
-            Visualize
-          </Button>
+        </div>
+
+        <div className="absolute inset-0">
+          <Canvas camera={{ position: [0, 20, 50], fov: 60, near: 1.0 }}>
+            <color attach="background" args={["#000000"]} />
+
+            {/*<Stars radius={300} depth={50} count={1000} factor={4} saturation={0} fade />*/}
+
+            {visualizedNumber > 0 && <Galaxy count={visualizedNumber} spacing={spacing} color={selectedColor} />}
+
+            <OrbitControls enablePan={true} enableZoom={true} enableRotate={true} />
+
+            <EffectComposer>
+              {/*<DepthOfField focusDistance={0.5} focalLength={1} bokehScale={30} />*/}
+              <Bloom luminanceThreshold={0} luminanceSmoothing={1} height={100} intensity={10} />
+              <Vignette eskil={false} offset={0.001} darkness={1} />
+              <Noise opacity={0.03} />
+            </EffectComposer>
+          </Canvas>
         </div>
       </div>
-
-      <div className="absolute inset-0">
-        <Canvas camera={{ position: [0, 20, 50], fov: 60 }}>
-          <color attach="background" args={["#000000"]} />
-
-          {/*<Stars radius={300} depth={50} count={1000} factor={4} saturation={0} fade />*/}
-
-          {visualizedNumber > 0 && <Galaxy count={visualizedNumber} spacing={spacing} color={selectedColor} />}
-
-          <OrbitControls enablePan={true} enableZoom={true} enableRotate={true} />
-
-          <EffectComposer>
-            {/*<DepthOfField focusDistance={0.5} focalLength={1} bokehScale={30} />*/}
-            <Bloom luminanceThreshold={0} luminanceSmoothing={1} height={100} intensity={10} />
-            <Vignette eskil={false} offset={0.001} darkness={1} />
-            <Noise opacity={0.04} />
-          </EffectComposer>
-        </Canvas>
-      </div>
-    </div>
+    </>
   )
 }
