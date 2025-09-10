@@ -20,15 +20,6 @@ interface NodeType {
   position: [number, number, number];
 }
 
-function CameraSwing({ amplitude = 5, frequency = 1 }: { amplitude?: number; frequency?: number }) {
-  const { camera } = useThree();
-  useFrame(({ clock }) => {
-    camera.position.x = Math.sin(clock.getElapsedTime() * frequency) * amplitude;
-    camera.lookAt(0, 0, 0);
-  });
-  return null;
-}
-
 function Scene() {
   const nodes: NodeType[] = [];
   const edges: Array<[[number, number, number], [number, number, number]]> = [];
