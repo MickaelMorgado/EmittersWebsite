@@ -1331,7 +1331,21 @@ const initSciChart = (data) => {
           d[EnumMT5OHLC.CLOSE] < lowestLowShort[lowestLowShort.length - 2]; // && Math.abs(slopeLowestLowShort) < slopeThreshold
         
         // Check if MA is trending in direction of planned trade, otherwise it will be always null (TODO check chatGPT)
-        const maTrending = EnumDirection.BULL || EnumDirection.BULL || null
+        if (CSIDLookbackCandleSerie.length < lookbackPeriod) return; // Ensure we have enough at least 2 candles for MA acceleration calculation
+
+        function maLookBackAccelToEnumDirection(value, threshold = 0.001) {
+          if (value > threshold) return EnumDirection.BEAR;
+          if (value < -threshold) return EnumDirection.BULL;
+          return null;
+        }
+
+        const maCandlesLookback = CSIDLookbackCandleSerie.slice(
+          CSIDLookbackCandleSerie.length - lookbackPeriod, CSIDLookbackCandleSerie.length
+        );
+        const maCandlesLookbackValues = maCandlesLookback.map((candle) => candle[EnumMT5OHLC.CLOSE]); // TODO we might match the MA line (not sure if i use close, open or calculate middle of candle for MALine)
+        const maCandlesLookbackDiff = maCandlesLookbackValues[maCandlesLookbackValues.length - lookbackPeriod] - maCandlesLookbackValues[maCandlesLookbackValues.length - 1];
+        const maTrending = maLookBackAccelToEnumDirection(maCandlesLookbackDiff)
+        console.table([maTrending, maCandlesLookbackDiff, 0.001]);
         // Then set a new Signal of SignalsArray (TODO)
 
         // CSID Graph Related Annotations: ========================================
