@@ -150,6 +150,12 @@ const EnumActionType = {
   DRAW_A_CIRCLE: 'DRAW_A_CIRCLE',
   TAKE_A_TRADE: 'TAKE_A_TRADE',
 };
+const EnumArrayOfSignalsIndex = {
+  CSID: 0,
+  TTR: 1,
+  ATR: 2,
+  MADirection: 3
+}
 const EnumMT5OHLC = {
   DATE: '<DATE>',
   TIME: '<TIME>',
@@ -449,7 +455,7 @@ const initSciChart = (data) => {
 
       // Variables initialization =========================
       let annotations = [];
-      let arrayOfSignals = [false, true]; // 2 signals required
+      let arrayOfSignals = [false, true, false, false]; // [CSID, TTR, ATR, boolean if ma has a strong direction]
       let tradeCount = 0;
       // Variables initialization for CSID:
       let rollingHighestHighDataSeries = null;
@@ -503,16 +509,17 @@ const initSciChart = (data) => {
       // Take trades when signals are valid:
       const checkSignalsForTrade = (d, direction) => {
         const takeTradeSignal =
-          arrayOfSignals[0] == true &&
-          arrayOfSignals[1] == true &&
-          arrayOfSignals[2] == true; // CSID, TTR, ATR
+          arrayOfSignals[EnumArrayOfSignalsIndex.CSID] == true &&
+          arrayOfSignals[EnumArrayOfSignalsIndex.TTR] == true &&
+          arrayOfSignals[EnumArrayOfSignalsIndex.ATR] == true &&
+          arrayOfSignals[EnumArrayOfSignalsIndex.MADirection] == true;
         if (takeTradeSignal) {
           tradeCount++;
           AddActionOnChart(d, EnumActionType.TAKE_A_TRADE, direction);
           listeningATR = true; // Start listening for ATR again once we open position
           //if (tradeCount >= 3) {
           // console.log('Reached 3 trades max');
-          arrayOfSignals[2] = false; // Reset ATR signal after 3 trades max
+          arrayOfSignals[EnumArrayOfSignalsIndex.ATR] = false; // Reset ATR signal after 3 trades max
           //}
         }
       };
@@ -1333,7 +1340,7 @@ const initSciChart = (data) => {
         // Check if MA is trending in direction of planned trade, otherwise it will be always null (TODO check chatGPT)
         if (CSIDLookbackCandleSerie.length < lookbackPeriod) return; // Ensure we have enough at least 2 candles for MA acceleration calculation
 
-        function maLookBackAccelToEnumDirection(value, threshold = 0.001) {
+        function maLookBackAccelToEnumDirection(value, threshold = 0.0008) {
           if (value > threshold) return EnumDirection.BEAR;
           if (value < -threshold) return EnumDirection.BULL;
           return null;
@@ -1345,7 +1352,8 @@ const initSciChart = (data) => {
         const maCandlesLookbackValues = maCandlesLookback.map((candle) => candle[EnumMT5OHLC.CLOSE]); // TODO we might match the MA line (not sure if i use close, open or calculate middle of candle for MALine)
         const maCandlesLookbackDiff = maCandlesLookbackValues[maCandlesLookbackValues.length - lookbackPeriod] - maCandlesLookbackValues[maCandlesLookbackValues.length - 1];
         const maTrending = maLookBackAccelToEnumDirection(maCandlesLookbackDiff)
-        console.table([maTrending, maCandlesLookbackDiff, 0.001]);
+        arrayOfSignals[EnumArrayOfSignalsIndex.MADirection] = !!maTrending; // TODO: there is no correlation with planed direction trade, it simply get value from lookback to current candle even if MA made a pyramidal move or pivot which wont tell us an trending directional acceleration, ohh and MA is set to CLOSE i think
+        console.table([maTrending, maCandlesLookbackDiff, 0.0008, arrayOfSignals[EnumArrayOfSignalsIndex.MADirection]]);
         // Then set a new Signal of SignalsArray (TODO)
 
         // CSID Graph Related Annotations: ========================================
