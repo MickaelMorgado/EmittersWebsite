@@ -123,7 +123,7 @@ $backTestingPauseButton?.addEventListener('change', () => {
 const decimals = 5;
 let candlesFromBuffer = [];
 const MAX_BUFFER_SIZE = 10;
-const MA_PERIOD = 30;
+const MA_PERIOD = 200;
 let slSize = () => parseFloat($SLPointsInput.value);
 let tpSize = () => parseFloat($TPPointsInput.value);
 let lotSize = () => parseFloat($LotSizeInput.value);
@@ -636,10 +636,12 @@ const initSciChart = (data) => {
 
           if (order.direction == EnumDirection.BULL) {
             //console.log('Moving SL of ', order.id, ' from ', order.sl, ' to ',  order.sl + trailingStopSize);
-            order.sl = order.sl + trailingStopSize; // Move SL by trailingStopSize (up side)
+            order.sl < order.price && d[EnumMT5OHLC.OPEN] > order.price ? order.sl = order.price : order.sl + trailingStopSize;
+            // order.sl = order.sl + trailingStopSize; // Move SL by trailingStopSize (up side)
           } else if (order.direction == EnumDirection.BEAR) {
             //console.log('Moving SL of ', order.id, ' from ', order.sl, ' to ',  order.sl - trailingStopSize);
-            order.sl = order.sl - trailingStopSize; // Move SL by trailingStopSize (down side)
+            // order.sl = order.sl - trailingStopSize; // Move SL by trailingStopSize (down side)
+            order.sl > order.price && d[EnumMT5OHLC.OPEN] < order.price ? order.sl = order.price : order.sl - trailingStopSize;
           }
 
           // Check TP
@@ -1354,7 +1356,6 @@ const initSciChart = (data) => {
         const maTrending = maLookBackAccelToEnumDirection(maCandlesLookbackDiff)
         arrayOfSignals[EnumArrayOfSignalsIndex.MADirection] = !!maTrending; // TODO: there is no correlation with planed direction trade, it simply get value from lookback to current candle even if MA made a pyramidal move or pivot which wont tell us an trending directional acceleration, ohh and MA is set to CLOSE i think
         console.table([maTrending, maCandlesLookbackDiff, 0.0008, arrayOfSignals[EnumArrayOfSignalsIndex.MADirection]]);
-        // Then set a new Signal of SignalsArray (TODO)
 
         // CSID Graph Related Annotations: ========================================
         // Add a new CSID Data for our line annotations:
