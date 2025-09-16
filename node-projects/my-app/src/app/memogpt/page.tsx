@@ -125,7 +125,7 @@ export default function Component() {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer `,
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_OPENAI_API_KEY}`,
           },
           body: JSON.stringify({
             model: 'gpt-3.5-turbo',
