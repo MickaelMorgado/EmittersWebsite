@@ -498,6 +498,17 @@
                 />
               </div>
               <div class="h-flex h-flex--column">
+                <label for="MAPeriod">Moving Average Period</label>
+                <input
+                  id="MAPeriod"
+                  type="number"
+                  value="200"
+                  step="10"
+                  class="h-input-effects"
+                  title="Period of Moving Average"
+                />
+              </div>
+              <div class="h-flex h-flex--column">
                 <label for="LotSize">Lot Size</label>
                 <input
                   id="LotSize"
@@ -544,6 +555,7 @@
                 const ThemeInput = document.getElementById('themeSelector');
                 const BTTInput = document.getElementById('backtesting-hour');
                 const ETTInput = document.getElementById('backtesting-end');
+                const MAPeriodInput = document.getElementById('MAPeriod');
                 const LotSizeInput = document.getElementById('LotSize');
                 const SLPointsInput = document.getElementById('SLPoints');
                 const TPPointsInput = document.getElementById('TPPoints');
@@ -559,6 +571,9 @@
                 }
                 if (urlParams.has('ett')) {
                   ETTInput.value = urlParams.get('ett');
+                }
+                if (urlParams.has('maperiod')) {
+                  MAPeriodInput.value = urlParams.get('maperiod');
                 }
                 if (urlParams.has('lotsize')) {
                   LotSizeInput.value = urlParams.get('lotsize');
@@ -580,6 +595,7 @@
                   urlParams.set('theme', ThemeInput.value);
                   urlParams.set('btt', BTTInput.value);
                   urlParams.set('ett', ETTInput.value);
+                  urlParams.set('maperiod', MAPeriodInput.value);
                   urlParams.set('lotsize', LotSizeInput.value);
                   urlParams.set('slpoints', SLPointsInput.value);
                   urlParams.set('tppoints', TPPointsInput.value);
