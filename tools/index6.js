@@ -27,6 +27,7 @@ const $SLPointsInput = document.getElementById('SLPoints');
 const $TPPointsInput = document.getElementById('TPPoints');
 const $LotSizeInput = document.getElementById('LotSize');
 const $TSIncrementInput = document.getElementById('TSIncrement');
+const $MAPeriodInput = document.getElementById('MAPeriod');
 const $textareaHistoricalTradesLines = document.getElementById(
   'textareaHistoricalTradesLines'
 );
@@ -111,6 +112,12 @@ $TPPointsInput?.addEventListener('change', () => {
 $LotSizeInput?.addEventListener('change', () => {
   animateActiveClass($csvRefresh);
 });
+$TSIncrementInput?.addEventListener('change', () => {
+  animateActiveClass($csvRefresh);
+});
+$MAPeriodInput?.addEventListener('change', () => {
+  animateActiveClass($csvRefresh);
+});
 $backTestingPauseButton?.addEventListener('change', () => {
   backTestingPaused = $backTestingPauseButton.checked;
 
@@ -123,11 +130,11 @@ $backTestingPauseButton?.addEventListener('change', () => {
 const decimals = 5;
 let candlesFromBuffer = [];
 const MAX_BUFFER_SIZE = 10;
-const MA_PERIOD = 200;
 let slSize = () => parseFloat($SLPointsInput.value);
 let tpSize = () => parseFloat($TPPointsInput.value);
 let lotSize = () => parseFloat($LotSizeInput.value);
 let tsSize = () => parseFloat($TSIncrementInput.value);
+let maPeriod = () => parseFloat($MAPeriodInput.value);
 let bullishColor = '00FF00';
 let bearishColor = 'FF0000';
 let greyColor = '999999';
@@ -983,6 +990,7 @@ const initSciChart = (data) => {
             `${slSize()}\t`,
             `${tsSize()}\t`,
             `${profitFactor}\t`,
+            `${maPeriod()}\t`,
           ].join('');
         };
 
@@ -1267,11 +1275,42 @@ const initSciChart = (data) => {
         dataSeries: CSIDDataSerieFromLows,
         opacity: 0.6,
       });
+      
+      class SlopePaletteProvider {
+        constructor() {
+          this.upColor = `#${bullishColor}`;
+          this.downColor = `#${bearishColor}`;
+          this.parentSeries = null;
+        }
+
+        onAttached(parentSeries) {
+          this.parentSeries = parentSeries;
+        }
+
+        onDetached() {
+          this.parentSeries = null;
+        }
+
+        overrideStrokeArgb(xValue, yValue, index) {
+          if (!this.parentSeries || index === 0) return undefined;
+
+          // Get Y values from the series
+          const yValues = this.parentSeries.dataSeries.getNativeYValues();
+          const prevY = yValues.get(index - 1);
+          const slope = yValue - prevY;
+
+          const color = slope >= 0 ? this.upColor : this.downColor;
+          return parseInt("FF" + color.slice(1), 16); // hex → ARGB
+        }
+      }
+
+
       const maLine = new FastLineRenderableSeries(wasmContext, {
         stroke: `#${bearishColor}`,
         strokeThickness: 2,
         dataSeries: maDataSeries,
         opacity: 0.8,
+        paletteProvider: new SlopePaletteProvider()
       });
 
       sciChartSurface.renderableSeries.add(CSIDHighline);
@@ -1342,7 +1381,7 @@ const initSciChart = (data) => {
         // Check if MA is trending in direction of planned trade, otherwise it will be always null (TODO check chatGPT)
         if (CSIDLookbackCandleSerie.length < lookbackPeriod) return; // Ensure we have enough at least 2 candles for MA acceleration calculation
 
-        function maLookBackAccelToEnumDirection(value, threshold = 0.0008) {
+        function maLookBackAccelToEnumDirection(value, threshold = 0.003) {
           if (value > threshold) return EnumDirection.BEAR;
           if (value < -threshold) return EnumDirection.BULL;
           return null;
@@ -1355,7 +1394,7 @@ const initSciChart = (data) => {
         const maCandlesLookbackDiff = maCandlesLookbackValues[maCandlesLookbackValues.length - lookbackPeriod] - maCandlesLookbackValues[maCandlesLookbackValues.length - 1];
         const maTrending = maLookBackAccelToEnumDirection(maCandlesLookbackDiff)
         arrayOfSignals[EnumArrayOfSignalsIndex.MADirection] = !!maTrending; // TODO: there is no correlation with planed direction trade, it simply get value from lookback to current candle even if MA made a pyramidal move or pivot which wont tell us an trending directional acceleration, ohh and MA is set to CLOSE i think
-        console.table([maTrending, maCandlesLookbackDiff, 0.0008, arrayOfSignals[EnumArrayOfSignalsIndex.MADirection]]);
+        console.table([d[EnumMT5OHLC.DATE] + ' ' + d[EnumMT5OHLC.TIME], maTrending, maCandlesLookbackDiff, 0.003, arrayOfSignals[EnumArrayOfSignalsIndex.MADirection]]);
 
         // CSID Graph Related Annotations: ========================================
         // Add a new CSID Data for our line annotations:
@@ -1369,7 +1408,7 @@ const initSciChart = (data) => {
         );
         maDataSeries.append(
           convertMT5DateToUnix(d[EnumMT5OHLC.DATE] + ' ' + d[EnumMT5OHLC.TIME]),
-          simpleMA(CSIDLookbackCandleSerie, MA_PERIOD)[CSIDLookbackCandleSerie.length - 1]
+          simpleMA(CSIDLookbackCandleSerie, maPeriod())[CSIDLookbackCandleSerie.length - 1]
         );
 
         // If previous candle was a breakout candle, we will not draw this new annotation,
