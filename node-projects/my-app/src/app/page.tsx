@@ -72,6 +72,17 @@ export default function Home() {
             </Card>
           </Link>
 
+          <Link href="/3DModelAnimation" className="h-full">
+            <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
+              <CardHeader>
+                <CardTitle>3D Model Animation</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">3D Model Animation</p>
+              </CardContent>
+            </Card>
+          </Link>
+
           <Link href="/HipsExample" className="h-full">
             <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
               <CardHeader>
