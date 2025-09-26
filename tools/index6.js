@@ -364,7 +364,9 @@ const initSciChart = (data) => {
     EDateFormatter,
     Point,
     FastLineRenderableSeries,
+    FastBandRenderableSeries,
     XyDataSeries,
+    XyyDataSeries,
     EAxisAlignment,
     // GlowEffect,
     // ShadowEffect,
@@ -643,13 +645,61 @@ const initSciChart = (data) => {
 
           if (order.direction == EnumDirection.BULL) {
             //console.log('Moving SL of ', order.id, ' from ', order.sl, ' to ',  order.sl + trailingStopSize);
-            order.sl < order.price && d[EnumMT5OHLC.OPEN] > order.price ? order.sl = order.price : order.sl + trailingStopSize;
+            /*order.sl < order.price && d[EnumMT5OHLC.OPEN] > order.price ? order.sl = order.price : */order.sl += trailingStopSize;
             // order.sl = order.sl + trailingStopSize; // Move SL by trailingStopSize (up side)
           } else if (order.direction == EnumDirection.BEAR) {
             //console.log('Moving SL of ', order.id, ' from ', order.sl, ' to ',  order.sl - trailingStopSize);
             // order.sl = order.sl - trailingStopSize; // Move SL by trailingStopSize (down side)
-            order.sl > order.price && d[EnumMT5OHLC.OPEN] < order.price ? order.sl = order.price : order.sl - trailingStopSize;
+            /*order.sl > order.price && d[EnumMT5OHLC.OPEN] < order.price ? order.sl = order.price : */order.sl -= trailingStopSize;
           }
+
+          // Trailing Stop visual:
+          const trailingStopVisual = () => {
+            const start = new Date(order.time.replace(/\./g, "-"));
+            const end = order.closedTime ? new Date(order.closedTime.replace(/\./g, "-")) : new Date(`${d[EnumMT5OHLC.DATE]} ${d[EnumMT5OHLC.TIME]}`);
+
+            const times = [];
+            const trailingChanges = [];
+            for (let d = new Date(start); d <= end; d.setMinutes(d.getMinutes() + 1)) {
+              times.push(
+                convertMT5DateToUnix(d.toISOString().slice(0, 19).replace("T", " ").replace(/-/g, "."))
+              );
+              trailingChanges.push(
+                order.sl
+              );
+            }
+
+            const xValues = times // duration
+            const y1Values = Array(xValues.length).fill(order.price) // entry price
+            const yValues = trailingChanges // Trailng SL
+
+            console.log({ yValues });
+
+            let trailingStopUIOption = {};
+            if (order.direction == EnumDirection.BULL) {
+              trailingStopUIOption = {
+                fill: "#FF0000" + "33",
+                fillY1: "#00FF00" + "33",
+              }
+            } else {
+              trailingStopUIOption = {
+                fill: "#00FF00" + "33",
+                fillY1: "#FF0000" + "33",
+              }
+            }
+
+            sciChartSurface.renderableSeries.add(
+              new FastBandRenderableSeries(wasmContext, {
+                dataSeries: new XyyDataSeries(wasmContext, { xValues, yValues, y1Values }),
+                ...trailingStopUIOption,
+                strokeThickness: 1,
+                stroke: "#666666",
+                strokeY1: "#FFFFFF",
+                isDigitalLine: true,
+              })
+            );
+          };
+          trailingStopVisual();
 
           // Check TP
           if ((isBull && high >= order.tp) || (!isBull && low <= order.tp)) {
@@ -1394,7 +1444,7 @@ const initSciChart = (data) => {
         const maCandlesLookbackDiff = maCandlesLookbackValues[maCandlesLookbackValues.length - lookbackPeriod] - maCandlesLookbackValues[maCandlesLookbackValues.length - 1];
         const maTrending = maLookBackAccelToEnumDirection(maCandlesLookbackDiff)
         arrayOfSignals[EnumArrayOfSignalsIndex.MADirection] = !!maTrending; // TODO: there is no correlation with planed direction trade, it simply get value from lookback to current candle even if MA made a pyramidal move or pivot which wont tell us an trending directional acceleration, ohh and MA is set to CLOSE i think
-        console.table([d[EnumMT5OHLC.DATE] + ' ' + d[EnumMT5OHLC.TIME], maTrending, maCandlesLookbackDiff, 0.003, arrayOfSignals[EnumArrayOfSignalsIndex.MADirection]]);
+        //console.table([d[EnumMT5OHLC.DATE] + ' ' + d[EnumMT5OHLC.TIME], maTrending, maCandlesLookbackDiff, 0.003, arrayOfSignals[EnumArrayOfSignalsIndex.MADirection]]);
 
         // CSID Graph Related Annotations: ========================================
         // Add a new CSID Data for our line annotations:
