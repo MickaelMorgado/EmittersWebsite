@@ -232,6 +232,7 @@ let numbDays = 0;
 let ordersHistory = [];
 let firstDate = new Date();
 let lastDate = new Date();
+const trailingStopSeriesMap = new Map();
 window.ordersHistory = ordersHistory;
 
 const handleFileAndInitGraph = (file) => {
@@ -654,52 +655,54 @@ const initSciChart = (data) => {
           }
 
           // Trailing Stop visual:
-          const trailingStopVisual = () => {
-            const start = new Date(order.time.replace(/\./g, "-"));
-            const end = order.closedTime ? new Date(order.closedTime.replace(/\./g, "-")) : new Date(`${d[EnumMT5OHLC.DATE]} ${d[EnumMT5OHLC.TIME]}`);
+          const updateTrailingStopVisual = (order, d) => {
+            const time = new Date(`${d[EnumMT5OHLC.DATE]} ${d[EnumMT5OHLC.TIME]}`);
+            const xValue = convertMT5DateToUnix(
+              time.toISOString().slice(0, 19).replace("T", " ").replace(/-/g, ".")
+            );
 
-            const times = [];
-            const trailingChanges = [];
-            for (let d = new Date(start); d <= end; d.setMinutes(d.getMinutes() + 1)) {
-              times.push(
-                convertMT5DateToUnix(d.toISOString().slice(0, 19).replace("T", " ").replace(/-/g, "."))
-              );
-              trailingChanges.push(
-                order.sl
-              );
-            }
-
-            const xValues = times // duration
-            const y1Values = Array(xValues.length).fill(order.price) // entry price
-            const yValues = trailingChanges // Trailng SL
-
-            console.log({ yValues });
+            const yValue = order.sl;       // current trailing stop
+            const y1Value = order.price;   // entry price (constant)
 
             let trailingStopUIOption = {};
-            if (order.direction == EnumDirection.BULL) {
+            if (order.direction === EnumDirection.BULL) {
               trailingStopUIOption = {
-                fill: "#FF0000" + "33",
-                fillY1: "#00FF00" + "33",
-              }
+                fill: "#FF000033",
+                fillY1: "#00FF0033",
+              };
             } else {
               trailingStopUIOption = {
-                fill: "#00FF00" + "33",
-                fillY1: "#FF0000" + "33",
-              }
+                fill: "#00FF0033",
+                fillY1: "#FF000033",
+              };
             }
 
-            sciChartSurface.renderableSeries.add(
-              new FastBandRenderableSeries(wasmContext, {
-                dataSeries: new XyyDataSeries(wasmContext, { xValues, yValues, y1Values }),
+            if (trailingStopSeriesMap.has(order.id)) {
+              // update existing series by appending new candle data
+              const series = trailingStopSeriesMap.get(order.id);
+              series.dataSeries.append(xValue, yValue, y1Value);
+            } else {
+              // first time -> create a new series with 1 point
+              const dataSeries = new XyyDataSeries(wasmContext, {
+                xValues: [xValue],
+                yValues: [yValue],
+                y1Values: [y1Value],
+              });
+
+              const newSeries = new FastBandRenderableSeries(wasmContext, {
+                dataSeries,
                 ...trailingStopUIOption,
                 strokeThickness: 1,
                 stroke: "#666666",
                 strokeY1: "#FFFFFF",
                 isDigitalLine: true,
-              })
-            );
+              });
+
+              sciChartSurface.renderableSeries.add(newSeries);
+              trailingStopSeriesMap.set(order.id, newSeries);
+            }
           };
-          trailingStopVisual();
+          updateTrailingStopVisual(order, d);
 
           // Check TP
           if ((isBull && high >= order.tp) || (!isBull && low <= order.tp)) {
@@ -1135,7 +1138,7 @@ const initSciChart = (data) => {
             <td class="order-status-${order.closedOrderType}">${
               order.closedOrderType
             }</td>
-            <td>${order.closedPrice || ''}</td>
+            <td>${parseFloat(order.closedPrice).toFixed(5) || ''}</td>
             <td>${order.closedTime || ''}</td>
             <td class="trade-result-${order.tradeResult}" title="${
               order.tradeResult
