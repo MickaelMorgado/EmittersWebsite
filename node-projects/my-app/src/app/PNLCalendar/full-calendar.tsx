@@ -9,15 +9,15 @@ import { cn } from '@/lib/utils';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  ReferenceLine,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
+    Bar,
+    BarChart,
+    CartesianGrid,
+    Cell,
+    ReferenceLine,
+    ResponsiveContainer,
+    Tooltip,
+    XAxis,
+    YAxis,
 } from 'recharts';
 
 // Constants
@@ -914,7 +914,7 @@ export function TradingCalendar() {
                   </p>
                 </CardContent>
               </Card>
-              <Card className="col-span-3 border-0 shadow-sm bg-gradient-to-br from-card to-card/90 backdrop-blur-sm overflow-hidden">
+              <Card className="col-span-3 border-0 shadow-sm bg-gradient-to-b from-card to-card/90 backdrop-blur-sm overflow-hidden">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-lg font-semibold text-foreground/90">
                     Weekly Performance

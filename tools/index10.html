@@ -13,6 +13,29 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .table1 { height: 450px; }
+        /* Added styles for chart containers and positioning */
+        .currency-card {
+            position: relative;
+            overflow: hidden;
+        }
+        .chart-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.4;
+        }
+        .currency-content {
+            position: relative;
+            z-index: 2;
+            pointer-events: none;
+        }
+        canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
     </style>
 </head>
 
@@ -33,6 +56,8 @@
             bearish: '#FF0000',
         };
         const endpoint = 'https://api.binance.com/api/v3/ticker/price';
+        const klineEndpoint = 'https://api.binance.com/api/v3/klines';
+        
         const currencies = [
             {
                 name: 'XAUUSD',
@@ -53,6 +78,75 @@
                 slice: -3,
             },
         ]
+
+        const fetchHistoricalData = async (currency) => {
+            try {
+                const response = await fetch(`${klineEndpoint}?symbol=${currency.symbol}&interval=1h&limit=500`);
+                const data = await response.json();
+                
+                return data.map(kline => ({
+                    time: new Date(kline[0]),
+                    price: parseFloat(kline[4]) // closing price
+                }));
+            } catch (error) {
+                console.error(`Error fetching historical data for ${currency.name}:`, error);
+                return [];
+            }
+        }
+
+        const createChart = (currency, historicalData) => {
+            const ctx = document.getElementById(`${currency.name}Chart`);
+            
+            const prices = historicalData.map(d => d.price);
+            const labels = historicalData.map(d => d.time.getHours() + ':00');
+            
+            // Determine chart color based on price trend
+            const firstPrice = prices[0];
+            const lastPrice = prices[prices.length - 1];
+            const chartColor = lastPrice > firstPrice ? colors.bullish : colors.bearish;
+            
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: prices,
+                        borderColor: chartColor,
+                        backgroundColor: chartColor + '20',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 0,
+                        pointHoverRadius: 0,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            display: false
+                        },
+                        y: {
+                            display: false
+                        }
+                    },
+                    elements: {
+                        point: {
+                            radius: 0
+                        }
+                    },
+                    interaction: {
+                        intersect: false
+                    }
+                }
+            });
+        }
 
         const fetchPrice = async (currency) => {
             try {
@@ -81,18 +175,40 @@
             }
         }
 
-        currencies.forEach(currency => {
-            const element = `<div class="bg-zinc-950 p-20 overflow-auto flex items-center justify-around text-9xl">
-                <img width="200" src="${currency.icon}" alt="${currency.name} Logo">
-                <span id="${currency.name}Price">Loading...</span>
+        currencies.forEach(async (currency) => {
+            const element = `<div class="p-20 overflow-hidden flex items-center justify-around text-9xl currency-card shadow-[inset_0_0_200px_0_black,inset_0_0_100px_20px_black]">
+                <div class="chart-container">
+                    <canvas id="${currency.name}Chart"></canvas>
+                </div>
+                <div class="currency-content flex items-center justify-around w-full">
+                    <img width="200" src="${currency.icon}" alt="${currency.name} Logo">
+                    <span id="${currency.name}Price">Loading...</span>
+                </div>
             </div>`;
 
             document
                 .getElementById("currency-list")
                 .insertAdjacentHTML('beforeend', element);
 
+            const historicalData = await fetchHistoricalData(currency);
+            if (historicalData.length > 0) {
+                createChart(currency, historicalData);
+            }
+
             fetchPrice(currency);
             setInterval(() => fetchPrice(currency), 10000);
+            
+            setInterval(async () => {
+                const newHistoricalData = await fetchHistoricalData(currency);
+                if (newHistoricalData.length > 0) {
+                    // Destroy existing chart and create new one
+                    const existingChart = Chart.getChart(`${currency.name}Chart`);
+                    if (existingChart) {
+                        existingChart.destroy();
+                    }
+                    createChart(currency, newHistoricalData);
+                }
+            }, 1800000); // 30 minutes
         });
     </script>
 </body>
