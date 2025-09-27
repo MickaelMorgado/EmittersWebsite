@@ -28,22 +28,48 @@ const $TPPointsInput = document.getElementById('TPPoints');
 const $LotSizeInput = document.getElementById('LotSize');
 const $TSIncrementInput = document.getElementById('TSIncrement');
 const $MAPeriodInput = document.getElementById('MAPeriod');
-const $textareaHistoricalTradesLines = document.getElementById(
-  'textareaHistoricalTradesLines'
-);
+const $MAThresholdInput = document.getElementById('MAThreshold');
+const $textareaHistoricalTradesLines = document.getElementById('textareaHistoricalTradesLines');
 const $firstDate = document.getElementById('firstDate');
 const $lastDate = document.getElementById('lastDate');
 const $currentReadingDate = document.getElementById('currentReadingDate');
 const $resultPanelContent = document.querySelectorAll('.result-panel-content'); //result-panel-content
-const audioSuccess = new Audio('squirrel_404_click_tick.wav');
-const audioNotify = new Audio('joseegn_ui_sound_select.wav');
-
-const $backTestingPauseButton = document.getElementById(
-  'backTestingPauseButton'
-);
+const $backTestingPauseButton = document.getElementById('backTestingPauseButton');
 let backTestingPaused = $backTestingPauseButton.checked;
 const $sessionStartInput = document.getElementById('backtesting-hour');
 const $sessionEndInput = document.getElementById('backtesting-end');
+const $ThemeInput = document.getElementById('themeSelector');
+const $BTTInput = document.getElementById('backtesting-hour');
+const $ETTInput = document.getElementById('backtesting-end');
+const audioSuccess = new Audio('squirrel_404_click_tick.wav');
+const audioNotify = new Audio('joseegn_ui_sound_select.wav');
+
+// Load URL parameters into inputs on page load
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.has('theme')) { $ThemeInput.value = urlParams.get('theme') }
+if (urlParams.has('btt')) { $BTTInput.value = urlParams.get('btt') }
+if (urlParams.has('ett')) { $ETTInput.value = urlParams.get('ett') }
+if (urlParams.has('maperiod')) { $MAPeriodInput.value = urlParams.get('maperiod') }
+if (urlParams.has('lotsize')) { $LotSizeInput.value = urlParams.get('lotsize') }
+if (urlParams.has('slpoints')) { $SLPointsInput.value = urlParams.get('slpoints') }
+if (urlParams.has('tppoints')) { $TPPointsInput.value = urlParams.get('tppoints') }
+if (urlParams.has('tsincrement')) { $TSIncrementInput.value = urlParams.get('tsincrement') }
+
+const saveConfigs = () => {
+  const currentUrl = window.location.href.split('?')[0];
+  const urlParams = new URLSearchParams(window.location.search);
+
+  urlParams.set('theme', $ThemeInput.value);
+  urlParams.set('btt', $BTTInput.value);
+  urlParams.set('ett', $ETTInput.value);
+  urlParams.set('maperiod', $MAPeriodInput.value);
+  urlParams.set('lotsize', $LotSizeInput.value);
+  urlParams.set('slpoints', $SLPointsInput.value);
+  urlParams.set('tppoints', $TPPointsInput.value);
+  urlParams.set('tsincrement', $TSIncrementInput.value);
+
+  window.location.search = urlParams;
+}
 
 const revealAlgoEditor = () => {
   $resultPanel.classList.add('active');
@@ -91,33 +117,16 @@ const stickyTableHeaders = (parentElement) => {
   }
 };
 
-$resultPanelToolbarContentTogglerAlgoEditor?.addEventListener('click', () =>
-  revealAlgoEditor()
-);
-$resultPanelToolbarContentTogglerAlgo?.addEventListener('click', () =>
-  revealAlgo()
-);
-$resultPanelToolbarContentTogglerReview?.addEventListener('click', () =>
-  revealReview()
-);
-$resultPanel.addEventListener('scroll', (event) => {
-  stickyTableHeaders(event.target);
-});
-$SLPointsInput?.addEventListener('change', () => {
-  animateActiveClass($csvRefresh);
-});
-$TPPointsInput?.addEventListener('change', () => {
-  animateActiveClass($csvRefresh);
-});
-$LotSizeInput?.addEventListener('change', () => {
-  animateActiveClass($csvRefresh);
-});
-$TSIncrementInput?.addEventListener('change', () => {
-  animateActiveClass($csvRefresh);
-});
-$MAPeriodInput?.addEventListener('change', () => {
-  animateActiveClass($csvRefresh);
-});
+$resultPanelToolbarContentTogglerAlgoEditor?.addEventListener('click', () => revealAlgoEditor());
+$resultPanelToolbarContentTogglerAlgo?.addEventListener('click', () => revealAlgo());
+$resultPanelToolbarContentTogglerReview?.addEventListener('click', () => revealReview());
+$resultPanel.addEventListener('scroll', (event) => stickyTableHeaders(event.target));
+$SLPointsInput?.addEventListener('change', () => animateActiveClass($csvRefresh));
+$TPPointsInput?.addEventListener('change', () => animateActiveClass($csvRefresh));
+$LotSizeInput?.addEventListener('change', () => animateActiveClass($csvRefresh));
+$TSIncrementInput?.addEventListener('change', () => animateActiveClass($csvRefresh));
+$MAPeriodInput?.addEventListener('change', () => animateActiveClass($csvRefresh));
+$MAThresholdInput?.addEventListener('change', () => animateActiveClass($csvRefresh));
 $backTestingPauseButton?.addEventListener('change', () => {
   backTestingPaused = $backTestingPauseButton.checked;
 
@@ -135,6 +144,7 @@ let tpSize = () => parseFloat($TPPointsInput.value);
 let lotSize = () => parseFloat($LotSizeInput.value);
 let tsSize = () => parseFloat($TSIncrementInput.value);
 let maPeriod = () => parseFloat($MAPeriodInput.value);
+let maThreshold = () => parseFloat($MAThresholdInput.value);
 let bullishColor = '00FF00';
 let bearishColor = 'FF0000';
 let greyColor = '999999';
@@ -232,6 +242,7 @@ let numbDays = 0;
 let ordersHistory = [];
 let firstDate = new Date();
 let lastDate = new Date();
+let prevDate = null;
 const trailingStopSeriesMap = new Map();
 window.ordersHistory = ordersHistory;
 
@@ -326,7 +337,6 @@ $csvRefresh.addEventListener('click', () => {
   handleFileAndInitGraph(file);
 });
 
-// Define the initSciChart function
 const initSciChart = (data) => {
   const {
     SciChartSurface,
@@ -693,7 +703,7 @@ const initSciChart = (data) => {
                 dataSeries,
                 ...trailingStopUIOption,
                 strokeThickness: 1,
-                stroke: "#666666",
+                stroke: "#333",
                 strokeY1: "#FFFFFF",
                 isDigitalLine: true,
               });
@@ -1044,6 +1054,7 @@ const initSciChart = (data) => {
             `${tsSize()}\t`,
             `${profitFactor}\t`,
             `${maPeriod()}\t`,
+            `${maThreshold()}\t`,
           ].join('');
         };
 
@@ -1814,10 +1825,8 @@ const initSciChart = (data) => {
       console.error('Error initializing SciChart:', error);
     });
 };
-
 initSciChart();
 
-// Notify ===============================
 const animateActiveClass = (element) => {
   audioNotify.play();
   element.classList.add('active');
@@ -1825,7 +1834,6 @@ const animateActiveClass = (element) => {
     element.classList.remove('active');
   }, 3000);
 };
-// End of Notify ===============================
 
 const updateFileReadingProgression = (valueInPercentage) => {
   const progressionBar = document.querySelector(
@@ -1835,7 +1843,6 @@ const updateFileReadingProgression = (valueInPercentage) => {
 };
 window.updateFileReadingProgression = updateFileReadingProgression;
 
-let prevDate = null;
 const updateDynamicInfos = (d) => {
   if (prevDate !== d[EnumMT5OHLC.DATE]) {
     $currentReadingDate.innerText = d[EnumMT5OHLC.DATE];
@@ -1881,7 +1888,6 @@ const CSIDIndicator = (d, dataIndex) => {
   updateCSIDLineAnnotation(d, dataIndex);
 };
 
-// Create Indicators as the chart goes along:
 const appendIndicatorsToChart = (d, dataIndex) => {
   // Example of appending indicators to the chart
   // This is a placeholder function, you can implement your own logic
@@ -1890,7 +1896,6 @@ const appendIndicatorsToChart = (d, dataIndex) => {
   calcATR(d, dataIndex);
 };
 
-// Historical Trades Textarea Change Handler
 $textareaHistoricalTradesLines?.addEventListener('change', (event) => {
   const tradesData = event.target.value;
   const rows = tradesData.split('\n');
