@@ -509,6 +509,16 @@
                 />
               </div>
               <div class="h-flex h-flex--column">
+                <label for="MAThreshold">Moving Average Threshold</label>
+                <input
+                  id="MAThreshold"
+                  type="number"
+                  value="0.003"
+                  class="h-input-effects"
+                  title="Moving Average Threshold For Valid Signal"
+                />
+              </div>
+              <div class="h-flex h-flex--column">
                 <label for="LotSize">Lot Size</label>
                 <input
                   id="LotSize"
@@ -551,59 +561,6 @@
                   <label for="">Save Configurations</label>
                 </div>
               </div>
-              <script>
-                const ThemeInput = document.getElementById('themeSelector');
-                const BTTInput = document.getElementById('backtesting-hour');
-                const ETTInput = document.getElementById('backtesting-end');
-                const MAPeriodInput = document.getElementById('MAPeriod');
-                const LotSizeInput = document.getElementById('LotSize');
-                const SLPointsInput = document.getElementById('SLPoints');
-                const TPPointsInput = document.getElementById('TPPoints');
-                const TSIncrementInput = document.getElementById('TSIncrement');
-
-                // Load URL parameters into inputs on page load
-                const urlParams = new URLSearchParams(window.location.search);
-                if (urlParams.has('theme')) {
-                  ThemeInput.value = urlParams.get('theme');
-                }
-                if (urlParams.has('btt')) {
-                  BTTInput.value = urlParams.get('btt');
-                }
-                if (urlParams.has('ett')) {
-                  ETTInput.value = urlParams.get('ett');
-                }
-                if (urlParams.has('maperiod')) {
-                  MAPeriodInput.value = urlParams.get('maperiod');
-                }
-                if (urlParams.has('lotsize')) {
-                  LotSizeInput.value = urlParams.get('lotsize');
-                }
-                if (urlParams.has('slpoints')) {
-                  SLPointsInput.value = urlParams.get('slpoints');
-                }
-                if (urlParams.has('tppoints')) {
-                  TPPointsInput.value = urlParams.get('tppoints');
-                }
-                if (urlParams.has('tsincrement')) {
-                  TSIncrementInput.value = urlParams.get('tsincrement');
-                }
-
-                function saveConfigs() {
-                  const currentUrl = window.location.href.split('?')[0];
-                  const urlParams = new URLSearchParams(window.location.search);
-
-                  urlParams.set('theme', ThemeInput.value);
-                  urlParams.set('btt', BTTInput.value);
-                  urlParams.set('ett', ETTInput.value);
-                  urlParams.set('maperiod', MAPeriodInput.value);
-                  urlParams.set('lotsize', LotSizeInput.value);
-                  urlParams.set('slpoints', SLPointsInput.value);
-                  urlParams.set('tppoints', TPPointsInput.value);
-                  urlParams.set('tsincrement', TSIncrementInput.value);
-
-                  window.location.search = urlParams;
-                }
-              </script>
             </div>
             <div class="back-testing-results">
               <label for="backtestingResult">Performance Results: </label>
