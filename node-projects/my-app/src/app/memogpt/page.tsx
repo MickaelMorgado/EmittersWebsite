@@ -275,8 +275,8 @@ export default function Component() {
       <Script src="/js/speakBrowser.js" strategy="beforeInteractive" />
       <div className="flex flex-col md:flex-row min-h-screen">
         {/* Left Sidebar */}
-        <div className="w-full md:w-64 border-b md:border-b-0 md:border-r border-gray flex flex-row md:flex-col">
-          <div className="p-2 md:p-4 flex flex-row space-x-3 overflow-x-auto scrollbar-thin scrollbar-thumb-primary scrollbar-track-transparent">
+        <div className="w-full md:w-80 border-b md:border-b-0 md:border-r border-gray flex flex-row md:flex-col">
+          <div className="p-2 md:p-4 flex flex-col gap-4 overflow-x-auto scrollbar-thin scrollbar-thumb-primary scrollbar-track-transparent">
             {/* Chat History Items */}
             {savedPrompts.length > 0 ? (
               savedPrompts.slice(0, 10).map((savedPrompt) => (
@@ -413,7 +413,7 @@ export default function Component() {
 
         {/* Edit Prompt Modal */}
         <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-          <DialogContent className="max-w-2xl border-2 border-primary bg-black">
+          <DialogContent className="max-w-4xl border-2 border-primary bg-black">
             <DialogHeader className="border-b border-gray pb-4">
               <DialogTitle className="text-left">Edit Prompt</DialogTitle>
               <Button
@@ -474,7 +474,7 @@ export default function Component() {
         </Dialog>
 
         {/* Main Content Area */}
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col h-screen overflow-hidden">
           {/* Chat Messages Area */}
           <div
             className="flex-1"
@@ -493,7 +493,7 @@ export default function Component() {
               </div>
             ) : (
               <div className="space-y-4 overflow-y-auto h-[90vh]">
-                <div className="max-w-4xl mx-auto pb-20">
+                <div className="max-w-4xl mx-auto flex flex-col gap-6 pb-20">
                   {chatMessages.map((message) => (
                     <div
                       key={message.id}
@@ -507,7 +507,7 @@ export default function Component() {
                         </div>
                       )}
                       <div
-                        className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                        className={`px-4 py-2 rounded-lg ${
                           message.role === 'user'
                             ? 'bg-primary text-white'
                             : 'border-2 border-primary text-primary'
@@ -561,13 +561,13 @@ export default function Component() {
           <div className="border-t border-gray p-2 md:p-4 fixed bottom-0 left-0 right-0 backdrop-blur-sm md:static md:bg-transparent z-50">
             <div className="max-w-4xl mx-auto">
               <div className="relative">
-                <Input
+                <Textarea
                   placeholder="Type your message here..."
                   value={mainInput}
                   onChange={(e) => setMainInput(e.target.value)}
                   onKeyPress={handleKeyPress}
                   disabled={isLoading}
-                  className="w-full h-12 md:h-14 px-4 md:px-6 pr-28 md:pr-32 text-base md:text-lg border-2 border-primary rounded-full focus:border-primary/80"
+                  className="w-full h-12 md:h-14 px-4 md:px-6 pr-28 md:pr-32 text-base md:text-lg border-2 border-primary rounded-full focus:border-primary/80 field-sizing-content"
                 />
                 <Button
                   onClick={handleSubmit}
