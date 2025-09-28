@@ -282,19 +282,19 @@ export default function Component() {
               savedPrompts.slice(0, 10).map((savedPrompt) => (
                 <Card
                   key={savedPrompt.id}
-                  className="min-w-[200px] border-2 border-primary cursor-pointer hover:border-primary/80 transition-colors relative group flex-shrink-0"
+                  className="min-w-[200px] border-2 border-primary cursor-pointer hover:border-primary/80 transition-colors relative group flex-shrink-0 py-0"
                   onClick={() => handlePromptClick(savedPrompt)}
                 >
                   <CardContent className="p-3">
                     <div className="flex justify-between items-start">
                       <div className="flex-1 pr-2">
-                        <h4 className="text-sm font-semibold text-primary mb-1">
+                        <h4 className="text-sm font-semibold text-primary mb-4 line-clamp-2">
                           {savedPrompt.title}
                         </h4>
                         <p className="text-sm text-primary/80 line-clamp-3">
                           {savedPrompt.text}
                         </p>
-                        <p className="text-xs text-primary/60 mt-2">
+                        <p className="text-xs text-primary/60 mt-6">
                           {savedPrompt.timestamp.toLocaleDateString()}{' '}
                           {savedPrompt.timestamp.toLocaleTimeString([], {
                             hour: '2-digit',
