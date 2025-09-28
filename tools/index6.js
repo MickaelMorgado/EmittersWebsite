@@ -667,9 +667,8 @@ const initSciChart = (data) => {
           // Trailing Stop visual:
           const updateTrailingStopVisual = (order, d) => {
             const time = new Date(`${d[EnumMT5OHLC.DATE]} ${d[EnumMT5OHLC.TIME]}`);
-            const xValue = convertMT5DateToUnix(
-              time.toISOString().slice(0, 19).replace("T", " ").replace(/-/g, ".")
-            );
+            const localISO = time.getTime() / 1000;
+            const xValue = localISO
 
             const yValue = order.sl;       // current trailing stop
             const y1Value = order.price;   // entry price (constant)
@@ -1368,7 +1367,6 @@ const initSciChart = (data) => {
         }
       }
 
-
       const maLine = new FastLineRenderableSeries(wasmContext, {
         stroke: `#${bearishColor}`,
         strokeThickness: 2,
@@ -1445,7 +1443,7 @@ const initSciChart = (data) => {
         // Check if MA is trending in direction of planned trade, otherwise it will be always null (TODO check chatGPT)
         if (CSIDLookbackCandleSerie.length < lookbackPeriod) return; // Ensure we have enough at least 2 candles for MA acceleration calculation
 
-        function maLookBackAccelToEnumDirection(value, threshold = 0.003) {
+        const maLookBackAccelToEnumDirection = (value, threshold = maThreshold()) => {
           if (value > threshold) return EnumDirection.BEAR;
           if (value < -threshold) return EnumDirection.BULL;
           return null;
