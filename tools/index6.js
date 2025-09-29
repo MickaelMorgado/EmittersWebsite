@@ -337,6 +337,29 @@ $csvRefresh.addEventListener('click', () => {
   handleFileAndInitGraph(file);
 });
 
+document.addEventListener('DOMContentLoaded', () => {
+  // Extract URL parameters
+  const urlParams = new URLSearchParams(window.location.search);
+
+  // Get and parse "theme" param if exists
+  const themeParams = new URLSearchParams(urlParams.get('theme') || '');
+
+  // Extract colors with fallback to existing vars
+  bullishColor = themeParams.get('bullishColor') || bullishColor;
+  bearishColor = themeParams.get('bearishColor') || bearishColor;
+
+  document.querySelectorAll("label[title]").forEach(label => {
+    //const icon = document.createElement("i");
+    const icon = document.createElement("span");
+    //icon.className = "fa fa-info";
+    icon.textContent = "*";
+    icon.style.color = `#${bullishColor}`;
+    icon.style.marginLeft = "5px";
+    icon.title = label.getAttribute("title");
+    label.appendChild(icon);
+  });
+});
+
 const initSciChart = (data) => {
   const {
     SciChartSurface,
@@ -391,16 +414,6 @@ const initSciChart = (data) => {
     //theme: new SciChartJsNavyTheme(),
   })
     .then(({ sciChartSurface, wasmContext }) => {
-      // Extract URL parameters
-      const urlParams = new URLSearchParams(window.location.search);
-
-      // Get and parse "theme" param if exists
-      const themeParams = new URLSearchParams(urlParams.get('theme') || '');
-
-      // Extract colors with fallback to existing vars
-      bullishColor = themeParams.get('bullishColor') || bullishColor;
-      bearishColor = themeParams.get('bearishColor') || bearishColor;
-
       // Create a custom theme by implementing all the properties from IThemeProvider
       const customTheme = {
         axisBorder: 'Transparent',
@@ -654,14 +667,28 @@ const initSciChart = (data) => {
             //}
           //}*/
 
+          // Candle size calculation:
+          let candleSize = Math.abs(previousCandle["<CLOSE>"] - previousCandle["<OPEN>"]); // Need to be the previous candle, as current candle is not closed yet at this time (in a real scenario).
+          candleSize = Number(candleSize.toFixed(4)); // → 0.0005
+
+          const trailingSizeMultiplier = (candleSize) => {
+            if (candleSize >= 0.0005) {
+              return trailingStopSize * 3;
+            } else if (candleSize >= 0.0003) {
+              return trailingStopSize * 2;
+            } else {
+              return trailingStopSize;
+            }
+          }
+
           if (order.direction == EnumDirection.BULL) {
             //console.log('Moving SL of ', order.id, ' from ', order.sl, ' to ',  order.sl + trailingStopSize);
-            /*order.sl < order.price && d[EnumMT5OHLC.OPEN] > order.price ? order.sl = order.price : */order.sl += trailingStopSize;
+            /*order.sl < order.price && d[EnumMT5OHLC.OPEN] > order.price ? order.sl = order.price : */order.sl += trailingSizeMultiplier(candleSize);
             // order.sl = order.sl + trailingStopSize; // Move SL by trailingStopSize (up side)
           } else if (order.direction == EnumDirection.BEAR) {
             //console.log('Moving SL of ', order.id, ' from ', order.sl, ' to ',  order.sl - trailingStopSize);
             // order.sl = order.sl - trailingStopSize; // Move SL by trailingStopSize (down side)
-            /*order.sl > order.price && d[EnumMT5OHLC.OPEN] < order.price ? order.sl = order.price : */order.sl -= trailingStopSize;
+            /*order.sl > order.price && d[EnumMT5OHLC.OPEN] < order.price ? order.sl = order.price : */order.sl -= trailingSizeMultiplier(candleSize);
           }
 
           // Trailing Stop visual:
@@ -1330,13 +1357,13 @@ const initSciChart = (data) => {
         stroke: '#FFF',
         strokeThickness: 2,
         dataSeries: CSIDDataSerieFromHighs,
-        opacity: 0.6,
+        opacity: 0.5,
       });
       const CSIDLowline = new FastLineRenderableSeries(wasmContext, {
         stroke: '#FFF',
         strokeThickness: 2,
         dataSeries: CSIDDataSerieFromLows,
-        opacity: 0.6,
+        opacity: 0.5,
       });
       
       class SlopePaletteProvider {
