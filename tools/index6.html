@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="../assets/reusables.css" />
     <link
       rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
     />
     <link
       rel="icon"
@@ -50,7 +50,7 @@
             </p>
           </div>
           <hr class="h-hr" />
-          <label for="">Upload CSV bars</label>
+          <label for="csvFileInput">Upload CSV bars</label>
           <div class="h-flex">
             <input
               type="file"
@@ -212,7 +212,7 @@
             id="backTestingPauseButton"
           />
           <hr class="h-hr" />
-          <label>File Reading Progression</label>
+          <label title="Current progression of the current backtesting file reading. (Starting Time - Current Time - Ending Time)">File Reading Progression</label>
           <div class="flex">
             <span id="firstDate"></span>
             <span> - </span>
@@ -230,56 +230,6 @@
           </div>
         </div>
       </div>
-    </div>
-    <div class="tools">
-      <button
-        class="mybutton h-input-effects"
-        data-anotation="RRBuy"
-        title="RR Tool (Buy)"
-        disabled
-      >
-        <i class="fas fa-ruler-combined"></i>
-      </button>
-      <button
-        class="mybutton h-input-effects"
-        data-anotation="RRSell"
-        title="RR Tool (Sell)"
-        disabled
-      >
-        <i class="fas fa-ruler-combined"></i>
-      </button>
-      <button
-        class="mybutton h-input-effects"
-        data-anotation="line"
-        title="Line Tool"
-        disabled
-      >
-        <i class="fas fa-grip-lines"></i>
-      </button>
-      <button
-        class="mybutton h-input-effects"
-        data-anotation="BOS"
-        title="BOS Tool"
-        disabled
-      >
-        <i class="fas fa-grip-lines"></i>
-      </button>
-      <button
-        class="mybutton h-input-effects"
-        data-anotation="Circle"
-        title="Circle Tool"
-        disabled
-      >
-        <i class="fas fa-circle"></i>
-      </button>
-      <button
-        class="mybutton h-input-effects"
-        data-anotation="rectangle"
-        title="Rectangle Tool"
-        disabled
-      >
-        <i class="fa-regular fa-square"></i>
-      </button>
     </div>
     <div class="chart-section">
       <div id="loading-element" class="loading-element">
@@ -498,6 +448,25 @@
                 />
               </div>
               <div class="h-flex h-flex--column">
+                <label for="MAPeriod" title="Period of Moving Average">Moving Average Period</label>
+                <input
+                  id="MAPeriod"
+                  type="number"
+                  value="200"
+                  step="10"
+                  class="h-input-effects"
+                />
+              </div>
+              <div class="h-flex h-flex--column">
+                <label for="MAThreshold" title="How much tilt of moving average for valid acceleration signal">Moving Average Threshold</label>
+                <input
+                  id="MAThreshold"
+                  type="number"
+                  value="0.003"
+                  class="h-input-effects"
+                />
+              </div>
+              <div class="h-flex h-flex--column">
                 <label for="LotSize">Lot Size</label>
                 <input
                   id="LotSize"
@@ -505,7 +474,7 @@
                   value="1.0"
                   class="h-input-effects"
                 />
-                <label for="">RR (SL Points | TP Points)</label>
+                <label for="" title="Risk:Reward Ratio in points">RR (SL Points | TP Points)</label>
                 <input
                   id="SLPoints"
                   type="number"
@@ -520,7 +489,7 @@
                   step="0.0001"
                   class="h-input-effects"
                 />
-                <label for="TSIncrement">TS Increment</label>
+                <label for="TSIncrement" title="Trailing Stop base increment in points">TS Increment</label>
                 <input
                   id="TSIncrement"
                   type="number"
@@ -537,69 +506,21 @@
                   >
                     <i class="far fa-save"></i>
                   </button>
-                  <label for="">Save Configurations</label>
+                  <label for="" title="Save the current configuration as URLs parameters for future use. Browser will refresh when saving!">Save Configurations</label>
                 </div>
               </div>
-              <script>
-                const ThemeInput = document.getElementById('themeSelector');
-                const BTTInput = document.getElementById('backtesting-hour');
-                const ETTInput = document.getElementById('backtesting-end');
-                const LotSizeInput = document.getElementById('LotSize');
-                const SLPointsInput = document.getElementById('SLPoints');
-                const TPPointsInput = document.getElementById('TPPoints');
-                const TSIncrementInput = document.getElementById('TSIncrement');
-
-                // Load URL parameters into inputs on page load
-                const urlParams = new URLSearchParams(window.location.search);
-                if (urlParams.has('theme')) {
-                  ThemeInput.value = urlParams.get('theme');
-                }
-                if (urlParams.has('btt')) {
-                  BTTInput.value = urlParams.get('btt');
-                }
-                if (urlParams.has('ett')) {
-                  ETTInput.value = urlParams.get('ett');
-                }
-                if (urlParams.has('lotsize')) {
-                  LotSizeInput.value = urlParams.get('lotsize');
-                }
-                if (urlParams.has('slpoints')) {
-                  SLPointsInput.value = urlParams.get('slpoints');
-                }
-                if (urlParams.has('tppoints')) {
-                  TPPointsInput.value = urlParams.get('tppoints');
-                }
-                if (urlParams.has('tsincrement')) {
-                  TSIncrementInput.value = urlParams.get('tsincrement');
-                }
-
-                function saveConfigs() {
-                  const currentUrl = window.location.href.split('?')[0];
-                  const urlParams = new URLSearchParams(window.location.search);
-
-                  urlParams.set('theme', ThemeInput.value);
-                  urlParams.set('btt', BTTInput.value);
-                  urlParams.set('ett', ETTInput.value);
-                  urlParams.set('lotsize', LotSizeInput.value);
-                  urlParams.set('slpoints', SLPointsInput.value);
-                  urlParams.set('tppoints', TPPointsInput.value);
-                  urlParams.set('tsincrement', TSIncrementInput.value);
-
-                  window.location.search = urlParams;
-                }
-              </script>
             </div>
             <div class="back-testing-results">
               <label for="backtestingResult">Performance Results: </label>
               <textarea
                 id="backtestingResult"
-                rows="10"
+                rows="11"
                 class="h-field"
               ></textarea>
-              <label for="exportableCSVField">CSV Exportable text: </label>
+              <label for="exportableCSVField" title="Easy way to copy paste the backtest result into a google sheet / excel">CSV Exportable text: </label>
               <textarea
                 id="exportableCSVField"
-                rows="2"
+                rows="4"
                 class="h-field"
               ></textarea>
             </div>

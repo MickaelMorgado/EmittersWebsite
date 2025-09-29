@@ -27,22 +27,49 @@ const $SLPointsInput = document.getElementById('SLPoints');
 const $TPPointsInput = document.getElementById('TPPoints');
 const $LotSizeInput = document.getElementById('LotSize');
 const $TSIncrementInput = document.getElementById('TSIncrement');
-const $textareaHistoricalTradesLines = document.getElementById(
-  'textareaHistoricalTradesLines'
-);
+const $MAPeriodInput = document.getElementById('MAPeriod');
+const $MAThresholdInput = document.getElementById('MAThreshold');
+const $textareaHistoricalTradesLines = document.getElementById('textareaHistoricalTradesLines');
 const $firstDate = document.getElementById('firstDate');
 const $lastDate = document.getElementById('lastDate');
 const $currentReadingDate = document.getElementById('currentReadingDate');
 const $resultPanelContent = document.querySelectorAll('.result-panel-content'); //result-panel-content
-const audioSuccess = new Audio('squirrel_404_click_tick.wav');
-const audioNotify = new Audio('joseegn_ui_sound_select.wav');
-
-const $backTestingPauseButton = document.getElementById(
-  'backTestingPauseButton'
-);
+const $backTestingPauseButton = document.getElementById('backTestingPauseButton');
 let backTestingPaused = $backTestingPauseButton.checked;
 const $sessionStartInput = document.getElementById('backtesting-hour');
 const $sessionEndInput = document.getElementById('backtesting-end');
+const $ThemeInput = document.getElementById('themeSelector');
+const $BTTInput = document.getElementById('backtesting-hour');
+const $ETTInput = document.getElementById('backtesting-end');
+const audioSuccess = new Audio('squirrel_404_click_tick.wav');
+const audioNotify = new Audio('joseegn_ui_sound_select.wav');
+
+// Load URL parameters into inputs on page load
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.has('theme')) { $ThemeInput.value = urlParams.get('theme') }
+if (urlParams.has('btt')) { $BTTInput.value = urlParams.get('btt') }
+if (urlParams.has('ett')) { $ETTInput.value = urlParams.get('ett') }
+if (urlParams.has('maperiod')) { $MAPeriodInput.value = urlParams.get('maperiod') }
+if (urlParams.has('lotsize')) { $LotSizeInput.value = urlParams.get('lotsize') }
+if (urlParams.has('slpoints')) { $SLPointsInput.value = urlParams.get('slpoints') }
+if (urlParams.has('tppoints')) { $TPPointsInput.value = urlParams.get('tppoints') }
+if (urlParams.has('tsincrement')) { $TSIncrementInput.value = urlParams.get('tsincrement') }
+
+const saveConfigs = () => {
+  const currentUrl = window.location.href.split('?')[0];
+  const urlParams = new URLSearchParams(window.location.search);
+
+  urlParams.set('theme', $ThemeInput.value);
+  urlParams.set('btt', $BTTInput.value);
+  urlParams.set('ett', $ETTInput.value);
+  urlParams.set('maperiod', $MAPeriodInput.value);
+  urlParams.set('lotsize', $LotSizeInput.value);
+  urlParams.set('slpoints', $SLPointsInput.value);
+  urlParams.set('tppoints', $TPPointsInput.value);
+  urlParams.set('tsincrement', $TSIncrementInput.value);
+
+  window.location.search = urlParams;
+}
 
 const revealAlgoEditor = () => {
   $resultPanel.classList.add('active');
@@ -52,9 +79,8 @@ const revealAlgoEditor = () => {
   document.querySelectorAll('.result-panel-content')[1].classList.add('h-hide');
   document.querySelectorAll('.result-panel-content')[2].classList.add('h-hide');
 };
-revealAlgoEditor();
 
-const revealAglo = () => {
+const revealAlgo = () => {
   $resultPanel.classList.add('active');
   document.querySelectorAll('.result-panel-content')[0].classList.add('h-hide');
   document
@@ -62,6 +88,7 @@ const revealAglo = () => {
     .classList.remove('h-hide');
   document.querySelectorAll('.result-panel-content')[2].classList.add('h-hide');
 };
+revealAlgo();
 
 const revealReview = () => {
   $resultPanel.classList.add('active');
@@ -90,27 +117,16 @@ const stickyTableHeaders = (parentElement) => {
   }
 };
 
-$resultPanelToolbarContentTogglerAlgoEditor?.addEventListener('click', () =>
-  revealAlgoEditor()
-);
-$resultPanelToolbarContentTogglerAlgo?.addEventListener('click', () =>
-  revealAglo()
-);
-$resultPanelToolbarContentTogglerReview?.addEventListener('click', () =>
-  revealReview()
-);
-$resultPanel.addEventListener('scroll', (event) => {
-  stickyTableHeaders(event.target);
-});
-$SLPointsInput?.addEventListener('change', () => {
-  animateActiveClass($csvRefresh);
-});
-$TPPointsInput?.addEventListener('change', () => {
-  animateActiveClass($csvRefresh);
-});
-$LotSizeInput?.addEventListener('change', () => {
-  animateActiveClass($csvRefresh);
-});
+$resultPanelToolbarContentTogglerAlgoEditor?.addEventListener('click', () => revealAlgoEditor());
+$resultPanelToolbarContentTogglerAlgo?.addEventListener('click', () => revealAlgo());
+$resultPanelToolbarContentTogglerReview?.addEventListener('click', () => revealReview());
+$resultPanel.addEventListener('scroll', (event) => stickyTableHeaders(event.target));
+$SLPointsInput?.addEventListener('change', () => animateActiveClass($csvRefresh));
+$TPPointsInput?.addEventListener('change', () => animateActiveClass($csvRefresh));
+$LotSizeInput?.addEventListener('change', () => animateActiveClass($csvRefresh));
+$TSIncrementInput?.addEventListener('change', () => animateActiveClass($csvRefresh));
+$MAPeriodInput?.addEventListener('change', () => animateActiveClass($csvRefresh));
+$MAThresholdInput?.addEventListener('change', () => animateActiveClass($csvRefresh));
 $backTestingPauseButton?.addEventListener('change', () => {
   backTestingPaused = $backTestingPauseButton.checked;
 
@@ -127,6 +143,8 @@ let slSize = () => parseFloat($SLPointsInput.value);
 let tpSize = () => parseFloat($TPPointsInput.value);
 let lotSize = () => parseFloat($LotSizeInput.value);
 let tsSize = () => parseFloat($TSIncrementInput.value);
+let maPeriod = () => parseFloat($MAPeriodInput.value);
+let maThreshold = () => parseFloat($MAThresholdInput.value);
 let bullishColor = '00FF00';
 let bearishColor = 'FF0000';
 let greyColor = '999999';
@@ -149,6 +167,12 @@ const EnumActionType = {
   DRAW_A_CIRCLE: 'DRAW_A_CIRCLE',
   TAKE_A_TRADE: 'TAKE_A_TRADE',
 };
+const EnumArrayOfSignalsIndex = {
+  CSID: 0,
+  TTR: 1,
+  ATR: 2,
+  MADirection: 3
+}
 const EnumMT5OHLC = {
   DATE: '<DATE>',
   TIME: '<TIME>',
@@ -156,6 +180,10 @@ const EnumMT5OHLC = {
   HIGH: '<HIGH>',
   LOW: '<LOW>',
   CLOSE: '<CLOSE>',
+};
+const EnumStrategy = {
+  CSID: 'CSID', // CSID price action breakout with Institutional candle move signal
+  CSID_W_MA: 'CSID_W_MA', // CSID price action breakout with Institutional candle move signal with moving average
 };
 
 // Get candle direction based on open and close prices:
@@ -203,6 +231,7 @@ const convertMT5DateToUnix = (candleTime) => {
 };
 
 const readingSpeed = 0; // Speed of reading the CSV file in milliseconds
+const strategy = EnumStrategy.CSID;
 
 const csvData = [];
 let CSIDLookbackCandleSerie = [];
@@ -213,6 +242,8 @@ let numbDays = 0;
 let ordersHistory = [];
 let firstDate = new Date();
 let lastDate = new Date();
+let prevDate = null;
+const trailingStopSeriesMap = new Map();
 window.ordersHistory = ordersHistory;
 
 const handleFileAndInitGraph = (file) => {
@@ -306,7 +337,29 @@ $csvRefresh.addEventListener('click', () => {
   handleFileAndInitGraph(file);
 });
 
-// Define the initSciChart function
+document.addEventListener('DOMContentLoaded', () => {
+  // Extract URL parameters
+  const urlParams = new URLSearchParams(window.location.search);
+
+  // Get and parse "theme" param if exists
+  const themeParams = new URLSearchParams(urlParams.get('theme') || '');
+
+  // Extract colors with fallback to existing vars
+  bullishColor = themeParams.get('bullishColor') || bullishColor;
+  bearishColor = themeParams.get('bearishColor') || bearishColor;
+
+  document.querySelectorAll("label[title]").forEach(label => {
+    //const icon = document.createElement("i");
+    const icon = document.createElement("span");
+    //icon.className = "fa fa-info";
+    icon.textContent = "*";
+    icon.style.color = `#${bullishColor}`;
+    icon.style.marginLeft = "5px";
+    icon.title = label.getAttribute("title");
+    label.appendChild(icon);
+  });
+});
+
 const initSciChart = (data) => {
   const {
     SciChartSurface,
@@ -345,7 +398,9 @@ const initSciChart = (data) => {
     EDateFormatter,
     Point,
     FastLineRenderableSeries,
+    FastBandRenderableSeries,
     XyDataSeries,
+    XyyDataSeries,
     EAxisAlignment,
     // GlowEffect,
     // ShadowEffect,
@@ -359,16 +414,6 @@ const initSciChart = (data) => {
     //theme: new SciChartJsNavyTheme(),
   })
     .then(({ sciChartSurface, wasmContext }) => {
-      // Extract URL parameters
-      const urlParams = new URLSearchParams(window.location.search);
-
-      // Get and parse "theme" param if exists
-      const themeParams = new URLSearchParams(urlParams.get('theme') || '');
-
-      // Extract colors with fallback to existing vars
-      bullishColor = themeParams.get('bullishColor') || bullishColor;
-      bearishColor = themeParams.get('bearishColor') || bearishColor;
-
       // Create a custom theme by implementing all the properties from IThemeProvider
       const customTheme = {
         axisBorder: 'Transparent',
@@ -443,7 +488,7 @@ const initSciChart = (data) => {
 
       // Variables initialization =========================
       let annotations = [];
-      let arrayOfSignals = [false, true]; // 2 signals required
+      let arrayOfSignals = [false, true, false, false]; // [CSID, TTR, ATR, boolean if ma has a strong direction]
       let tradeCount = 0;
       // Variables initialization for CSID:
       let rollingHighestHighDataSeries = null;
@@ -497,16 +542,17 @@ const initSciChart = (data) => {
       // Take trades when signals are valid:
       const checkSignalsForTrade = (d, direction) => {
         const takeTradeSignal =
-          arrayOfSignals[0] == true &&
-          arrayOfSignals[1] == true &&
-          arrayOfSignals[2] == true; // CSID, TTR, ATR
+          arrayOfSignals[EnumArrayOfSignalsIndex.CSID] == true &&
+          arrayOfSignals[EnumArrayOfSignalsIndex.TTR] == true &&
+          arrayOfSignals[EnumArrayOfSignalsIndex.ATR] == true &&
+          arrayOfSignals[EnumArrayOfSignalsIndex.MADirection] == true;
         if (takeTradeSignal) {
           tradeCount++;
           AddActionOnChart(d, EnumActionType.TAKE_A_TRADE, direction);
           listeningATR = true; // Start listening for ATR again once we open position
           //if (tradeCount >= 3) {
           // console.log('Reached 3 trades max');
-          arrayOfSignals[2] = false; // Reset ATR signal after 3 trades max
+          arrayOfSignals[EnumArrayOfSignalsIndex.ATR] = false; // Reset ATR signal after 3 trades max
           //}
         }
       };
@@ -621,13 +667,78 @@ const initSciChart = (data) => {
             //}
           //}*/
 
+          // Candle size calculation:
+          let candleSize = Math.abs(previousCandle["<CLOSE>"] - previousCandle["<OPEN>"]); // Need to be the previous candle, as current candle is not closed yet at this time (in a real scenario).
+          candleSize = Number(candleSize.toFixed(4)); // → 0.0005
+
+          const trailingSizeMultiplier = (candleSize) => {
+            if (candleSize >= 0.0005) {
+              return trailingStopSize * 3;
+            } else if (candleSize >= 0.0003) {
+              return trailingStopSize * 2;
+            } else {
+              return trailingStopSize;
+            }
+          }
+
           if (order.direction == EnumDirection.BULL) {
             //console.log('Moving SL of ', order.id, ' from ', order.sl, ' to ',  order.sl + trailingStopSize);
-            order.sl = order.sl + trailingStopSize; // Move SL by trailingStopSize (up side)
+            /*order.sl < order.price && d[EnumMT5OHLC.OPEN] > order.price ? order.sl = order.price : */order.sl += trailingSizeMultiplier(candleSize);
+            // order.sl = order.sl + trailingStopSize; // Move SL by trailingStopSize (up side)
           } else if (order.direction == EnumDirection.BEAR) {
             //console.log('Moving SL of ', order.id, ' from ', order.sl, ' to ',  order.sl - trailingStopSize);
-            order.sl = order.sl - trailingStopSize; // Move SL by trailingStopSize (down side)
+            // order.sl = order.sl - trailingStopSize; // Move SL by trailingStopSize (down side)
+            /*order.sl > order.price && d[EnumMT5OHLC.OPEN] < order.price ? order.sl = order.price : */order.sl -= trailingSizeMultiplier(candleSize);
           }
+
+          // Trailing Stop visual:
+          const updateTrailingStopVisual = (order, d) => {
+            const time = new Date(`${d[EnumMT5OHLC.DATE]} ${d[EnumMT5OHLC.TIME]}`);
+            const localISO = time.getTime() / 1000;
+            const xValue = localISO
+
+            const yValue = order.sl;       // current trailing stop
+            const y1Value = order.price;   // entry price (constant)
+
+            let trailingStopUIOption = {};
+            if (order.direction === EnumDirection.BULL) {
+              trailingStopUIOption = {
+                fill: "#FF000033",
+                fillY1: "#00FF0033",
+              };
+            } else {
+              trailingStopUIOption = {
+                fill: "#00FF0033",
+                fillY1: "#FF000033",
+              };
+            }
+
+            if (trailingStopSeriesMap.has(order.id)) {
+              // update existing series by appending new candle data
+              const series = trailingStopSeriesMap.get(order.id);
+              series.dataSeries.append(xValue, yValue, y1Value);
+            } else {
+              // first time -> create a new series with 1 point
+              const dataSeries = new XyyDataSeries(wasmContext, {
+                xValues: [xValue],
+                yValues: [yValue],
+                y1Values: [y1Value],
+              });
+
+              const newSeries = new FastBandRenderableSeries(wasmContext, {
+                dataSeries,
+                ...trailingStopUIOption,
+                strokeThickness: 1,
+                stroke: "#333",
+                strokeY1: "#FFFFFF",
+                isDigitalLine: true,
+              });
+
+              sciChartSurface.renderableSeries.add(newSeries);
+              trailingStopSeriesMap.set(order.id, newSeries);
+            }
+          };
+          updateTrailingStopVisual(order, d);
 
           // Check TP
           if ((isBull && high >= order.tp) || (!isBull && low <= order.tp)) {
@@ -891,14 +1002,17 @@ const initSciChart = (data) => {
             : 0;
 
         // Profitability chart data
+        let sum = 0;
+        let equitySumPoints = 0;
+        const commissionPoints = 0.00005;
+
+        let grossProfit = 0;
+        let grossLoss = 0;
+
         const labels = [];
         const pnlData = [];
         const equityData = []; // in points
         const equityDataMoney = []; // in $
-
-        let sum = 0;
-        let equitySumPoints = 0;
-        const commissionPoints = 0.00005;
 
         for (const { id, pnlPoints } of ordersHistory) {
           labels.push(id);
@@ -911,8 +1025,27 @@ const initSciChart = (data) => {
           equitySumPoints += +pnlPoints - commissionPoints;
           equityData.push(equitySumPoints);
 
-          // Equity in $ (money equivalent)
-          equityDataMoney.push(equitySumPoints * 100000 * lotSize());
+          // Equity in $ (money equivalent, per trade)
+          const tradeMoney = (+pnlPoints - commissionPoints) * 100000 * lotSize();
+          equityDataMoney.push(
+            (equityDataMoney.at(-1) || 0) + tradeMoney // cumulative series
+          );
+
+          if (tradeMoney > 0) {
+            grossProfit += tradeMoney;
+          } else if (tradeMoney < 0) {
+            grossLoss += Math.abs(tradeMoney);
+          }
+        }
+
+        // Profit factor
+        let profitFactor;
+        if (grossProfit === 0 && grossLoss === 0) {
+          profitFactor = '0.00'; // no trades
+        } else if (grossLoss === 0) {
+          profitFactor = '∞'; // no losses
+        } else {
+          profitFactor = (grossProfit / grossLoss).toFixed(2);
         }
 
         // Money equivalent = last equity value
@@ -931,7 +1064,7 @@ const initSciChart = (data) => {
           return [
             `\t\t${csvFileName}\t`,
             `${timeframe}\t`,
-            `CSID\t`,
+            `${strategy}\t`,
             `${sdt}\t`,
             `${edt}\t`,
             `${numbDays}\t`,
@@ -945,6 +1078,9 @@ const initSciChart = (data) => {
             `${tpSize()}\t`,
             `${slSize()}\t`,
             `${tsSize()}\t`,
+            `${profitFactor}\t`,
+            `${maPeriod()}\t`,
+            `${maThreshold()}\t`,
           ].join('');
         };
 
@@ -954,9 +1090,10 @@ const initSciChart = (data) => {
         result += `\nWin Rate: ${winRate}%\n`;
         result += `\nProfits: `;
         result += `\n Money: ${moneyEquivalent.toFixed(2)}$`;
-        result += `\n Points: ${profitsInPoints.toFixed(5)}`;
-        result += `\n Pips: ${(profitsInPoints / 0.0001).toFixed(2)}`;
-        result += `\n Ticks: ${(profitsInPoints / 0.01).toFixed(2)}`;
+        // result += `\n Points: ${profitsInPoints.toFixed(5)}`;
+        // result += `\n Pips: ${(profitsInPoints / 0.0001).toFixed(2)}`;
+        // result += `\n Ticks: ${(profitsInPoints / 0.01).toFixed(2)}`;
+        result += `\n Profit Factor: ${profitFactor}`;
 
         $backTestingResult.value = result;
         $exportableCSVField.value = resultToCSV();
@@ -1038,7 +1175,7 @@ const initSciChart = (data) => {
             <td class="order-status-${order.closedOrderType}">${
               order.closedOrderType
             }</td>
-            <td>${order.closedPrice || ''}</td>
+            <td>${parseFloat(order.closedPrice).toFixed(5) || ''}</td>
             <td>${order.closedTime || ''}</td>
             <td class="trade-result-${order.tradeResult}" title="${
               order.tradeResult
@@ -1105,6 +1242,25 @@ const initSciChart = (data) => {
         animateActiveClass(document.getElementById('ntd-notify'));
       };
       window.bttVerticalLineAnnotation = bttVerticalLineAnnotation;
+
+      // Simple Moving Average Calculations. TODO might be expensive in memory:
+      const simpleMA = (vl, period) => {
+        let sma = [];
+
+        for (let i = 0; i < vl.length; i++) {
+          if (i < period - 1) {
+            sma.push(vl[EnumMT5OHLC.CLOSE]); // not enough data yet
+          } else {
+            let sum = 0;
+            for (let j = 0; j < period; j++) {
+              sum += vl[i - j][EnumMT5OHLC.CLOSE]; // take close directly
+            }
+            sma.push(sum / period);
+          }
+        }
+
+        return sma;
+      };
 
       // ATR Indicator: ========================================
       const calcATR = (d, dataIndex) => {
@@ -1195,21 +1351,60 @@ const initSciChart = (data) => {
       // CSID Indicator: ========================================
       const CSIDDataSerieFromHighs = new XyDataSeries(wasmContext);
       const CSIDDataSerieFromLows = new XyDataSeries(wasmContext);
+      const maDataSeries = new XyDataSeries(wasmContext);
 
       const CSIDHighline = new FastLineRenderableSeries(wasmContext, {
         stroke: '#FFF',
         strokeThickness: 2,
         dataSeries: CSIDDataSerieFromHighs,
-        opacity: 0.6,
+        opacity: 0.5,
       });
       const CSIDLowline = new FastLineRenderableSeries(wasmContext, {
         stroke: '#FFF',
         strokeThickness: 2,
         dataSeries: CSIDDataSerieFromLows,
-        opacity: 0.6,
+        opacity: 0.5,
       });
+      
+      class SlopePaletteProvider {
+        constructor() {
+          this.upColor = `#${bullishColor}`;
+          this.downColor = `#${bearishColor}`;
+          this.parentSeries = null;
+        }
+
+        onAttached(parentSeries) {
+          this.parentSeries = parentSeries;
+        }
+
+        onDetached() {
+          this.parentSeries = null;
+        }
+
+        overrideStrokeArgb(xValue, yValue, index) {
+          if (!this.parentSeries || index === 0) return undefined;
+
+          // Get Y values from the series
+          const yValues = this.parentSeries.dataSeries.getNativeYValues();
+          const prevY = yValues.get(index - 1);
+          const slope = yValue - prevY;
+
+          const color = slope >= 0 ? this.upColor : this.downColor;
+          return parseInt("FF" + color.slice(1), 16); // hex → ARGB
+        }
+      }
+
+      const maLine = new FastLineRenderableSeries(wasmContext, {
+        stroke: `#${bearishColor}`,
+        strokeThickness: 2,
+        dataSeries: maDataSeries,
+        opacity: 0.8,
+        paletteProvider: new SlopePaletteProvider()
+      });
+
       sciChartSurface.renderableSeries.add(CSIDHighline);
       sciChartSurface.renderableSeries.add(CSIDLowline);
+      sciChartSurface.renderableSeries.add(maLine);
 
       const updateCSIDLineAnnotation = (d, dataIndex) => {
         const index = dataIndex || 0;
@@ -1271,6 +1466,24 @@ const initSciChart = (data) => {
           d[EnumMT5OHLC.CLOSE] > highestHighLong[highestHighLong.length - 2]; // && Math.abs(slopeHighestHighLong) < slopeThreshold
         const bearishCSID =
           d[EnumMT5OHLC.CLOSE] < lowestLowShort[lowestLowShort.length - 2]; // && Math.abs(slopeLowestLowShort) < slopeThreshold
+        
+        // Check if MA is trending in direction of planned trade, otherwise it will be always null (TODO check chatGPT)
+        if (CSIDLookbackCandleSerie.length < lookbackPeriod) return; // Ensure we have enough at least 2 candles for MA acceleration calculation
+
+        const maLookBackAccelToEnumDirection = (value, threshold = maThreshold()) => {
+          if (value > threshold) return EnumDirection.BEAR;
+          if (value < -threshold) return EnumDirection.BULL;
+          return null;
+        }
+
+        const maCandlesLookback = CSIDLookbackCandleSerie.slice(
+          CSIDLookbackCandleSerie.length - lookbackPeriod, CSIDLookbackCandleSerie.length
+        );
+        const maCandlesLookbackValues = maCandlesLookback.map((candle) => candle[EnumMT5OHLC.CLOSE]); // TODO we might match the MA line (not sure if i use close, open or calculate middle of candle for MALine)
+        const maCandlesLookbackDiff = maCandlesLookbackValues[maCandlesLookbackValues.length - lookbackPeriod] - maCandlesLookbackValues[maCandlesLookbackValues.length - 1];
+        const maTrending = maLookBackAccelToEnumDirection(maCandlesLookbackDiff)
+        arrayOfSignals[EnumArrayOfSignalsIndex.MADirection] = !!maTrending; // TODO: there is no correlation with planed direction trade, it simply get value from lookback to current candle even if MA made a pyramidal move or pivot which wont tell us an trending directional acceleration, ohh and MA is set to CLOSE i think
+        //console.table([d[EnumMT5OHLC.DATE] + ' ' + d[EnumMT5OHLC.TIME], maTrending, maCandlesLookbackDiff, 0.003, arrayOfSignals[EnumArrayOfSignalsIndex.MADirection]]);
 
         // CSID Graph Related Annotations: ========================================
         // Add a new CSID Data for our line annotations:
@@ -1281,6 +1494,10 @@ const initSciChart = (data) => {
         CSIDDataSerieFromLows.append(
           convertMT5DateToUnix(d[EnumMT5OHLC.DATE] + ' ' + d[EnumMT5OHLC.TIME]),
           lowestLowShort[lowestLowShort.length - 1]
+        );
+        maDataSeries.append(
+          convertMT5DateToUnix(d[EnumMT5OHLC.DATE] + ' ' + d[EnumMT5OHLC.TIME]),
+          simpleMA(CSIDLookbackCandleSerie, maPeriod())[CSIDLookbackCandleSerie.length - 1]
         );
 
         // If previous candle was a breakout candle, we will not draw this new annotation,
@@ -1383,260 +1600,13 @@ const initSciChart = (data) => {
         // sciChartSurface.zoomExtents();
       });
       // End of Navigate Trought Dates ========================================
-
-      // Tools: ========================================
-      const RRToolBoxAnnotation = (xGraphValue, yGraphValue, options) =>
-        new BoxAnnotation({
-          ...RRToolStyles,
-          x1: xGraphValue - 50,
-          x2: xGraphValue + 300,
-          y1: yGraphValue,
-          ...options,
-        });
-
-      const addRRAnnotationBox = (ed) => {
-        if (ed === EnumDirection.BULL) {
-          sciChartSurface.annotations.add(
-            RRToolBoxAnnotation(coords.xGraphValue, coords.yGraphValue, {
-              fill: `#${bullishColor}${RRToolStyles.opacity}`,
-              y2: coords.yGraphValue + tpSize(),
-            })
-          );
-          sciChartSurface.annotations.add(
-            RRToolBoxAnnotation(coords.xGraphValue, coords.yGraphValue, {
-              fill: `#${bearishColor}${RRToolStyles.opacity}`,
-              y2: coords.yGraphValue - slSize(),
-            })
-          );
-        } else {
-          sciChartSurface.annotations.add(
-            RRToolBoxAnnotation(coords.xGraphValue, coords.yGraphValue, {
-              fill: `#${bullishColor}${RRToolStyles.opacity}`,
-              y2: coords.yGraphValue - tpSize(),
-            })
-          );
-          sciChartSurface.annotations.add(
-            RRToolBoxAnnotation(coords.xGraphValue, coords.yGraphValue, {
-              fill: `#${bearishColor}${RRToolStyles.opacity}`,
-              y2: coords.yGraphValue + slSize(),
-            })
-          );
-        }
-      };
-
-      let coords = null;
-      let selectedTool = null;
-      let clickCount = 0;
-
-      let lineToolFirstPoint = null;
-      let lineToolSecondPoint = null;
-      let rectangleToolFirstPoint = null;
-      let rectangleToolSecondPoint = null;
-
-      sciChartSurface.domCanvas2D.addEventListener('click', (event) => {
-        const rect = sciChartSurface.domCanvas2D.getBoundingClientRect();
-        const mouseX = event.clientX - rect.left - 10 - 73; // -10 from left offset 'border/padding' of the canvas -73 because of the points legend/markers
-        const mouseY = event.clientY - rect.top - 10; // -10 from top offset 'border/padding' of the canvas
-        const xCoordCalc = sciChartSurface.xAxes
-          .get(0)
-          .getCurrentCoordinateCalculator();
-        const yCoordCalc = sciChartSurface.yAxes
-          .get(0)
-          .getCurrentCoordinateCalculator();
-
-        coords = {
-          xPosition: xCoordCalc.getDataValue(event.clientX),
-          yPosition: yCoordCalc.getDataValue(event.clientY),
-          xGraphValue: parseFloat(xCoordCalc.getDataValue(mouseX).toFixed(0)),
-          yGraphValue: parseFloat(
-            yCoordCalc.getDataValue(mouseY).toFixed(decimals)
-          ),
-          x: xCoordCalc,
-          y: yCoordCalc,
-        };
-
-        // console.log(coords);
-
-        /*if (isListeningForToolActions) {
-                    addRRAnnotationBox(EnumDirection.BULL);
-                    isListeningForToolActions = false;
-                  }*/
-
-        if (selectedTool != null) {
-          clickCount++;
-        } else {
-          clickCount = 0;
-        }
-
-        // console.log(clickCount);
-
-        const lineToolActions = [
-          () => {
-            lineToolFirstPoint = coords;
-          },
-          () => {
-            lineToolSecondPoint = coords;
-            sciChartSurface.annotations.add(
-              new LineAnnotation({
-                stroke: `#${bullishColor}`,
-                strokeThickness: 1,
-                x1: lineToolFirstPoint.xGraphValue,
-                x2: lineToolSecondPoint.xGraphValue,
-                y1: lineToolFirstPoint.yGraphValue,
-                y2: lineToolSecondPoint.yGraphValue,
-              })
-            );
-            clickCount = 0;
-            selectedTool = null;
-          },
-        ];
-
-        const BOSActions = [
-          () => {
-            lineToolFirstPoint = coords;
-          },
-          () => {
-            lineToolSecondPoint = {
-              ...coords,
-              yGraphValue: lineToolFirstPoint.yGraphValue,
-            };
-            sciChartSurface.annotations.add(
-              new LineAnnotation({
-                stroke: `#${bullishColor}`,
-                strokeThickness: 1,
-                x1: lineToolFirstPoint.xGraphValue,
-                x2: lineToolSecondPoint.xGraphValue,
-                y1: lineToolFirstPoint.yGraphValue,
-                y2: lineToolSecondPoint.yGraphValue,
-              })
-            );
-            clickCount = 0;
-            selectedTool = null;
-          },
-        ];
-
-        const CircleActions = [
-          () => {
-            lineToolFirstPoint = coords;
-            sciChartSurface.annotations.add(
-              new CustomAnnotation({
-                x1: lineToolFirstPoint.xGraphValue,
-                y1: lineToolFirstPoint.yGraphValue,
-                verticalAnchorPoint: EVerticalAnchorPoint.Center,
-                horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
-                svgString:
-                  '<svg id="Capa_1" xmlns="http://www.w3.org/2000/svg">' +
-                  `<circle cx="10" cy="10" r="8" style="fill:#${bullishColor};fill-opacity:0.34117647;stroke:#${bullishColor};stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />` +
-                  '</svg>',
-              })
-            );
-            clickCount = 0;
-            selectedTool = null;
-          },
-          /*() => {
-                      lineToolSecondPoint = {
-                        ...coords,
-                        yGraphValue: lineToolFirstPoint.yGraphValue, 
-                      };
-                    },*/
-        ];
-
-        const rectangleToolActions = [
-          () => {
-            rectangleToolFirstPoint = coords;
-          },
-          () => {
-            rectangleToolSecondPoint = coords;
-            sciChartSurface.annotations.add(
-              new BoxAnnotation({
-                x1: rectangleToolFirstPoint.xGraphValue,
-                x2: rectangleToolSecondPoint.xGraphValue,
-                y1: rectangleToolFirstPoint.yGraphValue,
-                y2: rectangleToolSecondPoint.yGraphValue,
-                fill: `#${bullishColor}${RRToolStyles.opacity}`,
-                stroke: `#${bullishColor}`,
-                strokeThickness: 1,
-                opacity: 0.5,
-              })
-            );
-            clickCount = 0;
-            selectedTool = null;
-          },
-        ];
-
-        switch (selectedTool) {
-          case 'RRBuy':
-            addRRAnnotationBox(EnumDirection.BULL);
-            clickCount = 0;
-            selectedTool = null;
-            break;
-          case 'RRSell':
-            addRRAnnotationBox(EnumDirection.SELL);
-            clickCount = 0;
-            selectedTool = null;
-            break;
-          case 'line':
-            stepByStep(clickCount, lineToolActions);
-            break;
-          case 'BOS':
-            stepByStep(clickCount, BOSActions);
-            break;
-          case 'Circle':
-            stepByStep(clickCount, CircleActions);
-            break;
-          case 'rectangle':
-            stepByStep(clickCount, rectangleToolActions);
-            break;
-          default:
-            return;
-        }
-      });
-
-      document.querySelectorAll('[data-anotation]').forEach((button) => {
-        button.removeAttribute('disabled');
-        button.addEventListener('click', function () {
-          let isListeningForToolActions = true;
-          var anotationType = this.dataset.anotation;
-          const rect = sciChartSurface.domCanvas2D.getBoundingClientRect();
-
-          const rrTool = (enumDirection) => {
-            isListeningForToolActions = true;
-          };
-
-          switch (anotationType) {
-            case 'RRBuy':
-              selectedTool = 'RRBuy';
-              break;
-            case 'RRSell':
-              selectedTool = 'RRSell';
-              break;
-            case 'line':
-              selectedTool = 'line';
-              break;
-            case 'BOS':
-              selectedTool = 'BOS';
-              break;
-            case 'Circle':
-              selectedTool = 'Circle';
-              break;
-            case 'rectangle':
-              selectedTool = 'rectangle';
-              break;
-            default:
-              console.log('No type');
-          }
-        });
-      });
-      // End of Tools ========================================
     })
     .catch((error) => {
       console.error('Error initializing SciChart:', error);
     });
 };
-
 initSciChart();
 
-// Notify ===============================
 const animateActiveClass = (element) => {
   audioNotify.play();
   element.classList.add('active');
@@ -1644,7 +1614,6 @@ const animateActiveClass = (element) => {
     element.classList.remove('active');
   }, 3000);
 };
-// End of Notify ===============================
 
 const updateFileReadingProgression = (valueInPercentage) => {
   const progressionBar = document.querySelector(
@@ -1654,7 +1623,6 @@ const updateFileReadingProgression = (valueInPercentage) => {
 };
 window.updateFileReadingProgression = updateFileReadingProgression;
 
-let prevDate = null;
 const updateDynamicInfos = (d) => {
   if (prevDate !== d[EnumMT5OHLC.DATE]) {
     $currentReadingDate.innerText = d[EnumMT5OHLC.DATE];
@@ -1700,7 +1668,6 @@ const CSIDIndicator = (d, dataIndex) => {
   updateCSIDLineAnnotation(d, dataIndex);
 };
 
-// Create Indicators as the chart goes along:
 const appendIndicatorsToChart = (d, dataIndex) => {
   // Example of appending indicators to the chart
   // This is a placeholder function, you can implement your own logic
@@ -1709,7 +1676,6 @@ const appendIndicatorsToChart = (d, dataIndex) => {
   calcATR(d, dataIndex);
 };
 
-// Historical Trades Textarea Change Handler
 $textareaHistoricalTradesLines?.addEventListener('change', (event) => {
   const tradesData = event.target.value;
   const rows = tradesData.split('\n');
