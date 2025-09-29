@@ -1,8 +1,8 @@
 // app/page.tsx
-import Link from 'next/link';
-import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { X } from 'lucide-react';
+import Link from 'next/link';
 
 function TypographyH1({ children }: { children: React.ReactNode }) {
   return <h1 className="text-4xl font-bold tracking-tight mb-4">{children}</h1>;
@@ -57,6 +57,28 @@ export default function Home() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">Interactive 3D graphics and animations</p>
+              </CardContent>
+            </Card>
+          </Link>
+
+          <Link href="/dataVisualizer" className="h-full">
+            <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
+              <CardHeader>
+                <CardTitle>Data Visualizer Project</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">Interactive 3D data visualizer</p>
+              </CardContent>
+            </Card>
+          </Link>
+
+          <Link href="/3DModelAnimation" className="h-full">
+            <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
+              <CardHeader>
+                <CardTitle>3D Model Animation</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">3D Model Animation</p>
               </CardContent>
             </Card>
           </Link>
