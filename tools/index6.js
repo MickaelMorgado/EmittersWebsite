@@ -26,6 +26,7 @@ const $navigateTroughtDates = document.getElementById('NavigateTroughtDates');
 const $SLPointsInput = document.getElementById('SLPoints');
 const $TPPointsInput = document.getElementById('TPPoints');
 const $LotSizeInput = document.getElementById('LotSize');
+const $CommissionSizeInput = document.getElementById('CommissionSize');
 const $TSIncrementInput = document.getElementById('TSIncrement');
 const $MAPeriodInput = document.getElementById('MAPeriod');
 const $MAThresholdInput = document.getElementById('MAThreshold');
@@ -51,6 +52,7 @@ if (urlParams.has('btt')) { $BTTInput.value = urlParams.get('btt') }
 if (urlParams.has('ett')) { $ETTInput.value = urlParams.get('ett') }
 if (urlParams.has('maperiod')) { $MAPeriodInput.value = urlParams.get('maperiod') }
 if (urlParams.has('lotsize')) { $LotSizeInput.value = urlParams.get('lotsize') }
+if (urlParams.has('commissionsize')) { $CommissionSizeInput.value = urlParams.get('commissionsize') }
 if (urlParams.has('slpoints')) { $SLPointsInput.value = urlParams.get('slpoints') }
 if (urlParams.has('tppoints')) { $TPPointsInput.value = urlParams.get('tppoints') }
 if (urlParams.has('tsincrement')) { $TSIncrementInput.value = urlParams.get('tsincrement') }
@@ -64,6 +66,7 @@ const saveConfigs = () => {
   urlParams.set('ett', $ETTInput.value);
   urlParams.set('maperiod', $MAPeriodInput.value);
   urlParams.set('lotsize', $LotSizeInput.value);
+  urlParams.set('commissionsize', $CommissionSizeInput.value);
   urlParams.set('slpoints', $SLPointsInput.value);
   urlParams.set('tppoints', $TPPointsInput.value);
   urlParams.set('tsincrement', $TSIncrementInput.value);
@@ -124,6 +127,7 @@ $resultPanel.addEventListener('scroll', (event) => stickyTableHeaders(event.targ
 $SLPointsInput?.addEventListener('change', () => animateActiveClass($csvRefresh));
 $TPPointsInput?.addEventListener('change', () => animateActiveClass($csvRefresh));
 $LotSizeInput?.addEventListener('change', () => animateActiveClass($csvRefresh));
+$CommissionSizeInput?.addEventListener('change', () => animateActiveClass($csvRefresh));
 $TSIncrementInput?.addEventListener('change', () => animateActiveClass($csvRefresh));
 $MAPeriodInput?.addEventListener('change', () => animateActiveClass($csvRefresh));
 $MAThresholdInput?.addEventListener('change', () => animateActiveClass($csvRefresh));
@@ -142,6 +146,7 @@ const MAX_BUFFER_SIZE = 10;
 let slSize = () => parseFloat($SLPointsInput.value);
 let tpSize = () => parseFloat($TPPointsInput.value);
 let lotSize = () => parseFloat($LotSizeInput.value);
+let commissionSize = () => parseFloat($CommissionSizeInput.value);
 let tsSize = () => parseFloat($TSIncrementInput.value);
 let maPeriod = () => parseFloat($MAPeriodInput.value);
 let maThreshold = () => parseFloat($MAThresholdInput.value);
@@ -1004,7 +1009,7 @@ const initSciChart = (data) => {
         // Profitability chart data
         let sum = 0;
         let equitySumPoints = 0;
-        const commissionPoints = 0.00005;
+        const commissionPoints = commissionSize() || 0.00005;
 
         let grossProfit = 0;
         let grossLoss = 0;
@@ -1075,6 +1080,7 @@ const initSciChart = (data) => {
             `${moneyEquivalent.toFixed(2)}\t`,
             `${profitsInPoints}\t`,
             `${lotSize()}\t`,
+            `${commissionSize()}\t`,
             `${tpSize()}\t`,
             `${slSize()}\t`,
             `${tsSize()}\t`,
