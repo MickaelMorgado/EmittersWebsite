@@ -13,7 +13,7 @@ import { useGsapEffects } from "./gsapEffects";
 import Printing3D from "./Printing3D";
 import SimRacing3D from "./SimRacing3D";
 
-const modelBasePath = "./models/";
+const modelBasePath = "@assets/models/";
 
 
 export default function MikaPage() {
@@ -234,13 +234,13 @@ export default function MikaPage() {
                   </p>
                 </div>
                 <div className="md:w-2/4 relative">
-                  <Image
-                    width={300}
-                    height={300}
-                    src="/assets/images/tools/mika.png"
-                    className="rounded-full w-80 h-80 mx-auto saturate-50"
-                    alt="Mickael"
-                  />
+                    <Image
+                      width={300}
+                      height={300}
+                      src="./assets/mika.png"
+                      className="rounded-full w-80 h-80 mx-auto saturate-50"
+                      alt="Mickael"
+                    />
                 </div>
               </div>
             </div>
