@@ -2,13 +2,15 @@
   "name": "my-app",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": "18.x"
+  },
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
     "clean": "rm -rf .next public/_next public/index.html public/index.html public/*.json public/*.txt public/*.png public/*.svg public/*.ico public/*.webmanifest",
-    "export": "npm run clean && next build",
-    "vercel-build": "next build"
+    "export": "npm run clean && next build"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^7.1.0",

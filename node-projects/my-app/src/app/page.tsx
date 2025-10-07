@@ -65,7 +65,7 @@ export default function Home() {
       <section className="mt-12">
         <TypographyH1>Tests</TypographyH1>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-6">
-          <Link href="/threejs" className="h-full">
+          <Link href="" className="h-full opacity-10">
             <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
               <CardHeader>
                 <CardTitle>Three.js Project</CardTitle>
@@ -86,18 +86,6 @@ export default function Home() {
               </CardContent>
             </Card>
           </Link>
-
-          <Link href="/3DModelAnimation" className="h-full">
-            <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
-              <CardHeader>
-                <CardTitle>3D Model Animation</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">3D Model Animation</p>
-              </CardContent>
-            </Card>
-          </Link>
-
           <Link href="/HipsExample" className="h-full">
             <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
               <CardHeader>
