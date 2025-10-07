@@ -1,0 +1,38 @@
+
+> my-app@0.1.0 build
+> next build
+
+   ▲ Next.js 15.3.3
+   - Environments: .env.local, .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 3.0s
+   Linting and checking validity of types ...
+
+Failed to compile.
+
+./src/app/3DModelAnimation/page.tsx
+11:25  Warning: 'setClippingPlane' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+17:21  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+49:22  Warning: 'setInputValue' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+50:10  Warning: 'visualizedNumber' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+51:10  Warning: 'spacing' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+51:19  Warning: 'setSpacing' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+52:10  Warning: 'selectedColor' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+52:25  Warning: 'setSelectedColor' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+54:9  Warning: 'colorOptions' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+67:9  Warning: 'handleVisualize' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/threejs/ThreeJSCryptoVisualizer.tsx
+24:9  Warning: The 'nodes' array makes the dependencies of useEffect Hook (at line 90) change on every render. To fix this, wrap the initialization of 'nodes' in its own useMemo() Hook.  react-hooks/exhaustive-deps
+29:10  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+41:29  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+75:30  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+94:28  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+95:29  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+96:29  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/app/threejs/ThreeJSCryptoVisualizer2.tsx
+144:36  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules

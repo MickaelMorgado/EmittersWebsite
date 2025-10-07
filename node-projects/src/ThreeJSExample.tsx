@@ -1,11 +1,11 @@
-import * as THREE from "three";
-import { AnimationMixer, DoubleSide } from "three";
+import { CameraShake, Environment } from '@react-three/drei';
 import { Canvas, useFrame, useLoader } from '@react-three/fiber';
-import { useEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useRef } from 'react';
+import * as THREE from "three";
+import { AnimationMixer, DoubleSide } from "three";
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
-import { CameraShake, Environment } from '@react-three/drei';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -171,7 +171,7 @@ const ThreeJSExample = () => {
                     rollFrequency={0}
                     yawFrequency={0}
                 />
-                <Environment preset="studio" environmentIntensity={0.15} environmentRotation={new THREE.Euler(0, .7, 0, 'XYZ')} />
+                <Environment preset="studio" environmentintensity={1} environmentRotation={new THREE.Euler(0, .7, 0, 'XYZ')} />
                 <ambientLight intensity={10} />
                 <directionalLight intensity={5} position={[20, 30, 0]} />
                 <MyGLTFScene />
