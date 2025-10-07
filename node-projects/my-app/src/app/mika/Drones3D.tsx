@@ -9,7 +9,7 @@ import { Mesh, Object3D } from "three";
 
 function DroneModel(props: any) {
   const group = useRef<Object3D>(null!);
-  const { scene, animations } = useGLTF("/assets/js/threejs/models/MikasDrone.gltf");
+  const { scene, animations } = useGLTF("/assets/models/MikasDrone.gltf");
   const { actions, mixer } = useAnimations(animations, group);
 
   // Set up glow on specific parts

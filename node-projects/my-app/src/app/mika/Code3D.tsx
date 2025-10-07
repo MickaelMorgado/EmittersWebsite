@@ -9,7 +9,7 @@ import { Mesh, Object3D } from "three";
 
 function CodeModel(props: any) {
   const group = useRef<Object3D>(null!);
-  const { scene, animations } = useGLTF("/assets/js/threejs/models/Code.gltf");
+  const { scene, animations } = useGLTF("/assets/models/Code.gltf");
   const { actions, mixer } = useAnimations(animations, group);
 
   // Set up glow on specific parts

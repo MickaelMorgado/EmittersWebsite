@@ -12,6 +12,9 @@ import { useGsapEffects } from "./gsapEffects";
 import Printing3D from "./Printing3D";
 import SimRacing3D from "./SimRacing3D";
 
+const modelBasePath = "/assets/models/";
+
+
 export default function MikaPage() {
   useGsapEffects();
 
@@ -20,6 +23,10 @@ export default function MikaPage() {
   const handleFilterClick = (filter: string) => {
     setActiveFilter(filter);
   };
+
+  // Example usage of modelBasePath in components that load models:
+  // <ModelComponent modelPath={`${modelBasePath}A1Mini.gltf`} />
+
 
   useEffect(() => {
     // Inject the CSS styles for motion path container and body
