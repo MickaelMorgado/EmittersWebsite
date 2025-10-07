@@ -23,10 +23,6 @@
 # Build output directory
 /dist/
 
-# Public directory contents (keep the directory but ignore its contents)
-/public/*
-!/public/.gitkeep
-
 # misc
 .DS_Store
 *.pem
