@@ -8,7 +8,6 @@ import {
   Text
 } from '@react-three/drei';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { useControls } from 'leva';
 import { useEffect, useRef } from 'react';
 import dataset from './dataset.json';
 
@@ -173,4 +172,4 @@ const ThreeJSCryptoVisualizer = () => (
   </div>
 );
 
-export default ThreeJSCryptoVisualizer;
+// export default ThreeJSCryptoVisualizer;
