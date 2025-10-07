@@ -13,7 +13,7 @@ import { useGsapEffects } from "./gsapEffects";
 import Printing3D from "./Printing3D";
 import SimRacing3D from "./SimRacing3D";
 
-const modelBasePath = "/assets/models/";
+const modelBasePath = "./models/";
 
 
 export default function MikaPage() {

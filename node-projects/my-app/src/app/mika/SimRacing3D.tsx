@@ -9,7 +9,7 @@ import { Mesh, Object3D } from "three";
 
 function SimRacingModel(props: any) {
   const group = useRef<Object3D>(null!);
-  const { scene, animations } = useGLTF("/assets/models/SteeringWheel.gltf");
+  const { scene, animations } = useGLTF("./models/SteeringWheel.gltf");
   const { actions, mixer } = useAnimations(animations, group);
 
   // Set up glow on specific parts
