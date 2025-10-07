@@ -13,7 +13,7 @@ export default function Home() {
     <div className="container mx-auto px-4 py-8">
       <div className="flex items-center justify-between">
         <div>
-          <TypographyH1>Welcome to my Projects Page 1</TypographyH1>
+          <TypographyH1>Welcome to my Projects Page</TypographyH1>
           <p className="text-muted-foreground mb-8">Explore my collection of interactive projects and experiments.</p>
         </div>
         <Link href="/" className="size-8">
@@ -22,6 +22,21 @@ export default function Home() {
           </Button>
         </Link>
       </div>
+      <section className="mt-12">
+        <TypographyH1>Main Section</TypographyH1>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-6">
+          <Link href="/mika" className="h-full">
+            <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
+              <CardHeader>
+                <CardTitle>About Me</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">Mickael Morgado</p>
+              </CardContent>
+            </Card>
+          </Link>
+        </div>
+      </section>
       <section className="mt-12">
         <TypographyH1>My main projects</TypographyH1>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-6">
