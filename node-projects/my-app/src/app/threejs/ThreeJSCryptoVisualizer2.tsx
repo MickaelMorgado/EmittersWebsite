@@ -1,7 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import datasetRaw from './dataset2.json';
 import './terminal.css';
 
 type DataNode = {
@@ -16,7 +14,7 @@ type DataNode = {
   };
   children?: Record<string, DataNode>;
 };
-
+/* 
 const dataset = datasetRaw as Record<string, DataNode>;
 const MAX_MARKETCAP = 1000000000000;
 const BAR_LENGTH = 10;
@@ -219,3 +217,4 @@ export default function CanvasCryptoVisualizer() {
     </div>
   );
 }
+ */

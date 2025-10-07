@@ -3,10 +3,6 @@ import { Canvas } from '@react-three/fiber';
 import { Leva } from 'leva';
 import dynamic from 'next/dynamic';
 import BlockChainVisualizer from './BlockChainVisualizer';
-const CanvasCryptoVisualizer = dynamic(
-  () => import('./ThreeJSCryptoVisualizer2'),
-  { ssr: false }
-);
 const WireframeGrid = dynamic(
   () => import('./WireframeGrid'),
   { ssr: false }
@@ -21,7 +17,6 @@ return (
         <BlockChainVisualizer />
       </Canvas>
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 10 }}>
-        <CanvasCryptoVisualizer />
       </div>
     </div>
   );

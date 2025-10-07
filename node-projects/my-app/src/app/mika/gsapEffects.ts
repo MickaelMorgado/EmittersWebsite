@@ -14,7 +14,7 @@ export function useGsapEffects() {
     // Initial setup
     gsap.set("#motionSVG", { autoAlpha: 1 });
 
-    const highlightPath = document.querySelector("#motionPathHighlight");
+    const highlightPath = document.querySelector("#motionPathHighlight") as SVGGeometryElement;
     if (!highlightPath) return;
 
     const pathLength = highlightPath.getTotalLength();
@@ -67,12 +67,12 @@ export function useGsapEffects() {
     });
 
     // Tools grid filter
-    const toolsCategories = document.querySelectorAll(".badge");
+    const toolsCategories = document.querySelectorAll(".badge") as NodeListOf<HTMLElement>;
     const toolsGrid = document.getElementById("tools-grid");
 
     toolsCategories.forEach((category) => {
       category.addEventListener("click", () => {
-        const elements = toolsGrid?.children;
+        const elements = toolsGrid?.children as HTMLCollectionOf<HTMLElement>;
         if (!elements) return;
         const selectedCategory = category.dataset.filter;
 
