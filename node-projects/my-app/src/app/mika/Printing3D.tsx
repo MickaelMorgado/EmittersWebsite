@@ -9,7 +9,7 @@ import { Mesh, Object3D } from "three";
 
 function PrintingModel(props: any) {
   const group = useRef<Object3D>(null!);
-  const { scene, animations } = useGLTF("./assets/models/A1Mini.gltf");
+  const { scene, animations } = useGLTF("/assets/models/A1Mini.gltf");
   const { actions, mixer } = useAnimations(animations, group);
 
   // Set up glow on specific parts
