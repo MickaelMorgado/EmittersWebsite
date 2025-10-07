@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import "./portfolio.css";
 
@@ -233,7 +234,13 @@ export default function MikaPage() {
                   </p>
                 </div>
                 <div className="md:w-2/4 relative">
-                  <img src="/assets/images/tools/mika.png" className="rounded-full w-80 h-80 mx-auto saturate-50" alt="Mickael" />
+                  <Image
+                    width={300}
+                    height={300}
+                    src="/assets/images/tools/mika.png"
+                    className="rounded-full w-80 h-80 mx-auto saturate-50"
+                    alt="Mickael"
+                  />
                 </div>
               </div>
             </div>
@@ -588,7 +595,13 @@ export default function MikaPage() {
                   data-category={tool.category}
                 >
                   <div className="card-content">
-                    <img src={tool.imgSrc} alt={tool.alt} className="w-full rounded-lg mb-6" />
+                    <Image
+                      width={300}
+                      height={300}
+                      src={tool.imgSrc}
+                      alt={tool.alt}
+                      className="w-full rounded-lg mb-6"
+                    />
                     <h3 className="text-2xl font-bold mb-4">{tool.title}</h3>
                     <p className="mb-4">{tool.description}</p>
                     <a href={tool.link} className="btn-minimal">
