@@ -30,6 +30,15 @@ const GHOST_LOOPS = [
     "/assets/sounder-audios/Emitters - BaseProject4 - Ghost1.mp3",
 ];
 
+// --- NEW LEAD LOOP ARRAY ---
+const LEAD_LOOPS = [
+    SILENCE_PLACEHOLDER,
+    "/assets/sounder-audios/Emitters - BaseProject4 - Lead1.mp3",
+    "/assets/sounder-audios/Emitters - BaseProject4 - Lead2.mp3",
+];
+// ----------------------------
+
+
 // Helper to display the name of the chosen URL, handling SILENCE
 const getDisplayName = (url: string) => 
     url === SILENCE_PLACEHOLDER ? 'SILENCE' : url.split('/').pop();
@@ -43,12 +52,13 @@ const usePlayerEffect = (
     url: string, 
     playerRef: React.MutableRefObject<Tone.Player | null>, 
     setLoaded: (loaded: boolean) => void,
-    isPlaying: boolean
+    isPlaying: boolean,
+    playbackRate: number 
 ) => {
+    // 1. Effect to initialize/swap the player (runs on URL change)
     useEffect(() => {
         // 1. Cleanup before loading new player
         if (playerRef.current) {
-            // Stop the loop before disposing for a clean transition
             playerRef.current.stop(); 
             playerRef.current.dispose();
             playerRef.current = null;
@@ -65,13 +75,12 @@ const usePlayerEffect = (
         const newPlayer = new Tone.Player({
             url: url,
             loop: true,
+            playbackRate: playbackRate, // INITIALIZE with the current rate
             onload: () => {
                 setLoaded(true);
                 console.log(`Player loaded: ${url.split('/').pop()}`);
 
-                // FIX: If playback is active, start the new player immediately here.
                 if (isPlaying) {
-                    // Start the new player immediately, synced to the current Tone time
                     newPlayer.start(Tone.now()); 
                     console.log(`New player (${url.split('/').pop()}) started immediately.`);
                 }
@@ -89,17 +98,35 @@ const usePlayerEffect = (
             if (playerRef.current) playerRef.current.dispose();
             playerRef.current = null;
         };
-    }, [url, isPlaying, setLoaded, playerRef]); 
+    }, [url, isPlaying, setLoaded, playerRef, playbackRate]); 
+
+    // 2. Effect to update the playbackRate on the existing player (runs on Rate change only)
+    useEffect(() => {
+        // Only run this if the URL is not SILENCE
+        if (playerRef.current && url !== SILENCE_PLACEHOLDER) {
+            // Use Tone.set or Tone.Param.setValueAtTime for precise scheduling if needed, 
+            // but direct assignment is fine for the global playbackRate
+            playerRef.current.playbackRate = playbackRate;
+            console.log(`Playback Rate updated to ${playbackRate.toFixed(2)} for ${url.split('/').pop()}`);
+        }
+    }, [playbackRate, url, playerRef]); 
 };
 
 
 export default function SounderPage() {
     const [isPlaying, setIsPlaying] = useState(false);
+    const [playbackRate, setPlaybackRate] = useState(1.0);
     
-    const [mainPlayerLoaded, setMainPlayerLoaded] = useState(true); // Set to true initially for first load
-    const [drumPlayerLoaded, setDrumPlayerLoaded] = useState(true); // Set to true initially for first load
-    const [clapPlayerLoaded, setClapPlayerLoaded] = useState(true); // Set to true initially for first load
-    const [ghostPlayerLoaded, setGhostPlayerLoaded] = useState(true); // Set to true initially for first load
+    // --- ADDED: Lead Track State ---
+    const [leadPlayerLoaded, setLeadPlayerLoaded] = useState(true);
+    const [currentLeadUrl, setCurrentLeadUrl] = useState(LEAD_LOOPS[0]);
+    const leadPlayerRef = useRef<Tone.Player | null>(null);
+    // -------------------------------
+    
+    const [mainPlayerLoaded, setMainPlayerLoaded] = useState(true);
+    const [drumPlayerLoaded, setDrumPlayerLoaded] = useState(true);
+    const [clapPlayerLoaded, setClapPlayerLoaded] = useState(true);
+    const [ghostPlayerLoaded, setGhostPlayerLoaded] = useState(true);
 
     const [currentMainUrl, setCurrentMainUrl] = useState(MAIN_LOOPS[0]);
     const [currentDrumUrl, setCurrentDrumUrl] = useState(DRUM_LOOPS[0]);
@@ -111,18 +138,22 @@ export default function SounderPage() {
     const clapPlayerRef = useRef<Tone.Player | null>(null);
     const ghostPlayerRef = useRef<Tone.Player | null>(null);
 
-    const allLoaded = mainPlayerLoaded && drumPlayerLoaded && clapPlayerLoaded && ghostPlayerLoaded;
+    // --- UPDATED: All Loaded Check ---
+    const allLoaded = mainPlayerLoaded && drumPlayerLoaded && clapPlayerLoaded && ghostPlayerLoaded && leadPlayerLoaded;
+    const totalPlayers = 5;
+    // ---------------------------------
 
-    // Use a special state for the very first load check, as we initialize states to 'true'
     const [initialLoadComplete, setInitialLoadComplete] = useState(false);
 
     // Initial load effect (run once)
     useEffect(() => {
-        // We set to false here to force the first load checks
         setMainPlayerLoaded(false);
         setDrumPlayerLoaded(false);
         setClapPlayerLoaded(false);
         setGhostPlayerLoaded(false);
+        // --- ADDED: Lead Track Initial Load ---
+        setLeadPlayerLoaded(false);
+        // --------------------------------------
     }, []);
 
     // Effect to mark initial load as complete
@@ -133,31 +164,37 @@ export default function SounderPage() {
     }, [allLoaded, initialLoadComplete]);
 
     // Initialize and manage players for each track independently
-    usePlayerEffect(currentMainUrl, mainPlayerRef, setMainPlayerLoaded, isPlaying);
-    usePlayerEffect(currentDrumUrl, drumPlayerRef, setDrumPlayerLoaded, isPlaying);
-    usePlayerEffect(currentClapUrl, clapPlayerRef, setClapPlayerLoaded, isPlaying);
-    usePlayerEffect(currentGhostUrl, ghostPlayerRef, setGhostPlayerLoaded, isPlaying);
+    usePlayerEffect(currentMainUrl, mainPlayerRef, setMainPlayerLoaded, isPlaying, playbackRate);
+    usePlayerEffect(currentDrumUrl, drumPlayerRef, setDrumPlayerLoaded, isPlaying, playbackRate);
+    usePlayerEffect(currentClapUrl, clapPlayerRef, setClapPlayerLoaded, isPlaying, playbackRate);
+    usePlayerEffect(currentGhostUrl, ghostPlayerRef, setGhostPlayerLoaded, isPlaying, playbackRate);
+    // --- ADDED: Lead Player Hook Call ---
+    usePlayerEffect(currentLeadUrl, leadPlayerRef, setLeadPlayerLoaded, isPlaying, playbackRate);
+    // ------------------------------------
 
 
     // === INITIAL START/STOP LOGIC ===
     useEffect(() => {
-        const players = [mainPlayerRef.current, drumPlayerRef.current, clapPlayerRef.current, ghostPlayerRef.current].filter(p => p !== null) as Tone.Player[];
+        // --- UPDATED: Player List ---
+        const players = [
+            mainPlayerRef.current, 
+            drumPlayerRef.current, 
+            clapPlayerRef.current, 
+            ghostPlayerRef.current,
+            leadPlayerRef.current // ADDED
+        ].filter(p => p !== null) as Tone.Player[];
+        // ----------------------------
         
-        // This handles the initial 'Start' button press.
         if (isPlaying) {
-            // Only proceed if all players are loaded (for the initial start)
             if (!allLoaded) return;
             
-            // Start all players simultaneously
             players.forEach(player => {
                 if (player.loaded && player.state !== "started") {
-                    // Use Tone.now() to synchronize starting the players to the current time
                     player.start(Tone.now()); 
                 }
             });
             console.log(`Initial Start: Started ${players.length} active players.`);
         } else {
-            // Stop all active players
             players.forEach(player => {
                 if (player.state === "started") {
                     player.stop();
@@ -182,14 +219,26 @@ export default function SounderPage() {
     const handleGhostChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         setCurrentGhostUrl(e.target.value);
     };
+    // --- ADDED: Lead Track Change Handler ---
+    const handleLeadChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setCurrentLeadUrl(e.target.value);
+    };
+    // ----------------------------------------
     
     // The previous Randomize function for convenience
     const randomizePicks = () => {
-        // This triggers the usePlayerEffect hooks to run and load new files
         setCurrentMainUrl(pickRandom(MAIN_LOOPS));
         setCurrentDrumUrl(pickRandom(DRUM_LOOPS));
         setCurrentClapUrl(pickRandom(CLAP_LOOPS));
         setCurrentGhostUrl(pickRandom(GHOST_LOOPS));
+        // --- ADDED: Randomize Lead ---
+        setCurrentLeadUrl(pickRandom(LEAD_LOOPS));
+        // -----------------------------
+    };
+
+    const handleRateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newRate = parseFloat(e.target.value);
+        setPlaybackRate(newRate);
     };
 
 
@@ -206,9 +255,16 @@ export default function SounderPage() {
         setIsPlaying(false);
     };
 
-    // Calculate how many of the four players are loaded for the UI
-    const loadedCount = [mainPlayerLoaded, drumPlayerLoaded, clapPlayerLoaded, ghostPlayerLoaded].filter(Boolean).length;
-    const totalPlayers = 4;
+    // --- UPDATED: Loaded Count ---
+    const loadedCount = [
+        mainPlayerLoaded, 
+        drumPlayerLoaded, 
+        clapPlayerLoaded, 
+        ghostPlayerLoaded,
+        leadPlayerLoaded // ADDED
+    ].filter(Boolean).length;
+    // The total is now 5
+    // -----------------------------
 
 
     // Helper component to render a select field for a track
@@ -223,7 +279,6 @@ export default function SounderPage() {
             <select
                 value={currentUrl}
                 onChange={handleChange}
-                // Only disable selection if the system is currently loading
                 disabled={!allLoaded} 
                 className="p-1 border bg-gray-700 text-white rounded w-full"
             >
@@ -238,7 +293,7 @@ export default function SounderPage() {
 
     return (
         <main className="min-h-screen p-8  text-gray-200 flex flex-col items-center justify-center">
-            <h1 className="text-3xl mb-4">Tone.js Real-Time Loop Changer</h1>
+            <h1 className="text-3xl mb-4">Tone.js Real-Time Loop Changer (5 Tracks)</h1>
             
             <div className="w-full max-w-md mb-6 p-4 border rounded">
                 <h2 className="text-xl mb-4">Select Tracks ({LOOP_DURATION} loops)</h2>
@@ -267,9 +322,42 @@ export default function SounderPage() {
                     options={GHOST_LOOPS}
                     handleChange={handleGhostChange}
                 />
+                {/* --- ADDED: Lead Track Selector --- */}
+                <SelectTrack
+                    label="Lead"
+                    currentUrl={currentLeadUrl}
+                    options={LEAD_LOOPS}
+                    handleChange={handleLeadChange}
+                />
+                {/* ------------------------------------ */}
             </div>
 
-            {/* Inform the user about loading status */}
+            <div className="w-full max-w-md mb-6 p-4 border rounded">
+                <h2 className="text-xl mb-4">Global Playback Rate</h2>
+                <div className="flex flex-col items-center">
+                    <label htmlFor="playback-rate" className="mb-2 font-semibold">
+                        Rate: {playbackRate.toFixed(2)}x
+                    </label>
+                    <input
+                        type="range"
+                        id="playback-rate"
+                        min="0.5"
+                        max="2.0"
+                        step="0.01"
+                        value={playbackRate}
+                        onChange={handleRateChange}
+                        disabled={!initialLoadComplete}
+                        className="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer range-lg"
+                    />
+                    <div className="flex justify-between w-full text-xs mt-1">
+                        <span>0.5x (Slowest)</span>
+                        <span>1.0x (Normal)</span>
+                        <span>2.0x (Fastest)</span>
+                    </div>
+                </div>
+            </div>
+
+            {/* Inform the user about loading status (UPDATED TOTAL) */}
             {!allLoaded && (
                 <p className="text-yellow-400 mb-4">
                     Loading current audio selection... ({loadedCount}/{totalPlayers})
@@ -279,7 +367,6 @@ export default function SounderPage() {
             <div className="mb-4 flex space-x-4">
                 <button
                     onClick={randomizePicks}
-                    // FIX: Always allow randomize if we are loaded. If loading is slow, it will be disabled.
                     disabled={!allLoaded} 
                     className="border text-white font-semibold py-2 px-6 rounded"
                 >
