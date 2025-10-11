@@ -30,13 +30,16 @@ const GHOST_LOOPS = [
     "/assets/sounder-audios/Emitters - BaseProject4 - Ghost1.mp3",
 ];
 
-// --- NEW LEAD LOOP ARRAY ---
 const LEAD_LOOPS = [
     SILENCE_PLACEHOLDER,
     "/assets/sounder-audios/Emitters - BaseProject4 - Lead1.mp3",
     "/assets/sounder-audios/Emitters - BaseProject4 - Lead2.mp3",
 ];
-// ----------------------------
+
+const TAC_LOOPS = [
+    SILENCE_PLACEHOLDER,
+    "/assets/sounder-audios/Emitters - BaseProject4 - Tac1.mp3",
+];
 
 
 // Helper to display the name of the chosen URL, handling SILENCE
@@ -104,8 +107,7 @@ const usePlayerEffect = (
     useEffect(() => {
         // Only run this if the URL is not SILENCE
         if (playerRef.current && url !== SILENCE_PLACEHOLDER) {
-            // Use Tone.set or Tone.Param.setValueAtTime for precise scheduling if needed, 
-            // but direct assignment is fine for the global playbackRate
+            // Direct assignment is fine for the global playbackRate
             playerRef.current.playbackRate = playbackRate;
             console.log(`Playback Rate updated to ${playbackRate.toFixed(2)} for ${url.split('/').pop()}`);
         }
@@ -117,12 +119,17 @@ export default function SounderPage() {
     const [isPlaying, setIsPlaying] = useState(false);
     const [playbackRate, setPlaybackRate] = useState(1.0);
     
-    // --- ADDED: Lead Track State ---
+    // Track 6: TAC State and Ref
+    const [tacPlayerLoaded, setTacPlayerLoaded] = useState(true);
+    const [currentTacUrl, setCurrentTacUrl] = useState(TAC_LOOPS[0]);
+    const tacPlayerRef = useRef<Tone.Player | null>(null);
+    
+    // Track 5: Lead State and Ref
     const [leadPlayerLoaded, setLeadPlayerLoaded] = useState(true);
     const [currentLeadUrl, setCurrentLeadUrl] = useState(LEAD_LOOPS[0]);
     const leadPlayerRef = useRef<Tone.Player | null>(null);
-    // -------------------------------
     
+    // Track 1-4 States and Refs
     const [mainPlayerLoaded, setMainPlayerLoaded] = useState(true);
     const [drumPlayerLoaded, setDrumPlayerLoaded] = useState(true);
     const [clapPlayerLoaded, setClapPlayerLoaded] = useState(true);
@@ -138,10 +145,10 @@ export default function SounderPage() {
     const clapPlayerRef = useRef<Tone.Player | null>(null);
     const ghostPlayerRef = useRef<Tone.Player | null>(null);
 
-    // --- UPDATED: All Loaded Check ---
-    const allLoaded = mainPlayerLoaded && drumPlayerLoaded && clapPlayerLoaded && ghostPlayerLoaded && leadPlayerLoaded;
-    const totalPlayers = 5;
-    // ---------------------------------
+    // --- UPDATED: All Loaded Check (6 tracks) ---
+    const allLoaded = mainPlayerLoaded && drumPlayerLoaded && clapPlayerLoaded && ghostPlayerLoaded && leadPlayerLoaded && tacPlayerLoaded;
+    const totalPlayers = 6;
+    // ---------------------------------------------
 
     const [initialLoadComplete, setInitialLoadComplete] = useState(false);
 
@@ -151,9 +158,10 @@ export default function SounderPage() {
         setDrumPlayerLoaded(false);
         setClapPlayerLoaded(false);
         setGhostPlayerLoaded(false);
-        // --- ADDED: Lead Track Initial Load ---
         setLeadPlayerLoaded(false);
-        // --------------------------------------
+        // --- ADDED: Tac Track Initial Load ---
+        setTacPlayerLoaded(false);
+        // -------------------------------------
     }, []);
 
     // Effect to mark initial load as complete
@@ -168,22 +176,24 @@ export default function SounderPage() {
     usePlayerEffect(currentDrumUrl, drumPlayerRef, setDrumPlayerLoaded, isPlaying, playbackRate);
     usePlayerEffect(currentClapUrl, clapPlayerRef, setClapPlayerLoaded, isPlaying, playbackRate);
     usePlayerEffect(currentGhostUrl, ghostPlayerRef, setGhostPlayerLoaded, isPlaying, playbackRate);
-    // --- ADDED: Lead Player Hook Call ---
     usePlayerEffect(currentLeadUrl, leadPlayerRef, setLeadPlayerLoaded, isPlaying, playbackRate);
-    // ------------------------------------
+    // --- ADDED: Tac Player Hook Call ---
+    usePlayerEffect(currentTacUrl, tacPlayerRef, setTacPlayerLoaded, isPlaying, playbackRate);
+    // -----------------------------------
 
 
     // === INITIAL START/STOP LOGIC ===
     useEffect(() => {
-        // --- UPDATED: Player List ---
+        // --- UPDATED: Player List (6 tracks) ---
         const players = [
             mainPlayerRef.current, 
             drumPlayerRef.current, 
             clapPlayerRef.current, 
             ghostPlayerRef.current,
-            leadPlayerRef.current // ADDED
+            leadPlayerRef.current, 
+            tacPlayerRef.current // ADDED
         ].filter(p => p !== null) as Tone.Player[];
-        // ----------------------------
+        // ---------------------------------------
         
         if (isPlaying) {
             if (!allLoaded) return;
@@ -219,11 +229,14 @@ export default function SounderPage() {
     const handleGhostChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         setCurrentGhostUrl(e.target.value);
     };
-    // --- ADDED: Lead Track Change Handler ---
     const handleLeadChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         setCurrentLeadUrl(e.target.value);
     };
-    // ----------------------------------------
+    // --- ADDED: Tac Track Change Handler ---
+    const handleTacChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setCurrentTacUrl(e.target.value);
+    };
+    // ---------------------------------------
     
     // The previous Randomize function for convenience
     const randomizePicks = () => {
@@ -231,9 +244,10 @@ export default function SounderPage() {
         setCurrentDrumUrl(pickRandom(DRUM_LOOPS));
         setCurrentClapUrl(pickRandom(CLAP_LOOPS));
         setCurrentGhostUrl(pickRandom(GHOST_LOOPS));
-        // --- ADDED: Randomize Lead ---
         setCurrentLeadUrl(pickRandom(LEAD_LOOPS));
-        // -----------------------------
+        // --- ADDED: Randomize Tac ---
+        setCurrentTacUrl(pickRandom(TAC_LOOPS));
+        // ----------------------------
     };
 
     const handleRateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -255,16 +269,16 @@ export default function SounderPage() {
         setIsPlaying(false);
     };
 
-    // --- UPDATED: Loaded Count ---
+    // --- UPDATED: Loaded Count (6 tracks) ---
     const loadedCount = [
         mainPlayerLoaded, 
         drumPlayerLoaded, 
         clapPlayerLoaded, 
         ghostPlayerLoaded,
-        leadPlayerLoaded // ADDED
+        leadPlayerLoaded, 
+        tacPlayerLoaded // ADDED
     ].filter(Boolean).length;
-    // The total is now 5
-    // -----------------------------
+    // ----------------------------------------
 
 
     // Helper component to render a select field for a track
@@ -293,7 +307,7 @@ export default function SounderPage() {
 
     return (
         <main className="min-h-screen p-8  text-gray-200 flex flex-col items-center justify-center">
-            <h1 className="text-3xl mb-4">Tone.js Real-Time Loop Changer (5 Tracks)</h1>
+            <h1 className="text-3xl mb-4">Tone.js Real-Time Loop Changer (6 Tracks)</h1>
             
             <div className="w-full max-w-md mb-6 p-4 border rounded">
                 <h2 className="text-xl mb-4">Select Tracks ({LOOP_DURATION} loops)</h2>
@@ -322,14 +336,20 @@ export default function SounderPage() {
                     options={GHOST_LOOPS}
                     handleChange={handleGhostChange}
                 />
-                {/* --- ADDED: Lead Track Selector --- */}
                 <SelectTrack
                     label="Lead"
                     currentUrl={currentLeadUrl}
                     options={LEAD_LOOPS}
                     handleChange={handleLeadChange}
                 />
-                {/* ------------------------------------ */}
+                {/* --- ADDED: Tac Track Selector --- */}
+                <SelectTrack
+                    label="Tac"
+                    currentUrl={currentTacUrl}
+                    options={TAC_LOOPS}
+                    handleChange={handleTacChange}
+                />
+                {/* --------------------------------- */}
             </div>
 
             <div className="w-full max-w-md mb-6 p-4 border rounded">
