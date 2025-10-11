@@ -86,6 +86,16 @@ export default function Home() {
               </CardContent>
             </Card>
           </Link>
+          <Link href="/sounder" className="h-full">
+            <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
+              <CardHeader>
+                <CardTitle>Sounder Project</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">A sound design tool for creating randomized music</p>
+              </CardContent>
+            </Card>
+          </Link>
           <Link href="/HipsExample" className="h-full">
             <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
               <CardHeader>
