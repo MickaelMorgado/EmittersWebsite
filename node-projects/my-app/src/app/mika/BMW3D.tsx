@@ -4,6 +4,7 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { Bloom, EffectComposer } from "@react-three/postprocessing";
 import { Suspense, useRef } from "react";
 import * as THREE from "three";
+import { metalMaterialParams, redMaterialParams } from "./constants";
 
 import { Mesh, Object3D } from "three";
 
@@ -18,21 +19,11 @@ function BMWModel(props: any) {
       const mesh = child as Mesh;
       const meshIndex = mesh.parent?.children.indexOf(mesh);
       if (meshIndex === 1) {
-        mesh.material = new THREE.MeshStandardMaterial({
-          color: 0xff0000,
-          emissive: 0xff0000,
-          emissiveIntensity: 1.0,
-          roughness: 0.1,
-          metalness: 0.9,
-        });
+        mesh.material = new THREE.MeshStandardMaterial({...redMaterialParams});
         mesh.userData.bloom = true;
         mesh.layers.enable(1);
       } else {
-        mesh.material = new THREE.MeshStandardMaterial({
-          color: 0x444444,
-          roughness: 0.7,
-          metalness: 0.3,
-        });
+        mesh.material = new THREE.MeshStandardMaterial({...metalMaterialParams});
         mesh.userData.bloom = false;
         mesh.layers.set(0);
       }
@@ -66,7 +57,7 @@ export default function BMW3D() {
               luminanceSmoothing={0.1}
               height={300}
               intensity={1}
-              radius={0.8}
+              radius={0.4}
             />
           </EffectComposer>
         </Suspense>

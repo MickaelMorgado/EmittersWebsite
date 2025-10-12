@@ -1,9 +1,11 @@
 "use client";
-import { OrbitControls, useAnimations, useGLTF } from "@react-three/drei";
+import { Environment, OrbitControls, useAnimations, useGLTF } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Bloom, EffectComposer } from "@react-three/postprocessing";
 import { Suspense, useEffect, useRef } from "react";
 import * as THREE from "three";
+import { metalMaterialParams, redMaterialParams } from "./constants";
+
 
 import { Mesh, Object3D } from "three";
 
@@ -16,19 +18,9 @@ function PrintingModel(props: any) {
   scene.traverse((child) => {
     if ((child as Mesh).isMesh) {
       const mesh = child as Mesh;
-      mesh.material = new THREE.MeshStandardMaterial({
-        color: 0x555555,
-        roughness: 0.7,
-        metalness: 0.3,
-      });
+      mesh.material = new THREE.MeshStandardMaterial({...metalMaterialParams});
       if (mesh.name === "head" || mesh.name.includes("nozzle")) {
-        mesh.material = new THREE.MeshStandardMaterial({
-          color: 0xff0000,
-          emissive: 0xff0000,
-          emissiveIntensity: 2.0,
-          roughness: 0.3,
-          metalness: 0.8,
-        });
+        mesh.material = new THREE.MeshStandardMaterial({...redMaterialParams});
       }
     }
   });
@@ -64,8 +56,9 @@ export default function Printing3D() {
           gl.getContext().disable(gl.getContext().STENCIL_TEST);
         }}
       >
+        <Environment preset="studio" environmentIntensity={0.05} />
         <ambientLight intensity={0.5} color={0xff0000} />
-        <directionalLight position={[1, 1, 1]} intensity={1} />
+        <directionalLight position={[1, 1, 1]} intensity={0} />
         <Suspense fallback={null}>
           <PrintingModel />
           <EffectComposer>
@@ -74,7 +67,7 @@ export default function Printing3D() {
               luminanceSmoothing={0.1}
               height={300}
               intensity={1}
-              radius={0.8}
+              radius={0.4}
             />
           </EffectComposer>
         </Suspense>
