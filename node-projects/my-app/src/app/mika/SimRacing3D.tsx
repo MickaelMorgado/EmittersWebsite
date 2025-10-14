@@ -31,14 +31,14 @@ function SimRacingModel(props: any) {
     mixer?.update(delta);
   });
 
-  return <primitive ref={group} object={scene} scale={0.35} position={[0, -2, 0]} {...props} />;
+  return <primitive ref={group} object={scene} scale={0.35} position={[0, 0, 0]} {...props} />;
 }
 
 export default function SimRacing3D() {
   return (
     <div style={{ width: "100%", height: "100%" }}>
       <Canvas
-        camera={{ position: [0, 0, 15], fov: 75 }}
+        camera={{ position: [0, 0, 20], fov: 75 }}
         style={{ background: "transparent", width: "100%", height: "100%" }}
         shadows
       >

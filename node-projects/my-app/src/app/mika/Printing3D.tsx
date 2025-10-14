@@ -41,7 +41,7 @@ function PrintingModel(props: any) {
     mixer?.update(delta);
   });
 
-  return <primitive ref={group} object={scene} scale={1.1} position={[0, -2, 0]} {...props} />;
+  return <primitive ref={group} object={scene} scale={1.1} position={[0, -3, 0]} {...props} />;
 }
 
 export default function Printing3D() {

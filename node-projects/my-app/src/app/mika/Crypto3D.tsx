@@ -38,7 +38,7 @@ export default function Crypto3D() {
   return (
     <div style={{ width: "100%", height: "100%" }}>
       <Canvas
-        camera={{ position: [0, 0, 15], fov: 75 }}
+        camera={{ position: [0, -10, 12], fov: 75 }}
         style={{ background: "transparent", width: "100%", height: "100%" }}
         shadows
       >

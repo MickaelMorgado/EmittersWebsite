@@ -35,7 +35,7 @@ function BMWModel(props: any) {
     mixer?.update(delta);
   });
 
-  return <primitive ref={group} object={scene} scale={0.8} position={[0, -2, 0]} {...props} />;
+  return <primitive ref={group} object={scene} scale={0.8} position={[0, 0, 0]} {...props} />;
 }
 
 export default function BMW3D() {

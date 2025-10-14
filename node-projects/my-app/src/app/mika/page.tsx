@@ -10,7 +10,9 @@ import Code3D from "./Code3D";
 import Crypto3D from "./Crypto3D";
 import Drones3D from "./Drones3D";
 import { useGsapEffects } from "./gsapEffects";
+import Main3DModel from "./Main3D";
 import Printing3D from "./Printing3D";
+import RadarChart from "./RadarChart";
 import SimRacing3D from "./SimRacing3D";
 
 const modelBasePath = "@assets/models/";
@@ -19,7 +21,7 @@ const modelBasePath = "@assets/models/";
 export default function MikaPage() {
   useGsapEffects();
 
-  const [activeFilter, setActiveFilter] = useState("all");
+  const [activeFilter, setActiveFilter] = useState("All");
 
   const handleFilterClick = (filter: string) => {
     setActiveFilter(filter);
@@ -28,6 +30,44 @@ export default function MikaPage() {
   // Example usage of modelBasePath in components that load models:
   // <ModelComponent modelPath={`${modelBasePath}A1Mini.gltf`} />
 
+  const skills = [
+    { name: "React & Next.js", level: 70 },
+    { name: "SciChart.js", level: 40 },
+    { name: "JavaScript", level: 75 },
+    { name: "React Three.js", level: 40 },
+    { name: "TypeScript", level: 60 },
+    { name: "Tailwind CSS", level: 40 },
+    { name: "Git", level: 75 },
+    { name: "Node.js", level: 60 },
+    { name: "Express.js", level: 20 },
+    { name: "MongoDB", level: 20 },
+    { name: "PostgreSQL", level: 20 },
+    { name: "Docker", level: 50 },
+    { name: "Agentic AI / LLMs", level: 30 },
+    { name: "Automation", level: 70 },
+    { name: "Web 3", level: 20 },
+    { name: "Supabase / Firebase", level: 20 }
+  ];
+
+  const lowSkills = skills.filter(skill => skill.level <= 20);
+  const radarSkills = skills.filter(skill => skill.level > 20);
+
+  const otherSkills = [
+    { name: "Blender", level: 70 },
+    { name: "Unreal Engine", level: 90 },
+    { name: "3D Printing", level: 30 },
+    { name: "Live Streaming", level: 70 },
+    { name: "Trading", level: 50 },
+    { name: "Investing", level: 35 },
+    { name: "Google Sheets", level: 25 },
+    { name: "FL Studio Music Composer", level: 50 },
+    { name: "Video Editing", level: 30 },
+    { name: "SIM Racing", level: 80 },
+    { name: "Aquascaping", level: 20 },
+  ];
+
+  const lowOtherSkills = otherSkills.filter(skill => skill.level <= 20);
+  const radarOtherSkills = otherSkills.filter(skill => skill.level > 20);
 
   useEffect(() => {
     // Inject the CSS styles for motion path container and body
@@ -202,12 +242,27 @@ export default function MikaPage() {
               />
             </svg>
           </div>
+
+          {/* Three js model as Background */}
+          <Main3DModel />
+
           {/* Hero Section */}
           <section id="hero" className="min-h-screen flex items-center justify-center">
             <div className="container mx-auto px-6 z-10 text-center">
               <h1 className="text-5xl font-bold mb-6 uppercase">Tech Developer</h1>
               <p className="text-xl mb-8">The ultimate 'Jack of all trades'</p>
-              <a href="#work" className="text-primary hover:text-white transition-colors">View My Work</a>
+<a
+  href="#"
+  onClick={(e) => {
+    e.preventDefault();
+    window.scrollBy({ top: window.innerHeight - 200, behavior: "smooth" });
+  }}
+  className="text-red-500 opacity-20! hover:opacity-100! scale-100 transition-all hover:scale-200"
+>
+  ⩒
+</a>
+
+
             </div>
           </section>
 
@@ -238,7 +293,7 @@ export default function MikaPage() {
                       width={300}
                       height={300}
                       src="./assets/mika.png"
-                      className="rounded-full w-80 h-80 mx-auto saturate-50"
+                      className="rounded-full w-90 h-90 mx-auto saturate-50"
                       alt="Mickael"
                     />
                 </div>
@@ -397,66 +452,28 @@ export default function MikaPage() {
           <section id="skills" className="py-20">
             <div className="container mx-auto px-6">
               <h2 className="text-5xl font-bold text-center mb-12 uppercase">PROGRAMMING SKILLS</h2>
-              <div className="flex flex-col md:flex-row gap-12">
+              <div className="flex flex-col items-center md:flex-row gap-40">
                 <div className="md:w-1/2">
-                  <div className="grid grid-cols-2 gap-4">
-                    <ul className="space-y-2 list-disc list-inside">
-                      <li>React & Next.js</li>
-                      <li>SciChart.js</li>
-                      <li>JavaScript</li>
-                      <li>TypeScript</li>
-                      <li>Tailwind CSS</li>
+                  <p>
+                    I am a web developer and tech enthusiast with a strong foundation in React & Next.js, JavaScript, TypeScript, Node.js, and Git. I build dynamic web applications, integrate automation workflows, and explore agentic AI / LLMs to create intelligent, self-improving systems.
+                    <br />
+                    <br />
+                    My experience spans full-stack development with Docker, basic backend work using Express.js, MongoDB, PostgreSQL, and modern web services like Supabase / Firebase. I also experiment with SciChart.js for interactive data visualization, Tailwind CSS for clean UI design, and explore emerging technologies like Web3.
+                    <br />
+                    <br />
+                    Driven by curiosity and problem-solving, I combine hands-on coding, automation, and experimentation to deliver practical and innovative tech solutions.
+                  </p>
+                  {lowSkills.length > 0 && (
+                    <ul title="Other skills I tried but can't confidently say that I'm mastered yet" className="mt-4 list-disc list-inside text-sm text-gray-400">
+                      {lowSkills.map(skill => (
+                        <li key={skill.name}>{skill.name}</li>
+                      ))}
                     </ul>
-                    <ul className="space-y-2 list-disc list-inside">
-                      <li>Git</li>
-                      <li>Node.js</li>
-                      <li>Express.js</li>
-                      <li>MongoDB</li>
-                      <li>PostgreSQL</li>
-                    </ul>
-                    <ul className="space-y-2 list-disc list-inside">
-                      <li>Redis</li>
-                      <li>Docker</li>
-                      <li>Kubernetes</li>
-                    </ul>
-                  </div>
+                  )}
                 </div>
                 <div className="md:w-1/2">
                   <div className="grid grid-cols-6 gap-4">
-                    {/* Skill icons */}
-                    <div className="skill-icon relative" data-tooltip="React.js - Building reusable components and managing state efficiently &#x1F534;&#x1F534;&#x1F534;&#x1F534;">
-                      <i className="fab fa-react text-3xl"></i>
-                    </div>
-                    <div className="skill-icon relative" data-tooltip="Next.js - Server-side rendering and static site generation &#x1F534;&#x1F534;&#x1F534;">
-                      <i className="fas fa-server text-3xl"></i>
-                    </div>
-                    <div className="skill-icon relative" data-tooltip="JavaScript - ES6+ features and modern development &#x1F534;&#x1F534;&#x1F534;">
-                      <i className="fab fa-js text-3xl"></i>
-                    </div>
-                    <div className="skill-icon relative" data-tooltip="TypeScript - Type safety and better code organization &#x1F534;&#x1F534;">
-                      <i className="fab fa-typescript text-3xl"></i>
-                    </div>
-                    <div className="skill-icon relative" data-tooltip="Tailwind CSS - Utility-first styling &#x1F534;">
-                      <i className="fas fa-paint-brush text-3xl"></i>
-                    </div>
-                    <div className="skill-icon relative" data-tooltip="Git - Version control and collaboration &#x1F534;&#x1F534;&#x1F534;&#x1F534;">
-                      <i className="fab fa-git text-3xl"></i>
-                    </div>
-                    <div className="skill-icon relative" data-tooltip="Node.js - Backend development with JavaScript &#x1F534;&#x1F534;">
-                      <i className="fab fa-node text-3xl"></i>
-                    </div>
-                    <div className="skill-icon relative" data-tooltip="MongoDB - NoSQL database &#x1F534;">
-                      <i className="fas fa-database text-3xl"></i>
-                    </div>
-                    <div className="skill-icon relative" data-tooltip="SciChart.js - Real-time data visualization &#x1F534;&#x1F534;&#x1F534;">
-                      <i className="fas fa-chart-line text-3xl"></i>
-                    </div>
-                    <div className="skill-icon relative" data-tooltip="Electron - Cross-platform desktop application &#x1F534;&#x1F534;">
-                      <i className="fas fa-desktop text-3xl"></i>
-                    </div>
-                    <div className="skill-icon relative" data-tooltip="IFPS - Decentralized storage &#x1F534;">
-                      <i className="fas fa-cloud text-3xl"></i>
-                    </div>
+                    <RadarChart data={radarSkills} />
                   </div>
                 </div>
               </div>
@@ -467,46 +484,27 @@ export default function MikaPage() {
           <section id="otherSkills" className="py-20">
             <div className="container mx-auto px-6">
               <h2 className="text-5xl font-bold text-center mb-12 uppercase">OTHER SKILLS</h2>
-              <div className="flex flex-col md:flex-row gap-12">
+              <div className="flex flex-col items-center md:flex-row gap-40">
                 <div className="md:w-1/2">
-                  <div className="grid grid-cols-2 gap-4">
-                    <ul className="space-y-2 list-disc list-inside">
-                      <li>Blender</li>
-                      <li>Unreal Engine</li>
-                      <li>3D Printing</li>
-                      <li>Live Streaming</li>
-                      <li>Trading</li>
-                      <li>Google Sheets</li>
-                      <li>FL Studio Music Composer</li>
+                  <p>
+                    I am a versatile creator and technologist blending game development, 3D modeling, and digital fabrication. I designed 3D assets for my game Emitters using Blender and Unreal Engine, and now apply CAD techniques for 3D printing to turn digital concepts into physical objects.
+                    <br /><br />
+                    I also live stream, compose music with FL Studio, and manage a sophisticated multi-asset portfolio using Google Sheets—creating interactive graphs and data visualizers that combine savings, investments, and trading strategies.
+                    <br /><br />
+                    Hands-on, analytical, and creative, I thrive at the intersection of interactive experiences, digital creation, and financial insight.
+                  </p>
+
+                  {lowOtherSkills.length > 0 && (
+                    <ul title="Other skills I tried but can't confidently say that I'm mastered yet" className="mt-4 list-disc list-inside text-sm text-gray-400">
+                      {lowOtherSkills.map(skill => (
+                        <li key={skill.name}>{skill.name}</li>
+                      ))}
                     </ul>
-                    <ul className="space-y-2 list-disc list-inside"></ul>
-                    <ul className="space-y-2 list-disc list-inside"></ul>
-                  </div>
+                  )}
                 </div>
+
                 <div className="md:w-1/2">
-                  <div className="grid grid-cols-6 gap-4">
-                    <div className="skill-icon relative" data-tooltip="Blender - 3D Modeling">
-                      <i className="fab fa-blender text-3xl"></i>
-                    </div>
-                    <div className="skill-icon relative" data-tooltip="Unreal Engine - Game Development">
-                      <i className="fab fa-unreal-engine text-3xl"></i>
-                    </div>
-                    <div className="skill-icon relative" data-tooltip="3D Printing - FDM/SLA Printing">
-                      <i className="fas fa-print text-3xl"></i>
-                    </div>
-                    <div className="skill-icon relative" data-tooltip="Live Streaming - YouTube/Twitch">
-                      <i className="fab fa-youtube text-3xl"></i>
-                    </div>
-                    <div className="skill-icon relative" data-tooltip="Trading - Stock/Crypto Trading">
-                      <i className="fas fa-chart-pie text-3xl"></i>
-                    </div>
-                    <div className="skill-icon relative" data-tooltip="Google Sheets - Spreadsheets">
-                      <i className="fas fa-table text-3xl"></i>
-                    </div>
-                    <div className="skill-icon relative" data-tooltip="FL Studio - Music Composition">
-                      <i className="fas fa-music text-3xl"></i>
-                    </div>
-                  </div>
+                  <RadarChart data={radarOtherSkills} />
                 </div>
               </div>
             </div>
@@ -518,105 +516,125 @@ export default function MikaPage() {
               <h2 className="text-5xl font-bold text-center mb-12">APPS / TOOLS / PROJECTS</h2>
               <div className="mb-12 text-center">
                 <div className="flex flex-wrap justify-center">
-              {["all", "Racing", "Game Development", "Apps", "Scripting"].map((filter) => (
-                <span
-                  key={filter}
-                  className={`badge mr-2 mb-2 ${activeFilter === filter ? "active" : ""}`}
-                  data-filter={filter}
-                  onClick={() => handleFilterClick(filter)}
-                  style={{ cursor: "pointer" }}
-                >
-                  {filter === "all" ? "All" : filter}
-                </span>
-              ))}
-            </div>
-          </div>
-          <div id="tools-grid" className="grid md:grid-cols-3 gap-12">
-            {[{
-                category: "Racing",
-                imgSrc: "https://raw.githubusercontent.com/Mikaele01/simhub-dashboard/main/simhub-dashboard.png",
-                alt: "SimHub Dashboard",
-                title: "SimHub Dashboard",
-                description: "A customizable dashboard for SimHub, a racing simulator.",
-                link: "https://github.com/Mikaele01/simhub-dashboard",
-                linkText: "Download Now",
-              },
-              {
-                category: "Game Development",
-                imgSrc: "https://emittersgame.com/assets/images/1.jpg",
-                alt: "Emitters Game",
-                title: "Emitters Game",
-                description: "This is one of my biggest project, a game created from scratch and an awesome website for it. Emitters is a fast-paced, first-person experience set in a future taken over by deadly hi-tech drones.",
-                link: "https://emittersgame.com",
-                linkText: "Visit Website",
-              },
-              {
-                category: "Apps",
-                imgSrc: "https://github.com/Mikaele01/MikasCodesApp/blob/main/assets/images/screenshot.png?raw=true",
-                alt: "Mikas Codes App",
-                title: "Mikas Codes App",
-                description: "An Electron app for storing and generating codes. Logging tasks hour for daily job, super efficient.",
-                link: "https://github.com/Mikaele01/MikasCodesApp",
-                linkText: "View on GitHub",
-              },
-              {
-                category: "Scripting",
-                imgSrc: "https://via.placeholder.com/600x400",
-                alt: "Scripting",
-                title: "Scripting",
-                description: "I love to make my life easier with scripts, always bringing solutions to my daily tasks.",
-                link: "#",
-                linkText: "View Details",
-              },
-              {
-                category: "Apps",
-                imgSrc: "/assets/images/tools/ipfs.png",
-                alt: "IFPSTutorial",
-                title: "IFPS Limitless Cloud Storage",
-                description: "A cloud file storage using web3 technology (IFPS). This is a personal project to improve my flow when it comes to transfer files in the easiest way possible, no google account required and easily transferable to mobile devices, no cloud storage limit as its basically p2p scattered files.",
-                link: "https://github.com/Mikaele01/IFPSTutorial",
-                linkText: "View on GitHub",
-              },
-              {
-                category: "Game Development",
-                imgSrc: "/assets/images/tools/shoot.png",
-                alt: "Shooter",
-                title: "Shooter",
-                description: "This is my first project I ever made, it was a lot of fun to make in my beginner days with html, css and js (and php at the time).",
-                link: "https://mikaele01.github.io/Shooter/",
-                linkText: "Play Now",
-              }
-            ].map((tool, index) => {
-              const isVisible = activeFilter === "all" || tool.category === activeFilter;
-              return (
-                <div
-                  key={index}
-                  className={`card rounded-lg p-8 ${isVisible ? "block" : "hidden"}`}
-                  data-category={tool.category}
-                >
-                  <div className="card-content">
-                    <Image
-                      width={300}
-                      height={300}
-                      src={tool.imgSrc}
-                      alt={tool.alt}
-                      className="w-full rounded-lg mb-6"
-                    />
-                    <h3 className="text-2xl font-bold mb-4">{tool.title}</h3>
-                    <p className="mb-4">{tool.description}</p>
-                    <a href={tool.link} className="btn-minimal">
-                      {tool.linkText}
-                    </a>
-                  </div>
+                  {["All", "Racing", "Game Development", "Apps", "Scripting"].map((filter) => (
+                    <span
+                      key={filter}
+                      className={`badge mr-2 mb-2 ${activeFilter === filter ? "active" : ""}`}
+                      data-filter={filter}
+                      onClick={() => handleFilterClick(filter)}
+                      style={{ cursor: "pointer" }}
+                    >
+                      {filter}
+                    </span>
+                  ))}
                 </div>
-              );
-            })}
-          </div>
+              </div>
+              <div id="tools-grid" className="grid md:grid-cols-3 gap-12">
+                {[{
+                    category: "Racing",
+                    imgSrc: "./assets/images/simhubdashboard.png",
+                    alt: "SimHub Dashboard",
+                    title: "SimHub Dashboard",
+                    description: "Created my first SimHub dashboard for my sim racing rig, using a tablet as a secondary screen. It displays RPM, pedals inputs, position and laps, as well as lap times, time delta & lap differencials, fuel consuption and lap estimates, ABS/TC levels, and race flags info while racing.",
+                    link: "https://github.com/Mikaele01/simhub-dashboard",
+                    linkText: "Download Now",
+                    readMore: "https://www.tiktok.com/@mickaelmorgado7/video/7469122187866180896"
+                  },
+                  {
+                    category: "Game Development",
+                    imgSrc: "https://emittersgame.com/assets/images/gallery/Capture2.png",
+                    alt: "Emitters Game",
+                    title: "EMITTERS Game",
+                    description: "This is one of my biggest project, a game created from scratch and an awesome website for it. Emitters is a fast-paced, first-person experience set in a future taken over by deadly hi-tech drones.",
+                    link: "https://emittersgame.com",
+                    linkText: "Visit Website",
+                  },
+                  {
+                    category: "Apps",
+                    imgSrc: "https://raw.githubusercontent.com/MickaelMorgado/MikasCodesApp/main/src/assets/images/github/Screenshot%202024-01-20%20at%2000.03.18.png",
+                    alt: "Mikas Codes App",
+                    title: "Mikas Codes App",
+                    description: "An Electron app for storing and generating codes. Logging tasks hour for daily job, super efficient.",
+                    link: "https://github.com/MickaelMorgado/MikasCodesApp",
+                    linkText: "View on GitHub",
+                  },
+                  {
+                    category: "Scripting",
+                    imgSrc: "https://via.placeholder.com/600x400",
+                    alt: "Scripting",
+                    title: "Scripting",
+                    description: "I love to make my life easier with scripts, always bringing solutions to my daily tasks.",
+                    link: "#",
+                    linkText: "View Details",
+                  },
+                  {
+                    category: "Apps",
+                    imgSrc: "https://emittersgame.com/assets/images/tools/ipfs.png",
+                    alt: "IFPSTutorial",
+                    title: "IFPS Limitless Cloud Storage",
+                    description: "A cloud file storage using Web3 technology (IFPS). This is a personal project to improve my flow when it comes to transfer files in the easiest way possible, no google account required and easily transferable to mobile devices, no cloud storage limit as its basically p2p scattered files.",
+                  },
+                  {
+                    category: "Game Development",
+                    imgSrc: "https://emittersgame.com/assets/images/tools/shoot.png",
+                    alt: "Shooter",
+                    title: "Shooter",
+                    description: "This is my first project I ever made, it was a lot of fun to make in my beginner days with html, css and js (and php at the time). I managed to recover the game for you to play, but it had way more features back in the days (old PHP xD), like main menu with players leaderboard, user settings and aesthetic and system customizations",
+                    link: "https://emittersgame.com/shoot/games/game.html",
+                    linkText: "Play Now",
+                    readMore: "https://www.youtube.com/watch?v=b1skv1fOoQY"
+                  },
+                  {
+                    category: "Apps",
+                    imgSrc: "https://blog.excelpricefeed.com/wp-content/uploads/2022/08/ticker.png",
+                    alt: "Price Ticker",
+                    title: "Price Ticker",
+                    description: "A simple crypto price ticker that could runs in your tablet, it only support static Gold, BTC and EURUSD pair but planning to make it customizable in the future. It fetches real-time prices from a public API and displays them in a user-friendly format.",
+                    link: "https://emittersgame.com/tools/index10.html",
+                    linkText: "Try Now",
+                  },
+                ].map((tool, index) => {
+                  const isVisible = activeFilter === "All" || tool.category === activeFilter;
+                  return (
+                    <div
+                      key={index}
+                      className={`card rounded-lg p-8 ${isVisible ? "flex" : "hidden"}`}
+                      data-category={tool.category}
+                    >
+                      <div className="card-content">
+                        <Image
+                          width={300}
+                          height={300}
+                          src={tool.imgSrc}
+                          alt={tool.alt}
+                          className="w-full rounded-lg mb-6"
+                        />
+                        <h3 className="text-2xl font-bold mb-4">{tool.title}</h3>
+                        <p className="mb-4">{tool.description}</p>
+                        <div className="flex gap-5">
+                        {tool.link && (
+                          <a target="_blank" href={tool.link} className="btn-minimal">
+                            {tool.linkText}
+                          </a>
+                        )}
+                        {tool.readMore && (
+                          <>
+                            <a target="_blank" href={tool.readMore} className="btn-minimal">
+                              Read More
+                            </a>
+                          </>
+                        )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </section>
 
           {/* Contact Section */}
-          <section id="contact" className="py-20">
+          <section id="contact" className="py-60">
             <div className="container mx-auto px-6">
               <div className="flex flex-col md:flex-row gap-12">
                 <div className="md:w-1/2 flex items-center justify-center">
