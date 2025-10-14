@@ -32,7 +32,7 @@ function AquariumModel(props: any) {
     mixer?.update(delta);
   });
 
-  return <primitive ref={group} object={scene} scale={0.35} position={[0, -2, 0]} {...props} />;
+  return <primitive ref={group} object={scene} scale={0.35} position={[0, 0, 0]} {...props} />;
 }
 
 export default function Aquarium3D() {
@@ -43,7 +43,7 @@ export default function Aquarium3D() {
         style={{ background: "transparent", width: "100%", height: "100%" }}
         shadows
       >
-                <Environment preset="studio" environmentIntensity={0.05} />
+        <Environment preset="studio" environmentIntensity={0.05} />
         <ambientLight intensity={0.5} color={0xff0000} />
         <directionalLight position={[1, 1, 1]} intensity={1} />
         <Suspense fallback={null}>

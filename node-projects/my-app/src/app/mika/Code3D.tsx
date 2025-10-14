@@ -49,11 +49,11 @@ export default function Code3D() {
   return (
     <div style={{ width: "100%", height: "100%" }}>
       <Canvas
-        camera={{ position: [0, 0, 15], fov: 75 }}
+        camera={{ position: [0, 5, 17], fov: 75 }}
         style={{ background: "transparent", width: "100%", height: "100%" }}
         shadows
       >
-                <Environment preset="studio" environmentIntensity={0.05} />
+        <Environment preset="studio" environmentIntensity={0.05} />
         <ambientLight intensity={0.5} color={0xff0000} />
         <directionalLight position={[1, 1, 1]} intensity={1} />
         <Suspense fallback={null}>

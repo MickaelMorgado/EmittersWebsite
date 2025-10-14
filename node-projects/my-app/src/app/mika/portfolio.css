@@ -206,8 +206,8 @@ a[href*="#"] {
 /* Hover effect for the card being hovered */
 .card:hover {
     transform: scale(1.08);
-    box-shadow: 0 15px 30px -5px rgba(255, 57, 74, 0.3), 
-                0 10px 15px -8px rgba(255, 57, 74, 0.3);
+    box-shadow: 0 15px 300px -5px rgba(255, 57, 74, 0.3), 
+                0 10px 1000px -8px rgba(255, 57, 74, 0.3);
     z-index: 10;
     position: relative;
 }
@@ -406,10 +406,6 @@ input:focus, textarea:focus {
 /* Image hover effects */
 img {
     transition: transform 0.3s ease-in-out;
-}
-
-img:hover {
-    transform: scale(1.05);
 }
 
 /* Responsive adjustments */
