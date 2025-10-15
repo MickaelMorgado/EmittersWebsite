@@ -1,116 +1,71 @@
 "use client";
 
 import gsap from "gsap";
-import { MotionPathPlugin } from "gsap/MotionPathPlugin";
 import { ScrollSmoother } from "gsap/ScrollSmoother";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useEffect } from "react";
-// import { MotionPathHelper } from "gsap/MotionPathHelper"; // Optional helper
 
-gsap.registerPlugin(ScrollTrigger, MotionPathPlugin, ScrollSmoother);
+gsap.registerPlugin(ScrollTrigger, ScrollSmoother);
 
 export function useGsapEffects() {
   useEffect(() => {
-    // Initial setup
-    gsap.set("#motionSVG", { autoAlpha: 1 });
+    // Ensure SVG visible
+    const motionSVG = document.querySelector("#motionSVG") as SVGSVGElement | null;
+    if (motionSVG) gsap.set(motionSVG, { autoAlpha: 1 });
 
-    const highlightPath = document.querySelector("#motionPathHighlight") as SVGGeometryElement;
-    if (!highlightPath) return;
+    // Select path
+    const path = document.querySelector("#motionPathHighlight") as SVGPathElement | null;
+    if (!path) return;
 
-    const pathLength = highlightPath.getTotalLength();
+    // Precompute path length
+    const pathLength = path.getTotalLength() + 500;
+    path.style.strokeDasharray = pathLength.toString();
+    path.style.strokeDashoffset = pathLength.toString();
 
-    gsap.set(highlightPath, {
-      strokeDasharray: pathLength,
-      strokeDashoffset: pathLength,
-    });
-
-    // Animation - follows full page scroll with path-based progress
-    gsap.to("#tractor", {
-      scrollTrigger: {
-        trigger: "body",
-        start: "top top",
-        end: "bottom bottom",
-        scrub: 0,
-        markers: false,
-        onUpdate: (self) => {
-          const progress = self.progress;
-          gsap.set(highlightPath, {
-            strokeDashoffset: pathLength * (1 - progress),
-          });
-        },
-        onEnter: () => {
-          gsap.set(highlightPath, {
-            strokeDashoffset: pathLength,
-          });
-        },
-        onEnterBack: () => {
-          gsap.set(highlightPath, {
-            strokeDashoffset: pathLength,
-          });
-        },
-      },
-      motionPath: {
-        path: "#motionPathHighlight",
-        align: "#motionPathHighlight",
-        alignOrigin: [0.5, 0.5],
-        autoRotate: 90,
-      },
-    });
-
-    // Initialize ScrollSmoother
-    ScrollSmoother.create({
+    // Initialize ScrollSmoother first
+    const smoother = ScrollSmoother.create({
       wrapper: "#smooth-wrapper",
       content: "#smooth-content",
       smooth: 2,
       effects: true,
-      smoothTouch: 0.1,
+      smoothTouch: 0.1
     });
 
-    // Tools grid filter
+    const contentEl = smoother.content() as HTMLElement;
+
+    // ScrollTrigger to map scroll to stroke offset
+    ScrollTrigger.create({
+      trigger: contentEl,
+      start: 0,
+      end: () => contentEl.scrollHeight - window.innerHeight - 2000,
+      scrub: true,
+      onUpdate: (self) => {
+        path.style.strokeDashoffset = (pathLength * (1 - self.progress)).toString();
+      },
+    });
+
+    // Optional: grid filters (unchanged)
     const toolsCategories = document.querySelectorAll(".badge") as NodeListOf<HTMLElement>;
     const toolsGrid = document.getElementById("tools-grid");
-
     toolsCategories.forEach((category) => {
       category.addEventListener("click", () => {
         const elements = toolsGrid?.children as HTMLCollectionOf<HTMLElement>;
         if (!elements) return;
         const selectedCategory = category.dataset.filter;
-
-        toolsCategories.forEach((category) => {
-          category.classList.remove("active");
-        });
+        toolsCategories.forEach((c) => c.classList.remove("active"));
         category.classList.add("active");
-
-        if (selectedCategory === "all") {
-          for (let i = 0; i < elements.length; i++) {
-            const element = elements[i];
-            element.classList.remove("hidden");
-          }
-          return;
-        }
-
         for (let i = 0; i < elements.length; i++) {
           const element = elements[i];
-          element.classList.add("hidden");
-        }
-
-        for (let i = 0; i < elements.length; i++) {
-          const element = elements[i];
-          if (element.dataset.category === selectedCategory) {
-            element.classList.remove("hidden");
-          }
+          element.classList.toggle("hidden", selectedCategory !== "all" && element.dataset.category !== selectedCategory);
         }
       });
     });
 
-    // Cleanup function to remove event listeners on unmount
+    // Cleanup
     return () => {
       ScrollTrigger.getAll().forEach((st) => st.kill());
-      gsap.killTweensOf(highlightPath);
-      // Remove event listeners from badges
-      toolsCategories.forEach((category) => {
-        category.replaceWith(category.cloneNode(true));
-      });
+      if (smoother) smoother.kill();
+      toolsCategories.forEach((category) => category.replaceWith(category.cloneNode(true)));
     };
   }, []);
 }
