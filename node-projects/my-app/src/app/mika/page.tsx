@@ -69,6 +69,70 @@ export default function MikaPage() {
   const lowOtherSkills = otherSkills.filter(skill => skill.level <= 20);
   const radarOtherSkills = otherSkills.filter(skill => skill.level > 20);
 
+  // Enum for corner types
+  enum CornerType {
+    DownRight,
+    DownLeft,
+    LeftDown,
+    RightDown,
+  }
+
+  // Static radius for all corners
+  const RADIUS = 150;
+
+  // Function to create a quadratic Bézier corner
+  const createCornerQ = (
+    type: CornerType,
+    startX: number,
+    startY: number
+  ): string => {
+    switch (type) {
+      case CornerType.DownRight:
+        return `Q ${startX},${startY + RADIUS} ${startX + RADIUS},${startY + RADIUS}`;
+      case CornerType.DownLeft:
+        return `Q ${startX},${startY + RADIUS} ${startX - RADIUS},${startY + RADIUS}`;
+      case CornerType.LeftDown:
+        return `Q ${startX - RADIUS},${startY} ${startX - RADIUS},${startY + RADIUS}`;
+      case CornerType.RightDown:
+        return `Q ${startX + RADIUS},${startY} ${startX + RADIUS},${startY + RADIUS}`;
+    }
+  };
+
+  const svgHigh = 13272; // document.body.clientHeight
+  const svgPath = `
+    M 600 0
+    V 1500
+    ${createCornerQ(CornerType.DownRight, 600, 1500)}
+    H 1000
+    ${createCornerQ(CornerType.RightDown, 1000, 1500 + RADIUS)}
+    V 2400
+    ${createCornerQ(CornerType.DownLeft, 1000 + RADIUS, 2400)}
+    H 200
+    ${createCornerQ(CornerType.LeftDown, 0 + RADIUS, 2400 + RADIUS)}
+    V ${3500 - RADIUS}
+    ${createCornerQ(CornerType.DownRight, 0, 3500 - RADIUS)}
+    H 1000
+    ${createCornerQ(CornerType.RightDown, 1000, 3500)}
+    V 4700
+    ${createCornerQ(CornerType.DownLeft, 1000 + RADIUS, 4700)}
+    H 400
+    ${createCornerQ(CornerType.LeftDown, 500 - RADIUS, 5000 - RADIUS)}
+    V 5400
+    ${createCornerQ(CornerType.DownRight, 200, 5400)}
+    H 800
+    ${createCornerQ(CornerType.RightDown, 700 + RADIUS, 5400 + RADIUS)}
+    V 6000
+    ${createCornerQ(CornerType.DownLeft, 800 + RADIUS, 6000)}
+    H 300
+    ${createCornerQ(CornerType.LeftDown, 300, 6000 + RADIUS)}
+    V 7000
+    ${createCornerQ(CornerType.DownRight, 150, 7000)}
+    H 1100
+    ${createCornerQ(CornerType.RightDown, 1100 , 7000 + RADIUS)}
+    V ${svgHigh}
+  `;
+
+
   useEffect(() => {
     // Inject the CSS styles for motion path container and body
     const style = document.createElement("style");
@@ -103,7 +167,7 @@ export default function MikaPage() {
   }, []);
 
   return (
-    <main className="font-saira text-white bg-dark min-h-screen">
+    <main className="font-saira text-white bg-dark h-full">
       {/* MIGRATED FROM tools/index11.html */}
       {/* Navigation */}
       <nav className="fixed top-0 w-full bg-gradient-to-r from-black via-transparent to-black z-50">
@@ -125,7 +189,7 @@ export default function MikaPage() {
           <div className="motion-path-container">
             <svg
               id="motionSVG"
-              viewBox="0 0 1200 11075"
+              viewBox={`0 0 1200 ${svgHigh}`}
               preserveAspectRatio="xMidYMin meet"
               style={{ width: "100%", height: "100%" }}
             >
@@ -145,44 +209,7 @@ export default function MikaPage() {
               {/* Background path (static) */}
               <path
                 id="motionPathBg"
-                d="M 600,0
-                  V 1500
-                  C 600,1600 650,1650 800,1650
-                  H 1000
-                  C 1150,1650 1200,1700 1200,1800
-                  V 2000
-                  C 1200,2100 1150,2150 1000,2150
-                  H 400
-                  C 250,2150 200,2200 200,2300
-                  V 3800
-                  C 200,3900 150,3950 100,3950
-                  H 50
-                  C 0,3950 0,4000 0,4050
-                  V 4250
-                  C 0,4300 50,4350 100,4350
-                  H 1000
-                  C 1150,4350 1200,4400 1200,4500
-                  V 4700
-                  C 1200,4800 1150,4850 1000,4850
-                  H 400
-                  C 250,4850 200,4900 200,5000
-                  V 6500
-                  C 200,6600 250,6650 400,6650
-                  H 800
-                  C 950,6650 1000,6700 1000,6800
-                  V 7000
-                  C 1000,7100 950,7150 800,7150
-                  H 200
-                  C 100,7150 50,7200 50,7300
-                  V 8800
-                  C 50,8900 100,8950 200,8950
-                  H 1000
-                  C 1150,8950 1200,9000 1200,9100
-                  V 9300
-                  C 1200,9400 1150,9450 1000,9450
-                  H 400
-                  C 250,9450 200,9500 200,9600
-                  V 11075"
+                d={svgPath}
                 fill="none"
                 stroke="rgba(255,255,255,0.1)"
                 strokeWidth={2}
@@ -194,44 +221,7 @@ export default function MikaPage() {
               {/* Progress path (fills as you scroll) */}
               <path
                 id="motionPathHighlight"
-                d="M 600,0
-                  V 1500
-                  C 600,1600 650,1650 800,1650
-                  H 1000
-                  C 1150,1650 1200,1700 1200,1800
-                  V 2000
-                  C 1200,2100 1150,2150 1000,2150
-                  H 400
-                  C 250,2150 200,2200 200,2300
-                  V 3800
-                  C 200,3900 150,3950 100,3950
-                  H 50
-                  C 0,3950 0,4000 0,4050
-                  V 4250
-                  C 0,4300 50,4350 100,4350
-                  H 1000
-                  C 1150,4350 1200,4400 1200,4500
-                  V 4700
-                  C 1200,4800 1150,4850 1000,4850
-                  H 400
-                  C 250,4850 200,4900 200,5000
-                  V 6500
-                  C 200,6600 250,6650 400,6650
-                  H 800
-                  C 950,6650 1000,6700 1000,6800
-                  V 7000
-                  C 1000,7100 950,7150 800,7150
-                  H 200
-                  C 100,7150 50,7200 50,7300
-                  V 8800
-                  C 50,8900 100,8950 200,8950
-                  H 1000
-                  C 1150,8950 1200,9000 1200,9100
-                  V 9300
-                  C 1200,9400 1150,9450 1000,9450
-                  H 400
-                  C 250,9450 200,9500 200,9600
-                  V 11075"
+                d={svgPath}
                 fill="none"
                 stroke="rgb(255, 0, 0)"
                 strokeWidth={2}
@@ -472,9 +462,7 @@ export default function MikaPage() {
                   )}
                 </div>
                 <div className="md:w-1/2">
-                  <div className="grid grid-cols-6 gap-4">
-                    <RadarChart data={radarSkills} />
-                  </div>
+                  <RadarChart data={radarSkills} />
                 </div>
               </div>
             </div>
