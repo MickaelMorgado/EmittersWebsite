@@ -584,36 +584,33 @@ export default function MikaPage() {
                 ].map((tool, index) => {
                   const isVisible = activeFilter === "All" || tool.category === activeFilter;
                   return (
-                    <div
-                      key={index}
-                      className={`card rounded-lg p-8 ${isVisible ? "flex" : "hidden"}`}
-                      data-category={tool.category}
-                    >
-                      <div className="card-content">
-                        <Image
-                          width={300}
-                          height={300}
-                          src={tool.imgSrc}
-                          alt={tool.alt}
-                          className="w-full rounded-lg mb-6"
-                        />
-                        <h3 className="text-2xl font-bold mb-4">{tool.title}</h3>
-                        <p className="mb-4">{tool.description}</p>
-                        <div className="flex gap-5">
-                        {tool.link && (
-                          <a target="_blank" href={tool.link} className="btn-minimal">
-                            {tool.linkText}
-                          </a>
-                        )}
-                        {tool.readMore && (
-                          <>
-                            <a target="_blank" href={tool.readMore} className="btn-minimal">
-                              Read More
-                            </a>
-                          </>
-                        )}
+                    <div key={index} className="card-wrapper">
+                      <div className="card-floating-image" style={{ backgroundImage: `url(${tool.imgSrc})` }}></div>
+
+                      <div
+                        
+                        className={`card  rounded-lg p-8 ${isVisible ? "flex" : "hidden"}`}
+                        data-category={tool.category}
+                      >
+                          <div className="card-content">
+                            <h3 className="text-2xl font-bold mb-4">{tool.title}</h3>
+                            <p className="mb-4">{tool.description}</p>
+                            <div className="flex gap-5">
+                            {tool.link && (
+                              <a target="_blank" href={tool.link} className="btn-minimal">
+                                {tool.linkText}
+                              </a>
+                            )}
+                            {tool.readMore && (
+                              <>
+                                <a target="_blank" href={tool.readMore} className="btn-minimal">
+                                  Read More
+                                </a>
+                              </>
+                            )}
+                            </div>
+                          </div>
                         </div>
-                      </div>
                     </div>
                   );
                 })}
