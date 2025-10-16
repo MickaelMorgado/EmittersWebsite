@@ -14,8 +14,8 @@ export default function Main3DModel() {
         left: 0,
         bottom: 0,
         right: 0,
-        width: "1000px",
-        height: "1000px",
+        width: "100vw",
+        height: "100vh",
       }}
     >
       <Canvas
