@@ -11,3 +11,11 @@ export const metalMaterialParams = {
   roughness: 0.7,
   metalness: 0.3,
 };
+
+export const bloomParams = {
+  luminanceThreshold: 0.4,
+  luminanceSmoothing: 0.1,
+  height: 300,
+  intensity: 0.8,
+  radius: 0.4,
+};

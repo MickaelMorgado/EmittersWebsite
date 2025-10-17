@@ -6,7 +6,7 @@ import { Suspense, useRef } from "react";
 import * as THREE from "three";
 
 import { Mesh, Object3D } from "three";
-import { metalMaterialParams, redMaterialParams } from "./constants";
+import { bloomParams, metalMaterialParams, redMaterialParams } from "./constants";
 
 function AquariumModel(props: any) {
   const group = useRef<Object3D>(null!);
@@ -49,13 +49,7 @@ export default function Aquarium3D() {
         <Suspense fallback={null}>
           <AquariumModel />
           <EffectComposer>
-            <Bloom
-              luminanceThreshold={0.4}
-              luminanceSmoothing={0.1}
-              height={300}
-              intensity={1}
-              radius={0.4}
-            />
+            <Bloom {...bloomParams} />
           </EffectComposer>
         </Suspense>
         <OrbitControls enableDamping enableZoom={false} autoRotate autoRotateSpeed={1.0} />

@@ -4,7 +4,7 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { Bloom, EffectComposer } from "@react-three/postprocessing";
 import { Suspense, useEffect, useRef } from "react";
 import * as THREE from "three";
-import { metalMaterialParams, redMaterialParams } from "./constants";
+import { bloomParams, metalMaterialParams, redMaterialParams } from "./constants";
 
 
 import { Mesh, Object3D } from "three";
@@ -62,13 +62,7 @@ export default function Printing3D() {
         <Suspense fallback={null}>
           <PrintingModel />
           <EffectComposer>
-            <Bloom
-              luminanceThreshold={0.4}
-              luminanceSmoothing={0.1}
-              height={300}
-              intensity={1}
-              radius={0.4}
-            />
+            <Bloom {...bloomParams} />
           </EffectComposer>
         </Suspense>
         <OrbitControls enableDamping enableZoom={false} autoRotate autoRotateSpeed={1.0} />
