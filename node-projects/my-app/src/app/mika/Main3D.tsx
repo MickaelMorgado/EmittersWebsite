@@ -4,6 +4,7 @@ import { Canvas } from "@react-three/fiber";
 import { Bloom, EffectComposer } from "@react-three/postprocessing";
 import { Suspense } from "react";
 import * as THREE from "three";
+import { bloomParams } from "./constants";
 
 export default function Main3DModel() {
   return (
@@ -41,13 +42,7 @@ export default function Main3DModel() {
           </mesh>
 
           <EffectComposer>
-            <Bloom
-              luminanceThreshold={0.4}
-              luminanceSmoothing={0.1}
-              height={300}
-              intensity={1}
-              radius={0.4}
-            />
+            <Bloom {...bloomParams} />
           </EffectComposer>
         </Suspense>
 
