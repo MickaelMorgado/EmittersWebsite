@@ -176,8 +176,9 @@ export default function MikaPage() {
             <h1 className="text-2xl font-bold uppercase">Mickael</h1>
             <div className="hidden md:flex space-x-8">
               <a href="#about" className="hover:text-primary transition-colors">About</a>
-              <a href="#work" className="hover:text-primary transition-colors">Work</a>
-              <a href="#contact" className="hover:text-primary transition-colors">Contact</a>
+              <a href="#skills" className="hover:text-primary transition-colors">Skills</a>
+              <a href="#atp" className="hover:text-primary transition-colors">ATP</a>
+              <a href="#connect" className="hover:text-primary transition-colors">Connect</a>
             </div>
           </div>
         </div>
@@ -241,18 +242,16 @@ export default function MikaPage() {
             <div className="container mx-auto px-6 z-10 text-center">
               <h1 className="text-5xl font-bold mb-6 uppercase">Tech Developer</h1>
               <p className="text-xl mb-8">The ultimate 'Jack of all trades'</p>
-<a
-  href="#"
-  onClick={(e) => {
-    e.preventDefault();
-    window.scrollBy({ top: window.innerHeight - 200, behavior: "smooth" });
-  }}
-  className="text-red-500 opacity-20! hover:opacity-100! scale-100 transition-all hover:scale-200"
->
-  ⩒
-</a>
-
-
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  window.scrollBy({ top: window.innerHeight - 200, behavior: "smooth" });
+                }}
+                className="text-red-500 opacity-20! hover:opacity-100! scale-100 transition-all hover:scale-200"
+              >
+                ⩒
+              </a>
             </div>
           </section>
 
@@ -499,7 +498,7 @@ export default function MikaPage() {
           </section>
 
           {/* Tools Section */}
-          <section id="tools" className="py-20">
+          <section id="atp" className="py-20">
             <div className="container mx-auto px-6">
               <h2 className="text-5xl font-bold text-center mb-12">APPS / TOOLS / PROJECTS</h2>
               <div className="mb-12 text-center">
@@ -619,7 +618,7 @@ export default function MikaPage() {
           </section>
 
           {/* Contact Section */}
-          <section id="contact" className="py-60">
+          <section id="connect" className="py-60">
             <div className="container mx-auto px-6">
               <div className="flex flex-col md:flex-row gap-12">
                 <div className="md:w-1/2 flex items-center justify-center">
