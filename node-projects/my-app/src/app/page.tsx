@@ -68,10 +68,10 @@ export default function Home() {
           <Link href="" className="h-full opacity-10">
             <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
               <CardHeader>
-                <CardTitle>Three.js Project</CardTitle>
+                <CardTitle>Blockchains visualizer</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">Interactive 3D graphics and animations</p>
+                <p className="text-muted-foreground">Interactive 3D blockchains and token visualizer</p>
               </CardContent>
             </Card>
           </Link>
