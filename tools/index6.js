@@ -1053,6 +1053,51 @@ const initSciChart = (data) => {
           profitFactor = (grossProfit / grossLoss).toFixed(2);
         }
 
+        // Consecutive wins/losses
+        let consecutiveWins = 0;
+        let consecutiveLosses = 0;
+        let maxConsecutiveWins = 0;
+        let maxConsecutiveLosses = 0;
+        for (const order of ordersHistory) {
+          if (order.tradeResult === EnumTradeResult.WIN) {
+            consecutiveWins++;
+            maxConsecutiveWins = Math.max(maxConsecutiveWins, consecutiveWins);
+            consecutiveLosses = 0;
+          } else if (order.tradeResult === EnumTradeResult.LOSS) {
+            consecutiveLosses++;
+            maxConsecutiveLosses = Math.max(maxConsecutiveLosses, consecutiveLosses);
+            consecutiveWins = 0;
+          }
+        }
+        consecutiveWins = maxConsecutiveWins;
+        consecutiveLosses = maxConsecutiveLosses;
+
+        // Drawdown and updrawn calculation can be added here if needed
+        let maxDrawdown = 0;
+        let maxUpdrawn = 0;
+        let peak = equityDataMoney[0] || 0;
+        let trough = equityDataMoney[0] || 0;
+        for (const value of equityDataMoney) {
+          if (value > peak) {
+            peak = value;
+            trough = value;
+          } else if (value < trough) {
+            trough = value;
+          }
+          const drawdown = peak - trough;
+          const updrawn = trough - peak;
+          if (drawdown > maxDrawdown) {
+            maxDrawdown = drawdown;
+          }
+          if (updrawn > maxUpdrawn) {
+            maxUpdrawn = updrawn;
+          }
+        }
+
+        // Lowest and Highest equity value
+        const lowestEquity = Math.min(...equityDataMoney);
+        const highestEquity = Math.max(...equityDataMoney);
+
         // Money equivalent = last equity value
         const moneyEquivalent =
           equityDataMoney[equityDataMoney.length - 1] || 0;
@@ -1100,6 +1145,12 @@ const initSciChart = (data) => {
         // result += `\n Pips: ${(profitsInPoints / 0.0001).toFixed(2)}`;
         // result += `\n Ticks: ${(profitsInPoints / 0.01).toFixed(2)}`;
         result += `\n Profit Factor: ${profitFactor}`;
+        result += `\n Consecutive Wins: ${consecutiveWins}`;
+        result += `\n Consecutive Losses: ${consecutiveLosses}`;
+        result += `\n Max Drawdown: ${maxDrawdown.toFixed(2)}$`;
+        result += `\n Max Updrawn: ${maxUpdrawn.toFixed(2)}$`;
+        result += `\n Lowest Equity: ${lowestEquity.toFixed(2)}$`;
+        result += `\n Highest Equity: ${highestEquity.toFixed(2)}$`;
 
         $backTestingResult.value = result;
         $exportableCSVField.value = resultToCSV();
