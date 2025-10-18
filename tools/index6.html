@@ -423,8 +423,8 @@
         </div>
         <div class="result-panel-content h-flex h-flex--column">
           <h5 for="backtesting-hour">Backtesting Result (Algo)</h5>
-          <div class="h-flex h-flex--row">
-            <div class="h-flex h-flex--column">
+          <div class="back-testing-results-grid">
+            <div class="first-content h-flex h-flex--column">
               <div class="h-flex h-flex--column">
                 <label for="backtesting-hour"
                   >Session Start Time (add 2h to match MT5 data)</label
@@ -517,11 +517,11 @@
                 </div>
               </div>
             </div>
-            <div class="back-testing-results">
+            <div class="second-content back-testing-results">
               <label for="backtestingResult">Performance Results: </label>
               <textarea
                 id="backtestingResult"
-                rows="11"
+                rows="13"
                 class="h-field"
               ></textarea>
               <label for="exportableCSVField" title="Easy way to copy paste the backtest result into a google sheet / excel">CSV Exportable text: </label>
@@ -531,8 +531,11 @@
                 class="h-field"
               ></textarea>
             </div>
-            <div id="myChartContainer" styles="flex-grow: 3; width: 700px">
+            <div id="myChartContainer" class="third-content" styles="flex-grow: 3; width: 700px">
               <canvas id="myChart" width="700px" height="320px"></canvas>
+            </div>
+            <div class="fourth-content">
+              more stats here
             </div>
           </div>
           <div>

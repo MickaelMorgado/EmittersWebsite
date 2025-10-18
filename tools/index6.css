@@ -63,6 +63,19 @@ table tr {
   transition: opacity 0.25s ease-in;
 }
 
+.back-testing-results-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  grid-column-gap: var(--padding);
+  grid-row-gap: var(--padding);
+}
+
+.back-testing-results-grid > .first-content { grid-area: 1 / 1 / 3 / 2; }
+.back-testing-results-grid > .second-content { grid-area: 1 / 2 / 2 / 4; }
+.back-testing-results-grid > .third-content { grid-area: 1 / 4 / 2 / 7; }
+.back-testing-results-grid > .fourth-content { grid-area: 2 / 2 / 3 / 7; }
+
 .back-testing-results {
   position: relative;
   display: flex;
