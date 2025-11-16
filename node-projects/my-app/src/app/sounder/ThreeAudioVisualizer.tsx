@@ -17,14 +17,14 @@ const getRandomFloat = (min: number, max: number) => Math.random() * (max - min)
  * Effects component that reacts to spectrum values.
  */
 function Effects({ spectrumValues, normalizedLow, normalizedHigh }: { spectrumValues: number[], normalizedLow: number, normalizedHigh: number }) {
-  console.table([`${normalizedLow}`, `${normalizedHigh}`]);
-  const glitchDensity = 0.00005 + normalizedHigh * 0.0125;
+  const glitchDensity = 0.0002 * normalizedHigh;
+  const vignetteDarkness = 1 * (normalizedHigh / 100);
 
   return (
     <EffectComposer>
-      <Bloom luminanceThreshold={0.5} luminanceSmoothing={0.5} intensity={20 + normalizedLow * 1} />
-      <Noise opacity={0.02} />
-      <Vignette eskil={false} offset={0.1 + 0.1 * 0.5} darkness={0.8 + 0.1 * 0.5} />
+      <Bloom luminanceThreshold={0.5} luminanceSmoothing={0.5} intensity={0 + normalizedLow * 0.3} />
+      <Noise opacity={0.03} />
+      <Vignette eskil={false} offset={0.1} darkness={vignetteDarkness} />
       <Glitch columns={0.003} strength={new THREE.Vector2(glitchDensity, glitchDensity)} />
     </EffectComposer>
   );
@@ -33,28 +33,11 @@ function Effects({ spectrumValues, normalizedLow, normalizedHigh }: { spectrumVa
 /**
  * Main component handling microphone access and 3D visualization logic with super random effects.
  */
-function AudioVisualizer({ onSpectrumUpdate, spectrumValues, onNormalizedLowUpdate, onNormalizedHighUpdate, normalizedHigh }: { onSpectrumUpdate: (data: number[]) => void, spectrumValues: number[], onNormalizedLowUpdate: (value: number) => void, onNormalizedHighUpdate: (value: number) => void, normalizedHigh: number }) {
+function AudioVisualizer({ onSpectrumUpdate, spectrumValues, onNormalizedLowUpdate, onNormalizedHighUpdate, normalizedLow, normalizedHigh }: { onSpectrumUpdate: (data: number[]) => void, spectrumValues: number[], onNormalizedLowUpdate: (value: number) => void, onNormalizedHighUpdate: (value: number) => void, normalizedLow: number, normalizedHigh: number }) {
   const barsRef = useRef<THREE.Mesh[]>([]);
   const audioDataRef = useRef(new Uint8Array(barsCount));
   const [isAudioReady, setIsAudioReady] = useState(false);
   const [analyser, setAnalyser] = useState<AnalyserNode | null>(null);
-
-  // Store initial random positions and rotations for each bar
-  // This helps ensure a consistent, but random, base for each bar's movement.
-  const barInitialTransforms = useRef(
-    Array.from({ length: barsCount }).map(() => ({
-      position: new THREE.Vector3(
-        getRandomFloat(-50, 50), // Wide spread for X
-        getRandomFloat(-30, 30), // Wide spread for Y
-        getRandomFloat(-50, 50)  // Wide spread for Z
-      ),
-      rotation: new THREE.Euler(
-        getRandomFloat(0, Math.PI * 2),
-        getRandomFloat(0, Math.PI * 2),
-        getRandomFloat(0, Math.PI * 2)
-      ),
-    }))
-  );
 
   // Create geometries for each bar
   const geometries = useMemo(() => Array.from({ length: barsCount }).map(() => {
@@ -81,7 +64,7 @@ function AudioVisualizer({ onSpectrumUpdate, spectrumValues, onNormalizedLowUpda
       audioContext = new AudioContext();
       const analyserNode = audioContext.createAnalyser();
       // fftSize must be a power of two. barsCount * 2 = 256, which is valid.
-      analyserNode.fftSize = 4096;
+      analyserNode.fftSize = fftSize;
       setAnalyser(analyserNode);
 
       navigator.mediaDevices.getUserMedia({ audio: true }).then(async (stream) => {
@@ -112,20 +95,30 @@ function AudioVisualizer({ onSpectrumUpdate, spectrumValues, onNormalizedLowUpda
 
     const update = () => {
       analyser.getByteFrequencyData(dataArray);
+      const spectrumThreshold = 0;
       for (let i = 0; i < barsCount; i++) {
         const binIndex = Math.floor(Math.exp(i / (barsCount - 1) * Math.log(bufferLength)) - 1);
         const value = dataArray[binIndex] || 0;
-        audioDataRef.current[i] = value > 100 ? value : 0;
+        audioDataRef.current[i] = value > spectrumThreshold ? value : 0;
       }
+      
+      // Spectrum Parts (3 - Low, Mid, High):
       const third = Math.floor(barsCount / 3);
-      const low = audioDataRef.current.slice(0, third);
-      const high = audioDataRef.current.slice(third * 2);
+      const audioSpectrum = Array.from(audioDataRef.current);
+
+      const low = audioSpectrum.slice(0, third);
+      // const mid = audioSpectrum.slice(third, third * 2);
+      const high = audioSpectrum.slice(third * 2, barsCount);
+
       const normalizedLow = low.reduce((a, b) => a + b, 0.1) / low.length;
-      const normalizedHigh = high.reduce((a, b) => a + b, 0.1) / high.length;
+      const normalizedHigh = high.reduce((a, b) => a + b, 0.1) / high.length * 3; // * 3 to amplify high frequencies effect
+      
+      console.table([audioSpectrum.join(','), low.join(','), high.join(','), normalizedLow, normalizedHigh]);
+
       onNormalizedLowUpdate(normalizedLow);
       onNormalizedHighUpdate(normalizedHigh);
-      // console.log("Audio Data:", Array.from(audioDataRef.current));
-      onSpectrumUpdate(Array.from(audioDataRef.current.slice(0, barsCount)));
+
+      onSpectrumUpdate(audioSpectrum);
       updateAnimationFrame = requestAnimationFrame(update);
     };
 
@@ -144,22 +137,21 @@ function AudioVisualizer({ onSpectrumUpdate, spectrumValues, onNormalizedLowUpda
     if (!isAudioReady || barsRef.current.length === 0) return;
 
     const elapsedTime = clock.getElapsedTime();
-    const cameraAproximationDistance = 50;
-
+    
     // Camera movement for added disorientation
-    camera.position.x = Math.sin(elapsedTime * 0.2) * 50 - cameraAproximationDistance;
-    camera.position.y = Math.cos(elapsedTime * 0.3) * 20 + 10 - cameraAproximationDistance;
-    camera.position.z = Math.sin(elapsedTime * 0.1) * 50 + 50 - cameraAproximationDistance;
+    // const cameraAproximationDistance = 50;
+    // const speedCamera = 5;
+    // camera.position.x = Math.sin(elapsedTime * 0.2 * speedCamera) * 50 - cameraAproximationDistance;
+    // camera.position.y = Math.cos(elapsedTime * 0.3 * speedCamera) * 20 + 10 - cameraAproximationDistance;
+    // camera.position.z = Math.sin(elapsedTime * 0.1 * speedCamera) * 50 + 50 - cameraAproximationDistance;
     camera.lookAt(0, 0, 0); // Always look towards the center of the chaos
 
     for (let i = 0; i < barsCount; i++) {
       const audioValue = audioDataRef.current[i];
       const normalizedScale = audioValue / 255;
-      // console.log("Normalized Scale (Low):", audioValue);
       const bar = barsRef.current[i];
-      const initialTransform = barInitialTransforms.current[i];
 
-      if (bar && initialTransform) {
+      if (bar) {
         // Apply initial random position and add audio reactive displacement
         /*
         bar.position.copy(initialTransform.position);
@@ -168,21 +160,26 @@ function AudioVisualizer({ onSpectrumUpdate, spectrumValues, onNormalizedLowUpda
         bar.position.z += Math.sin(elapsedTime * (normalizedScale ) + i) * normalizedScale * 40;
         */
 
-        const scalePower = 100;
-        bar.scale.set(normalizedHigh * scalePower, normalizedHigh * scalePower, normalizedHigh * scalePower)
-
         // Apply initial random rotation and add audio reactive rotation
-/*         bar.rotation.copy(initialTransform.rotation);
+        /*         
+        bar.rotation.copy(initialTransform.rotation);
         bar.rotation.x += elapsedTime * 0.5 + normalizedScale * Math.PI;
-        bar.rotation.y += elapsedTime * 0.8 + normalizedScale * Math.PI * 2;*/
-        bar.rotation.x += elapsedTime * 0.0002 * normalizedHigh * Math.PI / 2;
+        bar.rotation.y += elapsedTime * 0.8 + normalizedScale * Math.PI * 2;
+        */
+
+        const scalePower = 5;
+        const size = 0.1 + normalizedScale * scalePower;
+        bar.scale.set(size, size, size);
 
         // Super-sized and audio-reactive scaling with randomness
-        const dynamicScale = Math.max(normalizedScale * 2 , 0.1); // Much larger scale
-        bar.scale.set(dynamicScale * 0.1, dynamicScale, dynamicScale * 0.2);
+        // const dynamicScale = Math.max(normalizedScale * 2 , 0.1); // Much larger scale
+        // bar.scale.set(dynamicScale * 0.1, dynamicScale, dynamicScale * 0.2);
+
+        const flipFlop = () => i % 2 === 0 ? 1 : -1;
+        bar.rotation.x += elapsedTime * 0.00002 * normalizedHigh * 0.015 * Math.PI / 2 * flipFlop();
 
         // Rapidly shifting chaotic colors
-        const colorHue = (elapsedTime * 0.1 + normalizedScale + i / barsCount) % 1;
+        const colorHue = (elapsedTime * .1 + i / barsCount) % 1;
         (bar.material as THREE.MeshBasicMaterial).color.setHSL(colorHue, 1, 0.50);
       }
     }
@@ -217,12 +214,12 @@ export default function ThreeAudioVisualizer() {
     <div style={{ width: "100vw", height: "100vh", backgroundColor: "#000", overflow: "hidden" }}>
       {/* spectrumValues: {spectrumValues.join(", ")} */}
       <Canvas
-        camera={{ position: [0, 0, 70], fov: 75 }} // Wider FOV for more immersive chaos
+        camera={{ position: [0, 0, 70], fov: 60 }} // Wider FOV for more immersive chaos
         onCreated={({ gl }) => {
             gl.setClearColor(new THREE.Color("#000000"));
         }}
       >
-        <AudioVisualizer onSpectrumUpdate={setSpectrumValues} spectrumValues={spectrumValues} onNormalizedLowUpdate={setNormalizedLow} onNormalizedHighUpdate={setNormalizedHigh} normalizedHigh={normalizedHigh} />
+        <AudioVisualizer onSpectrumUpdate={setSpectrumValues} spectrumValues={spectrumValues} onNormalizedLowUpdate={setNormalizedLow} onNormalizedHighUpdate={setNormalizedHigh} normalizedLow={normalizedLow} normalizedHigh={normalizedHigh} />
         <Effects spectrumValues={spectrumValues} normalizedLow={normalizedLow} normalizedHigh={normalizedHigh} />
       </Canvas>
     </div>
