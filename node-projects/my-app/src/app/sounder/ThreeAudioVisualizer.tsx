@@ -146,11 +146,11 @@ function AudioVisualizer({ onSpectrumUpdate, spectrumValues, onNormalizedLowUpda
     const elapsedTime = clock.getElapsedTime();
     
     // Camera movement for added disorientation
-    // const cameraAproximationDistance = 50;
-    // const speedCamera = 5;
-    // camera.position.x = Math.sin(elapsedTime * 0.2 * speedCamera) * 50 - cameraAproximationDistance;
-    // camera.position.y = Math.cos(elapsedTime * 0.3 * speedCamera) * 20 + 10 - cameraAproximationDistance;
-    // camera.position.z = Math.sin(elapsedTime * 0.1 * speedCamera) * 50 + 50 - cameraAproximationDistance;
+    const cameraAproximationDistance = 50;
+    const speedCamera = 5;
+    camera.position.x = Math.sin(elapsedTime * 0.2 * speedCamera) * 50 - cameraAproximationDistance;
+    camera.position.y = Math.cos(elapsedTime * 0.3 * speedCamera) * 20 + 10 - cameraAproximationDistance;
+    camera.position.z = Math.sin(elapsedTime * 0.1 * speedCamera) * 50 + 50 - cameraAproximationDistance;
     camera.lookAt(0, 0, 0); // Always look towards the center of the chaos
 
     for (let i = 0; i < barsCount; i++) {
