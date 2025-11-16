@@ -16,8 +16,8 @@ const getRandomFloat = (min: number, max: number) => Math.random() * (max - min)
 /**
  * Effects component that reacts to spectrum values.
  */
-function Effects({ spectrumValues, normalizedLow, normalizedHigh }: { spectrumValues: number[], normalizedLow: number, normalizedHigh: number }) {
-  const glitchDensity = 0.0002 * normalizedHigh;
+function Effects({ spectrumValues, normalizedLow, normalizedMid, normalizedHigh }: { spectrumValues: number[], normalizedLow: number, normalizedMid: number, normalizedHigh: number }) {
+  const glitchDensity = 0.0002 * normalizedHigh / 2;
   const vignetteDarkness = 1 * (normalizedHigh / 100);
 
   return (
@@ -33,7 +33,7 @@ function Effects({ spectrumValues, normalizedLow, normalizedHigh }: { spectrumVa
 /**
  * Main component handling microphone access and 3D visualization logic with super random effects.
  */
-function AudioVisualizer({ onSpectrumUpdate, spectrumValues, onNormalizedLowUpdate, onNormalizedHighUpdate, normalizedLow, normalizedHigh }: { onSpectrumUpdate: (data: number[]) => void, spectrumValues: number[], onNormalizedLowUpdate: (value: number) => void, onNormalizedHighUpdate: (value: number) => void, normalizedLow: number, normalizedHigh: number }) {
+function AudioVisualizer({ onSpectrumUpdate, spectrumValues, onNormalizedLowUpdate, onNormalizedMidUpdate, onNormalizedHighUpdate, normalizedLow, normalizedMid, normalizedHigh }: { onSpectrumUpdate: (data: number[]) => void, spectrumValues: number[], onNormalizedLowUpdate: (value: number) => void, onNormalizedMidUpdate: (value: number) => void, onNormalizedHighUpdate: (value: number) => void, normalizedLow: number, normalizedMid: number, normalizedHigh: number }) {
   const barsRef = useRef<THREE.Mesh[]>([]);
   const audioDataRef = useRef(new Uint8Array(barsCount));
   const [isAudioReady, setIsAudioReady] = useState(false);
@@ -95,27 +95,34 @@ function AudioVisualizer({ onSpectrumUpdate, spectrumValues, onNormalizedLowUpda
 
     const update = () => {
       analyser.getByteFrequencyData(dataArray);
-      const spectrumThreshold = 0;
-      for (let i = 0; i < barsCount; i++) {
-        const binIndex = Math.floor(Math.exp(i / (barsCount - 1) * Math.log(bufferLength)) - 1);
-        const value = dataArray[binIndex] || 0;
-        audioDataRef.current[i] = value > spectrumThreshold ? value : 0;
-      }
-      
+
       // Spectrum Parts (3 - Low, Mid, High):
       const third = Math.floor(barsCount / 3);
       const audioSpectrum = Array.from(audioDataRef.current);
 
+      for (let i = 0; i < barsCount; i++) {
+        const binIndex = Math.floor(Math.exp(i / (barsCount - 1) * Math.log(bufferLength)) - 1);
+        const value = dataArray[binIndex] || 0;
+        audioSpectrum[i] = value;
+      }
+
       const low = audioSpectrum.slice(0, third);
-      // const mid = audioSpectrum.slice(third, third * 2);
+      const mid = audioSpectrum.slice(third, third * 2);
       const high = audioSpectrum.slice(third * 2, barsCount);
 
-      const normalizedLow = low.reduce((a, b) => a + b, 0.1) / low.length;
-      const normalizedHigh = high.reduce((a, b) => a + b, 0.1) / high.length * 3; // * 3 to amplify high frequencies effect
+      const normalizedLowRaw = low.reduce((a, b) => a + b, 0.1) / low.length;
+      const normalizedMidRaw = mid.reduce((a, b) => a + b, 0.1) / mid.length;
+      const normalizedHighRaw = high.reduce((a, b) => a + b, 0.1) / high.length;
+
+      const normalizedLow = normalizedLowRaw >= 15 ? normalizedLowRaw : 0;
+      const normalizedMid = normalizedMidRaw >= 50 ? normalizedMidRaw : 0;
+      const normalizedHighThresholded = normalizedHighRaw >= 0 ? normalizedHighRaw : 0;
+      const normalizedHigh = normalizedHighThresholded * 3; // * 3 to amplify high frequencies effect
       
-      //console.table([audioSpectrum.join(','), low.join(','), high.join(','), normalizedLow, normalizedHigh]);
+      console.table([audioSpectrum.join(','), low.join(','), high.join(','), mid.join(','), normalizedLow, normalizedMid, normalizedHigh]);
 
       onNormalizedLowUpdate(normalizedLow);
+      onNormalizedMidUpdate(normalizedMid);
       onNormalizedHighUpdate(normalizedHigh);
 
       onSpectrumUpdate(audioSpectrum);
@@ -147,7 +154,7 @@ function AudioVisualizer({ onSpectrumUpdate, spectrumValues, onNormalizedLowUpda
     camera.lookAt(0, 0, 0); // Always look towards the center of the chaos
 
     for (let i = 0; i < barsCount; i++) {
-      const audioValue = audioDataRef.current[i];
+      const audioValue = spectrumValues[i];
       const normalizedScale = audioValue / 255;
       const bar = barsRef.current[i];
 
@@ -208,6 +215,7 @@ function AudioVisualizer({ onSpectrumUpdate, spectrumValues, onNormalizedLowUpda
 export default function ThreeAudioVisualizer() {
   const [spectrumValues, setSpectrumValues] = useState<number[]>([]);
   const [normalizedLow, setNormalizedLow] = useState(0);
+  const [normalizedMid, setNormalizedMid] = useState(0);
   const [normalizedHigh, setNormalizedHigh] = useState(0);
 
   return (
@@ -219,8 +227,8 @@ export default function ThreeAudioVisualizer() {
             gl.setClearColor(new THREE.Color("#000000"));
         }}
       >
-        <AudioVisualizer onSpectrumUpdate={setSpectrumValues} spectrumValues={spectrumValues} onNormalizedLowUpdate={setNormalizedLow} onNormalizedHighUpdate={setNormalizedHigh} normalizedLow={normalizedLow} normalizedHigh={normalizedHigh} />
-        <Effects spectrumValues={spectrumValues} normalizedLow={normalizedLow} normalizedHigh={normalizedHigh} />
+        <AudioVisualizer onSpectrumUpdate={setSpectrumValues} spectrumValues={spectrumValues} onNormalizedLowUpdate={setNormalizedLow} onNormalizedMidUpdate={setNormalizedMid} onNormalizedHighUpdate={setNormalizedHigh} normalizedLow={normalizedLow} normalizedMid={normalizedMid} normalizedHigh={normalizedHigh} />
+        <Effects spectrumValues={spectrumValues} normalizedLow={normalizedLow} normalizedMid={normalizedMid} normalizedHigh={normalizedHigh} />
       </Canvas>
     </div>
   );
