@@ -113,7 +113,7 @@ function AudioVisualizer({ onSpectrumUpdate, spectrumValues, onNormalizedLowUpda
       const normalizedLow = low.reduce((a, b) => a + b, 0.1) / low.length;
       const normalizedHigh = high.reduce((a, b) => a + b, 0.1) / high.length * 3; // * 3 to amplify high frequencies effect
       
-      console.table([audioSpectrum.join(','), low.join(','), high.join(','), normalizedLow, normalizedHigh]);
+      //console.table([audioSpectrum.join(','), low.join(','), high.join(','), normalizedLow, normalizedHigh]);
 
       onNormalizedLowUpdate(normalizedLow);
       onNormalizedHighUpdate(normalizedHigh);
