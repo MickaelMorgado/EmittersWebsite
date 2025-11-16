@@ -18,7 +18,7 @@ const getRandomFloat = (min: number, max: number) => Math.random() * (max - min)
  */
 function Effects({ spectrumValues, normalizedLow, normalizedMid, normalizedHigh }: { spectrumValues: number[], normalizedLow: number, normalizedMid: number, normalizedHigh: number }) {
   const glitchDensity = 0.0002 * normalizedHigh / 2;
-  const vignetteDarkness = 1 * (normalizedHigh / 100);
+  const vignetteDarkness = 1 * (normalizedHigh / 150);
 
   return (
     <EffectComposer>
@@ -114,7 +114,7 @@ function AudioVisualizer({ onSpectrumUpdate, spectrumValues, onNormalizedLowUpda
       const normalizedMidRaw = mid.reduce((a, b) => a + b, 0.1) / mid.length;
       const normalizedHighRaw = high.reduce((a, b) => a + b, 0.1) / high.length;
 
-      const normalizedLow = normalizedLowRaw >= 15 ? normalizedLowRaw : 0;
+      const normalizedLow = normalizedLowRaw >= 110 ? normalizedLowRaw : 0;
       const normalizedMid = normalizedMidRaw >= 50 ? normalizedMidRaw : 0;
       const normalizedHighThresholded = normalizedHighRaw >= 0 ? normalizedHighRaw : 0;
       const normalizedHigh = normalizedHighThresholded * 3; // * 3 to amplify high frequencies effect
