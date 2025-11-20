@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "TTS Speak Selection",
+  "version": "1.0",
+  "description": "Text-to-Speech for selected text using @mickaelmorgado/browser-speak",
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": ["contextMenus", "scripting", "activeTab"],
+  "host_permissions": ["<all_urls>"],
+  "content_scripts": [{
+    "matches": ["<all_urls>"],
+    "js": ["bundle.js", "content.js"]
+  }]
+}
