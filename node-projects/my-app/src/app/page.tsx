@@ -96,7 +96,7 @@ export default function Home() {
               </CardContent>
             </Card>
           </Link>
-          <Link href="/cryptobot" className="h-full">
+          <Link href="" className="h-full opacity-10">
             <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
               <CardHeader>
                 <CardTitle>Crypto Bot</CardTitle>
@@ -107,7 +107,7 @@ export default function Home() {
             </Card>
           </Link>
           <Link href="/todo" className="h-full">
-            <Card className="h-full flex flex-col hover:shadow-md transition-shadow bg-gradient-to-br from-indigo-600 to-purple-600 text-white">
+            <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
               <CardHeader>
                 <CardTitle>Daily Todo Tracker</CardTitle>
               </CardHeader>
