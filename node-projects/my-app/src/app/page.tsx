@@ -96,6 +96,26 @@ export default function Home() {
               </CardContent>
             </Card>
           </Link>
+          <Link href="/cryptobot" className="h-full">
+            <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
+              <CardHeader>
+                <CardTitle>Crypto Bot</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">Getting my hand on crypto development</p>
+              </CardContent>
+            </Card>
+          </Link>
+          <Link href="/todo" className="h-full">
+            <Card className="h-full flex flex-col hover:shadow-md transition-shadow bg-gradient-to-br from-indigo-600 to-purple-600 text-white">
+              <CardHeader>
+                <CardTitle>Daily Todo Tracker</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p>Track your daily habits and see progress over time.</p>
+              </CardContent>
+            </Card>
+          </Link>
           <Link href="/HipsExample" className="h-full">
             <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
               <CardHeader>
