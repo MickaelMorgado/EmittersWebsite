@@ -42,8 +42,10 @@ const $sessionEndInput = document.getElementById('backtesting-end');
 const $ThemeInput = document.getElementById('themeSelector');
 const $BTTInput = document.getElementById('backtesting-hour');
 const $ETTInput = document.getElementById('backtesting-end');
+const $strategyInput = document.getElementById('backtesting-strategy');
 const audioSuccess = new Audio('squirrel_404_click_tick.wav');
 const audioNotify = new Audio('joseegn_ui_sound_select.wav');
+const myChart = document.getElementById('myChart');
 
 // Load URL parameters into inputs on page load
 const urlParams = new URLSearchParams(window.location.search);
@@ -56,6 +58,7 @@ if (urlParams.has('commissionsize')) { $CommissionSizeInput.value = urlParams.ge
 if (urlParams.has('slpoints')) { $SLPointsInput.value = urlParams.get('slpoints') }
 if (urlParams.has('tppoints')) { $TPPointsInput.value = urlParams.get('tppoints') }
 if (urlParams.has('tsincrement')) { $TSIncrementInput.value = urlParams.get('tsincrement') }
+if (urlParams.has('strategy')) { $strategyInput.value = urlParams.get('strategy') }
 
 const saveConfigs = () => {
   const currentUrl = window.location.href.split('?')[0];
@@ -70,6 +73,7 @@ const saveConfigs = () => {
   urlParams.set('slpoints', $SLPointsInput.value);
   urlParams.set('tppoints', $TPPointsInput.value);
   urlParams.set('tsincrement', $TSIncrementInput.value);
+  urlParams.set('strategy', $strategyInput.value);
 
   window.location.search = urlParams;
 }
@@ -131,6 +135,7 @@ $CommissionSizeInput?.addEventListener('change', () => animateActiveClass($csvRe
 $TSIncrementInput?.addEventListener('change', () => animateActiveClass($csvRefresh));
 $MAPeriodInput?.addEventListener('change', () => animateActiveClass($csvRefresh));
 $MAThresholdInput?.addEventListener('change', () => animateActiveClass($csvRefresh));
+$strategyInput?.addEventListener('change', () => animateActiveClass($csvRefresh));
 $backTestingPauseButton?.addEventListener('change', () => {
   backTestingPaused = $backTestingPauseButton.checked;
 
@@ -189,7 +194,42 @@ const EnumMT5OHLC = {
 const EnumStrategy = {
   CSID: 'CSID', // CSID price action breakout with Institutional candle move signal
   CSID_W_MA: 'CSID_W_MA', // CSID price action breakout with Institutional candle move signal with moving average
+  CSID_W_MA_DynamicTS: 'CSID_W_MA_DynamicTS', // CSID price action breakout with Institutional candle move signal with moving average and dynamic trailing stop
 };
+let RRToolStyles = {
+  strokeThickness: 0,
+  opacity: '50',
+};
+let labels = [];
+let pnlData = [];
+const equityData = []; // in points
+const ctx = myChart.getContext('2d');
+const gradient = ctx.createLinearGradient(0, 25, 0, 300);
+const datasets = [
+  {
+    type: 'line',
+    label: 'Strategy Performance (Accumulated Points)',
+    data: pnlData,
+    borderColor: `#${bullishColor}`,
+    backgroundColor: gradient,
+    borderWidth: 1,
+    order: 0,
+    fill: true,
+    yAxisID: 'pointsAxis',
+  },
+  {
+    type: 'line',
+    label: 'Portfolio Performance (Equity Curve)',
+    data: equityData,
+    borderColor: `#${bearishColor}`,
+    borderWidth: 1,
+    order: 1,
+    fill: false,
+    tension: 0.5,
+    pointStyle: false,
+    yAxisID: 'pointsAxis',
+  },
+];
 
 // Get candle direction based on open and close prices:
 const getCandleDirection = (openPrice = 0, closePrice = 0) => {
@@ -236,7 +276,7 @@ const convertMT5DateToUnix = (candleTime) => {
 };
 
 const readingSpeed = 0; // Speed of reading the CSV file in milliseconds
-const strategy = EnumStrategy.CSID;
+const strategy = $strategyInput.value || EnumStrategy.CSID_W_MA_DynamicTS; // Current strategy selected
 
 const csvData = [];
 let CSIDLookbackCandleSerie = [];
@@ -286,6 +326,39 @@ const handleFileAndInitGraph = (file) => {
     Papa.parse(file, {
       header: true,
       dynamicTyping: true,
+      beforeFirstChunk: (chunk) => { 
+        // Destroy previous chart if exists, TODO improve this (better to not use window):
+        window.existingChart = Chart.getChart(myChart);
+        if (window.existingChart) {
+          window.existingChart.destroy();
+          window.existingChart = null;
+        }
+
+        gradient.addColorStop(0, `#${bullishColor}${RRToolStyles.opacity}`);
+        gradient.addColorStop(1, `#${bearishColor}${RRToolStyles.opacity}`);
+        datasets[0].borderColor = `#${bullishColor}`
+        datasets[0].backgroundColor = gradient;
+        datasets[1].borderColor = `#${bearishColor}`
+        datasets[1].backgroundColor = gradient;
+
+        // Create new chart no matter what:
+        window.existingChart = new Chart(ctx, {
+          type: 'line',
+          data: { labels, datasets },
+          options: {
+            // animation: { duration: 500 },
+            responsive: false,
+            elements: { point: { radius: 1 } },
+            scales: {
+              pointsAxis: {
+                type: 'linear',
+                beginAtZero: false,
+                position: 'left',
+              },
+            },
+          },
+        });
+      },
       step: (results, parser) => {
         if (backTestingPaused) {
           parser.pause();
@@ -520,12 +593,11 @@ const initSciChart = (data) => {
         },
       };
 
-      const RRToolStyles = {
-        strokeThickness: 0,
+      RRToolStyles = {
+        ...RRToolStyles,
         xCoordinateMode: ECoordinateMode.DataValue,
         yCoordinateMode: ECoordinateMode.DataValue,
         annotationLayer: EAnnotationLayer.AboveChart,
-        opacity: '50',
       };
 
       // function ceilToDecimalPlaces(num, decimalPlaces) {
@@ -676,13 +748,21 @@ const initSciChart = (data) => {
           let candleSize = Math.abs(previousCandle["<CLOSE>"] - previousCandle["<OPEN>"]); // Need to be the previous candle, as current candle is not closed yet at this time (in a real scenario).
           candleSize = Number(candleSize.toFixed(4)); // → 0.0005
 
+          // The following might only work for EURUSD like pairs, TODO: need to generalize it later:
           const trailingSizeMultiplier = (candleSize) => {
-            if (candleSize >= 0.0005) {
-              return trailingStopSize * 3;
-            } else if (candleSize >= 0.0003) {
-              return trailingStopSize * 2;
-            } else {
-              return trailingStopSize;
+            switch (strategy) {
+              case EnumStrategy.CSID_W_MA_DynamicTS:
+                if (candleSize >= 0.0005) {
+                  return trailingStopSize * 3;
+                } else if (candleSize >= 0.0003) {
+                  return trailingStopSize * 2;
+                } else {
+                  return trailingStopSize;
+                }
+              case EnumStrategy.CSID_W_MA:
+              case EnumStrategy.CSID:
+              default:
+                return trailingStopSize;
             }
           }
 
@@ -1014,10 +1094,10 @@ const initSciChart = (data) => {
         let grossProfit = 0;
         let grossLoss = 0;
 
-        const labels = [];
-        const pnlData = [];
-        const equityData = []; // in points
         const equityDataMoney = []; // in $
+        // Reset labels and pnlData:
+        labels = [];
+        pnlData = [];
 
         for (const { id, pnlPoints } of ordersHistory) {
           labels.push(id);
@@ -1126,8 +1206,8 @@ const initSciChart = (data) => {
             `${profitsInPoints}\t`,
             `${lotSize()}\t`,
             `${commissionSize()}\t`,
-            `${tpSize()}\t`,
             `${slSize()}\t`,
+            `${tpSize()}\t`,
             `${tsSize()}\t`,
             `${profitFactor}\t`,
             `${maPeriod()}\t`,
@@ -1155,60 +1235,15 @@ const initSciChart = (data) => {
         $backTestingResult.value = result;
         $exportableCSVField.value = resultToCSV();
 
-        // Profitability Chart ========================================
-        const myChart = document.getElementById('myChart');
-        const ctx = myChart.getContext('2d');
-
-        const gradient = ctx.createLinearGradient(0, 25, 0, 300);
-        gradient.addColorStop(0, `#${bullishColor}${RRToolStyles.opacity}`);
-        gradient.addColorStop(1, `#${bearishColor}${RRToolStyles.opacity}`);
-
-        // Destroy previous chart if exists
-        const existingChart = Chart.getChart(myChart);
-        if (existingChart) existingChart.destroy();
-
-        const datasets = [
-          {
-            type: 'line',
-            label: 'Strategy Performance (Accumulated Points)',
-            data: pnlData,
-            borderColor: `#${bullishColor}`,
-            backgroundColor: gradient,
-            borderWidth: 1,
-            order: 0,
-            fill: true,
-            yAxisID: 'pointsAxis',
-          },
-          {
-            type: 'line',
-            label: 'Portfolio Performance (Equity Curve)',
-            data: equityData,
-            borderColor: `#${bearishColor}`,
-            borderWidth: 1,
-            order: 1,
-            fill: false,
-            tension: 0.5,
-            pointStyle: false,
-            yAxisID: 'pointsAxis',
-          },
-        ];
-
-        new Chart(ctx, {
-          type: 'line',
-          data: { labels, datasets },
-          options: {
-            animation: { duration: 0 },
-            responsive: false,
-            elements: { point: { radius: 1 } },
-            scales: {
-              pointsAxis: {
-                type: 'linear',
-                beginAtZero: false,
-                position: 'left',
-              },
-            },
-          },
-        });
+        // Update Profitability Chart ========================================
+        /*
+          window.existingChart.data.datasets[0].data.pop();
+          window.existingChart.data.datasets[1].data.pop();
+        */
+        window.existingChart.data.labels = labels;
+        window.existingChart.data.datasets[0].data = pnlData;
+        window.existingChart.data.datasets[1].data = equityData;
+        window.existingChart.update('none');
 
         // Historical Orders Table
         document.getElementById('backtestingResultOrderHistory').innerHTML = `
