@@ -287,9 +287,9 @@ export default function TodoPage() {
   }, [filteredData]);
 
   return (
-    <div className="container-full mx-auto p-8 text-white flex space-x-4 items-start">
+    <div className="container-full mx-auto p-4 lg:p-8 text-white flex flex-col lg:flex-row gap-4 items-start">
       {/* Left: Todo List (33%) */}
-      <div className="w-1/3">
+      <div className="w-full lg:w-1/3">
         {/* Navigation */}
         <div className="mb-4 w-full">
           <div className="flex items-center justify-between mb-2">
@@ -394,17 +394,17 @@ export default function TodoPage() {
       </div>
 
       {/* Right: Tabs & Chart (67%) */}
-      <div className="w-2/3">
+      <div className="w-full lg:w-2/3">
         {/* Tabs and Consistency */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex space-x-2">
+        <div className="flex flex-col sm:flex-row items-center justify-between mb-4 gap-4 sm:gap-0">
+          <div className="flex space-x-2 overflow-x-auto w-full sm:w-auto pb-2 sm:pb-0">
             {(['daily', 'weekly', 'monthly', 'yearly'] as const).map((tab) => (
               <Button key={tab} variant={activeTab === tab ? 'default' : 'outline'} onClick={() => setActiveTab(tab)}>
                 {tab.charAt(0).toUpperCase() + tab.slice(1)}
               </Button>
             ))}
           </div>
-          <div className="text-lg font-medium text-white ml-4">
+          <div className="text-lg font-medium text-white ml-0 sm:ml-4">
             Consistency: <span className="text-green-500 font-bold">{consistency}%</span>
           </div>
         </div>
