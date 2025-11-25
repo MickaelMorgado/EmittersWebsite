@@ -4,7 +4,8 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { useEffect, useState } from 'react';
+import { cn } from '@/lib/utils';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Area,
   AreaChart,
@@ -37,11 +38,41 @@ export default function TodoPage() {
   const [activeTab, setActiveTab] = useState<'daily' | 'weekly' | 'monthly' | 'yearly'>('daily');
   const [selectedDate, setSelectedDate] = useState<string>(formatDate(new Date()));
 
+  // ------------------------------------------------------------
+  // Calendar calculations (used for the Progress Calendar card)
+  // ------------------------------------------------------------
+  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const year = new Date(selectedDate).getFullYear();
+  const month = new Date(selectedDate).getMonth();
+  const firstDayOfMonth = new Date(year, month, 1);
+  const lastDayOfMonth = new Date(year, month + 1, 0);
+  const firstDayOfWeek = firstDayOfMonth.getDay();
+  const startDate = new Date(firstDayOfMonth);
+  startDate.setDate(startDate.getDate() - firstDayOfWeek);
+  const endDate = new Date(lastDayOfMonth);
+  const remainingDays = 6 - lastDayOfMonth.getDay();
+  endDate.setDate(endDate.getDate() + remainingDays);
+  const calendarDays: { date: Date; isCurrentMonth: boolean; isToday: boolean }[] = [];
+  const cur = new Date(startDate);
+  while (cur <= endDate) {
+    calendarDays.push({
+      date: new Date(cur),
+      isCurrentMonth: cur.getMonth() === month,
+      isToday: cur.toDateString() === new Date().toDateString(),
+    });
+    cur.setDate(cur.getDate() + 1);
+  }
+  const weeks: { date: Date; isCurrentMonth: boolean; isToday: boolean }[][] = [];
+  for (let i = 0; i < calendarDays.length; i += 7) {
+    weeks.push(calendarDays.slice(i, i + 7));
+  }
+
+  // ------------------------------------------------------------
   // Load from localStorage on mount
+  // ------------------------------------------------------------
   useEffect(() => {
     const stored = localStorage.getItem('todoRecords');
     let parsed: DayRecord[] = stored ? JSON.parse(stored) : [];
-    // If no data, create sample past records for testing
     if (parsed.length === 0) {
       const sample: DayRecord[] = [];
       for (let i = 30; i >= 0; i--) {
@@ -61,7 +92,6 @@ export default function TodoPage() {
     if (todayRecord) {
       setTodayItems(todayRecord.items);
     } else {
-      // Initialise today's items if missing
       const defaults: TodoItem[] = [
         { id: crypto.randomUUID(), text: 'Check finances', completed: false },
         { id: crypto.randomUUID(), text: 'Study (backtesting trading strategies)', completed: false },
@@ -69,38 +99,42 @@ export default function TodoPage() {
       setTodayItems(defaults);
       setRecords((prev) => [...prev, { date: today, items: defaults }]);
     }
-    // set selected date to today initially
     setSelectedDate(today);
   }, []);
 
+  // ------------------------------------------------------------
   // Update today items when selectedDate changes
+  // ------------------------------------------------------------
   useEffect(() => {
-  const record = records.find((r) => r.date === selectedDate);
-  if (record) {
-    setTodayItems(record.items);
-  } else {
-    // Initialise missing date with default tasks
-    const defaults: TodoItem[] = [
-      { id: crypto.randomUUID(), text: 'Check finances', completed: false },
-      { id: crypto.randomUUID(), text: 'Study (backtesting trading strategies)', completed: false },
-    ];
-    setTodayItems(defaults);
-    setRecords((prev) => [...prev, { date: selectedDate, items: defaults }]);
-  }
-}, [selectedDate]);
+    const record = records.find((r) => r.date === selectedDate);
+    if (record) {
+      setTodayItems(record.items);
+    } else {
+      const defaults: TodoItem[] = [
+        { id: crypto.randomUUID(), text: 'Check finances', completed: false },
+        { id: crypto.randomUUID(), text: 'Study (backtesting trading strategies)', completed: false },
+      ];
+      setTodayItems(defaults);
+      setRecords((prev) => [...prev, { date: selectedDate, items: defaults }]);
+    }
+  }, [selectedDate]);
 
+  // ------------------------------------------------------------
   // Persist changes to localStorage whenever records change
+  // ------------------------------------------------------------
   useEffect(() => {
     localStorage.setItem('todoRecords', JSON.stringify(records));
   }, [records]);
 
+  // ------------------------------------------------------------
   // Sync todayItems with records when they change
+  // ------------------------------------------------------------
   useEffect(() => {
-  setRecords((prev) => {
-    const other = prev.filter((r) => r.date !== selectedDate);
-    return [...other, { date: selectedDate, items: todayItems }];
-  });
-}, [todayItems, selectedDate]);
+    setRecords((prev) => {
+      const other = prev.filter((r) => r.date !== selectedDate);
+      return [...other, { date: selectedDate, items: todayItems }];
+    });
+  }, [todayItems, selectedDate]);
 
   const toggleItem = (id: string) => {
     setTodayItems((prev) =>
@@ -112,85 +146,117 @@ export default function TodoPage() {
     if (!newItemText.trim()) return;
     const newItem: TodoItem = { id: crypto.randomUUID(), text: newItemText.trim(), completed: false };
     setTodayItems((prev) => [...prev, newItem]);
+    setRecords((prev) => prev.map((r) => ({ ...r, items: [...r.items, newItem] })));
     setNewItemText('');
   };
 
+  // ------------------------------------------------------------
   // Compute chart data (percentage completed per day)
-  const chartData = records
-    .sort((a, b) => a.date.localeCompare(b.date))
-    .map((r) => {
-      const total = r.items.length;
-      const completed = r.items.filter((i) => i.completed).length;
-      const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
-      return { date: r.date, percent };
-    });
+  // ------------------------------------------------------------
+  const chartData = useMemo(() => {
+    return records
+      .slice()
+      .sort((a, b) => a.date.localeCompare(b.date))
+      .map((r) => {
+        const total = r.items.length;
+        const completed = r.items.filter((i) => i.completed).length;
+        const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
+        return { date: r.date, percent };
+      });
+  }, [records]);
 
+  // ------------------------------------------------------------
   // Filter data based on active tab
-  const filteredData = (() => {
-    
+  // ------------------------------------------------------------
+  const filteredData = useMemo(() => {
     switch (activeTab) {
       case 'daily':
         return chartData.slice(-7);
       case 'weekly': {
-        // group by week (ISO week start Monday)
-        const weeks: { [key: string]: number[] } = {};
+        const weeksMap: { [key: string]: number[] } = {};
         chartData.forEach((d) => {
           const date = new Date(d.date);
           const weekStart = new Date(date.setDate(date.getDate() - date.getDay() + 1));
           const key = formatDate(weekStart);
-          if (!weeks[key]) weeks[key] = [];
-          weeks[key].push(d.percent);
+          if (!weeksMap[key]) weeksMap[key] = [];
+          weeksMap[key].push(d.percent);
         });
-        return Object.entries(weeks)
+        return Object.entries(weeksMap)
           .map(([week, vals]) => ({ date: week, percent: Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) }))
           .slice(-4);
       }
       case 'monthly': {
-        const months: { [key: string]: number[] } = {};
+        const monthsMap: { [key: string]: number[] } = {};
         chartData.forEach((d) => {
-          const monthKey = d.date.slice(0, 7); // YYYY-MM
-          if (!months[monthKey]) months[monthKey] = [];
-          months[monthKey].push(d.percent);
+          const monthKey = d.date.slice(0, 7);
+          if (!monthsMap[monthKey]) monthsMap[monthKey] = [];
+          monthsMap[monthKey].push(d.percent);
         });
-        return Object.entries(months)
+        return Object.entries(monthsMap)
           .map(([month, vals]) => ({ date: month, percent: Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) }))
           .slice(-12);
       }
       case 'yearly': {
-        const years: { [key: string]: number[] } = {};
+        const yearsMap: { [key: string]: number[] } = {};
         chartData.forEach((d) => {
           const yearKey = d.date.slice(0, 4);
-          if (!years[yearKey]) years[yearKey] = [];
-          years[yearKey].push(d.percent);
+          if (!yearsMap[yearKey]) yearsMap[yearKey] = [];
+          yearsMap[yearKey].push(d.percent);
         });
-        return Object.entries(years)
+        return Object.entries(yearsMap)
           .map(([year, vals]) => ({ date: year, percent: Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) }))
           .slice(-5);
       }
     }
-  })();
+    return [];
+  }, [activeTab, chartData]);
 
-  // Consistency percentage for the current view (average of filtered data)
-  const consistency = filteredData.length
-    ? Math.round(filteredData.reduce((sum, d) => sum + d.percent, 0) / filteredData.length)
-    : 0;
+  const consistency = useMemo(() => {
+    return filteredData.length
+      ? Math.round(filteredData.reduce((sum, d) => sum + d.percent, 0) / filteredData.length)
+      : 0;
+  }, [filteredData]);
 
   return (
     <div className="container mx-auto px-4 py-8 text-white flex space-x-4">
       {/* Left: Todo List (33%) */}
       <div className="w-1/3">
         <h1 className="text-3xl font-bold mb-4">Daily Todo Tracker</h1>
-        <div className="flex items-center mb-4 space-x-2">
-          <Button onClick={() => {
-            const newDate = formatDate(new Date(new Date(selectedDate).getTime() - 24 * 60 * 60 * 1000));
-            setSelectedDate(newDate);
-          }} variant="outline">Prev Day</Button>
-          <span className="text-lg">{selectedDate}</span>
-          <Button onClick={() => {
-            const newDate = formatDate(new Date(new Date(selectedDate).getTime() + 24 * 60 * 60 * 1000));
-            setSelectedDate(newDate);
-          }} variant="outline">Next Day</Button>
+        {/* Navigation */}
+        <div className="flex items-center justify-between mb-4 w-full">
+          <Button
+            onClick={() => {
+              const newDate = formatDate(new Date(new Date(selectedDate).getTime() - 24 * 60 * 60 * 1000));
+              setSelectedDate(newDate);
+            }}
+            variant="outline"
+            className="text-2xl font-bold px-2"
+          >
+            &#60;
+          </Button>
+          <span className="text-lg font-medium flex-1 text-center">{selectedDate}</span>
+          <Button
+            onClick={() => {
+              const newDate = formatDate(new Date(new Date(selectedDate).getTime() + 24 * 60 * 60 * 1000));
+              setSelectedDate(newDate);
+            }}
+            variant="outline"
+            className="text-2xl font-bold px-2"
+          >
+            &#62;
+          </Button>
         </div>
+        {/* Add New Task Card */}
+        <Card className="mb-4">
+          <CardHeader>
+            <CardTitle className="text-xl">Add New Task</CardTitle>
+          </CardHeader>
+          <CardContent className="flex space-x-2">
+            <Input placeholder="Add new task" value={newItemText} onChange={(e) => setNewItemText(e.target.value)} />
+            <Button onClick={addItem}>Add</Button>
+          </CardContent>
+        </Card>
+        {/* Todo List Card */}
         <Card className="mb-4">
           <CardHeader>
             <CardTitle className="text-xl">Today's Tasks</CardTitle>
@@ -198,25 +264,22 @@ export default function TodoPage() {
           <CardContent>
             <ul className="space-y-2">
               {todayItems.map((item) => (
-                <li key={item.id} className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={item.completed}
-                    onChange={() => toggleItem(item.id)}
-                    className="mr-2 h-4 w-4 rounded text-indigo-600 focus:ring-indigo-500"
-                  />
-                  <span className={item.completed ? 'line-through text-gray-400' : ''}>{item.text}</span>
+                <li
+                  key={item.id}
+                  className={`flex items-center w-full p-3 rounded-lg mb-2 ${item.completed ? 'bg-green-300/10' : 'bg-gray-500/10'}`}
+                >
+                  <label className="flex items-center w-full cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={item.completed}
+                      onChange={() => toggleItem(item.id)}
+                      className="mr-2 h-4 w-4 rounded text-indigo-600 focus:ring-indigo-500"
+                    />
+                    <span className={item.completed ? 'line-through text-green-400 font-bold' : 'font-medium'}>{item.text}</span>
+                  </label>
                 </li>
               ))}
             </ul>
-            <div className="mt-4 flex space-x-2">
-              <Input
-                placeholder="Add new task"
-                value={newItemText}
-                onChange={(e) => setNewItemText(e.target.value)}
-              />
-              <Button onClick={addItem}>Add</Button>
-            </div>
           </CardContent>
         </Card>
       </div>
@@ -226,20 +289,13 @@ export default function TodoPage() {
         {/* Tabs */}
         <div className="flex space-x-2 mb-4">
           {(['daily', 'weekly', 'monthly', 'yearly'] as const).map((tab) => (
-            <Button
-              key={tab}
-              variant={activeTab === tab ? 'default' : 'outline'}
-              onClick={() => setActiveTab(tab)}
-            >
+            <Button key={tab} variant={activeTab === tab ? 'default' : 'outline'} onClick={() => setActiveTab(tab)}>
               {tab.charAt(0).toUpperCase() + tab.slice(1)}
             </Button>
           ))}
         </div>
-{/* Consistency display */}
-<div className="mb-4 text-lg font-medium text-white">
-  Consistency: {consistency}%
-</div>
-
+        {/* Consistency display */}
+        <div className="mb-4 text-lg font-medium text-white">Consistency: {consistency}%</div>
         {/* Progress Chart */}
         <Card>
           <CardHeader>
@@ -268,9 +324,54 @@ export default function TodoPage() {
                   stroke="#6366F1"
                   fill="url(#progressGradient)"
                   strokeWidth={2}
+                  animationDuration={500}
                 />
               </AreaChart>
             </ResponsiveContainer>
+          </CardContent>
+        </Card>
+        {/* Daily Progress Bar Card */}
+        <Card className="mt-4">
+          <CardHeader>
+            <CardTitle className="text-lg">Today's Progress</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="w-full bg-gray-700 rounded h-4 overflow-hidden">
+              <div
+                className="h-4 bg-green-500 transition-all duration-300"
+                style={{ width: `${(todayItems.filter((i) => i.completed).length / (todayItems.length || 1)) * 100}%` }}
+              />
+            </div>
+          </CardContent>
+        </Card>
+        {/* Progress Calendar Card */}
+        <Card className="mt-4">
+          <CardHeader>
+            <CardTitle className="text-lg">Progress Calendar</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-7 gap-1">
+              {dayNames.map((day) => (
+                <div key={day} className="text-center text-xs font-medium text-muted-foreground">
+                  {day}
+                </div>
+              ))}
+              {weeks.map((week) =>
+                week.map((day) => {
+                  const dateStr = day.date.toISOString().split('T')[0];
+                  const percent = chartData.find((d) => d.date === dateStr)?.percent ?? 0;
+                  const bg = percent >= 100 ? 'bg-green-300' : percent > 50 ? 'bg-orange-300' : 'bg-red-300';
+                  return (
+                    <div
+                      key={dateStr}
+                      className={cn('flex items-center justify-center h-8 rounded text-xs font-medium', bg, !day.isCurrentMonth && 'opacity-50')}
+                    >
+                      {percent}%
+                    </div>
+                  );
+                })
+              )}
+            </div>
           </CardContent>
         </Card>
       </div>
