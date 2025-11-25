@@ -4,6 +4,7 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
 import { Edit, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
@@ -71,31 +72,54 @@ export default function TodoPage() {
   // Load global tasks and status map from localStorage on mount
   // ------------------------------------------------------------
   useEffect(() => {
-    const storedTasks = localStorage.getItem('globalTasks');
-    const storedStatus = localStorage.getItem('statusMap');
-    const tasks: TodoItem[] = storedTasks ? JSON.parse(storedTasks) : [];
-    const status: Record<string, Record<string, boolean>> = storedStatus ? JSON.parse(storedStatus) : {};
+  const fetchData = async () => {
+    // Load tasks
+    const { data: tasksData, error: tasksError } = await supabase.from('todos').select('*');
+    // Load statuses
+    const { data: statusData, error: statusError } = await supabase.from('todo_statuses').select('*');
+
+    if (tasksError) console.error('Error loading tasks:', tasksError);
+    if (statusError) console.error('Error loading statuses:', statusError);
+
+    const tasks: TodoItem[] = tasksData ? tasksData.map((t: any) => ({ id: t.id, text: t.text, completed: false })) : [];
+    const statusMap: Record<string, Record<string, boolean>> = {};
+    if (statusData) {
+      statusData.forEach((row: any) => {
+        const date = row.date;
+        if (!statusMap[date]) statusMap[date] = {};
+        statusMap[date][row.todo_id] = row.completed;
+      });
+    }
+
     if (tasks.length === 0) {
       // Initialise with sample tasks
       const sampleTasks: TodoItem[] = [
         { id: crypto.randomUUID(), text: 'Check finances', completed: false },
         { id: crypto.randomUUID(), text: 'Study (backtesting trading strategies)', completed: false },
       ];
-      setGlobalTasks(sampleTasks);
-      // Initialise status for the past 30 days (all false)
+      // Insert sample tasks
+      const { error: insertErr } = await supabase.from('todos').insert(sampleTasks.map(t => ({ id: t.id, text: t.text })));
+      if (insertErr) console.error('Error inserting sample tasks:', insertErr);
+      // Initialise status for the past 30 days
       const initStatus: Record<string, Record<string, boolean>> = {};
       for (let i = 30; i >= 0; i--) {
         const date = formatDate(new Date(Date.now() - i * 24 * 60 * 60 * 1000));
         initStatus[date] = {};
         sampleTasks.forEach((t) => (initStatus[date][t.id] = false));
+        // Insert status rows
+        const rows = sampleTasks.map(t => ({ todo_id: t.id, date, completed: false }));
+        await supabase.from('todo_statuses').upsert(rows, { onConflict: 'todo_id,date' });
       }
+      setGlobalTasks(sampleTasks);
       setStatusMap(initStatus);
     } else {
       setGlobalTasks(tasks);
-      setStatusMap(status);
+      setStatusMap(statusMap);
     }
     setSelectedDate(formatDate(new Date()));
-  }, []);
+  };
+  fetchData();
+}, []);
 
 
 
@@ -103,69 +127,94 @@ export default function TodoPage() {
   // Persist global tasks and status map to localStorage whenever they change
   // ------------------------------------------------------------
   useEffect(() => {
-    if (globalTasks.length > 0) {
-      localStorage.setItem('globalTasks', JSON.stringify(globalTasks));
+  const syncData = async () => {
+    // Upsert tasks
+    for (const task of globalTasks) {
+      await supabase.from('todos').upsert({ id: task.id, text: task.text });
     }
-    if (Object.keys(statusMap).length > 0) {
-      localStorage.setItem('statusMap', JSON.stringify(statusMap));
+    // Upsert statuses
+    const statusEntries = Object.entries(statusMap);
+    for (const [date, tasks] of statusEntries) {
+      for (const [taskId, completed] of Object.entries(tasks)) {
+        await supabase.from('todo_statuses').upsert({ todo_id: taskId, date, completed }, { onConflict: 'todo_id,date' });
+      }
     }
-  }, [globalTasks, statusMap]);
-
-
-
-  const toggleItem = (id: string) => {
-    setStatusMap((prev) => {
-      const dayStatus = { ...(prev[selectedDate] || {}) };
-      dayStatus[id] = !dayStatus[id];
-      return { ...prev, [selectedDate]: dayStatus };
-    });
   };
+  syncData();
+}, [globalTasks, statusMap]);
 
-  const addItem = () => {
-    if (!newItemText.trim()) return;
-    const newTask: TodoItem = { id: crypto.randomUUID(), text: newItemText.trim(), completed: false };
-    // Add to global list
-    setGlobalTasks((prev) => [...prev, newTask]);
-    // Initialise its status as false for all existing dates (including selectedDate)
-    setStatusMap((prev) => {
-      const updated = { ...prev };
-      Object.keys(updated).forEach((date) => {
-        updated[date] = { ...updated[date], [newTask.id]: false };
-      });
-      // Ensure current selected date exists
-      if (!updated[selectedDate]) updated[selectedDate] = {};
-      updated[selectedDate][newTask.id] = false;
-      return updated;
+
+
+  const toggleItem = async (id: string) => {
+  let newValue = false;
+  setStatusMap((prev) => {
+    const dayStatus = { ...(prev[selectedDate] || {}) };
+    newValue = !dayStatus[id];
+    dayStatus[id] = newValue;
+    return { ...prev, [selectedDate]: dayStatus };
+  });
+  // Update Supabase after state change
+  await supabase.from('todo_statuses').upsert({ todo_id: id, date: selectedDate, completed: newValue }, { onConflict: 'todo_id,date' });
+};
+
+  const addItem = async () => {
+  if (!newItemText.trim()) return;
+  const newTask: TodoItem = { id: crypto.randomUUID(), text: newItemText.trim(), completed: false };
+  // Add to global list
+  setGlobalTasks((prev) => [...prev, newTask]);
+  // Insert into Supabase
+  await supabase.from('todos').insert({ id: newTask.id, text: newTask.text });
+  // Determine dates that need status rows
+  const existingDates = Object.keys(statusMap);
+  const dates = existingDates.includes(selectedDate) ? existingDates : [...existingDates, selectedDate];
+  // Update local statusMap synchronously
+  setStatusMap((prev) => {
+    const updated = { ...prev };
+    dates.forEach((date) => {
+      if (!updated[date]) updated[date] = {};
+      updated[date][newTask.id] = false;
     });
-    setNewItemText('');
-  };
+    return updated;
+  });
+  // Upsert status rows for all relevant dates
+  const rows = dates.map((date) => ({ todo_id: newTask.id, date, completed: false }));
+  await supabase.from('todo_statuses').upsert(rows, { onConflict: 'todo_id,date' });
+  setNewItemText('');
+};
 
   // Delete a task (with user confirmation) and remove its status from all dates
-  const deleteItem = (id: string) => {
+  const deleteItem = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this task? It will be removed from all days.')) {
       // Remove from global task list
       setGlobalTasks((prev) => prev.filter((t) => t.id !== id));
+      // Delete from Supabase
+      await supabase.from('todos').delete().eq('id', id);
       // Remove status entries for this task across all dates
-        setStatusMap((prev) => {
-          const updated = { ...prev };
-          Object.keys(updated).forEach((date) => {
-            if (updated[date] && updated[date][id] !== undefined) {
-              delete updated[date][id];
-            }
-          });
-          return updated;
+      setStatusMap((prev) => {
+        const updated = { ...prev };
+        Object.keys(updated).forEach((date) => {
+          if (updated[date] && updated[date][id] !== undefined) {
+            delete updated[date][id];
+          }
         });
+        return updated;
+      });
+      // Delete status rows
+      await supabase.from('todo_statuses').delete().eq('todo_id', id);
     }
   };
 
   // Update a task's name (text) with user input
-  const editItem = (id: string) => {
+  const editItem = async (id: string) => {
     const current = globalTasks.find((t) => t.id === id);
     const newName = window.prompt('Edit task name', current?.text || '');
     if (newName && newName.trim()) {
+      const trimmed = newName.trim();
       setGlobalTasks((prev) =>
-        prev.map((t) => (t.id === id ? { ...t, text: newName.trim() } : t))
+        prev.map((t) => (t.id === id ? { ...t, text: trimmed } : t))
       );
+      // Update Supabase
+      await supabase.from('todos').update({ text: trimmed }).eq('id', id);
     }
   };
   // ------------------------------------------------------------
