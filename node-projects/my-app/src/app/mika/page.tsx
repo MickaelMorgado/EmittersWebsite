@@ -581,7 +581,7 @@ export default function MikaPage() {
                   },
                   {
                     category: "Apps",
-                    imgSrc: "https://emittersgame.com/assets/images/tools/shoot.png",
+                    imgSrc: "https://emittersgame.com/assets/images/tools/priceticker.png",
                     alt: "Price Ticker",
                     title: "Price Ticker",
                     description: "A simple crypto price ticker that could runs in your tablet, it only support static Gold, BTC and EURUSD pair but planning to make it customizable in the future. It fetches real-time prices from a public API and displays them in a user-friendly format.",
