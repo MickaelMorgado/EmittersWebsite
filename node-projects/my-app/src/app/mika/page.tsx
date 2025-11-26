@@ -175,10 +175,10 @@ export default function MikaPage() {
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-bold uppercase">Mickael</h1>
             <div className="hidden md:flex space-x-8">
-              <a href="#about" className="hover:text-primary transition-colors">About</a>
-              <a href="#skills" className="hover:text-primary transition-colors">Skills</a>
+              <a href="#about" className="hover:text-primary transition-colors">ABOUT</a>
+              <a href="#skills" className="hover:text-primary transition-colors">SKILLS</a>
               <a href="#atp" className="hover:text-primary transition-colors">ATP</a>
-              <a href="#connect" className="hover:text-primary transition-colors">Connect</a>
+              <a href="#connect" className="hover:text-primary transition-colors">CONNECT</a>
             </div>
           </div>
         </div>
@@ -240,8 +240,8 @@ export default function MikaPage() {
           {/* Hero Section */}
           <section id="hero" className="min-h-screen flex items-center justify-center">
             <div className="container mx-auto px-6 z-10 text-center">
-              <h1 className="text-5xl font-bold mb-6 uppercase">Tech Developer</h1>
-              <p className="text-xl mb-8">The ultimate 'Jack of all trades'</p>
+              <h1 className="text-5xl font-bold mb-6">Tech Developer</h1>
+              <p className="mb-8">THE ULTIMATE 'JACK OF ALL TRADES'</p>
               <a
                 href="#"
                 onClick={(e) => {
@@ -259,7 +259,7 @@ export default function MikaPage() {
           <section id="about" className="py-20">
             <div className="container mx-auto px-6">
               <div className="flex flex-col md:flex-row gap-12">
-                <div className="md:w-2/4">
+                <div className="md:w-2/4 passion-content">
                   <h2 className="text-3xl font-bold mb-6 uppercase">About Me</h2>
                   <p className="mb-4 mr-12">
                     I'm Mickael, a detail-driven creator and performance enthusiast who values precision in everything I do.
