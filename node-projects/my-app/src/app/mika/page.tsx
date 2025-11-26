@@ -576,7 +576,7 @@ export default function MikaPage() {
                   },
                   {
                     category: "Apps",
-                    imgSrc: "https://via.placeholder.com/600x400",
+                    imgSrc: "https://emittersgame.com/assets/images/tools/audiovisualizer.png",
                     alt: "ThreeAudioVisualizer",
                     title: "ThreeAudioVisualizer",
                     description: "Context: Wanted to create an immersive music visualization experience. Role: Developed an interactive Three.js audio visualizer. Impact: Provides mesmerizing real-time visualizations synchronized to music. Main tech/tools: Three.js, Web Audio API, real-time rendering.",
