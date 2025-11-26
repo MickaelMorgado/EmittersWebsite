@@ -601,6 +601,15 @@ export default function MikaPage() {
                     link: "https://emitters-website-delta.vercel.app/dataVisualizer",
                     linkText: "View Demo",
                   },
+                  {
+                    category: "Apps",
+                    imgSrc: "https://emittersgame.com/assets/images/tools/dailyroutine.png",
+                    alt: "Daily Habit Tracker",
+                    title: "Daily Habit Tracker",
+                    description: "Context: This app is a personal dashboard that tracks your daily habits and tasks, showing how consistently you follow your routine over time. Role: Developed an interactive habit tracking system with visual progress indicators. Impact: Helps users maintain consistency and build better daily routines through data visualization. Main tech/tools: React, local storage, data visualization, responsive design.",
+                    link: "https://emitters-website-delta.vercel.app/todo",
+                    linkText: "View Demo",
+                  },
                 ].map((tool, index) => {
                   const isVisible = activeFilter === "All" || tool.category === activeFilter;
                   return (
