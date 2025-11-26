@@ -46,7 +46,8 @@ export default function MikaPage() {
     { name: "Agentic AI / LLMs", level: 30 },
     { name: "Automation", level: 70 },
     { name: "Web 3", level: 20 },
-    { name: "Supabase / Firebase", level: 20 }
+    { name: "Supabase / Firebase", level: 20 },
+    { name: "Vercel", level: 35 }
   ];
 
   const lowSkills = skills.filter(skill => skill.level <= 20);
@@ -269,9 +270,12 @@ export default function MikaPage() {
                   </p>
                   <h3 className="text-2xl font-bold mb-6">For Recruiters, Clients, and Collaborators</h3>
                   <p className="mb-4 mr-12">
-                    Expert in React/Next.js, TypeScript, Supabase, and DevOps <br/>
+                    Expert in React/Next.js, TypeScript, Supabase, Vercel, and DevOps <br/>
+                    10+ years experience developing web apps as MVPs, Flutter mobile apps, and hybrid solutions with DevOps <br/>
                     Led complex, multi-client web projects with measurable results <br/>
                     Specialty in automation, deployment optimization, and documentation workflows <br/>
+                    Proficient in identifying product UI/UX improvements based on years of experience <br/>
+                    Able to deliver quick, efficient working solutions that simplify client complexities <br/>
                     Portfolio includes innovative apps, real-time dashboards, and trading tools <br/>
                     Open to roles in development or technical leadership <br/>
                   </p>
