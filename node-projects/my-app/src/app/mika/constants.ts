@@ -7,9 +7,9 @@ export const redMaterialParams = {
 };
 
 export const metalMaterialParams = {
-  color: 0x333333,
-  roughness: 0.7,
-  metalness: 0.3,
+  color: 0x888888,
+  roughness: 0.32,
+  metalness: 1,
 };
 
 export const bloomParams = {
