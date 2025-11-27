@@ -449,12 +449,24 @@ CTrade trade;
                 <div class="h-flex h-flex--center">
                   <button
                     onclick="saveConfigs()"
+                    name="saveConfigsButton"
                     class="mybutton h-input-effects"
                     title="Save Configurations For Next Time"
                   >
                     <i class="far fa-save"></i>
                   </button>
-                  <label for="" title="Save the current configuration as URLs parameters for future use. Browser will refresh when saving!">Save Configurations</label>
+                  <label for="saveConfigsButton" title="Save the current configuration as URLs parameters for future use. Browser URL will refresh with theses new parameters when saving!">Save Configurations</label>
+                </div>
+                <div class="h-flex h-flex--center">
+                  <button
+                    onclick="loadConfigs()"
+                    name="loadConfigsButton"
+                    class="mybutton h-input-effects"
+                    title="Load Configurations"
+                  >
+                    <i class="fas fa-upload"></i>
+                  </button>
+                  <label for="loadConfigsButton" title="Load the configuration from URLs parameters. Browser URL will refresh with new parameters when loading!">Load Configurations</label>
                 </div>
               </div>
             </div>
