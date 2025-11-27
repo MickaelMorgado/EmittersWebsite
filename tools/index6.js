@@ -61,7 +61,6 @@ if (urlParams.has('tsincrement')) { $TSIncrementInput.value = urlParams.get('tsi
 if (urlParams.has('strategy')) { $strategyInput.value = urlParams.get('strategy') }
 
 const saveConfigs = () => {
-  const currentUrl = window.location.href.split('?')[0];
   const urlParams = new URLSearchParams(window.location.search);
 
   urlParams.set('theme', $ThemeInput.value);
@@ -76,6 +75,21 @@ const saveConfigs = () => {
   urlParams.set('strategy', $strategyInput.value);
 
   window.location.search = urlParams;
+}
+
+const loadConfigs = () => {
+  /* 
+    Load settings from previously backed-up backtesting result settings, must follow this keys pattern:  
+    ?...btt=09%3A50%3A00&ett=11%3A00%3A00&maperiod=200&lotsize=1.0&commissionsize=0.00005&slpoints=0.0001&tppoints=0.0003&tsincrement=0.0001&strategy=CSID_W_MA_DynamicTS
+  */
+  let configuration = '';
+  const line = prompt("Load Configurations paramters or complete URL from Backed Up Settings: ");
+  
+  if (!line) return;
+  
+  configuration = line.indexOf('?') > -1 ? line.split('?')[1] : line;
+
+  window.location.search = configuration;
 }
 
 const revealAlgoEditor = () => {
@@ -723,7 +737,7 @@ const initSciChart = (data) => {
           if (candlesFromBuffer.length < 2) return;
 
           const trailingStopSize =
-            parseFloat($TSIncrementInput.value) || 0.0001;
+            parseFloat($TSIncrementInput.value) || 0.0000;
 
           const previousCandle =
             candlesFromBuffer[candlesFromBuffer.length - 2];
@@ -748,17 +762,18 @@ const initSciChart = (data) => {
           let candleSize = Math.abs(previousCandle["<CLOSE>"] - previousCandle["<OPEN>"]); // Need to be the previous candle, as current candle is not closed yet at this time (in a real scenario).
           candleSize = Number(candleSize.toFixed(4)); // → 0.0005
 
-          // The following might only work for EURUSD like pairs, TODO: need to generalize it later:
+          /*
+            The following might only work for EURUSD like pairs, TODO: I'll need to generalize it later.
+            As for EURUSD I hardcoded two thresholds for candle size:
+            - 0.0005 (50 pips)
+            - 0.0003 (30 pips)
+          */
           const trailingSizeMultiplier = (candleSize) => {
             switch (strategy) {
               case EnumStrategy.CSID_W_MA_DynamicTS:
-                if (candleSize >= 0.0005) {
-                  return trailingStopSize * 3;
-                } else if (candleSize >= 0.0003) {
-                  return trailingStopSize * 2;
-                } else {
-                  return trailingStopSize;
-                }
+                if (candleSize >= 0.0005) return trailingStopSize * 3;
+                else if (candleSize >= 0.0003) return trailingStopSize * 2;
+                else return trailingStopSize;
               case EnumStrategy.CSID_W_MA:
               case EnumStrategy.CSID:
               default:
@@ -768,12 +783,14 @@ const initSciChart = (data) => {
 
           if (order.direction == EnumDirection.BULL) {
             //console.log('Moving SL of ', order.id, ' from ', order.sl, ' to ',  order.sl + trailingStopSize);
-            /*order.sl < order.price && d[EnumMT5OHLC.OPEN] > order.price ? order.sl = order.price : */order.sl += trailingSizeMultiplier(candleSize);
+            /*order.sl < order.price && d[EnumMT5OHLC.OPEN] > order.price ? order.sl = order.price : */
+            order.sl += trailingSizeMultiplier(candleSize);
             // order.sl = order.sl + trailingStopSize; // Move SL by trailingStopSize (up side)
           } else if (order.direction == EnumDirection.BEAR) {
             //console.log('Moving SL of ', order.id, ' from ', order.sl, ' to ',  order.sl - trailingStopSize);
             // order.sl = order.sl - trailingStopSize; // Move SL by trailingStopSize (down side)
-            /*order.sl > order.price && d[EnumMT5OHLC.OPEN] < order.price ? order.sl = order.price : */order.sl -= trailingSizeMultiplier(candleSize);
+            /*order.sl > order.price && d[EnumMT5OHLC.OPEN] < order.price ? order.sl = order.price : */
+            order.sl -= trailingSizeMultiplier(candleSize);
           }
 
           // Trailing Stop visual:
