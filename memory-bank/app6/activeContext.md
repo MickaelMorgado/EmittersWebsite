@@ -4,7 +4,9 @@
 
 ## Current Development Focus
 - **Primary Goal**: Enhance strategy accuracy and add new indicators for more robust backtesting.
-- **Active Task**: Investigating MA acceleration calculation to better detect trending markets.
+- **Completed Task**: ✅ Added clickable rows to Historical Orders Table for chart navigation to trade dates.
+- **Active Task**: Add music-player style backtesting controls (play/pause, next step).
+- **Implementation Plan**: Replace checkbox with button panel for play/pause toggle and single-step advancement.
 - **Next Steps**: Implement RSI or Stochastic oscillators as additional filters.
 
 ## Open Questions
@@ -26,6 +28,17 @@
 - Requests for more export formats (PDF reports, images).
 - Desire for real-time parameter adjustment during backtesting (sliders instead of inputs).
 - Suggestion to add sound toggles for audio feedback.
+
+## Current User Settings
+- **URL Parameters**: ?btt=09%3A50%3A00&ett=20%3A30%3A00&maperiod=3&lotsize=1.0&commissionsize=0.00005&slpoints=0.001&tppoints=0.006&tsincrement=0.0001&strategy=CSID_W_MA_DynamicTS&theme=
+- **CSV Filename**: EURUSD_M5_202505011000_202508012355
+- **Note**: If user asks about this CSV file, remind them of these parameters.
+- **Historical Orders Table Columns**: ID, Time, Price, SL, TP, Direction, Closed Order Type, Closed Price, Closed Time, P/L (Points)
+
+## Win Rate Calculation Decision
+- **Chosen Approach**: Keep current implementation (any positive trade = win) to maintain code simplicity
+- **Rationale**: Avoid code extension that could lead to maintenance difficulties and increased token counts for AI prompting
+- **Benefits**: Realistic profitability assessment, accounts for trailing stop benefits, standard win rate metric
 
 ## Debugging Aids
 - Console logs in `updateCSIDLineAnnotation` for signal debugging.

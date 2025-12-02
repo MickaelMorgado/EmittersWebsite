@@ -35,8 +35,14 @@ const $firstDate = document.getElementById('firstDate');
 const $lastDate = document.getElementById('lastDate');
 const $currentReadingDate = document.getElementById('currentReadingDate');
 const $resultPanelContent = document.querySelectorAll('.result-panel-content'); //result-panel-content
-const $backTestingPauseButton = document.getElementById('backTestingPauseButton');
-let backTestingPaused = $backTestingPauseButton.checked;
+const $backTestingPauseButton = document.getElementById('backTestingPauseButton'); // Keep for compatibility
+const $backtestingPlayPause = document.getElementById('backtestingPlayPause');
+const $backtestingPlayPauseIcon = $backtestingPlayPause.querySelector('i');
+const $backtestingNext = document.getElementById('backtestingNext');
+const $backtestingStop = document.getElementById('backtestingStop');
+let backTestingPaused = false; // Default to not paused
+let backTestingStepMode = false; // For single-step advancement
+let currentParser = null; // Store parser reference for step control
 const $sessionStartInput = document.getElementById('backtesting-hour');
 const $sessionEndInput = document.getElementById('backtesting-end');
 const $ThemeInput = document.getElementById('themeSelector');
@@ -142,6 +148,35 @@ $resultPanelToolbarContentTogglerAlgoEditor?.addEventListener('click', () => rev
 $resultPanelToolbarContentTogglerAlgo?.addEventListener('click', () => revealAlgo());
 $resultPanelToolbarContentTogglerReview?.addEventListener('click', () => revealReview());
 $resultPanel.addEventListener('scroll', (event) => stickyTableHeaders(event.target));
+
+// Result panel toggle button
+const $chartSection = document.querySelector('.chart-section');
+const $resultPanelCollapseBtn = document.getElementById('result-panel-collapse-btn');
+
+$resultPanelCollapseBtn?.addEventListener('click', () => {
+  // Single button cycles through all layout states smoothly
+  const isChartCollapsed = $chartSection.classList.contains('chart-collapsed');
+  const isPanelExpanded = $resultPanel.classList.contains('active');
+  const isPanelFullHeight = $resultPanel.classList.contains('full-height');
+
+  if (!isChartCollapsed && !isPanelExpanded) {
+    // State 1: Default -> Show both chart and expanded panel
+    $resultPanel.classList.add('active');
+  } else if (!isChartCollapsed && isPanelExpanded && !isPanelFullHeight) {
+    // State 2: Both visible -> Hide chart, expand panel to full height
+    $chartSection.classList.remove('chart-expanded');
+    $chartSection.classList.add('chart-collapsed');
+    $resultPanel.classList.add('full-height');
+  } else if (isChartCollapsed && isPanelExpanded && isPanelFullHeight) {
+    // State 3: Panel full height -> Reset to default (chart visible, panel collapsed)
+    $resultPanel.classList.remove('active');
+    $resultPanel.classList.remove('full-height');
+    $chartSection.classList.remove('chart-collapsed');
+    $chartSection.classList.add('chart-expanded');
+  }
+
+  animateActiveClass($resultPanelCollapseBtn);
+});
 $SLPointsInput?.addEventListener('change', () => animateActiveClass($csvRefresh));
 $TPPointsInput?.addEventListener('change', () => animateActiveClass($csvRefresh));
 $LotSizeInput?.addEventListener('change', () => animateActiveClass($csvRefresh));
@@ -150,13 +185,67 @@ $TSIncrementInput?.addEventListener('change', () => animateActiveClass($csvRefre
 $MAPeriodInput?.addEventListener('change', () => animateActiveClass($csvRefresh));
 $MAThresholdInput?.addEventListener('change', () => animateActiveClass($csvRefresh));
 $strategyInput?.addEventListener('change', () => animateActiveClass($csvRefresh));
-$backTestingPauseButton?.addEventListener('change', () => {
-  backTestingPaused = $backTestingPauseButton.checked;
+/* ---- */
 
-  if (!backTestingPaused) {
-    animateActiveClass($csvRefresh);
+// Backtesting Controls - Music Player Style
+$backtestingPlayPause.addEventListener('click', () => {
+  if (backTestingPaused) {
+    // Currently paused, so resume (show pause icon)
+    backTestingPaused = false;
+    backTestingStepMode = false;
+    $backtestingPlayPause.classList.remove('play-btn');
+    $backtestingPlayPause.classList.add('pause-btn');
+    $backtestingPlayPauseIcon.classList.remove('fa-play');
+    $backtestingPlayPauseIcon.classList.add('fa-pause');
+    $backtestingPlayPause.title = 'Pause Backtesting';
+    animateActiveClass($backtestingPlayPause);
+    if (currentParser) {
+      currentParser.resume();
+      document.getElementById('loading-element').classList.add('visible');
+    }
+  } else {
+    // Currently playing, so pause (show play icon)
+    backTestingPaused = true;
+    backTestingStepMode = false;
+    $backtestingPlayPause.classList.remove('pause-btn');
+    $backtestingPlayPause.classList.add('play-btn');
+    $backtestingPlayPauseIcon.classList.remove('fa-pause');
+    $backtestingPlayPauseIcon.classList.add('fa-play');
+    $backtestingPlayPause.title = 'Resume Backtesting';
+    if (currentParser) {
+      document.getElementById('loading-element').classList.remove('visible');
+    }
   }
 });
+
+$backtestingNext.addEventListener('click', () => {
+  // Advance one step
+  backTestingPaused = false;
+  backTestingStepMode = true; // Will pause after next candle
+  animateActiveClass($backtestingNext);
+  if (currentParser) {
+    currentParser.resume();
+    document.getElementById('loading-element').classList.add('visible');
+  }
+});
+
+$backtestingStop.addEventListener('click', () => {
+  backTestingPaused = true;
+  backTestingStepMode = false;
+  $backtestingPlayPause.classList.remove('pause-btn');
+  $backtestingPlayPause.classList.add('play-btn');
+  animateActiveClass($backtestingStop);
+  if (currentParser) {
+    document.getElementById('loading-element').classList.remove('visible');
+  }
+});
+
+// Keep old checkbox for compatibility but hide it (if it exists)
+if ($backTestingPauseButton) {
+  $backTestingPauseButton.style.display = 'none';
+}
+
+/* ---- */
 /* ---- */
 
 const decimals = 5;
@@ -340,7 +429,14 @@ const handleFileAndInitGraph = (file) => {
     Papa.parse(file, {
       header: true,
       dynamicTyping: true,
-      beforeFirstChunk: (chunk) => { 
+      beforeFirstChunk: (chunk) => {
+        // Update play/pause button to show pause state since backtesting is starting
+        $backtestingPlayPause.classList.remove('play-btn');
+        $backtestingPlayPause.classList.add('pause-btn');
+        $backtestingPlayPauseIcon.classList.remove('fa-play');
+        $backtestingPlayPauseIcon.classList.add('fa-pause');
+        $backtestingPlayPause.title = 'Pause Backtesting (Running)';
+
         // Destroy previous chart if exists, TODO improve this (better to not use window):
         window.existingChart = Chart.getChart(myChart);
         if (window.existingChart) {
@@ -374,6 +470,9 @@ const handleFileAndInitGraph = (file) => {
         });
       },
       step: (results, parser) => {
+        // Store parser reference for external control
+        currentParser = parser;
+
         if (backTestingPaused) {
           parser.pause();
           document
@@ -399,17 +498,30 @@ const handleFileAndInitGraph = (file) => {
         // Calculate and Display profitability statistics:
         profitabilityCalculation();
 
+        // Handle single-step mode
+        if (backTestingStepMode) {
+          backTestingStepMode = false; // Reset step mode
+          backTestingPaused = true; // Pause after this step
+          document.getElementById('loading-element').classList.remove('visible');
+          // Don't resume parser automatically
+          return;
+        }
+
         //audioSuccess.play();
         setTimeout(() => {
           parser.resume();
         }, readingSpeed);
       },
       complete: (results, file) => {
+        // Clear parser reference
+        currentParser = null;
         // Remove visible class from loading element
         document.getElementById('loading-element').classList.remove('visible');
         audioSuccess.play();
       },
       error: (error) => {
+        // Clear parser reference on error
+        currentParser = null;
         console.error('Error parsing CSV:', error);
       },
     });
@@ -425,11 +537,21 @@ $csvFileInput.addEventListener('change', (event) => {
 
 $csvRefresh.addEventListener('click', () => {
   const file = $csvFileInput.files[0];
-  $backTestingPauseButton.checked = false;
+  // Reset control states
+  backTestingPaused = false;
+  backTestingStepMode = false;
+  $backtestingPlayPause.classList.remove('pause-btn');
+  $backtestingPlayPause.classList.add('play-btn');
   handleFileAndInitGraph(file);
 });
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Initialize chart section state
+  const $chartSection = document.querySelector('.chart-section');
+  if ($chartSection) {
+    $chartSection.classList.add('chart-expanded');
+  }
+
   // Extract URL parameters
   const urlParams = new URLSearchParams(window.location.search);
 
@@ -443,7 +565,6 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll("label[title]").forEach(label => {
     //const icon = document.createElement("i");
     const icon = document.createElement("span");
-    //icon.className = "fa fa-info";
     icon.textContent = "*";
     icon.style.color = `#${bullishColor}`;
     icon.style.marginLeft = "5px";
@@ -1112,9 +1233,10 @@ const initSciChart = (data) => {
         let grossLoss = 0;
 
         const equityDataMoney = []; // in $
-        // Reset labels and pnlData:
+        // Reset labels, pnlData, and equityData:
         labels = [];
         pnlData = [];
+        equityData.length = 0;
 
         for (const { id, pnlPoints } of ordersHistory) {
           labels.push(id);
@@ -1262,7 +1384,7 @@ const initSciChart = (data) => {
         window.existingChart.data.datasets[1].data = equityData;
         window.existingChart.update('none');
 
-        // Historical Orders Table
+        // Historical Orders Table with clickable rows for chart navigation
         document.getElementById('backtestingResultOrderHistory').innerHTML = `
     <table>
       <thead>
@@ -1274,7 +1396,7 @@ const initSciChart = (data) => {
         ${ordersHistory
           .map(
             (order) => `
-          <tr class="historical-order-line">
+          <tr class="historical-order-line clickable-row" data-trade-time="${order.time}" title="Click to navigate to this trade on chart">
             <td>${order.id}</td>
             <td>${order.time}</td>
             <td>${order.price.toFixed(5)}</td>
@@ -1297,6 +1419,29 @@ const initSciChart = (data) => {
       </tbody>
     </table>
   `;
+
+        // Add click event listeners to table rows for chart navigation
+        setTimeout(() => {
+          document.querySelectorAll('.clickable-row').forEach(row => {
+            row.addEventListener('click', (event) => {
+              const tradeTime = event.currentTarget.getAttribute('data-trade-time');
+              if (tradeTime && window.sciChartSurface) {
+                const unixTime = convertMT5DateToUnix(tradeTime);
+                const getCandleNumberByDay = (days) => 86400 * days;
+                const rangeMinDate = unixTime - 1800; // 30 minutes before
+                const rangeMaxDate = unixTime + getCandleNumberByDay(0.1); // ~2.4 hours after
+                const xAxis = window.sciChartSurface.xAxes.get(0);
+
+                // Zoom to the trade timestamp
+                xAxis.visibleRange = new NumberRange(rangeMinDate, rangeMaxDate);
+
+                // Optional: Highlight the clicked row
+                document.querySelectorAll('.clickable-row').forEach(r => r.classList.remove('selected-row'));
+                event.currentTarget.classList.add('selected-row');
+              }
+            });
+          });
+        }, 100); // Small delay to ensure DOM is updated
       };
 
       window.profitabilityCalculation = profitabilityCalculation;
