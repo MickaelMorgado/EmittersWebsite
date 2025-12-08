@@ -18,8 +18,6 @@ export default function PrinterMonitor() {
   useEffect(() => {
     async function enumerateDevices() {
       try {
-        // Request permission
-        await navigator.mediaDevices.getUserMedia({ video: true });
         const deviceList = await navigator.mediaDevices.enumerateDevices();
         const videoDevices = deviceList
           .filter(device => device.kind === 'videoinput')
