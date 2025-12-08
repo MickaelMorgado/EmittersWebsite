@@ -110,7 +110,7 @@ export default function PrinterMonitor() {
   const gridCols = Math.min(selectedArray.length, 4); // 1 to 4 columns
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-4">
+    <div className="min-h-screen p-4">
       <h1 className="text-2xl font-bold mb-4">3D Printer Camera Monitor</h1>
       {errorMessage && (
         <div className="mb-4 p-4 bg-red-600 text-white rounded">
