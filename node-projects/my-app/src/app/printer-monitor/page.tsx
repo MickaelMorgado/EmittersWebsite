@@ -97,13 +97,14 @@ export default function PrinterMonitor() {
             video: { deviceId: { exact: deviceId } }
           });
           streams.current[deviceId] = stream;
+          // Set srcObject for grid mode video
           if (videoRefs.current[deviceId]) {
             videoRefs.current[deviceId].srcObject = stream;
           }
-          if (videoRefs.current['loop'] && presentationMode === 'loop') {
-            // If in loop mode, update the loop video if this is the current one
+          // Set srcObject for loop mode video if this is the current camera
+          if (presentationMode === 'loop') {
             const currentDeviceId = selectedArray[currentLoopIndex];
-            if (currentDeviceId === deviceId) {
+            if (currentDeviceId === deviceId && videoRefs.current['loop']) {
               videoRefs.current['loop'].srcObject = stream;
               videoRefs.current['loop'].play().catch(console.error);
             }
