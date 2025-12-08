@@ -12,24 +12,30 @@ export default function PrinterMonitor() {
   const [selectedDevices, setSelectedDevices] = useState<Set<string>>(new Set());
   const [mainDeviceId, setMainDeviceId] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string>('');
+  const [permissionGranted, setPermissionGranted] = useState<boolean>(false);
   const videoRefs = useRef<{ [key: string]: HTMLVideoElement }>({});
   const mainVideoRef = useRef<HTMLVideoElement>(null);
   const streams = useRef<{ [key: string]: MediaStream }>({});
 
-  useEffect(() => {
-    async function enumerateDevices() {
-      try {
-        const deviceList = await navigator.mediaDevices.enumerateDevices();
-        const videoDevices = deviceList
-          .filter(device => device.kind === 'videoinput')
-          .map(device => ({ deviceId: device.deviceId, label: device.label || `Camera ${device.deviceId.slice(0, 8)}` }));
-        setDevices(videoDevices);
-      } catch (error) {
-        console.error('Error enumerating devices:', error);
-      }
+  const requestPermission = async () => {
+    setErrorMessage('');
+    try {
+      // Request permission by opening a temporary stream
+      const tempStream = await navigator.mediaDevices.getUserMedia({ video: true });
+      // Immediately stop it
+      tempStream.getTracks().forEach(track => track.stop());
+      setPermissionGranted(true);
+      // Now enumerate devices
+      const deviceList = await navigator.mediaDevices.enumerateDevices();
+      const videoDevices = deviceList
+        .filter(device => device.kind === 'videoinput')
+        .map(device => ({ deviceId: device.deviceId, label: device.label || `Camera ${device.deviceId.slice(0, 8)}` }));
+      setDevices(videoDevices);
+    } catch (error: any) {
+      console.error('Error requesting permission:', error);
+      setErrorMessage(`Failed to get camera permission: ${error.message}`);
     }
-    enumerateDevices();
-  }, []);
+  };
 
   useEffect(() => {
     if (mainVideoRef.current && mainDeviceId && streams.current[mainDeviceId]) {
@@ -115,18 +121,27 @@ export default function PrinterMonitor() {
       {/* Settings Panel */}
       <div className="mb-8">
         <h2 className="text-xl mb-2">Available Cameras</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-          {devices.map(device => (
-            <label key={device.deviceId} className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                checked={selectedDevices.has(device.deviceId)}
-                onChange={() => toggleDevice(device.deviceId)}
-              />
-              <span>{device.label}</span>
-            </label>
-          ))}
-        </div>
+        {!permissionGranted ? (
+          <button
+            onClick={requestPermission}
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Grant Camera Permission
+          </button>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            {devices.map(device => (
+              <label key={device.deviceId} className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  checked={selectedDevices.has(device.deviceId)}
+                  onChange={() => toggleDevice(device.deviceId)}
+                />
+                <span>{device.label}</span>
+              </label>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Main Video */}
