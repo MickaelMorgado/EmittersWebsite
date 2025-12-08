@@ -68,6 +68,7 @@ export default function PrinterMonitor() {
       const loopVideoRef = videoRefs.current['loop'];
       if (loopVideoRef && streams.current[currentDeviceId]) {
         loopVideoRef.srcObject = streams.current[currentDeviceId];
+        loopVideoRef.play().catch(console.error);
       }
     }
   }, [presentationMode, currentLoopIndex, selectedArray]);
