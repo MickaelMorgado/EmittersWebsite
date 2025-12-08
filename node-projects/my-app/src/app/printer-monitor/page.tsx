@@ -77,7 +77,7 @@ export default function PrinterMonitor() {
         {Array.from({ length: 4 }, (_, index) => {
           const deviceId = selectedArray[index];
           return (
-            <div key={index} className="relative aspect-video bg-black rounded">
+            <div key={index} className="relative h-full bg-black rounded">
               {deviceId && streams.current[deviceId] ? (
                 <>
                   <video
