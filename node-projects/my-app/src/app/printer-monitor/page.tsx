@@ -171,26 +171,37 @@ export default function PrinterMonitor() {
             </div>
           </div>
         ) : (
-          // Grid mode
-          <div className={`absolute inset-0 grid gap-1 p-1 pl-12 ${gridCols === 1 ? 'grid-cols-1' : gridCols === 2 ? 'grid-cols-1 md:grid-cols-2' : gridCols === 3 ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4'}`}>
-            {selectedArray.map(deviceId => (
-              <div key={deviceId} className="relative aspect-video bg-[rgba(0,0,0,0.75)] rounded">
-                <video
-                  ref={el => {
-                    if (el) videoRefs.current[deviceId] = el;
-                    if (el && streams.current[deviceId]) {
-                      el.srcObject = streams.current[deviceId];
-                    }
-                  }}
-                  autoPlay
-                  muted
-                  className="w-full h-full object-cover rounded"
-                />
-                <div className="absolute bottom-0 left-0 right-0 bg-[rgba(0,0,0,0.75)] text-white text-sm p-2 rounded-b">
-                  {devices.find(d => d.deviceId === deviceId)?.label || `Camera ${device.deviceId.slice(0, 8)}`}
+          // Grid mode - static 2x2 grid
+          <div className="absolute inset-0 grid grid-cols-2 gap-1 p-1 pl-12">
+            {Array.from({ length: 4 }, (_, index) => {
+              const deviceId = selectedArray[index];
+              return (
+                <div key={index} className="relative aspect-video bg-[rgba(0,0,0,0.75)] rounded">
+                  {deviceId && streams.current[deviceId] ? (
+                    <>
+                      <video
+                        ref={el => {
+                          if (el) videoRefs.current[deviceId] = el;
+                          if (el && streams.current[deviceId]) {
+                            el.srcObject = streams.current[deviceId];
+                          }
+                        }}
+                        autoPlay
+                        muted
+                        className="w-full h-full object-cover rounded"
+                      />
+                      <div className="absolute bottom-0 left-0 right-0 bg-[rgba(0,0,0,0.75)] text-white text-sm p-2 rounded-b">
+                        {devices.find(d => d.deviceId === deviceId)?.label || `Camera ${deviceId.slice(0, 8)}`}
+                      </div>
+                    </>
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-white text-2xl">
+                      Camera {index + 1}
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )
       )}
