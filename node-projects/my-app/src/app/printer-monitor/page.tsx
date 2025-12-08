@@ -114,9 +114,9 @@ export default function PrinterMonitor() {
     <div className="relative min-h-screen">
       {/* CCTV Grid - Full Screen Background */}
       {selectedArray.length > 0 && (
-        <div className={`absolute inset-0 grid gap-1 p-1 ${gridCols === 1 ? 'grid-cols-1' : gridCols === 2 ? 'grid-cols-1 md:grid-cols-2' : gridCols === 3 ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4'}`}>
+        <div className={`absolute inset-0 grid gap-1 p-1 pl-12 ${gridCols === 1 ? 'grid-cols-1' : gridCols === 2 ? 'grid-cols-1 md:grid-cols-2' : gridCols === 3 ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4'}`}>
           {selectedArray.map(deviceId => (
-            <div key={deviceId} className="relative aspect-video bg-black rounded">
+            <div key={deviceId} className="relative aspect-video bg-[rgba(0,0,0,0.75)] rounded">
               <video
                 ref={el => {
                   if (el) videoRefs.current[deviceId] = el;
@@ -128,7 +128,7 @@ export default function PrinterMonitor() {
                 muted
                 className="w-full h-full object-cover rounded"
               />
-              <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-75 text-white text-sm p-2 rounded-b">
+              <div className="absolute bottom-0 left-0 right-0 bg-[rgba(0,0,0,0.75)] text-white text-sm p-2 rounded-b">
                 {devices.find(d => d.deviceId === deviceId)?.label || `Camera ${device.deviceId.slice(0, 8)}`}
               </div>
             </div>
@@ -137,7 +137,7 @@ export default function PrinterMonitor() {
       )}
 
       {/* Sidebar Overlay */}
-      <div className={`fixed top-0 left-0 h-full bg-black bg-opacity-50 backdrop-blur-sm transition-all duration-300 z-10 ${sidebarOpen ? 'w-[500px]' : 'w-12'}`}>
+      <div className={`fixed top-0 left-0 h-full bg-[rgba(0,0,0,0.9)] backdrop-blur-sm transition-all duration-300 z-10 ${sidebarOpen ? 'w-[500px]' : 'w-12'}`}>
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
           className="absolute top-4 right-2 w-8 h-8 bg-gray-700 hover:bg-gray-600 rounded flex items-center justify-center text-white"
