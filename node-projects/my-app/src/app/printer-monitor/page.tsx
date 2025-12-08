@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface Device {
   deviceId: string;
@@ -10,11 +10,10 @@ interface Device {
 export default function PrinterMonitor() {
   const [devices, setDevices] = useState<Device[]>([]);
   const [selectedDevices, setSelectedDevices] = useState<Set<string>>(new Set());
-  const [mainDeviceId, setMainDeviceId] = useState<string>('');
+  const [mainDeviceId, setMainDeviceId] = useState<string>(''); // Keep for API, but not used in UI
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [permissionGranted, setPermissionGranted] = useState<boolean>(false);
   const videoRefs = useRef<{ [key: string]: HTMLVideoElement }>({});
-  const mainVideoRef = useRef<HTMLVideoElement>(null);
   const streams = useRef<{ [key: string]: MediaStream }>({});
 
   const requestPermission = async () => {
@@ -40,12 +39,6 @@ export default function PrinterMonitor() {
       }
     }
   };
-
-  useEffect(() => {
-    if (mainVideoRef.current && mainDeviceId && streams.current[mainDeviceId]) {
-      mainVideoRef.current.srcObject = streams.current[mainDeviceId];
-    }
-  }, [mainDeviceId]);
 
   useEffect(() => {
     return () => {
@@ -113,6 +106,9 @@ export default function PrinterMonitor() {
     }
   };
 
+  const selectedArray = Array.from(selectedDevices);
+  const gridCols = Math.min(selectedArray.length, 4); // 1 to 4 columns
+
   return (
     <div className="min-h-screen bg-gray-900 text-white p-4">
       <h1 className="text-2xl font-bold mb-4">3D Printer Camera Monitor</h1>
@@ -152,36 +148,29 @@ export default function PrinterMonitor() {
         )}
       </div>
 
-      {/* Main Video */}
-      <div className="mb-4">
-        <h2 className="text-xl mb-2">Main Preview</h2>
-        <video
-          ref={mainVideoRef}
-          autoPlay
-          muted
-          className="w-full max-w-4xl h-96 bg-black"
-        />
-      </div>
-
-      {/* Grid of Videos */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {Array.from(selectedDevices).map(deviceId => (
-          <div key={deviceId} className="cursor-pointer" onClick={() => setMain(deviceId)}>
-            <video
-              ref={el => {
-                if (el) videoRefs.current[deviceId] = el;
-                if (el && streams.current[deviceId]) {
-                  el.srcObject = streams.current[deviceId];
-                }
-              }}
-              autoPlay
-              muted
-              className={`w-full h-24 bg-black ${mainDeviceId === deviceId ? 'border-2 border-blue-500' : ''}`}
-            />
-            <p className="text-sm mt-1">{devices.find(d => d.deviceId === deviceId)?.label}</p>
-          </div>
-        ))}
-      </div>
+      {/* CCTV Grid */}
+      {selectedArray.length > 0 && (
+        <div className={`grid gap-4 ${gridCols === 1 ? 'grid-cols-1' : gridCols === 2 ? 'grid-cols-1 md:grid-cols-2' : gridCols === 3 ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4'}`}>
+          {selectedArray.map(deviceId => (
+            <div key={deviceId} className="relative aspect-video bg-black rounded">
+              <video
+                ref={el => {
+                  if (el) videoRefs.current[deviceId] = el;
+                  if (el && streams.current[deviceId]) {
+                    el.srcObject = streams.current[deviceId];
+                  }
+                }}
+                autoPlay
+                muted
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-sm p-1">
+                {devices.find(d => d.deviceId === deviceId)?.label || `Camera ${deviceId.slice(0, 8)}`}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
