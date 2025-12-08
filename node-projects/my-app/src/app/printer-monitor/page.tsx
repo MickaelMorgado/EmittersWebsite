@@ -124,7 +124,7 @@ export default function PrinterMonitor() {
 
       {/* Settings Panel */}
       <div className="mb-8">
-        <h2 className="text-xl mb-2">Available Cameras</h2>
+        <h2 className="text-xl mb-2">Available Cameras ({devices.length} found)</h2>
         {!permissionGranted ? (
           <button
             onClick={requestPermission}
@@ -134,16 +134,20 @@ export default function PrinterMonitor() {
           </button>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-            {devices.map(device => (
-              <label key={device.deviceId} className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  checked={selectedDevices.has(device.deviceId)}
-                  onChange={() => toggleDevice(device.deviceId)}
-                />
-                <span>{device.label}</span>
-              </label>
-            ))}
+            {devices.length === 0 ? (
+              <p className="text-gray-400">No cameras detected. Make sure Iriun is running and cameras are connected.</p>
+            ) : (
+              devices.map(device => (
+                <label key={device.deviceId} className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={selectedDevices.has(device.deviceId)}
+                    onChange={() => toggleDevice(device.deviceId)}
+                  />
+                  <span>{device.label || `Camera ${device.deviceId.slice(0, 8)}`}</span>
+                </label>
+              ))
+            )}
           </div>
         )}
       </div>
