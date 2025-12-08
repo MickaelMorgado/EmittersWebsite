@@ -33,7 +33,11 @@ export default function PrinterMonitor() {
       setDevices(videoDevices);
     } catch (error: any) {
       console.error('Error requesting permission:', error);
-      setErrorMessage(`Failed to get camera permission: ${error.message}`);
+      if (error.name === 'NotFoundError') {
+        setErrorMessage('No camera devices found. Make sure Iriun is running and your phones are connected as virtual webcams.');
+      } else {
+        setErrorMessage(`Failed to get camera permission: ${error.message}`);
+      }
     }
   };
 
