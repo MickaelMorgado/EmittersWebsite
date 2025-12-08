@@ -219,12 +219,70 @@ export default function ThreeAudioVisualizer() {
   const [normalizedHigh, setNormalizedHigh] = useState(0);
 
   return (
-    <div style={{ width: "100vw", height: "100vh", backgroundColor: "#000", overflow: "hidden" }}>
-      {/* spectrumValues: {spectrumValues.join(", ")} */}
+    <div style={{ width: "100vw", height: "100vh", backgroundColor: "#000", overflow: "hidden", position: "relative" }}>
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        overflow: 'hidden',
+        background: 'linear-gradient(45deg, #000, #111, #222)',
+        zIndex: 1,
+        opacity: 0.3
+      }}>
+        <div style={{
+          position: 'absolute',
+          top: '0%',
+          left: '20%',
+          width: '40vw',
+          height: '40vw',
+          background: 'radial-gradient(rgba(255, 0, 150, 0.15), transparent, transparent)',
+          borderRadius: '100%',
+          animation: 'float 6s ease-in-out infinite'
+        }}></div>
+        <div style={{
+          position: 'absolute',
+          top: '60%',
+          left: '70%',
+          width: '35vw',
+          height: '35vw',
+          background: 'radial-gradient(rgba(0, 255, 255, 0.15), transparent, transparent)',
+          borderRadius: '100%',
+          animation: 'float 8s ease-in-out infinite reverse'
+        }}></div>
+        <div style={{
+          position: 'absolute',
+          top: '20%',
+          left: '60%',
+          width: '30vw',
+          height: '30vw',
+          background: 'radial-gradient(rgba(255, 255, 0, 0.1), transparent, transparent)',
+          borderRadius: '100%',
+          animation: 'float 10s ease-in-out infinite'
+        }}></div>
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '10% ',
+          width: '25vw',
+          height: '25vw',
+          background: 'radial-gradient(rgba(255, 255, 0, 0.1), transparent, transparent)',
+          borderRadius: '100%',
+          animation: 'float 7s ease-in-out infinite reverse'
+        }}></div>
+        <style>{`
+          @keyframes float {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-30px) scale(1.1); }
+          }
+        `}</style>
+      </div>
       <Canvas
         camera={{ position: [0, 0, 70], fov: 60 }} // Wider FOV for more immersive chaos
+        style={{ background: 'transparent' }}
         onCreated={({ gl }) => {
-            gl.setClearColor(new THREE.Color("#000000"));
+            gl.setClearColor('transparent');
         }}
       >
         <AudioVisualizer onSpectrumUpdate={setSpectrumValues} spectrumValues={spectrumValues} onNormalizedLowUpdate={setNormalizedLow} onNormalizedMidUpdate={setNormalizedMid} onNormalizedHighUpdate={setNormalizedHigh} normalizedLow={normalizedLow} normalizedMid={normalizedMid} normalizedHigh={normalizedHigh} />
