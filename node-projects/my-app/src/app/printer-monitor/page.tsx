@@ -89,7 +89,7 @@ export default function PrinterMonitor() {
                     }}
                     autoPlay
                     muted
-                    className="w-full h-full object-cover rounded"
+                    className="w-full h-full object-contain rounded"
                   />
                   <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-75 text-white text-sm p-2 rounded-b">
                     {devices.find(d => d.deviceId === deviceId)?.label || `Camera ${deviceId.slice(0, 8)}`}
