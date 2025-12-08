@@ -128,7 +128,7 @@ export default function PrinterMonitor() {
             return updated;
           });
         }
-      }, 500); // 500ms delay
+      }, 1000); // 1000ms delay
     }
     setSelectedDevices(newSelected);
   };
