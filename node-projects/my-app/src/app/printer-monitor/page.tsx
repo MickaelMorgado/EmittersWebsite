@@ -14,8 +14,12 @@ export default function PrinterMonitor() {
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [permissionGranted, setPermissionGranted] = useState<boolean>(false);
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
+  const [presentationMode, setPresentationMode] = useState<'grid' | 'loop'>('grid');
+  const [currentLoopIndex, setCurrentLoopIndex] = useState<number>(0);
   const videoRefs = useRef<{ [key: string]: HTMLVideoElement }>({});
   const streams = useRef<{ [key: string]: MediaStream }>({});
+
+  const selectedArray = Array.from(selectedDevices);
 
   const requestPermission = async () => {
     setErrorMessage('');
@@ -42,13 +46,20 @@ export default function PrinterMonitor() {
   };
 
   useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (presentationMode === 'loop' && selectedArray.length > 1) {
+      interval = setInterval(() => {
+        setCurrentLoopIndex(prev => (prev + 1) % selectedArray.length);
+      }, 5000);
+    }
     return () => {
+      if (interval) clearInterval(interval);
       // Cleanup streams on unmount
       Object.values(streams.current).forEach(stream => {
         stream.getTracks().forEach(track => track.stop());
       });
     };
-  }, []);
+  }, [presentationMode, selectedArray.length]);
 
   const toggleDevice = async (deviceId: string) => {
     setErrorMessage(''); // Clear previous error
@@ -107,33 +118,60 @@ export default function PrinterMonitor() {
     }
   };
 
-  const selectedArray = Array.from(selectedDevices);
   const gridCols = Math.min(selectedArray.length, 4); // 1 to 4 columns
 
   return (
     <div className="relative min-h-screen">
-      {/* CCTV Grid - Full Screen Background */}
+      {/* CCTV Display */}
       {selectedArray.length > 0 && (
-        <div className={`absolute inset-0 grid gap-1 p-1 pl-12 ${gridCols === 1 ? 'grid-cols-1' : gridCols === 2 ? 'grid-cols-1 md:grid-cols-2' : gridCols === 3 ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4'}`}>
-          {selectedArray.map(deviceId => (
-            <div key={deviceId} className="relative aspect-video bg-[rgba(0,0,0,0.75)] rounded">
-              <video
-                ref={el => {
-                  if (el) videoRefs.current[deviceId] = el;
-                  if (el && streams.current[deviceId]) {
-                    el.srcObject = streams.current[deviceId];
-                  }
-                }}
-                autoPlay
-                muted
-                className="w-full h-full object-cover rounded"
-              />
-              <div className="absolute bottom-0 left-0 right-0 bg-[rgba(0,0,0,0.75)] text-white text-sm p-2 rounded-b">
-                {devices.find(d => d.deviceId === deviceId)?.label || `Camera ${device.deviceId.slice(0, 8)}`}
+        presentationMode === 'loop' ? (
+          // Loop mode: single camera full screen
+          <div className="absolute inset-0 pl-12">
+            {(() => {
+              const currentDeviceId = selectedArray[currentLoopIndex];
+              return (
+                <div key={currentDeviceId} className="relative w-full h-full bg-black">
+                  <video
+                    ref={el => {
+                      if (el) videoRefs.current[currentDeviceId] = el;
+                      if (el && streams.current[currentDeviceId]) {
+                        el.srcObject = streams.current[currentDeviceId];
+                      }
+                    }}
+                    autoPlay
+                    muted
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-75 text-white text-lg p-4">
+                    {devices.find(d => d.deviceId === currentDeviceId)?.label || `Camera ${currentDeviceId.slice(0, 8)}`}
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+        ) : (
+          // Grid mode
+          <div className={`absolute inset-0 grid gap-1 p-1 pl-12 ${gridCols === 1 ? 'grid-cols-1' : gridCols === 2 ? 'grid-cols-1 md:grid-cols-2' : gridCols === 3 ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4'}`}>
+            {selectedArray.map(deviceId => (
+              <div key={deviceId} className="relative aspect-video bg-[rgba(0,0,0,0.75)] rounded">
+                <video
+                  ref={el => {
+                    if (el) videoRefs.current[deviceId] = el;
+                    if (el && streams.current[deviceId]) {
+                      el.srcObject = streams.current[deviceId];
+                    }
+                  }}
+                  autoPlay
+                  muted
+                  className="w-full h-full object-cover rounded"
+                />
+                <div className="absolute bottom-0 left-0 right-0 bg-[rgba(0,0,0,0.75)] text-white text-sm p-2 rounded-b">
+                  {devices.find(d => d.deviceId === deviceId)?.label || `Camera ${device.deviceId.slice(0, 8)}`}
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )
       )}
 
       {/* Sidebar Overlay */}
@@ -153,6 +191,19 @@ export default function PrinterMonitor() {
                 {errorMessage}
               </div>
             )}
+
+            {/* Presentation Mode */}
+            <div className="mb-6">
+              <h2 className="text-lg mb-2">Presentation Mode</h2>
+              <select
+                value={presentationMode}
+                onChange={(e) => setPresentationMode(e.target.value as 'grid' | 'loop')}
+                className="w-full p-2 bg-gray-700 text-white rounded border border-gray-600"
+              >
+                <option value="grid">Grid Display</option>
+                <option value="loop">Dynamic Loop</option>
+              </select>
+            </div>
 
             {/* Settings Panel */}
             <div className="mb-8">
