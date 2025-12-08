@@ -90,28 +90,44 @@ export default function PrinterMonitor() {
       // Select
       if (newSelected.size >= 4) return; // Max 4
       newSelected.add(deviceId);
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { deviceId: { exact: deviceId } }
-        });
-        streams.current[deviceId] = stream;
-        if (videoRefs.current[deviceId]) {
-          videoRefs.current[deviceId].srcObject = stream;
+      // Add delay to prevent racing conditions
+      setTimeout(async () => {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: { deviceId: { exact: deviceId } }
+          });
+          streams.current[deviceId] = stream;
+          if (videoRefs.current[deviceId]) {
+            videoRefs.current[deviceId].srcObject = stream;
+          }
+          if (videoRefs.current['loop'] && presentationMode === 'loop') {
+            // If in loop mode, update the loop video if this is the current one
+            const currentDeviceId = selectedArray[currentLoopIndex];
+            if (currentDeviceId === deviceId) {
+              videoRefs.current['loop'].srcObject = stream;
+              videoRefs.current['loop'].play().catch(console.error);
+            }
+          }
+          if (!mainDeviceId) {
+            setMainDeviceId(deviceId);
+          }
+          // Re-enumerate to get labels now that permission is granted
+          const deviceList = await navigator.mediaDevices.enumerateDevices();
+          const videoDevices = deviceList
+            .filter(device => device.kind === 'videoinput')
+            .map(device => ({ deviceId: device.deviceId, label: device.label || `Camera ${device.deviceId.slice(0, 8)}` }));
+          setDevices(videoDevices);
+        } catch (error: any) {
+          console.error('Error getting user media:', error);
+          setErrorMessage(`Failed to access camera: ${error.message}. Make sure no other application is using this camera.`);
+          // Revert selection
+          setSelectedDevices(prev => {
+            const updated = new Set(prev);
+            updated.delete(deviceId);
+            return updated;
+          });
         }
-        if (!mainDeviceId) {
-          setMainDeviceId(deviceId);
-        }
-        // Re-enumerate to get labels now that permission is granted
-        const deviceList = await navigator.mediaDevices.enumerateDevices();
-        const videoDevices = deviceList
-          .filter(device => device.kind === 'videoinput')
-          .map(device => ({ deviceId: device.deviceId, label: device.label || `Camera ${device.deviceId.slice(0, 8)}` }));
-        setDevices(videoDevices);
-      } catch (error: any) {
-        console.error('Error getting user media:', error);
-        setErrorMessage(`Failed to access camera: ${error.message}. Make sure no other application is using this camera.`);
-        newSelected.delete(deviceId); // Revert selection
-      }
+      }, 500); // 500ms delay
     }
     setSelectedDevices(newSelected);
   };
