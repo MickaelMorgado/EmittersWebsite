@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Sidebar from '../../components/sidebar';
 
 interface Device {
   deviceId: string;
@@ -105,56 +106,47 @@ export default function PrinterMonitor() {
         })}
       </div>
 
-      {/* Sidebar Overlay */}
-      <div className={`fixed top-0 left-0 h-full bg-black bg-opacity-75 backdrop-blur-sm transition-all duration-300 z-10 ${sidebarOpen ? 'w-[500px]' : 'w-12'}`}>
-        <button
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="absolute top-4 right-2 w-8 h-8 bg-gray-700 hover:bg-gray-600 rounded flex items-center justify-center text-white"
-        >
-          {sidebarOpen ? '✕' : '☰'}
-        </button>
-
-        {sidebarOpen && (
-          <div className="p-4 pt-16 text-white">
-            <h1 className="text-xl font-bold mb-4">3D Printer Camera Monitor</h1>
-            {errorMessage && (
-              <div className="mb-4 p-4 bg-red-600 text-white rounded">
-                {errorMessage}
-              </div>
-            )}
-
-            <div className="mb-8">
-              <h2 className="text-lg mb-2">Available Cameras ({devices.length} found)</h2>
-              {!permissionGranted ? (
-                <button
-                  onClick={requestPermission}
-                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                >
-                  Grant Camera Permission
-                </button>
-              ) : (
-                <div className="space-y-2">
-                  {devices.length === 0 ? (
-                    <p className="text-gray-400 text-sm">No cameras detected. Make sure Iriun is running and your phones are connected as virtual webcams.</p>
-                  ) : (
-                    devices.map(device => (
-                      <label key={device.deviceId} className="flex items-center space-x-2 text-sm">
-                        <input
-                          type="checkbox"
-                          checked={selectedDevices.has(device.deviceId)}
-                          onChange={() => toggleDevice(device.deviceId)}
-                          className="w-4 h-4"
-                        />
-                        <span className="truncate">{device.label || `Camera ${device.deviceId.slice(0, 8)}`}</span>
-                      </label>
-                    ))
-                  )}
-                </div>
-              )}
-            </div>
+      <Sidebar
+        isOpen={sidebarOpen}
+        onToggle={() => setSidebarOpen(!sidebarOpen)}
+        title="3D Printer Camera Monitor"
+      >
+        {errorMessage && (
+          <div className="mb-4 p-4 bg-red-600 text-white rounded">
+            {errorMessage}
           </div>
         )}
-      </div>
+
+        <div className="mb-8">
+          <h2 className="text-lg mb-2">Available Cameras ({devices.length} found)</h2>
+          {!permissionGranted ? (
+            <button
+              onClick={requestPermission}
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
+              Grant Camera Permission
+            </button>
+          ) : (
+            <div className="space-y-2">
+              {devices.length === 0 ? (
+                <p className="text-gray-400 text-sm">No cameras detected. Make sure Iriun is running and your phones are connected as virtual webcams.</p>
+              ) : (
+                devices.map(device => (
+                  <label key={device.deviceId} className="flex items-center space-x-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={selectedDevices.has(device.deviceId)}
+                      onChange={() => toggleDevice(device.deviceId)}
+                      className="w-4 h-4"
+                    />
+                    <span className="truncate">{device.label || `Camera ${device.deviceId.slice(0, 8)}`}</span>
+                  </label>
+                ))
+              )}
+            </div>
+          )}
+        </div>
+      </Sidebar>
     </div>
   );
 }
