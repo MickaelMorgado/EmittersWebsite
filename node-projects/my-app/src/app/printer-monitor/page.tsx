@@ -73,11 +73,11 @@ export default function PrinterMonitor() {
   return (
     <div className="relative h-screen overflow-hidden mx-auto max-w-screen">
       {/* CCTV Grid - Full Screen Static 2x2 */}
-      <div className="absolute inset-0 grid grid-cols-2 gap-1 p-1 pl-12">
+      <div className="absolute inset-0 grid grid-cols-2 grid-rows-2 h-full gap-1 p-1 pl-12">
         {Array.from({ length: 4 }, (_, index) => {
           const deviceId = selectedArray[index];
           return (
-            <div key={index} className="relative h-full bg-black rounded">
+            <div key={index} className="relative bg-black rounded">
               {deviceId && streams.current[deviceId] ? (
                 <>
                   <video
@@ -89,9 +89,9 @@ export default function PrinterMonitor() {
                     }}
                     autoPlay
                     muted
-                    className="w-full h-full object-contain rounded"
+                    className="w-full h-full object-cover rounded overflow-hidden"
                   />
-                  <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-75 text-white text-sm p-2 rounded-b">
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-black via-transparent to-transparent text-white text-sm p-2 rounded-b">
                     {devices.find(d => d.deviceId === deviceId)?.label || `Camera ${deviceId.slice(0, 8)}`}
                   </div>
                 </>
