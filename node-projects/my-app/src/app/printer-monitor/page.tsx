@@ -61,6 +61,17 @@ export default function PrinterMonitor() {
     };
   }, [presentationMode, selectedArray.length]);
 
+  // Update loop video srcObject when device changes
+  useEffect(() => {
+    if (presentationMode === 'loop' && selectedArray.length > 0) {
+      const currentDeviceId = selectedArray[currentLoopIndex];
+      const loopVideoRef = videoRefs.current['loop'];
+      if (loopVideoRef && streams.current[currentDeviceId]) {
+        loopVideoRef.srcObject = streams.current[currentDeviceId];
+      }
+    }
+  }, [presentationMode, currentLoopIndex, selectedArray]);
+
   const toggleDevice = async (deviceId: string) => {
     setErrorMessage(''); // Clear previous error
     const newSelected = new Set(selectedDevices);
@@ -127,27 +138,19 @@ export default function PrinterMonitor() {
         presentationMode === 'loop' ? (
           // Loop mode: single camera full screen
           <div className="absolute inset-0 pl-12">
-            {(() => {
-              const currentDeviceId = selectedArray[currentLoopIndex];
-              return (
-                <div key={currentDeviceId} className="relative w-full h-full bg-black">
-                  <video
-                    ref={el => {
-                      if (el) videoRefs.current[currentDeviceId] = el;
-                      if (el && streams.current[currentDeviceId]) {
-                        el.srcObject = streams.current[currentDeviceId];
-                      }
-                    }}
-                    autoPlay
-                    muted
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-75 text-white text-lg p-4">
-                    {devices.find(d => d.deviceId === currentDeviceId)?.label || `Camera ${currentDeviceId.slice(0, 8)}`}
-                  </div>
-                </div>
-              );
-            })()}
+            <div className="relative w-full h-full bg-black">
+              <video
+                ref={el => {
+                  if (el) videoRefs.current['loop'] = el;
+                }}
+                autoPlay
+                muted
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-75 text-white text-lg p-4">
+                {selectedArray.length > 0 ? (devices.find(d => d.deviceId === selectedArray[currentLoopIndex])?.label || `Camera ${selectedArray[currentLoopIndex].slice(0, 8)}`) : ''}
+              </div>
+            </div>
           </div>
         ) : (
           // Grid mode
