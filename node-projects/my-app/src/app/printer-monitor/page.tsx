@@ -71,7 +71,7 @@ export default function PrinterMonitor() {
   const selectedArray = Array.from(selectedDevices);
 
   return (
-    <div className="relative min-h-screen">
+    <div className="relative h-screen overflow-hidden mx-auto max-w-screen">
       {/* CCTV Grid - Full Screen Static 2x2 */}
       <div className="absolute inset-0 grid grid-cols-2 gap-1 p-1 pl-12">
         {Array.from({ length: 4 }, (_, index) => {
