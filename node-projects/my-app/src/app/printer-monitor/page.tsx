@@ -137,7 +137,7 @@ export default function PrinterMonitor() {
       )}
 
       {/* Sidebar Overlay */}
-      <div className={`fixed top-0 left-0 h-full bg-black bg-opacity-75 transition-all duration-300 z-10 ${sidebarOpen ? 'w-72' : 'w-12'}`}>
+      <div className={`fixed top-0 left-0 h-full bg-black bg-opacity-50 backdrop-blur-sm transition-all duration-300 z-10 ${sidebarOpen ? 'w-[500px]' : 'w-12'}`}>
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
           className="absolute top-4 right-2 w-8 h-8 bg-gray-700 hover:bg-gray-600 rounded flex items-center justify-center text-white"
