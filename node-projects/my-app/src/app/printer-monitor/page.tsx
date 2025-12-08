@@ -11,6 +11,7 @@ export default function PrinterMonitor() {
   const [devices, setDevices] = useState<Device[]>([]);
   const [selectedDevices, setSelectedDevices] = useState<Set<string>>(new Set());
   const [mainDeviceId, setMainDeviceId] = useState<string>('');
+  const [errorMessage, setErrorMessage] = useState<string>('');
   const videoRefs = useRef<{ [key: string]: HTMLVideoElement }>({});
   const mainVideoRef = useRef<HTMLVideoElement>(null);
   const streams = useRef<{ [key: string]: MediaStream }>({});
@@ -46,6 +47,7 @@ export default function PrinterMonitor() {
   }, []);
 
   const toggleDevice = async (deviceId: string) => {
+    setErrorMessage(''); // Clear previous error
     const newSelected = new Set(selectedDevices);
     if (newSelected.has(deviceId)) {
       // Deselect
@@ -72,8 +74,16 @@ export default function PrinterMonitor() {
         if (!mainDeviceId) {
           setMainDeviceId(deviceId);
         }
-      } catch (error) {
+        // Re-enumerate to get labels now that permission is granted
+        const deviceList = await navigator.mediaDevices.enumerateDevices();
+        const videoDevices = deviceList
+          .filter(device => device.kind === 'videoinput')
+          .map(device => ({ deviceId: device.deviceId, label: device.label || `Camera ${device.deviceId.slice(0, 8)}` }));
+        setDevices(videoDevices);
+      } catch (error: any) {
         console.error('Error getting user media:', error);
+        setErrorMessage(`Failed to access camera: ${error.message}. Make sure no other application is using this camera.`);
+        newSelected.delete(deviceId); // Revert selection
       }
     }
     setSelectedDevices(newSelected);
@@ -96,6 +106,11 @@ export default function PrinterMonitor() {
   return (
     <div className="min-h-screen bg-gray-900 text-white p-4">
       <h1 className="text-2xl font-bold mb-4">3D Printer Camera Monitor</h1>
+      {errorMessage && (
+        <div className="mb-4 p-4 bg-red-600 text-white rounded">
+          {errorMessage}
+        </div>
+      )}
 
       {/* Settings Panel */}
       <div className="mb-8">
