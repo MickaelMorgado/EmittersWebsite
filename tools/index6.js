@@ -35,8 +35,14 @@ const $firstDate = document.getElementById('firstDate');
 const $lastDate = document.getElementById('lastDate');
 const $currentReadingDate = document.getElementById('currentReadingDate');
 const $resultPanelContent = document.querySelectorAll('.result-panel-content'); //result-panel-content
-const $backTestingPauseButton = document.getElementById('backTestingPauseButton');
-let backTestingPaused = $backTestingPauseButton.checked;
+const $backTestingPauseButton = document.getElementById('backTestingPauseButton'); // Keep for compatibility
+const $backtestingPlayPause = document.getElementById('backtestingPlayPause');
+const $backtestingPlayPauseIcon = $backtestingPlayPause.querySelector('i');
+const $backtestingNext = document.getElementById('backtestingNext');
+const $backtestingStop = document.getElementById('backtestingStop');
+let backTestingPaused = false; // Default to not paused
+let backTestingStepMode = false; // For single-step advancement
+let currentParser = null; // Store parser reference for step control
 const $sessionStartInput = document.getElementById('backtesting-hour');
 const $sessionEndInput = document.getElementById('backtesting-end');
 const $ThemeInput = document.getElementById('themeSelector');
@@ -61,7 +67,6 @@ if (urlParams.has('tsincrement')) { $TSIncrementInput.value = urlParams.get('tsi
 if (urlParams.has('strategy')) { $strategyInput.value = urlParams.get('strategy') }
 
 const saveConfigs = () => {
-  const currentUrl = window.location.href.split('?')[0];
   const urlParams = new URLSearchParams(window.location.search);
 
   urlParams.set('theme', $ThemeInput.value);
@@ -76,6 +81,21 @@ const saveConfigs = () => {
   urlParams.set('strategy', $strategyInput.value);
 
   window.location.search = urlParams;
+}
+
+const loadConfigs = () => {
+  /* 
+    Load settings from previously backed-up backtesting result settings, must follow this keys pattern:  
+    ?...btt=09%3A50%3A00&ett=11%3A00%3A00&maperiod=200&lotsize=1.0&commissionsize=0.00005&slpoints=0.0001&tppoints=0.0003&tsincrement=0.0001&strategy=CSID_W_MA_DynamicTS
+  */
+  let configuration = '';
+  const line = prompt("Load Configurations paramters or complete URL from Backed Up Settings: ");
+  
+  if (!line) return;
+  
+  configuration = line.indexOf('?') > -1 ? line.split('?')[1] : line;
+
+  window.location.search = configuration;
 }
 
 const revealAlgoEditor = () => {
@@ -128,6 +148,35 @@ $resultPanelToolbarContentTogglerAlgoEditor?.addEventListener('click', () => rev
 $resultPanelToolbarContentTogglerAlgo?.addEventListener('click', () => revealAlgo());
 $resultPanelToolbarContentTogglerReview?.addEventListener('click', () => revealReview());
 $resultPanel.addEventListener('scroll', (event) => stickyTableHeaders(event.target));
+
+// Result panel toggle button
+const $chartSection = document.querySelector('.chart-section');
+const $resultPanelCollapseBtn = document.getElementById('result-panel-collapse-btn');
+
+$resultPanelCollapseBtn?.addEventListener('click', () => {
+  // Single button cycles through all layout states smoothly
+  const isChartCollapsed = $chartSection.classList.contains('chart-collapsed');
+  const isPanelExpanded = $resultPanel.classList.contains('active');
+  const isPanelFullHeight = $resultPanel.classList.contains('full-height');
+
+  if (!isChartCollapsed && !isPanelExpanded) {
+    // State 1: Default -> Show both chart and expanded panel
+    $resultPanel.classList.add('active');
+  } else if (!isChartCollapsed && isPanelExpanded && !isPanelFullHeight) {
+    // State 2: Both visible -> Hide chart, expand panel to full height
+    $chartSection.classList.remove('chart-expanded');
+    $chartSection.classList.add('chart-collapsed');
+    $resultPanel.classList.add('full-height');
+  } else if (isChartCollapsed && isPanelExpanded && isPanelFullHeight) {
+    // State 3: Panel full height -> Reset to default (chart visible, panel collapsed)
+    $resultPanel.classList.remove('active');
+    $resultPanel.classList.remove('full-height');
+    $chartSection.classList.remove('chart-collapsed');
+    $chartSection.classList.add('chart-expanded');
+  }
+
+  animateActiveClass($resultPanelCollapseBtn);
+});
 $SLPointsInput?.addEventListener('change', () => animateActiveClass($csvRefresh));
 $TPPointsInput?.addEventListener('change', () => animateActiveClass($csvRefresh));
 $LotSizeInput?.addEventListener('change', () => animateActiveClass($csvRefresh));
@@ -136,18 +185,75 @@ $TSIncrementInput?.addEventListener('change', () => animateActiveClass($csvRefre
 $MAPeriodInput?.addEventListener('change', () => animateActiveClass($csvRefresh));
 $MAThresholdInput?.addEventListener('change', () => animateActiveClass($csvRefresh));
 $strategyInput?.addEventListener('change', () => animateActiveClass($csvRefresh));
-$backTestingPauseButton?.addEventListener('change', () => {
-  backTestingPaused = $backTestingPauseButton.checked;
+/* ---- */
 
-  if (!backTestingPaused) {
-    animateActiveClass($csvRefresh);
+// Backtesting Controls - Music Player Style
+$backtestingPlayPause.addEventListener('click', () => {
+  if (backTestingPaused) {
+    // Currently paused, so resume (show pause icon)
+    backTestingPaused = false;
+    backTestingStepMode = false;
+    $backtestingPlayPause.classList.remove('play-btn');
+    $backtestingPlayPause.classList.add('pause-btn');
+    $backtestingPlayPauseIcon.classList.remove('fa-play');
+    $backtestingPlayPauseIcon.classList.add('fa-pause');
+    $backtestingPlayPause.title = 'Pause Backtesting';
+    animateActiveClass($backtestingPlayPause);
+    if (currentParser) {
+      currentParser.resume();
+      document.getElementById('loading-element').classList.add('visible');
+    }
+  } else {
+    // Currently playing, so pause (show play icon)
+    backTestingPaused = true;
+    backTestingStepMode = false;
+    $backtestingPlayPause.classList.remove('pause-btn');
+    $backtestingPlayPause.classList.add('play-btn');
+    $backtestingPlayPauseIcon.classList.remove('fa-pause');
+    $backtestingPlayPauseIcon.classList.add('fa-play');
+    $backtestingPlayPause.title = 'Resume Backtesting';
+    if (currentParser) {
+      document.getElementById('loading-element').classList.remove('visible');
+    }
   }
 });
+
+$backtestingNext.addEventListener('click', () => {
+  // Advance one step
+  backTestingPaused = false;
+  backTestingStepMode = true; // Will pause after next candle
+  animateActiveClass($backtestingNext);
+  if (currentParser) {
+    currentParser.resume();
+    document.getElementById('loading-element').classList.add('visible');
+  }
+});
+
+$backtestingStop.addEventListener('click', () => {
+  backTestingPaused = true;
+  backTestingStepMode = false;
+  $backtestingPlayPause.classList.remove('pause-btn');
+  $backtestingPlayPause.classList.add('play-btn');
+  animateActiveClass($backtestingStop);
+  if (currentParser) {
+    document.getElementById('loading-element').classList.remove('visible');
+  }
+});
+
+// Keep old checkbox for compatibility but hide it (if it exists)
+if ($backTestingPauseButton) {
+  $backTestingPauseButton.style.display = 'none';
+}
+
+/* ---- */
 /* ---- */
 
 const decimals = 5;
 let candlesFromBuffer = [];
 const MAX_BUFFER_SIZE = 10;
+let chartCandleIndex = 0;
+let candleTimes = [];
+let timeToIndex = new Map();
 let slSize = () => parseFloat($SLPointsInput.value);
 let tpSize = () => parseFloat($TPPointsInput.value);
 let lotSize = () => parseFloat($LotSizeInput.value);
@@ -298,6 +404,9 @@ const handleFileAndInitGraph = (file) => {
     // Clear orders history
     ordersHistory = [];
     numbDays = 0;
+    chartCandleIndex = 0;
+    candleTimes = [];
+    timeToIndex = new Map();
 
     // Reset portfolio graph and order history display
     $backTestingResult.value = '';
@@ -326,7 +435,14 @@ const handleFileAndInitGraph = (file) => {
     Papa.parse(file, {
       header: true,
       dynamicTyping: true,
-      beforeFirstChunk: (chunk) => { 
+      beforeFirstChunk: (chunk) => {
+        // Update play/pause button to show pause state since backtesting is starting
+        $backtestingPlayPause.classList.remove('play-btn');
+        $backtestingPlayPause.classList.add('pause-btn');
+        $backtestingPlayPauseIcon.classList.remove('fa-play');
+        $backtestingPlayPauseIcon.classList.add('fa-pause');
+        $backtestingPlayPause.title = 'Pause Backtesting (Running)';
+
         // Destroy previous chart if exists, TODO improve this (better to not use window):
         window.existingChart = Chart.getChart(myChart);
         if (window.existingChart) {
@@ -360,6 +476,9 @@ const handleFileAndInitGraph = (file) => {
         });
       },
       step: (results, parser) => {
+        // Store parser reference for external control
+        currentParser = parser;
+
         if (backTestingPaused) {
           parser.pause();
           document
@@ -369,6 +488,15 @@ const handleFileAndInitGraph = (file) => {
         }
 
         const row = results.data;
+
+        // Skip candles with no volatility (flat candles, often weekends)
+        if (row[EnumMT5OHLC.OPEN] === row[EnumMT5OHLC.HIGH] &&
+            row[EnumMT5OHLC.HIGH] === row[EnumMT5OHLC.LOW] &&
+            row[EnumMT5OHLC.LOW] === row[EnumMT5OHLC.CLOSE]) {
+          parser.resume();
+          return;
+        }
+
         csvDataIndex += 1;
 
         parser.pause();
@@ -385,17 +513,30 @@ const handleFileAndInitGraph = (file) => {
         // Calculate and Display profitability statistics:
         profitabilityCalculation();
 
+        // Handle single-step mode
+        if (backTestingStepMode) {
+          backTestingStepMode = false; // Reset step mode
+          backTestingPaused = true; // Pause after this step
+          document.getElementById('loading-element').classList.remove('visible');
+          // Don't resume parser automatically
+          return;
+        }
+
         //audioSuccess.play();
         setTimeout(() => {
           parser.resume();
         }, readingSpeed);
       },
       complete: (results, file) => {
+        // Clear parser reference
+        currentParser = null;
         // Remove visible class from loading element
         document.getElementById('loading-element').classList.remove('visible');
         audioSuccess.play();
       },
       error: (error) => {
+        // Clear parser reference on error
+        currentParser = null;
         console.error('Error parsing CSV:', error);
       },
     });
@@ -411,11 +552,21 @@ $csvFileInput.addEventListener('change', (event) => {
 
 $csvRefresh.addEventListener('click', () => {
   const file = $csvFileInput.files[0];
-  $backTestingPauseButton.checked = false;
+  // Reset control states
+  backTestingPaused = false;
+  backTestingStepMode = false;
+  $backtestingPlayPause.classList.remove('pause-btn');
+  $backtestingPlayPause.classList.add('play-btn');
   handleFileAndInitGraph(file);
 });
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Initialize chart section state
+  const $chartSection = document.querySelector('.chart-section');
+  if ($chartSection) {
+    $chartSection.classList.add('chart-expanded');
+  }
+
   // Extract URL parameters
   const urlParams = new URLSearchParams(window.location.search);
 
@@ -429,7 +580,6 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll("label[title]").forEach(label => {
     //const icon = document.createElement("i");
     const icon = document.createElement("span");
-    //icon.className = "fa fa-info";
     icon.textContent = "*";
     icon.style.color = `#${bullishColor}`;
     icon.style.marginLeft = "5px";
@@ -545,14 +695,16 @@ const initSciChart = (data) => {
 
       // Cursor labels:
       const growBy = new NumberRange(0.2, 0.2);
-      const xAxis = new DateTimeNumericAxis(wasmContext, {
+      const xAxis = new NumericAxis(wasmContext, {
         growBy,
         axisAlignment: EAxisAlignment.Bottom,
       });
       xAxis.labelProvider.formatCursorLabel = (dataValue) => {
-        const unixDateStamp = Math.floor(dataValue); // Flooring it to remove milliseconds from that cursor data, as it is too much precise // - 3600;
-        return formatDateFromUnix(unixDateStamp);
+        const index = Math.round(dataValue);
+        const unixTime = candleTimes[index];
+        return unixTime ? formatDateFromUnix(unixTime) : '';
       };
+      xAxis.labelProvider.formatLabel = xAxis.labelProvider.formatCursorLabel;
       const yAxis = new NumericAxis(wasmContext, {
         growBy,
         labelPrecision: decimals,
@@ -689,7 +841,7 @@ const initSciChart = (data) => {
             // Marker + Label
             sciChartSurface.annotations.add(
               new CustomAnnotation({
-                x1: orderCloseTime,
+                x1: timeToIndex.get(orderCloseTime),
                 y1: level,
                 verticalAnchorPoint: EVerticalAnchorPoint.Center,
                 horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
@@ -699,7 +851,7 @@ const initSciChart = (data) => {
                 text: order.id,
                 horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
                 verticalAnchorPoint: EVerticalAnchorPoint.Bottom,
-                x1: orderCloseTime,
+                x1: timeToIndex.get(orderCloseTime),
                 y1: level,
               })
             );
@@ -711,8 +863,8 @@ const initSciChart = (data) => {
                 stroke: `#${tradeResultedColor}`,
                 strokeThickness: 1,
                 strokeDashArray: [5, 5],
-                x1: orderOpenTime,
-                x2: orderCloseTime,
+                x1: timeToIndex.get(orderOpenTime),
+                x2: timeToIndex.get(orderCloseTime),
                 y1: order.price,
                 y2: level,
               })
@@ -723,7 +875,7 @@ const initSciChart = (data) => {
           if (candlesFromBuffer.length < 2) return;
 
           const trailingStopSize =
-            parseFloat($TSIncrementInput.value) || 0.0001;
+            parseFloat($TSIncrementInput.value) || 0.0000;
 
           const previousCandle =
             candlesFromBuffer[candlesFromBuffer.length - 2];
@@ -748,17 +900,18 @@ const initSciChart = (data) => {
           let candleSize = Math.abs(previousCandle["<CLOSE>"] - previousCandle["<OPEN>"]); // Need to be the previous candle, as current candle is not closed yet at this time (in a real scenario).
           candleSize = Number(candleSize.toFixed(4)); // → 0.0005
 
-          // The following might only work for EURUSD like pairs, TODO: need to generalize it later:
+          /*
+            The following might only work for EURUSD like pairs, TODO: I'll need to generalize it later.
+            As for EURUSD I hardcoded two thresholds for candle size:
+            - 0.0005 (50 pips)
+            - 0.0003 (30 pips)
+          */
           const trailingSizeMultiplier = (candleSize) => {
             switch (strategy) {
               case EnumStrategy.CSID_W_MA_DynamicTS:
-                if (candleSize >= 0.0005) {
-                  return trailingStopSize * 3;
-                } else if (candleSize >= 0.0003) {
-                  return trailingStopSize * 2;
-                } else {
-                  return trailingStopSize;
-                }
+                if (candleSize >= 0.0005) return trailingStopSize * 3;
+                else if (candleSize >= 0.0003) return trailingStopSize * 2;
+                else return trailingStopSize;
               case EnumStrategy.CSID_W_MA:
               case EnumStrategy.CSID:
               default:
@@ -768,19 +921,21 @@ const initSciChart = (data) => {
 
           if (order.direction == EnumDirection.BULL) {
             //console.log('Moving SL of ', order.id, ' from ', order.sl, ' to ',  order.sl + trailingStopSize);
-            /*order.sl < order.price && d[EnumMT5OHLC.OPEN] > order.price ? order.sl = order.price : */order.sl += trailingSizeMultiplier(candleSize);
+            /*order.sl < order.price && d[EnumMT5OHLC.OPEN] > order.price ? order.sl = order.price : */
+            order.sl += trailingSizeMultiplier(candleSize);
             // order.sl = order.sl + trailingStopSize; // Move SL by trailingStopSize (up side)
           } else if (order.direction == EnumDirection.BEAR) {
             //console.log('Moving SL of ', order.id, ' from ', order.sl, ' to ',  order.sl - trailingStopSize);
             // order.sl = order.sl - trailingStopSize; // Move SL by trailingStopSize (down side)
-            /*order.sl > order.price && d[EnumMT5OHLC.OPEN] < order.price ? order.sl = order.price : */order.sl -= trailingSizeMultiplier(candleSize);
+            /*order.sl > order.price && d[EnumMT5OHLC.OPEN] < order.price ? order.sl = order.price : */
+            order.sl -= trailingSizeMultiplier(candleSize);
           }
 
           // Trailing Stop visual:
           const updateTrailingStopVisual = (order, d) => {
             const time = new Date(`${d[EnumMT5OHLC.DATE]} ${d[EnumMT5OHLC.TIME]}`);
             const localISO = time.getTime() / 1000;
-            const xValue = localISO
+            const xValue = timeToIndex.get(localISO);
 
             const yValue = order.sl;       // current trailing stop
             const y1Value = order.price;   // entry price (constant)
@@ -846,9 +1001,9 @@ const initSciChart = (data) => {
         EnumActionType,
         tradeDirection = EnumDirection.BULL
       ) => {
-        const candlePosition = convertMT5DateToUnix(
+        const candlePosition = timeToIndex.get(convertMT5DateToUnix(
           `${candle['<DATE>']} ${candle['<TIME>']}`
-        );
+        ));
         switch (EnumActionType) {
           case 'VERTICAL_LINE':
             sciChartSurface.annotations.add(
@@ -1095,9 +1250,10 @@ const initSciChart = (data) => {
         let grossLoss = 0;
 
         const equityDataMoney = []; // in $
-        // Reset labels and pnlData:
+        // Reset labels, pnlData, and equityData:
         labels = [];
         pnlData = [];
+        equityData.length = 0;
 
         for (const { id, pnlPoints } of ordersHistory) {
           labels.push(id);
@@ -1245,7 +1401,7 @@ const initSciChart = (data) => {
         window.existingChart.data.datasets[1].data = equityData;
         window.existingChart.update('none');
 
-        // Historical Orders Table
+        // Historical Orders Table with clickable rows for chart navigation
         document.getElementById('backtestingResultOrderHistory').innerHTML = `
     <table>
       <thead>
@@ -1257,7 +1413,7 @@ const initSciChart = (data) => {
         ${ordersHistory
           .map(
             (order) => `
-          <tr class="historical-order-line">
+          <tr class="historical-order-line clickable-row" data-trade-time="${order.time}" title="Click to navigate to this trade on chart">
             <td>${order.id}</td>
             <td>${order.time}</td>
             <td>${order.price.toFixed(5)}</td>
@@ -1280,6 +1436,29 @@ const initSciChart = (data) => {
       </tbody>
     </table>
   `;
+
+        // Add click event listeners to table rows for chart navigation
+        setTimeout(() => {
+          document.querySelectorAll('.clickable-row').forEach(row => {
+            row.addEventListener('click', (event) => {
+              const tradeTime = event.currentTarget.getAttribute('data-trade-time');
+              if (tradeTime && window.sciChartSurface) {
+                const unixTime = convertMT5DateToUnix(tradeTime);
+                const index = timeToIndex.get(unixTime);
+                const rangeMinIndex = index - 5; // Show 5 candles before
+                const rangeMaxIndex = index + 5; // Show 5 candles after
+                const xAxis = window.sciChartSurface.xAxes.get(0);
+
+                // Zoom to the trade index
+                xAxis.visibleRange = new NumberRange(rangeMinIndex, rangeMaxIndex);
+
+                // Optional: Highlight the clicked row
+                document.querySelectorAll('.clickable-row').forEach(r => r.classList.remove('selected-row'));
+                event.currentTarget.classList.add('selected-row');
+              }
+            });
+          });
+        }, 100); // Small delay to ensure DOM is updated
       };
 
       window.profitabilityCalculation = profitabilityCalculation;
@@ -1300,13 +1479,18 @@ const initSciChart = (data) => {
         }
         candlesFromBuffer.push(d);
 
+        const unixTime = convertMT5DateToUnix(`${d[EnumMT5OHLC.DATE]} ${d[EnumMT5OHLC.TIME]}`);
+        candleTimes.push(unixTime);
+        timeToIndex.set(unixTime, chartCandleIndex);
+
         ohlcDataSeries.append(
-          convertMT5DateToUnix(`${d[EnumMT5OHLC.DATE]} ${d[EnumMT5OHLC.TIME]}`),
+          chartCandleIndex,
           d[EnumMT5OHLC.OPEN],
           d[EnumMT5OHLC.HIGH],
           d[EnumMT5OHLC.LOW],
           d[EnumMT5OHLC.CLOSE]
         );
+        chartCandleIndex++;
       };
       window.addNewCandleToChart = addNewCandleToChart;
 
@@ -1326,7 +1510,7 @@ const initSciChart = (data) => {
           showLabel: true,
           stroke: '#666666',
           strokeThickness: 2,
-          x1: btt,
+          x1: timeToIndex.get(btt),
           axisLabelFill: '#666666',
           axisLabelStroke: '#333',
         });
@@ -1405,9 +1589,9 @@ const initSciChart = (data) => {
             showLabel: true,
             stroke: '#FF000022',
             strokeThickness: 2,
-            x1: convertMT5DateToUnix(
+            x1: timeToIndex.get(convertMT5DateToUnix(
               `${currCandle[EnumMT5OHLC.DATE]} ${currCandle[EnumMT5OHLC.TIME]}`
-            ),
+            )),
             axisLabelFill: '#FF0000',
             axisLabelStroke: '#333',
           });
@@ -1579,16 +1763,17 @@ const initSciChart = (data) => {
 
         // CSID Graph Related Annotations: ========================================
         // Add a new CSID Data for our line annotations:
+        const currentUnixTime = convertMT5DateToUnix(d[EnumMT5OHLC.DATE] + ' ' + d[EnumMT5OHLC.TIME]);
         CSIDDataSerieFromHighs.append(
-          convertMT5DateToUnix(d[EnumMT5OHLC.DATE] + ' ' + d[EnumMT5OHLC.TIME]),
+          timeToIndex.get(currentUnixTime),
           highestHighLong[highestHighLong.length - 1]
         );
         CSIDDataSerieFromLows.append(
-          convertMT5DateToUnix(d[EnumMT5OHLC.DATE] + ' ' + d[EnumMT5OHLC.TIME]),
+          timeToIndex.get(currentUnixTime),
           lowestLowShort[lowestLowShort.length - 1]
         );
         maDataSeries.append(
-          convertMT5DateToUnix(d[EnumMT5OHLC.DATE] + ' ' + d[EnumMT5OHLC.TIME]),
+          timeToIndex.get(currentUnixTime),
           simpleMA(CSIDLookbackCandleSerie, maPeriod())[CSIDLookbackCandleSerie.length - 1]
         );
 
@@ -1615,9 +1800,9 @@ const initSciChart = (data) => {
           const direction = isBull ? EnumDirection.BULL : EnumDirection.BEAR;
 
           const signal = new CustomAnnotation({
-            x1: convertMT5DateToUnix(
+            x1: timeToIndex.get(convertMT5DateToUnix(
               d[EnumMT5OHLC.DATE] + ' ' + d[EnumMT5OHLC.TIME]
-            ),
+            )),
             y1: d[svgCandleLocation],
             verticalAnchorPoint: EVerticalAnchorPoint.Center,
             horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
@@ -1677,19 +1862,13 @@ const initSciChart = (data) => {
 
       // Navigate Trought Dates: ========================================
       $navigateTroughtDates.addEventListener('change', (event) => {
-        const getCandleNumberByDay = (days) => 86400 * days; // Get the number of candles in a day (candle count for a entire day)
-        const selectedDate = event.target.value;
-        const rangeMinDate = parseInt(selectedDate) - 1800; // + half an hour
-        const rangeMaxDate = parseInt(selectedDate) + getCandleNumberByDay(0.1); // getCandleChartAxisLocationFromDate(selectedDate) + getCandleNumberByDay(0.1); // half of a day
+        const selectedIndex = parseInt(event.target.value);
+        const rangeMinIndex = selectedIndex - 5; // Show 5 candles before
+        const rangeMaxIndex = selectedIndex + 5; // Show 5 candles after
         const xAxis = sciChartSurface.xAxes.get(0);
-        const yAxis = sciChartSurface.yAxes.get(0);
 
         // Graph Zooming:
-        xAxis.visibleRange = new NumberRange(rangeMinDate, rangeMaxDate);
-
-        // yAxis.visibleRange = new NumberRange(1, 3);
-        // updateYAxisRange();
-        // sciChartSurface.zoomExtents();
+        xAxis.visibleRange = new NumberRange(rangeMinIndex, rangeMaxIndex);
       });
       // End of Navigate Trought Dates ========================================
     })
@@ -1751,7 +1930,7 @@ const addBacktestingDateTimeToChart = (d) => {
 
     bttVerticalLineAnnotation(btt);
     // Display Backtesting dates on the select element:
-    $navigateTroughtDates.innerHTML += `<option value="${unixTime}">${candleDateTime}</option>`;
+    $navigateTroughtDates.innerHTML += `<option value="${timeToIndex.get(unixTime)}">${candleDateTime}</option>`;
   }
   // End of Backtesting dates ====================================
 };
