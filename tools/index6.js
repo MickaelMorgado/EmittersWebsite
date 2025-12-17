@@ -510,8 +510,7 @@ const handleFileAndInitGraph = (file) => {
         appendIndicatorsToChart(results.data, csvDataIndex);
         // Run the Check for TP/SL hit function on every drawn candle:
         checkForTPSLHit(results.data, csvDataIndex);
-        // Calculate and Display profitability statistics:
-        profitabilityCalculation();
+        // Note: profitabilityCalculation() is now called only when trades close (in closeOrder function)
 
         // Handle single-step mode
         if (backTestingStepMode) {
@@ -788,10 +787,11 @@ const initSciChart = (data) => {
 
       // TP/SL Validation: ========================================
       // Function to check all TP/SL hit:
-      // TODO: Pretty sure that we can reduce and optimze this function.
+      // OPTIMIZED: Only process active orders instead of filtering through all orders
       const checkForTPSLHit = (d, dataIndex) => {
-        ordersHistory.forEach((order) => {
-          if (order.closed) return;
+        // Only check active (non-closed) orders to reduce processing overhead
+        const activeOrders = ordersHistory.filter(order => !order.closed);
+        activeOrders.forEach((order) => {
 
           const isBull = order.direction === EnumDirection.BULL;
           const isBear = order.direction === EnumDirection.BEAR;
@@ -835,6 +835,9 @@ const initSciChart = (data) => {
                 ? level - order.price
                 : order.price - level;
             order.tradeResult = tradeResult();
+
+            // OPTIMIZED: Calculate profitability only when trades close, not every candle
+            profitabilityCalculation();
 
             const orderCloseTime = convertMT5DateToUnix(order.closedTime);
 
