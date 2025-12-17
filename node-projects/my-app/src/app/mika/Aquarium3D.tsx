@@ -11,7 +11,7 @@ import { bloomParams, metalMaterialParams, redMaterialParams } from "./constants
 function AquariumModel(props: any) {
   const group = useRef<Object3D>(null!);
   const { scene, animations } = useGLTF("/assets/models/Aquarium.gltf");
-  const { actions, mixer } = useAnimations(animations, group);
+  const { mixer } = useAnimations(animations, group);
 
 
   // Set up glow on specific parts

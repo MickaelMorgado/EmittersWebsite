@@ -124,6 +124,20 @@ table tr {
   background: var(--dark2);
 }
 
+.clickable-row {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.clickable-row:hover {
+  background: var(--dark3);
+}
+
+.selected-row {
+  background: var(--blue) !important;
+  color: white;
+}
+
 .historical-order-line td:nth-child(1),
 .historical-order-table-header th:nth-child(1) {
   width: 3%;
@@ -223,24 +237,47 @@ table {
   flex-direction: column;
   height: 100vh;
   margin-left: var(--main-width);
+  transition: all 0.5s ease;
+}
+
+.chart-section.chart-collapsed #scichart-root {
+  height: 0vh;
+  flex-grow: 0;
+  overflow: hidden;
+}
+
+.chart-section.chart-expanded #scichart-root {
+  display: block;
+  flex-grow: 1;
 }
 
 #themeSelector {
   width: 100%;
 }
 
+/* Backtesting controls use existing button styles */
+
 #scichart-root {
   flex-grow: 1;
 }
 
+/* Play/Pause button icon states */
+#backtestingPlayPause.play-btn i::before {
+  content: "\f04b"; /* fa-play */
+}
+
+#backtestingPlayPause.pause-btn i::before {
+  content: "\f04c"; /* fa-pause */
+}
+
 .result-panel {
   position: relative;
-  height: 60px;
+  max-height: 60px;
   background: black;
   color: white;
   overflow-y: auto;
   z-index: 1;
-  transition: all 0.5s ease;
+  transition: max-height 0.5s ease;
 }
 
 .result-panel-toolbar {
@@ -272,7 +309,12 @@ table {
 
 /* When the result panel is active: */
 .result-panel.active {
-  height: 500px;
+  max-height: 500px;
+}
+
+/* When chart is collapsed and panel should take full height: */
+.result-panel.active.full-height {
+  max-height: 100vh;
 }
 
 .active .result-panel-toolbar-toggler {

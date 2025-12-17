@@ -46,7 +46,8 @@ export default function MikaPage() {
     { name: "Agentic AI / LLMs", level: 30 },
     { name: "Automation", level: 70 },
     { name: "Web 3", level: 20 },
-    { name: "Supabase / Firebase", level: 20 }
+    { name: "Supabase / Firebase", level: 20 },
+    { name: "Vercel", level: 35 }
   ];
 
   const lowSkills = skills.filter(skill => skill.level <= 20);
@@ -175,10 +176,10 @@ export default function MikaPage() {
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-bold uppercase">Mickael</h1>
             <div className="hidden md:flex space-x-8">
-              <a href="#about" className="hover:text-primary transition-colors">About</a>
-              <a href="#skills" className="hover:text-primary transition-colors">Skills</a>
-              <a href="#atp" className="hover:text-primary transition-colors">ATP</a>
-              <a href="#connect" className="hover:text-primary transition-colors">Connect</a>
+              <a href="#about" className="hover:text-primary transition-colors">ABOUT</a>
+              <a href="#skills" className="hover:text-primary transition-colors">SKILLS</a>
+              <a href="#atp" className="hover:text-primary transition-colors">ACHIEVEMENTS</a>
+              <a href="#connect" className="hover:text-primary transition-colors">CONNECT</a>
             </div>
           </div>
         </div>
@@ -239,9 +240,9 @@ export default function MikaPage() {
 
           {/* Hero Section */}
           <section id="hero" className="min-h-screen flex items-center justify-center">
-            <div className="container mx-auto px-6 z-10 text-center">
-              <h1 className="text-5xl font-bold mb-6 uppercase">Tech Developer</h1>
-              <p className="text-xl mb-8">The ultimate 'Jack of all trades'</p>
+            <div className="container mx-auto px-6 z-10 text-center w-3/6">
+              <h1 className="text-5xl font-bold mb-6">Full-Stack Creator, Dreamer, and Performance Seeker</h1>
+              <p className="mb-8">Hi, I'm Mickael—a web developer and hands-on innovator. Obsessed with building smarter processes, unique products, and finding better ways to solve real problems.</p>
               <a
                 href="#"
                 onClick={(e) => {
@@ -259,25 +260,27 @@ export default function MikaPage() {
           <section id="about" className="py-20">
             <div className="container mx-auto px-6">
               <div className="flex flex-col md:flex-row gap-12">
-                <div className="md:w-2/4">
-                  <h2 className="text-3xl font-bold mb-6 uppercase">About Me</h2>
+                <div className="md:w-3/4 passion-content">
+                  <h2 className="text-3xl font-bold mb-6">About Me</h2>
                   <p className="mb-4 mr-12">
-                    I'm Mickael, a detail-driven creator and performance enthusiast who values precision in everything I do.
-                    <br />
-                    <br />
-                    Whether I’m trading with calculated strategies, optimizing my sim racing setup for maximum realism, or customizing hardware with 3D-printed mods, I bring a hands-on, problem-solving mindset to the table.
-                    <br />
-                    <br />
-                    I prefer machines that feel right—like the raw power and refined build of a BMW M4 over the plastic minimalism of a Tesla.
-                    <br />
-                    <br />
-                    I love control, immersion, and tuning systems—be it force feedback in racing, market entries with tight stop-losses, or the acoustic fidelity of my Unreal Engine projects.
-                    <br />
-                    <br />
-                    I don’t just use tools—I master them, modify them, and make them mine.
+                    I thrive at the intersection of technology and creativity. Whether building web apps, tracking markets, or designing tools for sim racing, I combine precision with a drive to improve and automate.
+                  </p>
+                  <p className="mb-8 mr-12">
+                    I'm a lifelong learner—curious about everything from tropical aquariums to the latest AI workbench. My toolkit is as varied as my interests, and I love bringing new ideas to life.
+                  </p>
+                  <h3 className="text-2xl font-bold mb-6">For Recruiters, Clients, and Collaborators</h3>
+                  <p className="mb-4 mr-12">
+                    Expert in React/Next.js, TypeScript, Supabase, Vercel, and DevOps <br/>
+                    10+ years experience developing web apps as MVPs, Flutter mobile apps, and hybrid solutions with DevOps <br/>
+                    Led complex, multi-client web projects with measurable results <br/>
+                    Specialty in automation, deployment optimization, and documentation workflows <br/>
+                    Proficient in identifying product UI/UX improvements based on years of experience <br/>
+                    Able to deliver quick, efficient working solutions that simplify client complexities <br/>
+                    Portfolio includes innovative apps, real-time dashboards, and trading tools <br/>
+                    Open to roles in development or technical leadership <br/>
                   </p>
                 </div>
-                <div className="md:w-2/4 relative">
+                <div className="md:w-1/4 relative">
                     <Image
                       width={300}
                       height={300}
@@ -500,7 +503,7 @@ export default function MikaPage() {
           {/* Tools Section */}
           <section id="atp" className="py-20">
             <div className="container mx-auto px-6">
-              <h2 className="text-5xl font-bold text-center mb-12">APPS / TOOLS / PROJECTS</h2>
+              <h2 className="text-5xl font-bold text-center mb-12">Highlight Achievements & Case Studies</h2>
               <div className="mb-12 text-center">
                 <div className="flex flex-wrap justify-center">
                   {["All", "Racing", "Game Development", "Apps", "Scripting"].map((filter) => (
@@ -522,7 +525,7 @@ export default function MikaPage() {
                     imgSrc: "./assets/images/simhubdashboard.png",
                     alt: "SimHub Dashboard",
                     title: "SimHub Dashboard",
-                    description: "Created my first SimHub dashboard for my sim racing rig, using a tablet as a secondary screen. It displays RPM, pedals inputs, position and laps, as well as lap times, time delta & lap differencials, fuel consuption and lap estimates, ABS/TC levels, and race flags info while racing.",
+                    description: "Context: As a sim racing enthusiast, I needed real-time performance metrics for better immersion. Role: Developed a custom dashboard to monitor key race data. Impact: Enhanced racing performance and reduced cognitive load during high-stakes drives. Main tech/tools: SimHub, tablet integration, telemetry data.",
                     link: "https://github.com/Mikaele01/simhub-dashboard",
                     linkText: "Download Now",
                     readMore: "https://www.tiktok.com/@mickaelmorgado7/video/7469122187866180896"
@@ -532,7 +535,7 @@ export default function MikaPage() {
                     imgSrc: "https://emittersgame.com/assets/images/gallery/Capture2.png",
                     alt: "Emitters Game",
                     title: "EMITTERS Game",
-                    description: "This is one of my biggest project, a game created from scratch and an awesome website for it. Emitters is a fast-paced, first-person experience set in a future taken over by deadly hi-tech drones.",
+                    description: "Context: As an indie game developer, I wanted to create an immersive first-person shooter. Role: Sole developer handling game design, coding, and multimedia assets; also built a full website. Impact: Launched a complete game from scratch, honed full-cycle development skills. Main tech/tools: Unreal Engine, Blender, web technologies.",
                     link: "https://emittersgame.com",
                     linkText: "Visit Website",
                   },
@@ -541,7 +544,7 @@ export default function MikaPage() {
                     imgSrc: "https://raw.githubusercontent.com/MickaelMorgado/MikasCodesApp/main/src/assets/images/github/Screenshot%202024-01-20%20at%2000.03.18.png",
                     alt: "Mikas Codes App",
                     title: "Mikas Codes App",
-                    description: "An Electron app for storing and generating codes. Logging tasks hour for daily job, super efficient.",
+                    description: "Context: Needed an efficient tool for logging task hours and generating codes for daily job tracking. Role: Developed an Electron app with code generation and hour logging features. Impact: Improved personal productivity and time management in work. Main tech/tools: Electron, JavaScript.",
                     link: "https://github.com/MickaelMorgado/MikasCodesApp",
                     linkText: "View on GitHub",
                   },
@@ -550,7 +553,7 @@ export default function MikaPage() {
                     imgSrc: "https://via.placeholder.com/600x400",
                     alt: "Scripting",
                     title: "Scripting",
-                    description: "I love to make my life easier with scripts, always bringing solutions to my daily tasks.",
+                    description: "Context: Daily workflows included repetitive and time-consuming tasks. Role: Created custom scripts to automate various operations. Impact: Streamlined processes, freed up time, and increased productivity in routine activities. Main tech/tools: Shell scripting, automation tools, scripting languages.",
                     link: "#",
                     linkText: "View Details",
                   },
@@ -573,12 +576,39 @@ export default function MikaPage() {
                   },
                   {
                     category: "Apps",
-                    imgSrc: "https://blog.excelpricefeed.com/wp-content/uploads/2022/08/ticker.png",
+                    imgSrc: "https://emittersgame.com/assets/images/tools/audiovisualizer.png",
+                    alt: "ThreeAudioVisualizer",
+                    title: "ThreeAudioVisualizer",
+                    description: "Context: Wanted to create an immersive music visualization experience. Role: Developed an interactive Three.js audio visualizer. Impact: Provides mesmerizing real-time visualizations synchronized to music. Main tech/tools: Three.js, Web Audio API, real-time rendering.",
+                    link: "https://emitters-website-delta.vercel.app/sounder",
+                    linkText: "View Demo",
+                  },
+                  {
+                    category: "Apps",
+                    imgSrc: "https://emittersgame.com/assets/images/tools/priceticker.png",
                     alt: "Price Ticker",
                     title: "Price Ticker",
                     description: "A simple crypto price ticker that could runs in your tablet, it only support static Gold, BTC and EURUSD pair but planning to make it customizable in the future. It fetches real-time prices from a public API and displays them in a user-friendly format.",
                     link: "https://emittersgame.com/tools/index10.html",
                     linkText: "Try Now",
+                  },
+                  {
+                    category: "Apps",
+                    imgSrc: "https://emittersgame.com/assets/images/tools/datavisualizer.png",
+                    alt: "Data Visualizer",
+                    title: "Data Visualizer",
+                    description: "Context: This app is designed to visualize large numerical counts interactively, letting users adjust parameters like quantity, spacing, and color so they can better grasp and explore big numbers in a clear, visual way.",
+                    link: "https://emitters-website-delta.vercel.app/dataVisualizer",
+                    linkText: "View Demo",
+                  },
+                  {
+                    category: "Apps",
+                    imgSrc: "https://emittersgame.com/assets/images/tools/dailyroutine.png",
+                    alt: "Daily Habit Tracker",
+                    title: "Daily Habit Tracker",
+                    description: "Context: This app is a personal dashboard that tracks your daily habits and tasks, showing how consistently you follow your routine over time. Role: Developed an interactive habit tracking system with visual progress indicators. Impact: Helps users maintain consistency and build better daily routines through data visualization. Main tech/tools: React, local storage, data visualization, responsive design.",
+                    link: "https://emitters-website-delta.vercel.app/todo",
+                    linkText: "View Demo",
                   },
                 ].map((tool, index) => {
                   const isVisible = activeFilter === "All" || tool.category === activeFilter;

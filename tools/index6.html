@@ -205,12 +205,38 @@
             </script>
           </div>
           <hr class="h-hr" />
-          <label for="backTestingPauseButton">Stop BackTesting</label>
-          <input
-            type="checkbox"
-            name="backTestingPauseButton"
-            id="backTestingPauseButton"
-          />
+          <label for="backtestingControls">Backtesting Controls</label>
+          <div class="h-flex">
+            <button
+              id="backtestingPrev"
+              title="Previous Step (Not implemented)"
+              class="mybutton h-input-effects"
+              disabled
+            >
+              <i class="fas fa-step-backward"></i>
+            </button>
+            <button
+              id="backtestingPlayPause"
+              title="Play/Pause Backtesting"
+              class="mybutton h-input-effects play-btn"
+            >
+              <i class="fas fa-play"></i>
+            </button>
+            <button
+              id="backtestingNext"
+              title="Next Step (Advance 1 candle)"
+              class="mybutton h-input-effects"
+            >
+              <i class="fas fa-step-forward"></i>
+            </button>
+            <button
+              id="backtestingStop"
+              title="Stop Backtesting"
+              class="mybutton h-input-effects"
+            >
+              <i class="fas fa-stop"></i>
+            </button>
+          </div>
           <hr class="h-hr" />
           <label title="Current progression of the current backtesting file reading. (Starting Time - Current Time - Ending Time)">File Reading Progression</label>
           <div class="flex">
@@ -267,11 +293,11 @@
           </button>
           <div class="spacer"></div>
           <button
-            id="result-panel-toolbar-toggler"
-            class="mybutton h-input-effects result-panel-toolbar-toggler"
+            id="result-panel-collapse-btn"
+            class="mybutton h-input-effects result-panel-btn"
+            title="Toggle Layout: Chart ↔ Panel"
           >
-            <span><i class="fas fa-arrow-up"></i></span>
-            <span><i class="fas fa-arrow-down"></i></span>
+            <i class="fas fa-exchange-alt"></i>
           </button>
         </div>
         <div class="result-panel-content h-hide h-flex h-flex--column">
@@ -449,12 +475,24 @@ CTrade trade;
                 <div class="h-flex h-flex--center">
                   <button
                     onclick="saveConfigs()"
+                    name="saveConfigsButton"
                     class="mybutton h-input-effects"
                     title="Save Configurations For Next Time"
                   >
                     <i class="far fa-save"></i>
                   </button>
-                  <label for="" title="Save the current configuration as URLs parameters for future use. Browser will refresh when saving!">Save Configurations</label>
+                  <label for="saveConfigsButton" title="Save the current configuration as URLs parameters for future use. Browser URL will refresh with theses new parameters when saving!">Save Configurations</label>
+                </div>
+                <div class="h-flex h-flex--center">
+                  <button
+                    onclick="loadConfigs()"
+                    name="loadConfigsButton"
+                    class="mybutton h-input-effects"
+                    title="Load Configurations"
+                  >
+                    <i class="fas fa-upload"></i>
+                  </button>
+                  <label for="loadConfigsButton" title="Load the configuration from URLs parameters. Browser URL will refresh with new parameters when loading!">Load Configurations</label>
                 </div>
               </div>
             </div>
