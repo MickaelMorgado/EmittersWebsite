@@ -6,6 +6,54 @@
 
 body {
     background-color: black;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+h1, h2, h3 {
+  position: relative;
+  display: block;
+  color: #fff; /* base text color */
+  background: linear-gradient(
+    120deg,
+    rgba(255,255,255,0.4) 0%,
+    rgba(255,255,255,1) 40%,
+    rgba(255,255,255,0.4) 80%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shine 5s infinite ease-in-out;
+}
+
+@keyframes shine {
+  0% {
+    background-position: -100% 0;
+  }
+  50% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
+
+p {
+    font-size: 14px;
+    color: var(--grey);
+}
+
+li {
+    color: var(--portfolio-primary);
+    opacity: .5;
+    list-style: none;
+    padding-left: 10px;
+    transition: opacity .5s ease;
+}
+
+li:hover {
+    opacity: 1;
 }
 
 .font-saira {
@@ -144,13 +192,6 @@ a[href*="#"] {
 
 .passion-image img:hover {
     transform: scale(1.1);
-}
-
-/* Passion text */
-.passion-content h3 {
-    margin-bottom: 1.5rem;
-    color: rgba(255, 255, 255, 0.95);
-    font-size: 2.5rem;
 }
 
 .badge {
@@ -293,8 +334,10 @@ a {
 
 .passion-content p {
     color: var(--grey);
-    line-height: 1.8;
-    font-size: 1.1rem;
+    box-shadow: 0 0 20px 10px rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.8);
+    padding: 0 20px;
+    backdrop-filter: blur(2px);
 }
 
 /* Responsive adjustments */

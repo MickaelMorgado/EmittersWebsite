@@ -33,10 +33,10 @@ export default function Main3DModel() {
             <sphereGeometry args={[1, 64, 64]} />
             <meshStandardMaterial
               color={new THREE.Color(0xff0000)}
-              metalness={1}
-              roughness={.2}
+              metalness={2}
+              roughness={.15}
               transparent
-              opacity={0.05}
+              opacity={0.025}
               side={THREE.DoubleSide}
             />
           </mesh>
