@@ -11,7 +11,7 @@ import { Mesh, Object3D } from "three";
 function BMWModel(props: any) {
   const group = useRef<Object3D>(null!);
   const { scene, animations } = useGLTF("/assets/models/BMW.gltf");
-  const { actions, mixer } = useAnimations(animations, group);
+  const { mixer } = useAnimations(animations, group);
 
   // Set up glow on specific parts
   scene.traverse((child) => {

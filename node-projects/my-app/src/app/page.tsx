@@ -126,6 +126,16 @@ export default function Home() {
               </CardContent>
             </Card>
           </Link>
+          <Link href="/printer-monitor" className="h-full">
+            <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
+              <CardHeader>
+                <CardTitle>3D Printer Camera Monitor</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">Monitor multiple 3D-printer camera feeds from smartphones via Iriun</p>
+              </CardContent>
+            </Card>
+          </Link>
         </div>
       </section>
     </div>
