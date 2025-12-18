@@ -251,6 +251,9 @@ if ($backTestingPauseButton) {
 const decimals = 5;
 let candlesFromBuffer = [];
 const MAX_BUFFER_SIZE = 10;
+let chartCandleIndex = 0;
+let candleTimes = [];
+let timeToIndex = new Map();
 let slSize = () => parseFloat($SLPointsInput.value);
 let tpSize = () => parseFloat($TPPointsInput.value);
 let lotSize = () => parseFloat($LotSizeInput.value);
@@ -330,7 +333,7 @@ const datasets = [
     fill: false,
     tension: 0.5,
     pointStyle: false,
-    yAxisID: 'pointsAxis',
+    yAxisID: 'equityAxis',
   },
 ];
 
@@ -401,6 +404,9 @@ const handleFileAndInitGraph = (file) => {
     // Clear orders history
     ordersHistory = [];
     numbDays = 0;
+    chartCandleIndex = 0;
+    candleTimes = [];
+    timeToIndex = new Map();
 
     // Reset portfolio graph and order history display
     $backTestingResult.value = '';
@@ -465,6 +471,14 @@ const handleFileAndInitGraph = (file) => {
                 beginAtZero: false,
                 position: 'left',
               },
+              equityAxis: {
+                type: 'linear',
+                beginAtZero: false,
+                position: 'right',
+                grid: {
+                  drawOnChartArea: false, // keep only left grid if you want
+                },
+              },
             },
           },
         });
@@ -482,6 +496,15 @@ const handleFileAndInitGraph = (file) => {
         }
 
         const row = results.data;
+
+        // Skip candles with no volatility (flat candles, often weekends)
+        if (row[EnumMT5OHLC.OPEN] === row[EnumMT5OHLC.HIGH] &&
+            row[EnumMT5OHLC.HIGH] === row[EnumMT5OHLC.LOW] &&
+            row[EnumMT5OHLC.LOW] === row[EnumMT5OHLC.CLOSE]) {
+          parser.resume();
+          return;
+        }
+
         csvDataIndex += 1;
 
         parser.pause();
@@ -495,8 +518,7 @@ const handleFileAndInitGraph = (file) => {
         appendIndicatorsToChart(results.data, csvDataIndex);
         // Run the Check for TP/SL hit function on every drawn candle:
         checkForTPSLHit(results.data, csvDataIndex);
-        // Calculate and Display profitability statistics:
-        profitabilityCalculation();
+        // Note: profitabilityCalculation() is now called only when trades close (in closeOrder function)
 
         // Handle single-step mode
         if (backTestingStepMode) {
@@ -680,14 +702,16 @@ const initSciChart = (data) => {
 
       // Cursor labels:
       const growBy = new NumberRange(0.2, 0.2);
-      const xAxis = new DateTimeNumericAxis(wasmContext, {
+      const xAxis = new NumericAxis(wasmContext, {
         growBy,
         axisAlignment: EAxisAlignment.Bottom,
       });
       xAxis.labelProvider.formatCursorLabel = (dataValue) => {
-        const unixDateStamp = Math.floor(dataValue); // Flooring it to remove milliseconds from that cursor data, as it is too much precise // - 3600;
-        return formatDateFromUnix(unixDateStamp);
+        const index = Math.round(dataValue);
+        const unixTime = candleTimes[index];
+        return unixTime ? formatDateFromUnix(unixTime) : '';
       };
+      xAxis.labelProvider.formatLabel = xAxis.labelProvider.formatCursorLabel;
       const yAxis = new NumericAxis(wasmContext, {
         growBy,
         labelPrecision: decimals,
@@ -771,10 +795,11 @@ const initSciChart = (data) => {
 
       // TP/SL Validation: ========================================
       // Function to check all TP/SL hit:
-      // TODO: Pretty sure that we can reduce and optimze this function.
+      // OPTIMIZED: Only process active orders instead of filtering through all orders
       const checkForTPSLHit = (d, dataIndex) => {
-        ordersHistory.forEach((order) => {
-          if (order.closed) return;
+        // Only check active (non-closed) orders to reduce processing overhead
+        const activeOrders = ordersHistory.filter(order => !order.closed);
+        activeOrders.forEach((order) => {
 
           const isBull = order.direction === EnumDirection.BULL;
           const isBear = order.direction === EnumDirection.BEAR;
@@ -819,12 +844,15 @@ const initSciChart = (data) => {
                 : order.price - level;
             order.tradeResult = tradeResult();
 
+            // OPTIMIZED: Calculate profitability only when trades close, not every candle
+            profitabilityCalculation();
+
             const orderCloseTime = convertMT5DateToUnix(order.closedTime);
 
             // Marker + Label
             sciChartSurface.annotations.add(
               new CustomAnnotation({
-                x1: orderCloseTime,
+                x1: timeToIndex.get(orderCloseTime),
                 y1: level,
                 verticalAnchorPoint: EVerticalAnchorPoint.Center,
                 horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
@@ -834,7 +862,7 @@ const initSciChart = (data) => {
                 text: order.id,
                 horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
                 verticalAnchorPoint: EVerticalAnchorPoint.Bottom,
-                x1: orderCloseTime,
+                x1: timeToIndex.get(orderCloseTime),
                 y1: level,
               })
             );
@@ -846,8 +874,8 @@ const initSciChart = (data) => {
                 stroke: `#${tradeResultedColor}`,
                 strokeThickness: 1,
                 strokeDashArray: [5, 5],
-                x1: orderOpenTime,
-                x2: orderCloseTime,
+                x1: timeToIndex.get(orderOpenTime),
+                x2: timeToIndex.get(orderCloseTime),
                 y1: order.price,
                 y2: level,
               })
@@ -918,7 +946,7 @@ const initSciChart = (data) => {
           const updateTrailingStopVisual = (order, d) => {
             const time = new Date(`${d[EnumMT5OHLC.DATE]} ${d[EnumMT5OHLC.TIME]}`);
             const localISO = time.getTime() / 1000;
-            const xValue = localISO
+            const xValue = timeToIndex.get(localISO);
 
             const yValue = order.sl;       // current trailing stop
             const y1Value = order.price;   // entry price (constant)
@@ -984,9 +1012,9 @@ const initSciChart = (data) => {
         EnumActionType,
         tradeDirection = EnumDirection.BULL
       ) => {
-        const candlePosition = convertMT5DateToUnix(
+        const candlePosition = timeToIndex.get(convertMT5DateToUnix(
           `${candle['<DATE>']} ${candle['<TIME>']}`
-        );
+        ));
         switch (EnumActionType) {
           case 'VERTICAL_LINE':
             sciChartSurface.annotations.add(
@@ -1344,13 +1372,13 @@ const initSciChart = (data) => {
             `${moneyEquivalent.toFixed(2)}\t`,
             `${profitsInPoints}\t`,
             `${lotSize()}\t`,
-            `${commissionSize()}\t`,
             `${slSize()}\t`,
             `${tpSize()}\t`,
             `${tsSize()}\t`,
-            `${profitFactor}\t`,
             `${maPeriod()}\t`,
             `${maThreshold()}\t`,
+            `${profitFactor}\t`,
+            `${commissionSize()}\t`,
           ].join('');
         };
 
@@ -1381,7 +1409,7 @@ const initSciChart = (data) => {
         */
         window.existingChart.data.labels = labels;
         window.existingChart.data.datasets[0].data = pnlData;
-        window.existingChart.data.datasets[1].data = equityData;
+        window.existingChart.data.datasets[1].data = equityDataMoney;
         window.existingChart.update('none');
 
         // Historical Orders Table with clickable rows for chart navigation
@@ -1427,13 +1455,13 @@ const initSciChart = (data) => {
               const tradeTime = event.currentTarget.getAttribute('data-trade-time');
               if (tradeTime && window.sciChartSurface) {
                 const unixTime = convertMT5DateToUnix(tradeTime);
-                const getCandleNumberByDay = (days) => 86400 * days;
-                const rangeMinDate = unixTime - 1800; // 30 minutes before
-                const rangeMaxDate = unixTime + getCandleNumberByDay(0.1); // ~2.4 hours after
+                const index = timeToIndex.get(unixTime);
+                const rangeMinIndex = index - 5; // Show 5 candles before
+                const rangeMaxIndex = index + 5; // Show 5 candles after
                 const xAxis = window.sciChartSurface.xAxes.get(0);
 
-                // Zoom to the trade timestamp
-                xAxis.visibleRange = new NumberRange(rangeMinDate, rangeMaxDate);
+                // Zoom to the trade index
+                xAxis.visibleRange = new NumberRange(rangeMinIndex, rangeMaxIndex);
 
                 // Optional: Highlight the clicked row
                 document.querySelectorAll('.clickable-row').forEach(r => r.classList.remove('selected-row'));
@@ -1462,13 +1490,18 @@ const initSciChart = (data) => {
         }
         candlesFromBuffer.push(d);
 
+        const unixTime = convertMT5DateToUnix(`${d[EnumMT5OHLC.DATE]} ${d[EnumMT5OHLC.TIME]}`);
+        candleTimes.push(unixTime);
+        timeToIndex.set(unixTime, chartCandleIndex);
+
         ohlcDataSeries.append(
-          convertMT5DateToUnix(`${d[EnumMT5OHLC.DATE]} ${d[EnumMT5OHLC.TIME]}`),
+          chartCandleIndex,
           d[EnumMT5OHLC.OPEN],
           d[EnumMT5OHLC.HIGH],
           d[EnumMT5OHLC.LOW],
           d[EnumMT5OHLC.CLOSE]
         );
+        chartCandleIndex++;
       };
       window.addNewCandleToChart = addNewCandleToChart;
 
@@ -1488,7 +1521,7 @@ const initSciChart = (data) => {
           showLabel: true,
           stroke: '#666666',
           strokeThickness: 2,
-          x1: btt,
+          x1: timeToIndex.get(btt),
           axisLabelFill: '#666666',
           axisLabelStroke: '#333',
         });
@@ -1567,9 +1600,9 @@ const initSciChart = (data) => {
             showLabel: true,
             stroke: '#FF000022',
             strokeThickness: 2,
-            x1: convertMT5DateToUnix(
+            x1: timeToIndex.get(convertMT5DateToUnix(
               `${currCandle[EnumMT5OHLC.DATE]} ${currCandle[EnumMT5OHLC.TIME]}`
-            ),
+            )),
             axisLabelFill: '#FF0000',
             axisLabelStroke: '#333',
           });
@@ -1741,16 +1774,17 @@ const initSciChart = (data) => {
 
         // CSID Graph Related Annotations: ========================================
         // Add a new CSID Data for our line annotations:
+        const currentUnixTime = convertMT5DateToUnix(d[EnumMT5OHLC.DATE] + ' ' + d[EnumMT5OHLC.TIME]);
         CSIDDataSerieFromHighs.append(
-          convertMT5DateToUnix(d[EnumMT5OHLC.DATE] + ' ' + d[EnumMT5OHLC.TIME]),
+          timeToIndex.get(currentUnixTime),
           highestHighLong[highestHighLong.length - 1]
         );
         CSIDDataSerieFromLows.append(
-          convertMT5DateToUnix(d[EnumMT5OHLC.DATE] + ' ' + d[EnumMT5OHLC.TIME]),
+          timeToIndex.get(currentUnixTime),
           lowestLowShort[lowestLowShort.length - 1]
         );
         maDataSeries.append(
-          convertMT5DateToUnix(d[EnumMT5OHLC.DATE] + ' ' + d[EnumMT5OHLC.TIME]),
+          timeToIndex.get(currentUnixTime),
           simpleMA(CSIDLookbackCandleSerie, maPeriod())[CSIDLookbackCandleSerie.length - 1]
         );
 
@@ -1777,9 +1811,9 @@ const initSciChart = (data) => {
           const direction = isBull ? EnumDirection.BULL : EnumDirection.BEAR;
 
           const signal = new CustomAnnotation({
-            x1: convertMT5DateToUnix(
+            x1: timeToIndex.get(convertMT5DateToUnix(
               d[EnumMT5OHLC.DATE] + ' ' + d[EnumMT5OHLC.TIME]
-            ),
+            )),
             y1: d[svgCandleLocation],
             verticalAnchorPoint: EVerticalAnchorPoint.Center,
             horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
@@ -1839,19 +1873,13 @@ const initSciChart = (data) => {
 
       // Navigate Trought Dates: ========================================
       $navigateTroughtDates.addEventListener('change', (event) => {
-        const getCandleNumberByDay = (days) => 86400 * days; // Get the number of candles in a day (candle count for a entire day)
-        const selectedDate = event.target.value;
-        const rangeMinDate = parseInt(selectedDate) - 1800; // + half an hour
-        const rangeMaxDate = parseInt(selectedDate) + getCandleNumberByDay(0.1); // getCandleChartAxisLocationFromDate(selectedDate) + getCandleNumberByDay(0.1); // half of a day
+        const selectedIndex = parseInt(event.target.value);
+        const rangeMinIndex = selectedIndex - 5; // Show 5 candles before
+        const rangeMaxIndex = selectedIndex + 5; // Show 5 candles after
         const xAxis = sciChartSurface.xAxes.get(0);
-        const yAxis = sciChartSurface.yAxes.get(0);
 
         // Graph Zooming:
-        xAxis.visibleRange = new NumberRange(rangeMinDate, rangeMaxDate);
-
-        // yAxis.visibleRange = new NumberRange(1, 3);
-        // updateYAxisRange();
-        // sciChartSurface.zoomExtents();
+        xAxis.visibleRange = new NumberRange(rangeMinIndex, rangeMaxIndex);
       });
       // End of Navigate Trought Dates ========================================
     })
@@ -1913,7 +1941,7 @@ const addBacktestingDateTimeToChart = (d) => {
 
     bttVerticalLineAnnotation(btt);
     // Display Backtesting dates on the select element:
-    $navigateTroughtDates.innerHTML += `<option value="${unixTime}">${candleDateTime}</option>`;
+    $navigateTroughtDates.innerHTML += `<option value="${timeToIndex.get(unixTime)}">${candleDateTime}</option>`;
   }
   // End of Backtesting dates ====================================
 };
