@@ -333,7 +333,7 @@ const datasets = [
     fill: false,
     tension: 0.5,
     pointStyle: false,
-    yAxisID: 'pointsAxis',
+    yAxisID: 'equityAxis',
   },
 ];
 
@@ -470,6 +470,14 @@ const handleFileAndInitGraph = (file) => {
                 type: 'linear',
                 beginAtZero: false,
                 position: 'left',
+              },
+              equityAxis: {
+                type: 'linear',
+                beginAtZero: false,
+                position: 'right',
+                grid: {
+                  drawOnChartArea: false, // keep only left grid if you want
+                },
               },
             },
           },
@@ -1364,13 +1372,13 @@ const initSciChart = (data) => {
             `${moneyEquivalent.toFixed(2)}\t`,
             `${profitsInPoints}\t`,
             `${lotSize()}\t`,
-            `${commissionSize()}\t`,
             `${slSize()}\t`,
             `${tpSize()}\t`,
             `${tsSize()}\t`,
-            `${profitFactor}\t`,
             `${maPeriod()}\t`,
             `${maThreshold()}\t`,
+            `${profitFactor}\t`,
+            `${commissionSize()}\t`,
           ].join('');
         };
 
@@ -1401,7 +1409,7 @@ const initSciChart = (data) => {
         */
         window.existingChart.data.labels = labels;
         window.existingChart.data.datasets[0].data = pnlData;
-        window.existingChart.data.datasets[1].data = equityData;
+        window.existingChart.data.datasets[1].data = equityDataMoney;
         window.existingChart.update('none');
 
         // Historical Orders Table with clickable rows for chart navigation
