@@ -34,6 +34,45 @@
 3. Each row (candle) updates chart, calculates indicators, checks signals, simulates trades.
 4. After all rows, performance metrics are computed and displayed.
 
+## Data Formats
+
+### Input CSV Format (MT5 Export)
+**Required Column Order:**
+1. `<DATE>` - Date in format like "2025.01.15"
+2. `<TIME>` - Time in format like "10:30:00"
+3. `<OPEN>` - Opening price
+4. `<HIGH>` - High price
+5. `<LOW>` - Low price
+6. `<CLOSE>` - Closing price
+
+**Notes:**
+- Angle brackets `<>` are required in column headers for parser recognition
+- Data exported from MT5 using CTRL+U → Bars tab → filter range → export CSV
+- Flat candles (OPEN = HIGH = LOW = CLOSE) are skipped as they represent weekends/holidays
+
+### Output CSV Format (Backtest Results)
+**Column Order in resultToCSV():**
+1. `csvFileName` - Original filename
+2. `timeframe` - Extracted from filename
+3. `strategy` - Strategy used (CSID_W_MA_DynamicTS, etc.)
+4. `sdt` - Start date (MM/DD/YYYY)
+5. `edt` - End date (MM/DD/YYYY)
+6. `numbDays` - Number of trading days
+7. `sessionStart` - Session start time
+8. `sessionEnd` - Session end time
+9. `tradeCount` - Number of trades taken
+10. `winRate` - Win rate percentage
+11. `moneyEquivalent` - Total P/L in currency
+12. `profitsInPoints` - Total P/L in points
+13. `lotSize` - Lot size used
+14. `slSize` - Stop loss size
+15. `tpSize` - Take profit size
+16. `tsSize` - Trailing stop increment
+17. `maPeriod` - Moving average period
+18. `maThreshold` - MA acceleration threshold
+19. `profitFactor` - Profit factor ratio
+20. `commissionSize` - Commission per lot
+
 ## Browser Compatibility
 - Modern browsers with ES6 support.
 - Relies on Web Audio API for notification sounds.
