@@ -45,6 +45,11 @@
   - Winrate (TP Hits): Based only on trades closed by take profit (TP) hits
   - Both winrates are now displayed in the results for comprehensive analysis
 
+## Important Strategy Insights
+- **Win Rate (Positive P/L)**: Represents overall strategy effectiveness including partial profit taking, trailing stops, and manual interventions. This is the traditional winrate that most traders expect.
+- **Win Rate (TP Hits)**: Represents pure trend-following accuracy - how often the strategy successfully rides trends to their full profit target. Lower TP winrate but higher average profit per winning trade indicates effective trailing stop management.
+- **Why Both Matter**: The gap between these two winrates reveals how much profit is captured through dynamic exit strategies (trailing stops, partial closes) versus full trend captures.
+
 ## Unused or Commented Code
 - `onData`, `onCandleDrawn` functions are defined but not registered.
 - Helper functions `ceilToDecimalPlaces`, `updateYAxisRange`, and commented swing high/low code in `onCandleDrawn`.
