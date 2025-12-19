@@ -44,3 +44,18 @@
 - **Sidebar Props**: `isOpen`, `onToggle`, `children`, `title` for flexible usage
 - **CSS Classes**: Proper z-indexing and backdrop-blur for overlay effect
 - **Responsive Design**: Sidebar adapts between collapsed (w-12) and expanded (w-[500px]) states
+
+### 🔧 2025-12-19: Fixed Max Updraw Calculation Bug
+- **Issue Identified**: The max updraw calculation in `profitabilityCalculation()` was using incorrect logic (`trough - peak` instead of `peak - trough`)
+- **Root Cause**: Updraw represents maximum recovery from drawdowns, not the inverse of drawdown
+- **Fix Applied**: Corrected calculation to track maximum recovery when new peaks are reached after drawdowns
+- **Variable Renamed**: Changed `maxUpdrawn` to `maxUpdraw` for grammatical consistency
+- **Impact**: Now properly calculates the maximum amount recovered from any drawdown period
+- **Testing**: Verified logic handles peak/trough tracking correctly across equity curve
+
+### 🔧 2025-12-19: Added Total Wins/Losses Count
+- **Issue Identified**: Backtesting results only showed consecutive wins/losses but not total wins/losses count
+- **User Feedback**: "I noticed that I have only Consecutive Wins and Consecutive Losses, but forgot simply wins and losses count"
+- **Fix Applied**: Added `totalWins` and `totalLosses` counters in `profitabilityCalculation()` function
+- **Display Updated**: Added total wins and losses lines in the results output
+- **Impact**: Now displays both total wins/losses and consecutive wins/losses for comprehensive trade statistics

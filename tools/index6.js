@@ -1300,17 +1300,21 @@ const initSciChart = (data) => {
           profitFactor = (grossProfit / grossLoss).toFixed(2);
         }
 
-        // Consecutive wins/losses
+        // Total wins/losses and consecutive wins/losses
+        let totalWins = 0;
+        let totalLosses = 0;
         let consecutiveWins = 0;
         let consecutiveLosses = 0;
         let maxConsecutiveWins = 0;
         let maxConsecutiveLosses = 0;
         for (const order of ordersHistory) {
           if (order.tradeResult === EnumTradeResult.WIN) {
+            totalWins++;
             consecutiveWins++;
             maxConsecutiveWins = Math.max(maxConsecutiveWins, consecutiveWins);
             consecutiveLosses = 0;
           } else if (order.tradeResult === EnumTradeResult.LOSS) {
+            totalLosses++;
             consecutiveLosses++;
             maxConsecutiveLosses = Math.max(maxConsecutiveLosses, consecutiveLosses);
             consecutiveWins = 0;
@@ -1319,25 +1323,31 @@ const initSciChart = (data) => {
         consecutiveWins = maxConsecutiveWins;
         consecutiveLosses = maxConsecutiveLosses;
 
-        // Drawdown and updrawn calculation can be added here if needed
+        // Drawdown and updraw calculation
         let maxDrawdown = 0;
-        let maxUpdrawn = 0;
+        let maxUpdraw = 0;
         let peak = equityDataMoney[0] || 0;
         let trough = equityDataMoney[0] || 0;
+        let recoveryStart = equityDataMoney[0] || 0;
+
         for (const value of equityDataMoney) {
           if (value > peak) {
+            // New peak reached - calculate recovery from previous trough
+            const recovery = value - trough;
+            if (recovery > maxUpdraw) {
+              maxUpdraw = recovery;
+            }
+            // Reset for next potential drawdown
             peak = value;
             trough = value;
+            recoveryStart = value;
           } else if (value < trough) {
+            // New trough reached - calculate drawdown from previous peak
             trough = value;
-          }
-          const drawdown = peak - trough;
-          const updrawn = trough - peak;
-          if (drawdown > maxDrawdown) {
-            maxDrawdown = drawdown;
-          }
-          if (updrawn > maxUpdrawn) {
-            maxUpdrawn = updrawn;
+            const drawdown = peak - trough;
+            if (drawdown > maxDrawdown) {
+              maxDrawdown = drawdown;
+            }
           }
         }
 
@@ -1392,10 +1402,12 @@ const initSciChart = (data) => {
         // result += `\n Pips: ${(profitsInPoints / 0.0001).toFixed(2)}`;
         // result += `\n Ticks: ${(profitsInPoints / 0.01).toFixed(2)}`;
         result += `\n Profit Factor: ${profitFactor}`;
+        result += `\n Total Wins: ${totalWins}`;
+        result += `\n Total Losses: ${totalLosses}`;
         result += `\n Consecutive Wins: ${consecutiveWins}`;
         result += `\n Consecutive Losses: ${consecutiveLosses}`;
         result += `\n Max Drawdown: ${maxDrawdown.toFixed(2)}$`;
-        result += `\n Max Updrawn: ${maxUpdrawn.toFixed(2)}$`;
+        result += `\n Max Updraw: ${maxUpdraw.toFixed(2)}$`;
         result += `\n Lowest Equity: ${lowestEquity.toFixed(2)}$`;
         result += `\n Highest Equity: ${highestEquity.toFixed(2)}$`;
 

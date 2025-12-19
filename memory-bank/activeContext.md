@@ -37,6 +37,10 @@
 - **ATR Threshold (arrayOfSignals[2])**: current True Range > 1.2 × ATR over the last 20 bars.
 - **MA Trend (arrayOfSignals[3])**: simple MA(200) acceleration exceeds ±0.0008.
 
+## Key Recent Changes
+- **Fixed Max Updraw Calculation**: Corrected the updraw calculation logic in `profitabilityCalculation()` function. Previously used `trough - peak` (always negative), now properly calculates maximum recovery from drawdowns using `peak - trough` when new peaks are reached. Also renamed variable from `maxUpdrawn` to `maxUpdraw` for consistency.
+- **Added Total Wins/Losses Count**: Added `totalWins` and `totalLosses` counters to display simple total wins and losses counts in addition to consecutive wins/losses.
+
 ## Unused or Commented Code
 - `onData`, `onCandleDrawn` functions are defined but not registered.
 - Helper functions `ceilToDecimalPlaces`, `updateYAxisRange`, and commented swing high/low code in `onCandleDrawn`.
