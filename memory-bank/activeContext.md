@@ -40,6 +40,10 @@
 ## Key Recent Changes
 - **Fixed Max Updraw Calculation**: Corrected the updraw calculation logic in `profitabilityCalculation()` function. Previously used `trough - peak` (always negative), now properly calculates maximum recovery from drawdowns using `peak - trough` when new peaks are reached. Also renamed variable from `maxUpdrawn` to `maxUpdraw` for consistency.
 - **Added Total Wins/Losses Count**: Added `totalWins` and `totalLosses` counters to display simple total wins and losses counts in addition to consecutive wins/losses.
+- **Dual Winrate Display**: Implemented two types of winrate calculations:
+  - Winrate (Positive P/L): Based on any trade with positive P/L (backward compatible with existing behavior)
+  - Winrate (TP Hits): Based only on trades closed by take profit (TP) hits
+  - Both winrates are now displayed in the results for comprehensive analysis
 
 ## Unused or Commented Code
 - `onData`, `onCandleDrawn` functions are defined but not registered.
