@@ -394,6 +394,8 @@ let ordersHistory = [];
 let firstDate = new Date();
 let lastDate = new Date();
 let prevDate = null;
+const now = new Date();
+let backtestingDate = `${now.getFullYear()}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getDate().toString().padStart(2, '0')}`; // YYYY/MM/DD format
 const trailingStopSeriesMap = new Map();
 window.ordersHistory = ordersHistory;
 
@@ -1369,7 +1371,9 @@ const initSciChart = (data) => {
           const edt = `${ed.slice(0, 4)}/${ed.slice(4, 6)}/${ed.slice(6, 8)}`;
 
           return [
-            `\t\t${csvFileName}\t`,
+            `\t`,
+            `${backtestingDate}\t`,
+            `${csvFileName}\t`,
             `${timeframe}\t`,
             `${strategy}\t`,
             `${sdt}\t`,
@@ -1393,8 +1397,8 @@ const initSciChart = (data) => {
         };
 
         // Display textual result
-        result += `Check console for orders history\n`;
-        result += `\nTrade Taken: ${ordersHistory.length} (in ${numbDays} days)`;
+        // result += `Check console for orders history\n`;
+        result += `Trade Taken: ${ordersHistory.length} (in ${numbDays} days)`;
         result += `\nWin Rate: ${winRate}%\n`;
         result += `\nProfits: `;
         result += `\n Money: ${moneyEquivalent.toFixed(2)}$`;
