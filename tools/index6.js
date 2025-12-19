@@ -1242,17 +1242,29 @@ const initSciChart = (data) => {
           return acc;
         }, 0);
 
-        // Win rate
-        const winRate =
-          ordersHistory.length > 0
-            ? (
-                (ordersHistory.filter(
-                  (order) => order.tradeResult === EnumTradeResult.WIN
-                ).length /
-                  ordersHistory.length) *
-                100
-              ).toFixed(2)
-            : 0;
+        // Win rates - two types
+        const winRateTP = ordersHistory.length > 0
+          ? (
+              (ordersHistory.filter(
+                (order) => order.closedOrderType === EnumclosedOrderType.CLOSED_BY_TP
+              ).length /
+                ordersHistory.length) *
+              100
+            ).toFixed(2)
+          : 0;
+
+        const winRatePositive = ordersHistory.length > 0
+          ? (
+              (ordersHistory.filter(
+                (order) => order.tradeResult === EnumTradeResult.WIN
+              ).length /
+                ordersHistory.length) *
+              100
+            ).toFixed(2)
+          : 0;
+
+        // Use positive P/L winrate as the main winRate for backward compatibility
+        const winRate = winRatePositive;
 
         // Profitability chart data
         let sum = 0;
@@ -1399,7 +1411,8 @@ const initSciChart = (data) => {
         // Display textual result
         // result += `Check console for orders history\n`;
         result += `Trade Taken: ${ordersHistory.length} (in ${numbDays} days)`;
-        result += `\nWin Rate: ${winRate}%\n`;
+        result += `\nWin Rate (Positive P/L): ${winRatePositive}%`;
+        result += `\nWin Rate (TP Hits): ${winRateTP}%\n`;
         result += `\nProfits: `;
         result += `\n Money: ${moneyEquivalent.toFixed(2)}$`;
         // result += `\n Points: ${profitsInPoints.toFixed(5)}`;
