@@ -9,6 +9,18 @@ The main website acts as the public face of the game.
     - **Features**: Weapons, Supports, Enemies (Drones/Androids).
     - **Gallery & Media**: Visual assets.
 
+## Personal CV/Portfolio Page (mika.html)
+A dedicated personal portfolio and CV page showcasing professional achievements and social media presence.
+- **Technology Stack**: Modern web technologies including Bootstrap 4.5.2, TailwindCSS, Spline 3D viewer, Google Fonts (Inter, Saira Condensed, Teko), Chart.js, jQuery, and Selectize.js.
+- **Design**: Dark gradient theme with red accent color (#ff394a), responsive grid layout (1-3 columns), hover animations with background zoom effects, and professional HYTEK branding.
+- **Portfolio Sections**:
+    - **3D Prints/Models**: Links to Cults3d profile for 3D printing projects.
+    - **YouTube Channel**: Technical content and project demonstrations (@HYTEK94).
+    - **TikTok**: Short-form content (@mickaelmorgado7).
+    - **Game Development**: Personal game project (Emitters) with dedicated website.
+    - **Instagram Accounts**: Personal (@mickaelmorgado31) and business/art (@noirdrivenantagonists) profiles.
+- **Interactive Features**: Spline 3D background viewer, dynamic title switching, and smooth CSS transitions.
+
 ## Backtesting Tool (Internal)
 **Scope:** `tools/index6.*`
 
