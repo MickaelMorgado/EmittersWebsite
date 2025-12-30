@@ -21,10 +21,10 @@ const modelBasePath = "@assets/models/";
 export default function MikaPage() {
   useGsapEffects();
 
-  const [activeFilter, setActiveFilter] = useState("All");
+  const [activeFilter, setActiveFilter] = useState({filter: "All", timestamp: Date.now()});
 
   const handleFilterClick = (filter: string) => {
-    setActiveFilter(filter);
+    setActiveFilter({filter, timestamp: Date.now()});
   };
 
   // Example usage of modelBasePath in components that load models:
@@ -175,7 +175,7 @@ export default function MikaPage() {
         <div className="container mx-auto px-6 py-4">
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-bold uppercase">Mickael</h1>
-            <div className="hidden md:flex space-x-8">
+            <div className="xs:hidden md:flex space-x-8">
               <a href="#about" className="hover:text-primary transition-colors">ABOUT</a>
               <a href="#skills" className="hover:text-primary transition-colors">SKILLS</a>
               <a href="#atp" className="hover:text-primary transition-colors">ACHIEVEMENTS</a>
@@ -506,21 +506,22 @@ export default function MikaPage() {
               <h2 className="text-5xl font-bold text-center mb-12">Highlight Achievements & Case Studies</h2>
               <div className="mb-12 text-center">
                 <div className="flex flex-wrap justify-center">
-                  {["All", "Racing", "Game Development", "Apps", "Scripting"].map((filter) => (
-                    <span
+                  {["All", "Racing", "Game Development", "Apps", "Scripting", "3D Tools"].map((filter) => (
+                    <button
                       key={filter}
-                      className={`badge mr-2 mb-2 ${activeFilter === filter ? "active" : ""}`}
+                      type="button"
+                      className={`badge mr-2 mb-2 ${activeFilter.filter === filter ? "active" : ""}`}
                       data-filter={filter}
                       onClick={() => handleFilterClick(filter)}
-                      style={{ cursor: "pointer" }}
                     >
                       {filter}
-                    </span>
+                    </button>
                   ))}
                 </div>
               </div>
               <div id="tools-grid" className="grid md:grid-cols-3 gap-12">
-                {[{
+                {[
+                  {
                     category: "Racing",
                     imgSrc: "./assets/images/simhubdashboard.png",
                     alt: "SimHub Dashboard",
@@ -610,39 +611,41 @@ export default function MikaPage() {
                     link: "https://emitters-website-delta.vercel.app/todo",
                     linkText: "View Demo",
                   },
-                ].map((tool, index) => {
-                  const isVisible = activeFilter === "All" || tool.category === activeFilter;
-                  return (
-                    <div key={index} className="card-wrapper">
-                      <div className="card-floating-image" style={{ backgroundImage: `url(${tool.imgSrc})` }}></div>
-
-                      <div
-                        
-                        className={`card  rounded-lg p-8 ${isVisible ? "flex" : "hidden"}`}
-                        data-category={tool.category}
-                      >
-                          <div className="card-content">
-                            <h3 className="text-2xl font-bold mb-4">{tool.title}</h3>
-                            <p className="mb-4">{tool.description}</p>
-                            <div className="flex gap-5">
-                            {tool.link && (
-                              <a target="_blank" href={tool.link} className="btn-minimal">
-                                {tool.linkText}
+                  {
+                    category: "3D Tools",
+                    imgSrc: "https://raw.githubusercontent.com/MickaelMorgado/BlenderVertexMeasurements/refs/heads/master/Screenshot.png?token=GHSAT0AAAAAADSFXYHGMGDAUPLRQBTV2VIY2KT6IDQ",
+                    alt: "Blender Vertex Measurements",
+                    title: "Blender Vertex Measurements",
+                    description: "This is a Blender add-on that provides real-time distance measurements between selected vertices in the 3D view. It uses GPU-accelerated screen-space text overlays inspired by CAD Sketcher, displaying distances as text labels at the midpoints of vertex pairs, with optional 3D mesh lines for visualization.",
+                    link: "https://www.tiktok.com/@mickaelmorgado7/video/7589654848421760278?is_from_webapp=1&sender_device=pc&web_id=7552590887471597089",
+                    linkText: "Watch Demo",
+                    readMore: "https://github.com/MickaelMorgado/BlenderVertexMeasurements",
+                  },
+                ].filter(tool => activeFilter.filter === "All" || tool.category === activeFilter.filter).map((tool, index) => (
+                  <div key={index} className="card-wrapper">
+                    <div className="card-floating-image" style={{ backgroundImage: `url(${tool.imgSrc})` }}></div>
+                    <div className="card rounded-lg p-8" data-category={tool.category}>
+                      <div className="card-content">
+                        <h3 className="text-2xl font-bold mb-4">{tool.title}</h3>
+                        <p className="mb-4">{tool.description}</p>
+                        <div className="flex gap-5">
+                          {tool.link && (
+                            <a target="_blank" href={tool.link} className="btn-minimal">
+                              {tool.linkText}
+                            </a>
+                          )}
+                          {tool.readMore && (
+                            <>
+                              <a target="_blank" href={tool.readMore} className="btn-minimal">
+                                Read More
                               </a>
-                            )}
-                            {tool.readMore && (
-                              <>
-                                <a target="_blank" href={tool.readMore} className="btn-minimal">
-                                  Read More
-                                </a>
-                              </>
-                            )}
-                            </div>
-                          </div>
+                            </>
+                          )}
                         </div>
+                      </div>
                     </div>
-                  );
-                })}
+                  </div>
+                ))}
               </div>
             </div>
           </section>

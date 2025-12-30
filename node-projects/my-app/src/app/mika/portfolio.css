@@ -203,6 +203,7 @@ a[href*="#"] {
     border: none;
     border: 1px solid var(--grey_dark);
     cursor: pointer;
+    text-transform: uppercase;
 }
 
 .badge:hover,.badge.active {
@@ -514,4 +515,9 @@ img {
 
 ::-webkit-scrollbar-thumb:hover {
     background: #ff2333;
+}
+
+/* Utility classes */
+.hidden {
+    display: none;
 }

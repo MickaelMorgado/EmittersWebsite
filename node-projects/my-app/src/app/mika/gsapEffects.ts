@@ -44,28 +44,10 @@ export function useGsapEffects() {
       },
     });
 
-    // Optional: grid filters (unchanged)
-    const toolsCategories = document.querySelectorAll(".badge") as NodeListOf<HTMLElement>;
-    const toolsGrid = document.getElementById("tools-grid");
-    toolsCategories.forEach((category) => {
-      category.addEventListener("click", () => {
-        const elements = toolsGrid?.children as HTMLCollectionOf<HTMLElement>;
-        if (!elements) return;
-        const selectedCategory = category.dataset.filter;
-        toolsCategories.forEach((c) => c.classList.remove("active"));
-        category.classList.add("active");
-        for (let i = 0; i < elements.length; i++) {
-          const element = elements[i];
-          element.classList.toggle("hidden", selectedCategory !== "all" && element.dataset.category !== selectedCategory);
-        }
-      });
-    });
-
     // Cleanup
     return () => {
       ScrollTrigger.getAll().forEach((st) => st.kill());
       if (smoother) smoother.kill();
-      toolsCategories.forEach((category) => category.replaceWith(category.cloneNode(true)));
     };
   }, []);
 }

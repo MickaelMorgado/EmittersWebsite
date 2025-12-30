@@ -6,10 +6,13 @@
   "background": {
     "service_worker": "background.js"
   },
-  "permissions": ["contextMenus", "scripting", "activeTab"],
+  "permissions": ["contextMenus", "scripting", "activeTab", "storage"],
   "host_permissions": ["<all_urls>"],
   "content_scripts": [{
     "matches": ["<all_urls>"],
     "js": ["bundle.js", "content.js"]
-  }]
+  }],
+  "options_ui": {
+    "page": "options.html"
+  }
 }
