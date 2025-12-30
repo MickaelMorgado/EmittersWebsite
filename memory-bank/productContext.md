@@ -1,13 +1,25 @@
 # Product Context
 
-**Scope:** Documents exclusively the `tools/index6.*` files for the Backtesting app.
+## Emitters - Drone Invasion (Game Website)
+The main website acts as the public face of the game.
+- **Goal**: Convert visitors into players/buyers on Steam and Ultra.
+- **Key Sections**:
+    - **Home**: Trailer, core value prop.
+    - **Story**: Narrative background and lore.
+    - **Features**: Weapons, Supports, Enemies (Drones/Androids).
+    - **Gallery & Media**: Visual assets.
 
-This back-testing tool is designed for traders who want to develop, test, and refine algorithmic strategies against historical market data. Key user workflows:
+## Backtesting Tool (Internal)
+**Scope:** `tools/index6.*`
 
-1. Export and upload CSV bar data from MetaTrader 5 covering a chosen time range.  
-2. Configure session parameters (start/end times, risk settings: lot size, SL/TP, trailing stop increment).  
-3. Step through each candlestick: the app draws bars on a SciChart chart, computes signals (CSID breakout, ATR threshold, time-in-range window, moving average trend), and applies entry/exit rules in real-time.  
-4. View detailed results: per-trade logs, performance metrics (win rate, profit factor, equity curve), CSV-exportable summary, and historical order table.  
-5. Iterate by tweaking strategy code in the embedded “Algo Editor” textarea and re-running the backtest instantly.  
+This tool is designed for traders who want to develop, test, and refine algorithmic strategies against historical market data. Key user workflows:
+
+1. **Import Data**: Export and upload CSV bar data from MetaTrader 5 covering a chosen time range.
+2. **Configure**: Set session parameters (start/end times) and risk settings (lot size, SL/TP, trailing stop).
+3. **Simulate**: Step through each candlestick; the app draws bars on a SciChart chart, computes signals (CSID breakout, ATR threshold, time-in-range window, moving average trend), and applies entry/exit rules in real-time.
+4. **Analyze**: View detailed results: per-trade logs, performance metrics (win rate, profit factor, equity curve), and historical order table.
+5. **Iterate**: Tweak strategy code in the embedded “Algo Editor” textarea and re-run the backtest instantly.
+6. **Export**: Automatically append the results to a shared Google Sheet for team tracking.
+
 
 The interface balances visual charting, code-driven strategy customization, and data-driven performance feedback to streamline quantitative strategy development.

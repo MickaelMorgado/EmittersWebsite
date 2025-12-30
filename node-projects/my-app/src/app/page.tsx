@@ -60,6 +60,16 @@ export default function Home() {
               </CardContent>
             </Card>
           </Link>
+          <a href="https://github.com/MickaelMorgado/BlenderVertexMeasurements" target="_blank" rel="noopener noreferrer" className="h-full">
+            <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
+              <CardHeader>
+                <CardTitle>Blender Vertex Measurements</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">Blender add-on for real-time distance measurements between selected vertices with GPU-accelerated screen-space text overlays</p>
+              </CardContent>
+            </Card>
+          </a>
         </div>
       </section>
       <section className="mt-12">
@@ -133,6 +143,16 @@ export default function Home() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">Monitor multiple 3D-printer camera feeds from smartphones via Iriun</p>
+              </CardContent>
+            </Card>
+          </Link>
+          <Link href="/emf-detector" className="h-full">
+            <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
+              <CardHeader>
+                <CardTitle>EMF Detector Simulator</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">Simulate EMF radiation detection based on network connection speed, inspired by Stalker2 ingame scanner device</p>
               </CardContent>
             </Card>
           </Link>

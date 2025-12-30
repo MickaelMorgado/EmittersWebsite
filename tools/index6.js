@@ -49,6 +49,7 @@ const $ThemeInput = document.getElementById('themeSelector');
 const $BTTInput = document.getElementById('backtesting-hour');
 const $ETTInput = document.getElementById('backtesting-end');
 const $strategyInput = document.getElementById('backtesting-strategy');
+const $googleSendToSheetsBtn = document.getElementById('googleSendToSheetsBtn');
 const audioSuccess = new Audio('squirrel_404_click_tick.wav');
 const audioNotify = new Audio('joseegn_ui_sound_select.wav');
 const myChart = document.getElementById('myChart');
@@ -2039,3 +2040,57 @@ $textareaHistoricalTradesLines?.addEventListener('change', (event) => {
     console.error('Error updating chart:', error);
   }
 });
+
+// Google Sheets Export Logic
+// TODO: Find the Web App URL from your deployed Google Apps Script and paste it below:
+const GOOGLE_SHEET_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwDEObfonrbxUde5-43OeqploBFxI8eIqrjfxLpj9WJlDq-f5lzrzjFVK5qB-3nwX0e/exec'; 
+
+const sendToGoogleSheets = async () => {
+  const url = GOOGLE_SHEET_WEB_APP_URL;
+  
+  const csvContent = document.getElementById('exportableCSVField').value;
+  if (!csvContent) {
+    alert('No results to export. Please run a backtest first.');
+    return;
+  }
+
+  const dataRow = csvContent.split('\t').map(s => s.trim());
+  
+  const btn = document.getElementById('googleSendToSheetsBtn');
+  const originalText = btn.innerHTML;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+  btn.disabled = true;
+
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      redirect: 'follow', // ADD THIS LINE - allows following the 302 redirect
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(dataRow),
+    });
+
+    const result = await response.text();
+    
+    try {
+      const jsonResult = JSON.parse(result);
+      if (jsonResult.result === 'success') {
+        alert('✅ Export successful! Row ' + jsonResult.row + ' added to Google Sheets.');
+      } else {
+        alert('⚠️ ' + (jsonResult.error || 'Unknown error occurred'));
+      }
+    } catch (e) {
+      alert('Export sent! Server response: ' + result);
+    }
+
+  } catch (error) {
+    console.error('Export failed:', error);
+    alert('❌ Export failed: ' + error.message);
+  } finally {
+    btn.innerHTML = originalText;
+    btn.disabled = false;
+  }
+};
+
+$googleSendToSheetsBtn.addEventListener('click', sendToGoogleSheets);

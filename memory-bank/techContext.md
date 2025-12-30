@@ -1,22 +1,23 @@
 # Tech Context
 
-**Scope:** Documents exclusively the `tools/index6.*` files for the Backtesting app.
+## Main Website
+- **Core**: HTML5, CSS3, jQuery 3.5.1
+- **Libraries**:
+    - **GSAP (GreenSock)**: Animations (`gsap`, `@types/gsap`).
+    - **Slick Carousel**: `slick.min.js` for content sliders.
+    - **Lozad.js**: Lazy loading images and videos.
+    - **jQuery Scrollify**: Snap scrolling behavior.
+    - **Waypoints**: Scroll-triggered animations.
 
-## Languages & Standards
-- JavaScript (ES6)
-- HTML5
-- CSS3 (Custom properties, Flexbox)
+## Backtesting Tool (`tools/index6.*`)
+- **Core**: Vanilla JavaScript (ES6), HTML5, CSS3
+- **Libraries**:
+    - **PapaParse v5.3.0**: CSV parsing (step-by-step streaming).
+    - **SciChart.js v3.5.x**: Real-time candlestick charting (WebAssembly).
+    - **Chart.js**: Equity curve rendering.
+    - **Font Awesome**: Iconography.
+    - **UI-Avatars**: Favicon generation.
 
-## Libraries & Frameworks
-- PapaParse v5.3.0 (CSV parsing, step-by-step streaming)
-- SciChart.js v3.5.x (real-time candlestick charting with WebAssembly)
-- Chart.js (equity curve rendering)
-- Font Awesome (iconography)
-- Axios (HTTP requests, unused in core)
-- UI-Avatars (favicon generation)
-
-## Architecture & Patterns
-- **Event-Driven**: DOM events trigger parsing, chart updates, and UI toggles.
-- **Streaming Parser**: CSV is processed row-by-row with `Papa.parse` in step mode.
-- **Step Pipeline**: Each candle passes through update → indicators → trade logic → rendering.
-- **Global Exposure**: Core functions are attached to `window` for in-browser REPL/workflow.
+## Development Environment
+- **Linter**: `eslint` with `prettier` plugin (configuration in `eslint.config.js`).
+- **Dependencies**: Managed via `package.json`.

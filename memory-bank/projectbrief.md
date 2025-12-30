@@ -1,5 +1,9 @@
 # Project Brief
 
-**Scope:** Documents exclusively the `tools/index6.*` files for the Backtesting app.
+The **Emitters Website** is the central hub for the game "Emitters - Drone Invasion", a survival FPS. It serves two main purposes:
+1. **Marketing & Landing Page**: Promoting the game, its story, features, and linking to store pages (Steam, Ultra).
+2. **Developer Tools**: Hosting internal tools, primarily the **Backtesting App** (`tools/index6.html`), used to simulate and refine trading strategies against historical market data.
 
-This back-testing web application enables users to load MT5-exported CSV bar data and simulate trading strategies over historical price series. It reads the CSV line-by-line, rendering each candlestick on a SciChart chart, computes indicators (CSID breakout, time-in-range, ATR thresholds, moving average trend), and evaluates trade entry/exit logic (TP/SL, trailing stops). Results—including performance metrics, equity curves, and detailed trade logs—are displayed in interactive panels beneath the chart. The core strategy logic is statically defined in JavaScript and runs per candlestick update.
+## Core Components
+- **Main Website**: `index.html` and associated assets.
+- **Backtesting Tool**: `tools/index6.html` (and `index6.js`, `index6.css`).

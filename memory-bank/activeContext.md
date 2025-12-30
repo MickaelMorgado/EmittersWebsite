@@ -1,12 +1,18 @@
-**Scope:** Documents exclusively the `tools/index6.*` files for the Backtesting app.
-
 # Active Context
 
 ## Current Focus
-- Document core functions and their purposes for quick reference.
-- Identify and list unused or commented-out code sections for potential removal.
+- Initialize Project Memory Bank to cover the full repository scope.
+- Maintain detailed documentation for the Backtesting Tool.
+- **Implement Google Sheets Export**: Enable one-click export of backtesting results to a specific Google Sheet.
 
-## Extracted Functions & Utilities
+## Recent Changes
+- Expanded `projectbrief.md` to cover the Game Website.
+- Updated `productContext.md` and `techContext.md` with Main Website details.
+- Updated `systemPatterns.md` to outline the full project structure.
+
+## Backtesting Tool Reference (`tools/index6.js`)
+
+### Extracted Functions & Utilities
 - revealAlgoEditor, revealAlgo, revealReview — Toggle result-panel views.
 - toggleHeight — Expand/collapse result panel.
 - stickyTableHeaders — Make table header sticky on scroll.
@@ -31,7 +37,7 @@
 - simpleMA — Compute simple moving average series.
 - updateDynamicInfos — Update date display and progress bar on each new date.
 
-## Hardcoded Strategy Signals
+### Hardcoded Strategy Signals
 - **CSID Breakout (arrayOfSignals[0])**: breakout above or below the 15-bar high/low sets this signal.
 - **Time-In-Range (arrayOfSignals[1])**: candle timestamp falls within sessionStart–sessionEnd.
 - **ATR Threshold (arrayOfSignals[2])**: current True Range > 1.2 × ATR over the last 20 bars.

@@ -7,7 +7,11 @@ chrome.runtime.onInstalled.addListener(() => {
 });
 
 chrome.contextMenus.onClicked.addListener((info, tab) => {
-  if (info.menuItemId === "speakSelection") {
-    chrome.tabs.sendMessage(tab.id, { type: 'SPEAK', text: info.selectionText });
-  }
+  chrome.storage.sync.get(['lang', 'rate'], (result) => {
+    const options = {
+      lang: result.lang || 'en',
+      rate: parseFloat(result.rate) || 1.0
+    };
+    chrome.tabs.sendMessage(tab.id, { type: 'SPEAK', text: info.selectionText, options });
+  });
 });
