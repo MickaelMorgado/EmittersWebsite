@@ -52,6 +52,16 @@ const $strategyInput = document.getElementById('backtesting-strategy');
 const $googleSendToSheetsBtn = document.getElementById('googleSendToSheetsBtn');
 const audioSuccess = new Audio('squirrel_404_click_tick.wav');
 const audioNotify = new Audio('joseegn_ui_sound_select.wav');
+
+// Function to update Google Sheets button state based on CSV field content
+const updateGoogleSheetsButtonState = () => {
+  const csvContent = $exportableCSVField.value.trim();
+  $googleSendToSheetsBtn.disabled = !csvContent;
+};
+
+// Test the function (can be removed after testing)
+window.updateGoogleSheetsButtonState = updateGoogleSheetsButtonState;
+
 const myChart = document.getElementById('myChart');
 
 // Load URL parameters into inputs on page load
@@ -391,6 +401,9 @@ let CSIDSignalTriggered = false;
 let CSIDCoolddownSignal = 5;
 let csvDataIndex = 0;
 let numbDays = 0;
+let processedDays = 0;
+let totalCandles = 0;
+let processedCandles = 0;
 let ordersHistory = [];
 let firstDate = new Date();
 let lastDate = new Date();
@@ -407,6 +420,8 @@ const handleFileAndInitGraph = (file) => {
     // Clear orders history
     ordersHistory = [];
     numbDays = 0;
+    processedDays = 0;
+    processedCandles = 0;
     chartCandleIndex = 0;
     candleTimes = [];
     timeToIndex = new Map();
@@ -418,7 +433,7 @@ const handleFileAndInitGraph = (file) => {
     // Add visible class to loading element
     document.getElementById('loading-element').classList.add('visible');
 
-    // Read the CSV file just to get the first and last dates:
+    // Read the CSV file just to get the first and last dates and count total candles:
     const reader = new FileReader();
     reader.onload = (e) => {
       const text = e.target.result;
@@ -429,6 +444,7 @@ const handleFileAndInitGraph = (file) => {
 
       firstDate = firstLine.split('\t')[0];
       lastDate = lastLine.split('\t')[0];
+      totalCandles = lines.length - 1; // Subtract header line
 
       $firstDate.textContent = firstDate;
       $lastDate.textContent = lastDate;
@@ -509,6 +525,7 @@ const handleFileAndInitGraph = (file) => {
         }
 
         csvDataIndex += 1;
+        processedCandles += 1;
 
         parser.pause();
         // Dynamic infos:
@@ -576,6 +593,9 @@ document.addEventListener('DOMContentLoaded', () => {
   if ($chartSection) {
     $chartSection.classList.add('chart-expanded');
   }
+
+  // Initially disable Google Sheets button since there's no data yet
+  updateGoogleSheetsButtonState();
 
   // Extract URL parameters
   const urlParams = new URLSearchParams(window.location.search);
@@ -733,7 +753,7 @@ const initSciChart = (data) => {
       // Variables initialization for CSID:
       let rollingHighestHighDataSeries = null;
       let rollingLowestLowDataSeries = null;
-      const lookbackPeriod = 15;
+      const lookbackPeriod = 20; // 15
       const lookbackPeriodForCSIDHigh = lookbackPeriod;
       const lookbackPeriodForCSIDLow = 9;
       const highestHighLong = [];
@@ -1432,6 +1452,9 @@ const initSciChart = (data) => {
         $backTestingResult.value = result;
         $exportableCSVField.value = resultToCSV();
 
+        // Update Google Sheets button state after setting CSV field value
+        updateGoogleSheetsButtonState();
+
         // Update Profitability Chart ========================================
         /*
           window.existingChart.data.datasets[0].data.pop();
@@ -1937,16 +1960,17 @@ window.updateFileReadingProgression = updateFileReadingProgression;
 
 const updateDynamicInfos = (d) => {
   if (prevDate !== d[EnumMT5OHLC.DATE]) {
+    console.log(d[EnumMT5OHLC.DATE]);
+    processedDays++;
     $currentReadingDate.innerText = d[EnumMT5OHLC.DATE];
-
-    // Update progression bar:
-    const numberOfDays = Math.ceil(
-      (new Date(lastDate) - new Date(firstDate)) / (1000 * 60 * 60 * 24)
-    );
-    updateFileReadingProgression((numbDays * 100) / numberOfDays);
 
     animateActiveClass($currentReadingDate);
     prevDate = d[EnumMT5OHLC.DATE];
+  }
+
+  // Update progression bar for each candle processed:
+  if (totalCandles > 0) {
+    updateFileReadingProgression((processedCandles * 100) / totalCandles);
   }
 };
 
@@ -2094,3 +2118,6 @@ const sendToGoogleSheets = async () => {
 };
 
 $googleSendToSheetsBtn.addEventListener('click', sendToGoogleSheets);
+
+// Continuously update button state when CSV field content changes
+$exportableCSVField.addEventListener('input', updateGoogleSheetsButtonState);
