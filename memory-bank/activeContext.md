@@ -50,6 +50,7 @@
   - Winrate (Positive P/L): Based on any trade with positive P/L (backward compatible with existing behavior)
   - Winrate (TP Hits): Based only on trades closed by take profit (TP) hits
   - Both winrates are now displayed in the results for comprehensive analysis
+- **Google Sheets Export Button Enhancement**: Implemented dynamic button state management for the "Send to Google Sheets" functionality. The button is now only enabled when there is data in the CSV Exportable text field, preventing empty exports. Added `updateGoogleSheetsButtonState()` function that monitors the textarea content and enables/disables the button accordingly. Button state updates both when results are programmatically populated during backtesting and when users manually edit the textarea.
 
 ## Important Strategy Insights
 - **Win Rate (Positive P/L)**: Represents overall strategy effectiveness including partial profit taking, trailing stops, and manual interventions. This is the traditional winrate that most traders expect.
