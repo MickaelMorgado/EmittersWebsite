@@ -1509,10 +1509,41 @@ const initSciChart = (data) => {
               if (tradeTime && window.sciChartSurface) {
                 const unixTime = convertMT5DateToUnix(tradeTime);
                 const index = timeToIndex.get(unixTime);
-                const rangeMinIndex = index - 5; // Show 5 candles before
-                const rangeMaxIndex = index + 5; // Show 5 candles after
+                // Improved zoom: show more candles for better context (25 total instead of 10)
+                const candlesToShow = 25; // Total candles to display
+                const candlesBefore = Math.floor(candlesToShow / 2); // 12 candles before
+                const candlesAfter = candlesToShow - candlesBefore - 1; // 12 candles after
+                
+                const rangeMinIndex = Math.max(0, index - candlesBefore);
+                const rangeMaxIndex = Math.min(chartCandleIndex - 1, index + candlesAfter);
                 const xAxis = window.sciChartSurface.xAxes.get(0);
+                const yAxis = window.sciChartSurface.yAxes.get(0);
 
+                // Zoom to the trade index with better horizontal range
+                xAxis.visibleRange = new NumberRange(rangeMinIndex, rangeMaxIndex);
+
+                // Adjust Y-axis to show price range around the trade
+                // Get candles in the visible range to calculate price bounds
+                const visibleCandles = candlesFromBuffer.slice(-Math.min(candlesFromBuffer.length, candlesToShow));
+                if (visibleCandles.length > 0) {
+                  const prices = visibleCandles.flatMap(candle => [
+                    candle[EnumMT5OHLC.OPEN],
+                    candle[EnumMT5OHLC.HIGH], 
+                    candle[EnumMT5OHLC.LOW],
+                    candle[EnumMT5OHLC.CLOSE]
+                  ]);
+                  
+                  const minPrice = Math.min(...prices);
+                  const maxPrice = Math.max(...prices);
+                  const priceRange = maxPrice - minPrice;
+                  
+                  // Add 10% padding to the price range for better visibility
+                  const padding = priceRange * 0.1;
+                  const yMin = minPrice - padding;
+                  const yMax = maxPrice + padding;
+                  
+                  yAxis.visibleRange = new NumberRange(yMin, yMax);
+                }
                 // Zoom to the trade index
                 xAxis.visibleRange = new NumberRange(rangeMinIndex, rangeMaxIndex);
 
