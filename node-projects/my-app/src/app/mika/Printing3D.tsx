@@ -18,9 +18,14 @@ function PrintingModel(props: any) {
   scene.traverse((child) => {
     if ((child as Mesh).isMesh) {
       const mesh = child as Mesh;
-      mesh.material = new THREE.MeshStandardMaterial({...metalMaterialParams});
-      if (mesh.name === "head" || mesh.name.includes("nozzle")) {
+      if (mesh.name.includes("nozzle")) {
         mesh.material = new THREE.MeshStandardMaterial({...redMaterialParams});
+        mesh.userData.bloom = true;
+        mesh.layers.enable(1);
+      } else {
+        mesh.material = new THREE.MeshStandardMaterial({...metalMaterialParams});
+        mesh.userData.bloom = false;
+        mesh.layers.set(0);
       }
     }
   });

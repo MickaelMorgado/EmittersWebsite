@@ -75,21 +75,28 @@
 <script>
 /* WebSocket connection with auto-reconnect and event logging */
 let websocket = null;
+let isConnected = false;
 function connect() {
   if (websocket) return;
   websocket = new WebSocket("ws://localhost:21213/");
-  websocket.onopen = () => document.getElementById("status").innerHTML = "Connected";
+  websocket.onopen = () => {
+    document.getElementById("status").innerHTML = "Connected";
+    isConnected = true;
+  };
   websocket.onclose = () => {
       document.getElementById("status").innerHTML = "Disconnected";
+      isConnected = false;
       websocket = null;
       setTimeout(connect, 1000);
   };
   websocket.onerror = () => {
       document.getElementById("status").innerHTML = "Connection Failed";
+      isConnected = false;
       websocket = null;
       setTimeout(connect, 1000);
   };
   websocket.onmessage = (e) => {
+    if (!isConnected) return;
     let parsedData = JSON.parse(e.data); // Parse the JSON data
 
     console.log("Data received", parsedData);
@@ -164,6 +171,10 @@ initIntensityBuffer();
 let lastLeader = -1;
 
 function updateScoreboard(){
+  if (!isConnected) {
+    document.getElementById("scoreboard").textContent = "Team areas: 000, 000, 000, 000";
+    return [0, 0, 0, 0];
+  }
   const total = gridW * gridH;
   const perc = intensity.map(arr => {
     let sum = 0;
@@ -206,7 +217,7 @@ function render(timestamp){
 ctx.fillRect(0,0,canvas.width,canvas.height);
 const perc = updateScoreboard();
 let leader = perc.indexOf(Math.max(...perc));
-if (leader !== lastLeader) {
+if (leader !== lastLeader && isConnected) {
   lastLeader = leader;
   new Audio(soundMedia).play();
 }
@@ -524,6 +535,7 @@ window.incrementUser = function(name, delta) {
 // timed random incoming users and increments
 const testUserNames = ["Alice","Bob","Charlie","Diana","Eve","Frank","Grace","Henry","Iris","Jack","Kate","Liam","Maya","Noah","Olivia","Paul","Quinn","Ruby","Sam","Tara","Uma","Victor","Wendy","Xander","Yara"];
 function randomizeIncoming() {
+  if (!isConnected) return;
   const name = testUserNames[Math.floor(Math.random()*testUserNames.length)];
   if (!users.has(name)) {
     addUser(name);

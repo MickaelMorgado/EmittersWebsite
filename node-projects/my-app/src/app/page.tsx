@@ -156,6 +156,16 @@ export default function Home() {
               </CardContent>
             </Card>
           </Link>
+          <Link href="/gcode-timelapse" className="h-full">
+            <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
+              <CardHeader>
+                <CardTitle>G-code Timelapse</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">Minimalist 3D print timelapse visualization from G-code files</p>
+              </CardContent>
+            </Card>
+          </Link>
         </div>
       </section>
     </div>
