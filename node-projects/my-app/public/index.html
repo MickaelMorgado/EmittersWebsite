@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EMF Detector - Android</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
+        .seven-segment {
+            font-family: 'Share Tech Mono', monospace;
+            font-weight: normal;
+        }
+
+        .bg-dark {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+        }
+
+        .bg-panel {
+            background: linear-gradient(135deg, #2a2a2a 0%, #3a3a3a 100%);
+        }
+
+        .text-glow {
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-dark min-h-screen p-4">
+    <div class="max-w-lg mx-auto">
+        <!-- Main Device Container -->
+        <div class="bg-panel rounded-xl overflow-hidden shadow-2xl border border-gray-700">
+            <!-- Top Yellow Display Section -->
+            <div class="bg-orange-500 px-16 py-6 relative min-h-[160px]">
+                <!-- Left Info Area -->
+                <div class="flex flex-col justify-between h-full text-gray-900 space-y-2">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                        </svg>
+                        <span class="text-xs font-bold tracking-widest">dBm</span>
+                    </div>
+                    <div id="signal-strength" class="seven-segment text-xl tracking-wider">-050</div>
+                    <div class="text-xs font-bold tracking-widest flex items-center gap-1">
+                        <span>WIFI</span>
+                        <span class="inline-block w-8 h-0.5 bg-gray-900/30"></span>
+                    </div>
+                </div>
+
+                <!-- Right Large Display Area -->
+                <div class="relative ml-8">
+                    <!-- Background 8888 for ghost effect -->
+                    <div class="absolute top-0 right-0 text-gray-900/10 select-none z-0">
+                        <div class="seven-segment text-6xl leading-none">8888</div>
+                    </div>
+
+                    <!-- Actual Value -->
+                    <div id="main-display" class="relative z-10 text-gray-900 seven-segment text-6xl leading-none">
+                        0000
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Bezel Section -->
+            <div class="bg-gray-600 p-4 border-t-4 border-gray-500 relative">
+                <div class="flex justify-center items-center">
+                    <div class="text-gray-200 text-2xl font-bold tracking-widest font-mono uppercase">
+                        LINKA·01
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="mt-8 bg-panel border border-gray-700 rounded-lg p-6 text-gray-300">
+            <div class="text-xs font-mono space-y-3">
+                <div class="flex items-center justify-between">
+                    <span id="status">Initializing WiFi scanner...</span>
+                    <div class="flex gap-2 text-right">
+                        <span id="wifi-count">Networks: 0</span>
+                    </div>
+                </div>
+
+                <div class="pt-2 border-t border-gray-600">
+                    <div class="text-xs font-bold mb-2">WiFi Networks Detected:</div>
+                    <div id="networks-list" class="space-y-1 max-h-32 overflow-y-auto text-xs">
+                        <!-- Networks will be listed here -->
+                    </div>
+                </div>
+
+                <div class="pt-2 border-t border-gray-600">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" id="debug-mode" class="w-4 h-4">
+                        <span>Debug Mode (Fake Data)</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let wifiScanner = null;
+        let isScanning = false;
+        let networks = [];
+        let debugMode = false;
+
+        // Capacitor imports
+        const { Capacitor } = window;
+        const { Wifi } = window;
+
+        class WifiScanner {
+            constructor() {
+                this.audioContext = null;
+                this.beepInterval = null;
+                this.lastIntensity = 0;
+            }
+
+            async init() {
+                // Initialize audio context for beeps
+                this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                if (this.audioContext.state === 'suspended') {
+                    await this.audioContext.resume();
+                }
+
+                // Request location permission (required for WiFi scanning on Android)
+                if (navigator.permissions) {
+                    try {
+                        const result = await navigator.permissions.query({ name: 'geolocation' });
+                        if (result.state !== 'granted') {
+                            alert('Location permission required for WiFi scanning');
+                        }
+                    } catch (e) {
+                        console.log('Permission API not supported');
+                    }
+                }
+            }
+
+            async scanWifi() {
+                if (isScanning) return;
+
+                try {
+                    isScanning = true;
+                    updateStatus('Scanning WiFi networks...');
+
+                    if (debugMode) {
+                        // Generate fake WiFi data for testing
+                        networks = this.generateFakeNetworks();
+                        this.processNetworks(networks);
+                        updateStatus('Debug mode: Fake data loaded');
+                    } else {
+                        // Real WiFi scanning using Capacitor
+                        if (window.Wifi) {
+                            const result = await window.Wifi.scan();
+                            networks = result || [];
+                            this.processNetworks(networks);
+                            updateStatus(`Found ${networks.length} networks`);
+                        } else {
+                            updateStatus('WiFi plugin not available');
+                            // Fallback to debug mode
+                            debugMode = true;
+                            this.scanWifi();
+                        }
+                    }
+                } catch (error) {
+                    console.error('WiFi scan error:', error);
+                    updateStatus('WiFi scan failed: ' + error.message);
+                } finally {
+                    isScanning = false;
+                }
+            }
+
+            generateFakeNetworks() {
+                return [
+                    { SSID: 'Home-WiFi', level: -45, frequency: 2412 },
+                    { SSID: 'Neighbor-Net', level: -67, frequency: 2462 },
+                    { SSID: 'CoffeeShop-Guest', level: -78, frequency: 5180 },
+                    { SSID: 'Mobile-Hotspot', level: -52, frequency: 2417 },
+                    { SSID: 'Office-WLAN', level: -89, frequency: 5220 }
+                ];
+            }
+
+            processNetworks(networks) {
+                if (!networks || networks.length === 0) {
+                    updateSignalStrength(0);
+                    updateMainDisplay('0000');
+                    updateNetworksList([]);
+                    return;
+                }
+
+                // Find the strongest signal
+                const strongest = networks.reduce((max, network) =>
+                    network.level > max.level ? network : max, networks[0]);
+
+                // Convert dBm to intensity (0-1)
+                // -30 dBm = 1.0 (very close), -90 dBm = 0.0 (far)
+                const intensity = Math.max(0, Math.min(1, (strongest.level + 90) / 60));
+
+                updateSignalStrength(strongest.level);
+                updateMainDisplay(Math.round(Math.abs(strongest.level)).toString().padStart(4, '0'));
+                updateNetworksList(networks);
+                this.updateAudio(intensity);
+            }
+
+            updateAudio(intensity) {
+                if (this.beepInterval) {
+                    clearInterval(this.beepInterval);
+                }
+
+                if (intensity > 0) {
+                    const interval = Math.max(50, 1000 - intensity * 950); // Faster beeps = stronger signal
+                    this.beepInterval = setInterval(() => this.playBeep(intensity), interval);
+                }
+            }
+
+            playBeep(intensity) {
+                if (!this.audioContext) return;
+
+                const osc = this.audioContext.createOscillator();
+                const gain = this.audioContext.createGain();
+
+                osc.connect(gain);
+                gain.connect(this.audioContext.destination);
+
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(800 + intensity * 400, this.audioContext.currentTime);
+
+                const now = this.audioContext.currentTime;
+                gain.gain.setValueAtTime(0, now);
+                gain.gain.linearRampToValueAtTime(0.3 + intensity * 0.4, now + 0.01);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+
+                osc.start(now);
+                osc.stop(now + 0.05);
+            }
+        }
+
+        // UI Update functions
+        function updateSignalStrength(level) {
+            const element = document.getElementById('signal-strength');
+            const display = level < 0 ? level.toString() : `-${Math.abs(level)}`;
+            element.textContent = display.padStart(4, ' ').slice(-4);
+        }
+
+        function updateMainDisplay(value) {
+            document.getElementById('main-display').textContent = value;
+        }
+
+        function updateStatus(text) {
+            document.getElementById('status').textContent = text;
+        }
+
+        function updateNetworksList(networks) {
+            const container = document.getElementById('networks-list');
+            const count = document.getElementById('wifi-count');
+
+            count.textContent = `Networks: ${networks.length}`;
+
+            container.innerHTML = networks.map(network => `
+                <div class="flex justify-between">
+                    <span>${network.SSID || 'Unknown'}</span>
+                    <span class="text-orange-400">${network.level} dBm</span>
+                </div>
+            `).join('');
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', async () => {
+            wifiScanner = new WifiScanner();
+            await wifiScanner.init();
+
+            // Start scanning
+            wifiScanner.scanWifi();
+            setInterval(() => wifiScanner.scanWifi(), 2000); // Scan every 2 seconds
+
+            // Debug mode toggle
+            document.getElementById('debug-mode').addEventListener('change', (e) => {
+                debugMode = e.target.checked;
+                if (debugMode) {
+                    updateStatus('Debug mode enabled');
+                }
+                wifiScanner.scanWifi(); // Immediate scan
+            });
+
+            // Full screen on click
+            document.addEventListener('click', () => {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen().catch(console.error);
+                } else {
+                    document.exitFullscreen();
+                }
+            });
+        });
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (wifiScanner && wifiScanner.beepInterval) {
+                clearInterval(wifiScanner.beepInterval);
+            }
+        });
+    </script>
+</body>
+</html>

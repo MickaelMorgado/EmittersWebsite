@@ -143,6 +143,11 @@ export default function EMFDetectorPage() {
         
       } catch (error) {
         console.error("Latency test failed:", error)
+        if (!debugMode) {
+          setIntensity(0) // Set intensity to 0 when no connection
+          setActualSpeed(null) // Set speed to null to show 000
+        }
+        setRealPing(null)
       } finally {
         testingRef.current = false
       }
@@ -183,7 +188,7 @@ export default function EMFDetectorPage() {
   }, [intensity])
 
   const formatDisplayValue = (value: number | null) => {
-    if (value === null) return "8888"
+    if (value === null) return "000"
     // Display raw integer value (60ms shows as "60", not "600")
     const formatted = Math.round(value).toString()
 
