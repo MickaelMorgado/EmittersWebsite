@@ -52,6 +52,16 @@ const $strategyInput = document.getElementById('backtesting-strategy');
 const $googleSendToSheetsBtn = document.getElementById('googleSendToSheetsBtn');
 const audioSuccess = new Audio('squirrel_404_click_tick.wav');
 const audioNotify = new Audio('joseegn_ui_sound_select.wav');
+
+// Function to update Google Sheets button state based on CSV field content
+const updateGoogleSheetsButtonState = () => {
+  const csvContent = $exportableCSVField.value.trim();
+  $googleSendToSheetsBtn.disabled = !csvContent;
+};
+
+// Test the function (can be removed after testing)
+window.updateGoogleSheetsButtonState = updateGoogleSheetsButtonState;
+
 const myChart = document.getElementById('myChart');
 
 // Load URL parameters into inputs on page load
@@ -391,6 +401,9 @@ let CSIDSignalTriggered = false;
 let CSIDCoolddownSignal = 5;
 let csvDataIndex = 0;
 let numbDays = 0;
+let processedDays = 0;
+let totalCandles = 0;
+let processedCandles = 0;
 let ordersHistory = [];
 let firstDate = new Date();
 let lastDate = new Date();
@@ -407,6 +420,8 @@ const handleFileAndInitGraph = (file) => {
     // Clear orders history
     ordersHistory = [];
     numbDays = 0;
+    processedDays = 0;
+    processedCandles = 0;
     chartCandleIndex = 0;
     candleTimes = [];
     timeToIndex = new Map();
@@ -418,7 +433,7 @@ const handleFileAndInitGraph = (file) => {
     // Add visible class to loading element
     document.getElementById('loading-element').classList.add('visible');
 
-    // Read the CSV file just to get the first and last dates:
+    // Read the CSV file just to get the first and last dates and count total candles:
     const reader = new FileReader();
     reader.onload = (e) => {
       const text = e.target.result;
@@ -429,6 +444,7 @@ const handleFileAndInitGraph = (file) => {
 
       firstDate = firstLine.split('\t')[0];
       lastDate = lastLine.split('\t')[0];
+      totalCandles = lines.length - 1; // Subtract header line
 
       $firstDate.textContent = firstDate;
       $lastDate.textContent = lastDate;
@@ -509,6 +525,7 @@ const handleFileAndInitGraph = (file) => {
         }
 
         csvDataIndex += 1;
+        processedCandles += 1;
 
         parser.pause();
         // Dynamic infos:
@@ -576,6 +593,9 @@ document.addEventListener('DOMContentLoaded', () => {
   if ($chartSection) {
     $chartSection.classList.add('chart-expanded');
   }
+
+  // Initially disable Google Sheets button since there's no data yet
+  updateGoogleSheetsButtonState();
 
   // Extract URL parameters
   const urlParams = new URLSearchParams(window.location.search);
@@ -733,7 +753,7 @@ const initSciChart = (data) => {
       // Variables initialization for CSID:
       let rollingHighestHighDataSeries = null;
       let rollingLowestLowDataSeries = null;
-      const lookbackPeriod = 15;
+      const lookbackPeriod = 20; // 15
       const lookbackPeriodForCSIDHigh = lookbackPeriod;
       const lookbackPeriodForCSIDLow = 9;
       const highestHighLong = [];
@@ -1432,6 +1452,9 @@ const initSciChart = (data) => {
         $backTestingResult.value = result;
         $exportableCSVField.value = resultToCSV();
 
+        // Update Google Sheets button state after setting CSV field value
+        updateGoogleSheetsButtonState();
+
         // Update Profitability Chart ========================================
         /*
           window.existingChart.data.datasets[0].data.pop();
@@ -1486,10 +1509,41 @@ const initSciChart = (data) => {
               if (tradeTime && window.sciChartSurface) {
                 const unixTime = convertMT5DateToUnix(tradeTime);
                 const index = timeToIndex.get(unixTime);
-                const rangeMinIndex = index - 5; // Show 5 candles before
-                const rangeMaxIndex = index + 5; // Show 5 candles after
+                // Improved zoom: show more candles for better context (25 total instead of 10)
+                const candlesToShow = 25; // Total candles to display
+                const candlesBefore = Math.floor(candlesToShow / 2); // 12 candles before
+                const candlesAfter = candlesToShow - candlesBefore - 1; // 12 candles after
+                
+                const rangeMinIndex = Math.max(0, index - candlesBefore);
+                const rangeMaxIndex = Math.min(chartCandleIndex - 1, index + candlesAfter);
                 const xAxis = window.sciChartSurface.xAxes.get(0);
+                const yAxis = window.sciChartSurface.yAxes.get(0);
 
+                // Zoom to the trade index with better horizontal range
+                xAxis.visibleRange = new NumberRange(rangeMinIndex, rangeMaxIndex);
+
+                // Adjust Y-axis to show price range around the trade
+                // Get candles in the visible range to calculate price bounds
+                const visibleCandles = candlesFromBuffer.slice(-Math.min(candlesFromBuffer.length, candlesToShow));
+                if (visibleCandles.length > 0) {
+                  const prices = visibleCandles.flatMap(candle => [
+                    candle[EnumMT5OHLC.OPEN],
+                    candle[EnumMT5OHLC.HIGH], 
+                    candle[EnumMT5OHLC.LOW],
+                    candle[EnumMT5OHLC.CLOSE]
+                  ]);
+                  
+                  const minPrice = Math.min(...prices);
+                  const maxPrice = Math.max(...prices);
+                  const priceRange = maxPrice - minPrice;
+                  
+                  // Add 10% padding to the price range for better visibility
+                  const padding = priceRange * 0.1;
+                  const yMin = minPrice - padding;
+                  const yMax = maxPrice + padding;
+                  
+                  yAxis.visibleRange = new NumberRange(yMin, yMax);
+                }
                 // Zoom to the trade index
                 xAxis.visibleRange = new NumberRange(rangeMinIndex, rangeMaxIndex);
 
@@ -1937,16 +1991,17 @@ window.updateFileReadingProgression = updateFileReadingProgression;
 
 const updateDynamicInfos = (d) => {
   if (prevDate !== d[EnumMT5OHLC.DATE]) {
+    console.log(d[EnumMT5OHLC.DATE]);
+    processedDays++;
     $currentReadingDate.innerText = d[EnumMT5OHLC.DATE];
-
-    // Update progression bar:
-    const numberOfDays = Math.ceil(
-      (new Date(lastDate) - new Date(firstDate)) / (1000 * 60 * 60 * 24)
-    );
-    updateFileReadingProgression((numbDays * 100) / numberOfDays);
 
     animateActiveClass($currentReadingDate);
     prevDate = d[EnumMT5OHLC.DATE];
+  }
+
+  // Update progression bar for each candle processed:
+  if (totalCandles > 0) {
+    updateFileReadingProgression((processedCandles * 100) / totalCandles);
   }
 };
 
@@ -2094,3 +2149,6 @@ const sendToGoogleSheets = async () => {
 };
 
 $googleSendToSheetsBtn.addEventListener('click', sendToGoogleSheets);
+
+// Continuously update button state when CSV field content changes
+$exportableCSVField.addEventListener('input', updateGoogleSheetsButtonState);
