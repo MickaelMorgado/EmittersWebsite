@@ -35,3 +35,25 @@ This tool is designed for traders who want to develop, test, and refine algorith
 
 
 The interface balances visual charting, code-driven strategy customization, and data-driven performance feedback to streamline quantitative strategy development.
+
+## My-App (Next.js Portfolio/Hub)
+A Next.js application that serves as a central hub containing links to various sub-apps, tools, and pages created by the user.
+- **Technology Stack**: Next.js, React, TypeScript, TailwindCSS, Supabase, and other modern web technologies.
+- **Structure**: Built using Next.js App Router with individual pages for each sub-app/tool.
+- **Sub-Apps/Pages**:
+  - **About**: Information page.
+  - **Contact**: Contact form/page.
+  - **CryptoBot**: Cryptocurrency-related tool or bot.
+  - **Data Visualizer**: Tool for visualizing data.
+  - **EMF Detector**: Electromagnetic field detection tool.
+  - **GCode Timelapse**: Tool for GCode parsing and timelapse generation.
+  - **MemoGPT**: Memory or AI-related application.
+  - **Mika**: Personal portfolio page with 3D elements.
+  - **PNL Calendar**: Profit and Loss calendar visualization.
+  - **Printer Monitor**: 3D printer monitoring tool.
+  - **Services**: Services offered page.
+  - **Sounder**: Audio analysis and visualization tool.
+  - **Three.js Visualizer**: 3D visualization using Three.js.
+  - **Todo**: Task management application.
+- **Additional Component**: TTS Extension - A browser extension for text-to-speech functionality.
+- **APIs**: Includes API routes for configuration and main-camera functionality.
