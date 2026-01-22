@@ -169,22 +169,44 @@ export default function PCAIAssistant() {
   const [conversationLines, setConversationLines] = useState<string[]>([])
 
   // Audio objects for status change sounds
-  const statusChangeSound = new Audio('/tools/joseegn_ui_sound_select.wav')
-  const processingSound = new Audio('/tools/squirrel_404_click_tick.wav')
+  const [audioEnabled, setAudioEnabled] = useState(false)
+  const statusChangeSound = useRef<HTMLAudioElement | null>(null)
+  const processingSound = useRef<HTMLAudioElement | null>(null)
+
+  useEffect(() => {
+    // Initialize audio objects
+    statusChangeSound.current = new Audio('/joseegn_ui_sound_select.wav')
+    processingSound.current = new Audio('/squirrel_404_click_tick.wav')
+
+    // Enable audio on user interaction
+    const enableAudio = () => {
+      setAudioEnabled(true)
+      document.removeEventListener('click', enableAudio)
+      document.removeEventListener('keydown', enableAudio)
+    }
+
+    document.addEventListener('click', enableAudio)
+    document.addEventListener('keydown', enableAudio)
+
+    return () => {
+      document.removeEventListener('click', enableAudio)
+      document.removeEventListener('keydown', enableAudio)
+    }
+  }, [])
 
   // Play sound on status change
   useEffect(() => {
-    if (status !== 'Ready 🎨') {
+    if (status !== 'Ready 🎨' && audioEnabled && statusChangeSound.current && processingSound.current) {
       // Play different sound for processing vs other states
       if (status.includes('Processing')) {
-        processingSound.currentTime = 0
-        processingSound.play().catch(e => console.log('Audio play failed:', e))
+        processingSound.current.currentTime = 0
+        processingSound.current.play().catch(e => console.log('Audio play failed:', e))
       } else {
-        statusChangeSound.currentTime = 0
-        statusChangeSound.play().catch(e => console.log('Audio play failed:', e))
+        statusChangeSound.current.currentTime = 0
+        statusChangeSound.current.play().catch(e => console.log('Audio play failed:', e))
       }
     }
-  }, [status])
+  }, [status, audioEnabled])
 
   useEffect(() => {
     console.log('PC AI Assistant: Initializing Socket.io connection...')
