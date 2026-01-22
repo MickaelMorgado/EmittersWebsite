@@ -168,6 +168,24 @@ export default function PCAIAssistant() {
   const [inputMessage, setInputMessage] = useState('')
   const [conversationLines, setConversationLines] = useState<string[]>([])
 
+  // Audio objects for status change sounds
+  const statusChangeSound = new Audio('/tools/joseegn_ui_sound_select.wav')
+  const processingSound = new Audio('/tools/squirrel_404_click_tick.wav')
+
+  // Play sound on status change
+  useEffect(() => {
+    if (status !== 'Ready 🎨') {
+      // Play different sound for processing vs other states
+      if (status.includes('Processing')) {
+        processingSound.currentTime = 0
+        processingSound.play().catch(e => console.log('Audio play failed:', e))
+      } else {
+        statusChangeSound.currentTime = 0
+        statusChangeSound.play().catch(e => console.log('Audio play failed:', e))
+      }
+    }
+  }, [status])
+
   useEffect(() => {
     console.log('PC AI Assistant: Initializing Socket.io connection...')
 
