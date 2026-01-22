@@ -4,6 +4,7 @@
 - Initialize Project Memory Bank to cover the full repository scope.
 - Maintain detailed documentation for the Backtesting Tool.
 - **Implement Google Sheets Export**: Enable one-click export of backtesting results to a specific Google Sheet.
+- **PC AI Assistant App**: Created new standalone Node.js application with galaxy visualization inside `node-projects/my-app/pc-ai-assistant/`.
 
 ## Recent Changes
 - Expanded `projectbrief.md` to cover the Game Website.
