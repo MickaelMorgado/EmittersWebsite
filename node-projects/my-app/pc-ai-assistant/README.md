@@ -144,6 +144,46 @@ Type messages in the terminal where the voice server is running (Step 1).
 - **Animation Complexity**: Reduce movement calculations if needed
 - **Browser**: Use Chrome/Firefox for best WebGL performance
 
+## 🧠 Memory Bank System
+
+The PC AI Assistant includes an intelligent memory bank system that provides contextual information to enhance AI responses.
+
+### How It Works
+- **Automatic Context Loading**: Reads markdown/text files from the `memory-bank/` folder
+- **Smart Relevance Detection**: Analyzes user input to find relevant memories
+- **Dynamic Prompt Enhancement**: Includes relevant context in AI prompts for better responses
+
+### Memory Files
+Create markdown or text files in the `memory-bank/` folder:
+
+```
+memory-bank/
+├── personality.md     # AI character and personality traits
+├── capabilities.md    # Skills, expertise, and technical knowledge
+├── projects.md        # Current projects and development context
+├── finances.md        # Financial knowledge and investment principles
+└── [custom].md        # Any additional context files
+```
+
+### Keyword Triggers
+The system automatically includes memories based on keywords in user input:
+- **Personality**: "who are you", "personality", "character"
+- **Capabilities**: "what can you do", "skills", "programming"
+- **Projects**: "project", "development", "code"
+- **Finances**: "finance", "money", "invest", "stock", "market", "saving", "budget", "wealth"
+
+### Example Memory File
+```markdown
+# AI Personality & Character
+
+## Core Identity
+I am an advanced AI assistant with a cosmic, galaxy-themed personality.
+
+## Communication Style
+- Speak in a friendly, engaging manner
+- Use cosmic metaphors and space-related analogies
+```
+
 ## 📁 Project Structure
 
 ```
@@ -151,7 +191,11 @@ pc-ai-assistant/
 ├── package.json                 # Node.js dependencies and scripts
 ├── voice_ollama.js             # Main voice assistant server
 ├── README.md                   # Documentation
-└── public/                     # Static web files
+├── memory-bank/                # AI context and personality files
+│   ├── personality.md
+│   ├── capabilities.md
+│   └── projects.md
+└── public/                     # Static web files (legacy)
     ├── index.html              # Main HTML with Three.js setup
     └── visual.js               # Galaxy visualization engine
 ```

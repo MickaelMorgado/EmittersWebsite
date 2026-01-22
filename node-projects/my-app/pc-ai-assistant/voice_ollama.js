@@ -6,12 +6,84 @@ const { exec } = require('child_process');
 const readline = require('readline');
 const { createServer } = require('http');
 const { Server } = require('socket.io');
+const fs = require('fs');
+const path = require('path');
 
 const ollama = new Ollama();
 const app = express();
 const server = createServer(app);
 const io = new Server(server);
 const PORT = 3001;
+const MEMORY_BANK_DIR = path.join(__dirname, 'memory-bank');
+
+// Memory Bank Functions
+function loadMemoryFiles() {
+    const memoryFiles = {};
+    try {
+        if (fs.existsSync(MEMORY_BANK_DIR)) {
+            const files = fs.readdirSync(MEMORY_BANK_DIR);
+            files.forEach(file => {
+                if (file.endsWith('.md') || file.endsWith('.txt')) {
+                    const filePath = path.join(MEMORY_BANK_DIR, file);
+                    const content = fs.readFileSync(filePath, 'utf8');
+                    const key = path.parse(file).name;
+                    memoryFiles[key] = content;
+                }
+            });
+        }
+    } catch (error) {
+        console.error('Error loading memory files:', error);
+    }
+    return memoryFiles;
+}
+
+function findRelevantMemories(userInput, memoryFiles) {
+    const relevantMemories = [];
+    const input = userInput.toLowerCase();
+
+    // Keywords that trigger specific memories
+    const keywordMap = {
+        personality: ['who are you', 'personality', 'character', 'about you'],
+        capabilities: ['what can you do', 'skills', 'abilities', 'expertise', 'programming'],
+        projects: ['project', 'development', 'code', 'application', 'work'],
+        finances: ['finance', 'money', 'invest', 'stock', 'market', 'saving', 'budget', 'wealth', 'retirement', 'debt']
+    };
+
+    Object.keys(keywordMap).forEach(memoryKey => {
+        const keywords = keywordMap[memoryKey];
+        const hasRelevantKeyword = keywords.some(keyword => input.includes(keyword));
+
+        if (hasRelevantKeyword && memoryFiles[memoryKey]) {
+            relevantMemories.push({
+                key: memoryKey,
+                content: memoryFiles[memoryKey],
+                relevance: 1
+            });
+        }
+    });
+
+    // Always include personality for context
+    if (memoryFiles.personality && !relevantMemories.find(m => m.key === 'personality')) {
+        relevantMemories.push({
+            key: 'personality',
+            content: memoryFiles.personality,
+            relevance: 0.5
+        });
+    }
+
+    return relevantMemories.sort((a, b) => b.relevance - a.relevance);
+}
+
+function buildMemoryContext(relevantMemories) {
+    if (relevantMemories.length === 0) return '';
+
+    let context = '\n\nMEMORY CONTEXT:\n';
+    relevantMemories.forEach(memory => {
+        context += `--- ${memory.key.toUpperCase()} ---\n${memory.content}\n\n`;
+    });
+
+    return context;
+}
 
 // Cross-platform TTS
 function speak(text) {
@@ -49,11 +121,21 @@ async function transcribeOnce() {
 
 // AI conversation handler
 async function askOllama(userText) {
+    const aiCharacter = 'You are a helpful developer assistant, specialized in modern technology and web development';
+
     try {
-        const prompt = `System: Answer in 1-3 spoken-friendly sentences, plain text only.\n\nUser: ${userText}\n\nAssistant:`;
+        // Load and process memory bank
+        const memoryFiles = loadMemoryFiles();
+        const relevantMemories = findRelevantMemories(userText, memoryFiles);
+        const memoryContext = buildMemoryContext(relevantMemories);
+
+        console.log(`Memory: Found ${relevantMemories.length} relevant memory files`);
+
+        // Build enhanced prompt with memory context
+        const prompt = `System: Answer in 1-3 spoken-friendly sentences, plain text only.\n\nYou: ${aiCharacter}${memoryContext}\n\nUser: ${userText}\n\nAssistant:`;
 
         let fullResponse = '';
-        const stream = await ollama.generate('phi3:mini', prompt);
+        const stream = await ollama.generate('llama2:7b', prompt);
 
         for await (const token of stream) {
             fullResponse += token;
