@@ -177,11 +177,11 @@ The system automatically includes memories based on keywords in user input:
 # AI Personality & Character
 
 ## Core Identity
-I am an advanced AI assistant with a cosmic, galaxy-themed personality.
+I am an advanced AI assistant with a tech and pragmatic personality.
 
 ## Communication Style
 - Speak in a friendly, engaging manner
-- Use cosmic metaphors and space-related analogies
+- Use tech and real world comic analogies
 ```
 
 ## 📁 Project Structure
