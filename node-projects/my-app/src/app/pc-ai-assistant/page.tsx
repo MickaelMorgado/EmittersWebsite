@@ -302,13 +302,17 @@ export default function PCAIAssistant() {
       </div>
 
       {/* Conversation Text Display */}
-      <div className="conversation-container">
+      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center z-20">
         {conversationLines.slice(-10).map((line, index) => (
           <div
             key={conversationLines.length - 10 + index}
-            className="conversation-line"
+            className="text-white text-2xl font-bold mb-2 transition-all duration-500"
             style={{
               opacity: 1 - (index * 0.1),
+              background: 'linear-gradient(to bottom, #ffffff 0%, #ffffff 20%, #cccccc 40%, #999999 60%, #666666 80%, #000000 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text'
             }}
           >
             {line}
