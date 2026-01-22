@@ -179,6 +179,9 @@ async function main() {
         const input = await recognizeSpeech();
 
         console.log(`DEBUG: Recognized speech: "${input}"`);
+        if (input.trim()) {
+            io.emit('user_speech', input);
+        }
 
         if (input.toLowerCase() === 'quit' || input.toLowerCase() === 'q') {
             io.emit('ai_response_end');
@@ -203,6 +206,7 @@ async function main() {
 
         // Speaking phase
         await new Promise(resolve => setTimeout(resolve, 500)); // Small delay before starting speech
+        io.emit('ai_response', aiResponse);
         io.emit('ai_response_start');
         console.log('EMITTED: ai_response_start (turning green)');
         await speak(aiResponse);
