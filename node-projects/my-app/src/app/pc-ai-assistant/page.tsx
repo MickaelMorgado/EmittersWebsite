@@ -256,11 +256,8 @@ export default function PCAIAssistant() {
   }
 
   const addConversationText = (text: string) => {
-    // Split text into sentences
-    const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0).map(s => s.trim())
-
-    // Add sentences to conversation
-    setConversationLines(prev => [...prev, ...sentences])
+    // Add full text as single line
+    setConversationLines(prev => [...prev, text])
   }
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
