@@ -21,7 +21,7 @@ def recognize_speech():
         r.adjust_for_ambient_noise(source, duration=1)
         print("DEBUG: Starting to listen for sound...", file=sys.stderr)
         try:
-            audio = r.listen(source, timeout=10, phrase_time_limit=10)
+            audio = r.listen(source, timeout=10, phrase_time_limit=20)
             print("DEBUG: Audio captured, now interpreting...", file=sys.stderr)
             text = r.recognize_google(audio)
             print(f"DEBUG: Interpreted text: '{text}'", file=sys.stderr)
