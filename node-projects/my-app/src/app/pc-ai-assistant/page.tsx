@@ -166,6 +166,7 @@ export default function PCAIAssistant() {
   const [animationState, setAnimationState] = useState<'idle' | 'listening' | 'processing' | 'speaking'>('idle')
   const [particleColor, setParticleColor] = useState('#ffffff')
   const [inputMessage, setInputMessage] = useState('')
+  const [conversationLines, setConversationLines] = useState<string[]>([])
 
   useEffect(() => {
     console.log('PC AI Assistant: Initializing Socket.io connection...')
@@ -222,6 +223,17 @@ export default function PCAIAssistant() {
         setStatus('Ready 🎨')
       })
 
+      // Conversation text events
+      newSocket.on('user_speech', (text: string) => {
+        console.log('PC AI Assistant: User speech received:', text)
+        addConversationText(`You: ${text}`)
+      })
+
+      newSocket.on('ai_response', (text: string) => {
+        console.log('PC AI Assistant: AI response text received:', text)
+        addConversationText(`AI: ${text}`)
+      })
+
     } catch (error) {
       console.error('PC AI Assistant: Error initializing socket:', error)
       setStatus('Socket Error ❌')
@@ -241,6 +253,28 @@ export default function PCAIAssistant() {
       socket.emit('message', inputMessage.trim())
       setInputMessage('')
     }
+  }
+
+  const addConversationText = (text: string) => {
+    // Split text into lines of 1-5 words
+    const words = text.split(' ')
+    const lines: string[] = []
+    let currentLine: string[] = []
+
+    words.forEach(word => {
+      currentLine.push(word)
+      if (currentLine.length >= 5) {
+        lines.push(currentLine.join(' '))
+        currentLine = []
+      }
+    })
+
+    if (currentLine.length > 0) {
+      lines.push(currentLine.join(' '))
+    }
+
+    // Add lines to conversation
+    setConversationLines(prev => [...prev, ...lines])
   }
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -265,6 +299,21 @@ export default function PCAIAssistant() {
         <p className="text-gray-400 text-sm font-light drop-shadow-md">
           Voice-Activated Neural Network
         </p>
+      </div>
+
+      {/* Conversation Text Display */}
+      <div className="conversation-container">
+        {conversationLines.slice(-10).map((line, index) => (
+          <div
+            key={conversationLines.length - 10 + index}
+            className="conversation-line"
+            style={{
+              opacity: 1 - (index * 0.1),
+            }}
+          >
+            {line}
+          </div>
+        ))}
       </div>
 
       {/* 3D Canvas */}
