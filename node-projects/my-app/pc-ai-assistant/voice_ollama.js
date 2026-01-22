@@ -87,8 +87,8 @@ function buildMemoryContext(relevantMemories) {
 // Cross-platform TTS
 function speak(text) {
     return new Promise((resolve) => {
-        // Sanitize text for TTS - remove emojis, backticks, asterisks, and escape single quotes
-        const sanitizedText = text.replace(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '').replace(/`/g, '').replace(/\*/g, '').replace(/'/g, "''");
+        // Sanitize text for TTS - remove emojis, backticks, asterisks, action descriptions, and escape single quotes
+        const sanitizedText = text.replace(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '').replace(/\*[^*]+\*/g, '').replace(/`/g, '').replace(/\*/g, '').replace(/'/g, "''");
 
         const platform = process.platform;
         let command;
