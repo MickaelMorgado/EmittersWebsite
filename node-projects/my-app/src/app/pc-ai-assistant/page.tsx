@@ -256,25 +256,11 @@ export default function PCAIAssistant() {
   }
 
   const addConversationText = (text: string) => {
-    // Split text into lines of 1-5 words
-    const words = text.split(' ')
-    const lines: string[] = []
-    let currentLine: string[] = []
+    // Split text into sentences
+    const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0).map(s => s.trim())
 
-    words.forEach(word => {
-      currentLine.push(word)
-      if (currentLine.length >= 5) {
-        lines.push(currentLine.join(' '))
-        currentLine = []
-      }
-    })
-
-    if (currentLine.length > 0) {
-      lines.push(currentLine.join(' '))
-    }
-
-    // Add lines to conversation
-    setConversationLines(prev => [...prev, ...lines])
+    // Add sentences to conversation
+    setConversationLines(prev => [...prev, ...sentences])
   }
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -308,11 +294,7 @@ export default function PCAIAssistant() {
             key={conversationLines.length - 10 + index}
             className="text-white text-2xl font-bold mb-2 transition-all duration-500"
             style={{
-              opacity: 1 - (index * 0.1),
-              background: 'linear-gradient(to top, #ffffff 0%, #ffffff 20%, #cccccc 40%, #999999 60%, #666666 80%, #000000 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text'
+              opacity: index * 0.1,
             }}
           >
             {line}
