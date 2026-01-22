@@ -166,6 +166,16 @@ export default function Home() {
               </CardContent>
             </Card>
           </Link>
+          <Link href="/pc-ai-assistant" className="h-full">
+            <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
+              <CardHeader>
+                <CardTitle>PC AI Assistant</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">Voice-activated AI assistant with real-time galaxy visualization and speech-reactive animations</p>
+              </CardContent>
+            </Card>
+          </Link>
         </div>
       </section>
     </div>
