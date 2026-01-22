@@ -285,14 +285,17 @@ export default function PCAIAssistant() {
       </div>
 
       {/* Conversation Text Display */}
-      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center z-20">
+      <div
+        className="fixed bottom-[50%] left-1/2 transform -translate-x-1/2 text-center z-20 flex flex-col justify-end"
+        style={{
+          maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 30%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0.2) 70%, rgba(0,0,0,0) 100%)',
+          WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 30%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0.2) 70%, rgba(0,0,0,0) 100%)'
+        }}
+      >
         {conversationLines.slice(-10).map((line, index) => (
           <div
             key={conversationLines.length - 10 + index}
-            className="text-white text-2xl font-bold mb-2 transition-all duration-500"
-            style={{
-              opacity: index * 0.1,
-            }}
+            className="text-white text-sm font-bold mb-2 transition-all duration-500"
           >
             {line}
           </div>
