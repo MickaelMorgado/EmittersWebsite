@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import io from 'socket.io-client';
-import './App.css';
 
-function App() {
+const PcAiAssistant: React.FC = () => {
   const [status, setStatus] = useState('idle');
-  const [conversationLines, setConversationLines] = useState([]);
+  const [conversationLines, setConversationLines] = useState<string[]>([]);
 
   useEffect(() => {
     // Connect to the voice assistant server
@@ -31,11 +30,11 @@ function App() {
       setStatus('idle');
     });
 
-    socket.on('user_speech', (text) => {
+    socket.on('user_speech', (text: string) => {
       addConversationText(`You: ${text}`);
     });
 
-    socket.on('ai_response', (text) => {
+    socket.on('ai_response', (text: string) => {
       addConversationText(`AI: ${text}`);
     });
 
@@ -44,11 +43,11 @@ function App() {
     };
   }, []);
 
-  const addConversationText = (text) => {
+  const addConversationText = (text: string) => {
     // Split text into lines of 1-5 words
     const words = text.split(' ');
-    const lines = [];
-    let currentLine = [];
+    const lines: string[] = [];
+    let currentLine: string[] = [];
 
     words.forEach(word => {
       currentLine.push(word);
@@ -76,15 +75,42 @@ function App() {
   };
 
   return (
-    <div className="App">
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      width: '100vw',
+      height: '100vh',
+      backgroundColor: '#000',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontFamily: 'Arial, sans-serif',
+      color: '#fff'
+    }}>
       {/* Conversation Text Display */}
-      <div className="conversation-container">
+      <div style={{
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        textAlign: 'center',
+        zIndex: 10,
+        background: 'linear-gradient(to bottom, #ffffff 0%, #ffffff 20%, #cccccc 40%, #999999 60%, #666666 80%, #000000 100%)',
+        WebkitBackgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+        backgroundClip: 'text'
+      }}>
         {conversationLines.slice(-10).map((line, index) => (
           <div
             key={conversationLines.length - 10 + index}
-            className="conversation-line"
             style={{
-              opacity: 1 - (index * 0.1),
+              fontSize: '25px',
+              fontWeight: 'bold',
+              margin: '5px 0',
+              color: '#ffffff',
+              transition: 'all 0.5s ease-in-out'
             }}
           >
             {line}
@@ -93,14 +119,23 @@ function App() {
       </div>
 
       {/* Status Badge */}
-      <div
-        className="status-badge"
-        style={{ backgroundColor: getStatusColor() }}
-      >
+      <div style={{
+        position: 'absolute',
+        bottom: '20px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        backgroundColor: getStatusColor(),
+        color: '#000',
+        padding: '10px 20px',
+        borderRadius: '20px',
+        fontSize: '14px',
+        fontWeight: 'bold',
+        zIndex: 20
+      }}>
         {status.toUpperCase()}
       </div>
     </div>
   );
-}
+};
 
-export default App;
+export default PcAiAssistant;
