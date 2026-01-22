@@ -24,13 +24,13 @@ function Galaxy({ count, spacing, color, animationState }: GalaxyProps) {
   const getAnimationParams = () => {
     switch (animationState) {
       case 'listening':
-        return { speed: 0.015, multiplier: 2, rotationSpeed: 0.015 }
+        return { speed: 0.002, multiplier: 1, rotationSpeed: 0.002 }
       case 'processing':
         return { speed: 0.004, multiplier: 0.3, rotationSpeed: 0.004 }
       case 'speaking':
-        return { speed: 0.012, multiplier: 6, rotationSpeed: 0.012 }
+        return { speed: 0.010, multiplier: 6, rotationSpeed: 0.010 }
       default: // idle
-        return { speed: 0.001, multiplier: 1, rotationSpeed: 0.001 }
+        return { speed: 0.0002, multiplier: 4, rotationSpeed: 0.0002 }
     }
   }
 
@@ -85,9 +85,9 @@ function Galaxy({ count, spacing, color, animationState }: GalaxyProps) {
         dummy.matrix.decompose(dummy.position, dummy.quaternion, dummy.scale)
 
         // Movement with multiplier
-        const offsetX = Math.sin(time * 0.5 + i * 0.1) * 0.5 * 0.01 * multiplier
-        const offsetY = Math.cos(time * 0.3 + i * 0.15) * 0.3 * 0.01 * multiplier
-        const offsetZ = Math.sin(time * 0.7 + i * 0.05) * 0.4 * 0.01 * multiplier
+        const offsetX = Math.sin(time * 0.5 + i * 0.1) * 0.5 * 5 * multiplier
+        const offsetY = Math.cos(time * 0.3 + i * 0.15) * 0.3 * 0.5 * multiplier
+        const offsetZ = Math.sin(time * 0.7 + i * 0.05) * 0.4 * 1.5 * multiplier
 
         dummy.position.x += offsetX
         dummy.position.y += offsetY
@@ -270,7 +270,7 @@ export default function PCAIAssistant() {
       {/* 3D Canvas */}
       <div className="absolute inset-0">
         <Canvas
-          camera={{ position: [0, 20, 50], fov: 60, near: 1.0 }}
+          camera={{ position: [0, 20, 75], fov: 60, near: 1.0 }}
           gl={{
             antialias: true,
             alpha: false,
@@ -309,7 +309,7 @@ export default function PCAIAssistant() {
               enableZoom={true}
               enableRotate={true}
               autoRotate={true}
-              autoRotateSpeed={animationState === 'listening' ? 0.2 : 1.0}
+              autoRotateSpeed={animationState === 'listening' ? 0.02 : 0.5}
             />
 
             {/* Post-processing Effects */}
