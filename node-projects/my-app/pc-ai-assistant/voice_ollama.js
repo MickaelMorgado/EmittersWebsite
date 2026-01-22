@@ -3,7 +3,6 @@
 const { Ollama } = require('ollama');
 const express = require('express');
 const { exec } = require('child_process');
-const readline = require('readline');
 const { createServer } = require('http');
 const { Server } = require('socket.io');
 const fs = require('fs');
@@ -87,34 +86,43 @@ function buildMemoryContext(relevantMemories) {
 
 // Cross-platform TTS
 function speak(text) {
-    const platform = process.platform;
-    let command;
+    return new Promise((resolve) => {
+        // Sanitize text for TTS - remove emojis, backticks, asterisks, and escape single quotes
+        const sanitizedText = text.replace(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '').replace(/`/g, '').replace(/\*/g, '').replace(/'/g, "''");
 
-    if (platform === 'darwin') {
-        command = `say "${text}"`;
-    } else if (platform === 'win32') {
-        command = `powershell -c "Add-Type -AssemblyName System.Speech; (New-Object System.Speech.Synthesis.SpeechSynthesizer).Speak('${text}')";`;
-    } else {
-        command = `espeak "${text}"`;
-    }
+        const platform = process.platform;
+        let command;
 
-    exec(command, (error) => {
-        if (error) console.error('TTS Error:', error);
+        if (platform === 'darwin') {
+            command = `say "${sanitizedText}"`;
+        } else if (platform === 'win32') {
+            const psCommand = `Add-Type -AssemblyName System.Speech; (New-Object System.Speech.Synthesis.SpeechSynthesizer).Speak('${sanitizedText}')`;
+            const encoded = Buffer.from(psCommand, 'utf16le').toString('base64');
+            command = `powershell -EncodedCommand ${encoded}`;
+        } else {
+            command = `espeak "${sanitizedText}"`;
+        }
+
+        console.log('TTS Command:', command);
+        exec(command, (error) => {
+            if (error) console.error('TTS Error:', error);
+            resolve();
+        });
     });
 }
 
-// Terminal input handler
-async function transcribeOnce() {
+// Cross-platform speech recognition
+async function recognizeSpeech() {
     return new Promise((resolve) => {
-        const rl = readline.createInterface({
-            input: process.stdin,
-            output: process.stdout
-        });
-
-        console.log('Listening... (type your message and press Enter)');
-        rl.question('', (answer) => {
-            rl.close();
-            resolve(answer);
+        const command = 'python speech_recog.py';
+        exec(command, { cwd: __dirname }, (error, stdout, stderr) => {
+            console.log('STDERR:', stderr);
+            if (error) {
+                console.error('Speech Recognition Error:', error);
+                resolve('');
+            } else {
+                resolve(stdout.trim());
+            }
         });
     });
 }
@@ -132,7 +140,7 @@ async function askOllama(userText) {
         console.log(`Memory: Found ${relevantMemories.length} relevant memory files`);
 
         // Build enhanced prompt with memory context
-        const prompt = `System: Answer in 1-3 spoken-friendly sentences, plain text only.\n\nYou: ${aiCharacter}${memoryContext}\n\nUser: ${userText}\n\nAssistant:`;
+        const prompt = `System: Answer in 1-2 brief, spoken-friendly sentences, plain text only. Keep it concise and conversational.\n\nYou: ${aiCharacter}${memoryContext}\n\nUser: ${userText}\n\nAssistant:`;
 
         let fullResponse = '';
         const stream = await ollama.generate('llama2:7b', prompt);
@@ -168,16 +176,18 @@ async function main() {
         io.emit('speech_start');
         console.log('EMITTED: speech_start (ready for input)');
 
-        const input = await transcribeOnce();
+        const input = await recognizeSpeech();
 
-        if (input.toLowerCase() === 'q') {
+        console.log(`DEBUG: Recognized speech: "${input}"`);
+
+        if (input.toLowerCase() === 'quit' || input.toLowerCase() === 'q') {
             io.emit('ai_response_end');
             speak('Goodbye!');
             process.exit(0);
         }
 
         if (!input.trim()) {
-            io.emit('speech_end');
+            io.emit('idle');
             continue;
         }
 
@@ -186,29 +196,21 @@ async function main() {
         console.log('EMITTED: speech_end (processing)');
 
         console.log(`You: ${input}`);
+        console.log('DEBUG: Sending to AI for processing...');
         const aiResponse = await askOllama(input);
         console.log(`AI: ${aiResponse}`);
-
-        // Calculate dynamic speaking duration
-        const wordCount = aiResponse.split(' ').length;
-        const speakingDuration = Math.min(2000 + (wordCount * 250), 12000);
-        const totalWaitDuration = speakingDuration + 1000;
+        console.log(`DEBUG: AI response received: "${aiResponse}"`);
 
         // Speaking phase
-        setTimeout(() => {
-            io.emit('ai_response_start');
-            console.log('EMITTED: ai_response_start (turning green)');
-            speak(aiResponse);
-        }, 500);
+        await new Promise(resolve => setTimeout(resolve, 500)); // Small delay before starting speech
+        io.emit('ai_response_start');
+        console.log('EMITTED: ai_response_start (turning green)');
+        await speak(aiResponse);
+        io.emit('ai_response_end');
+        console.log('EMITTED: ai_response_end (back to white)');
 
-        // End speaking phase
-        setTimeout(() => {
-            io.emit('ai_response_end');
-            console.log('EMITTED: ai_response_end (back to white)');
-        }, speakingDuration + 500);
-
-        // Wait for complete cycle before next interaction
-        await new Promise(resolve => setTimeout(resolve, totalWaitDuration));
+        // Small delay before next listening phase
+        await new Promise(resolve => setTimeout(resolve, 500));
     }
 }
 
