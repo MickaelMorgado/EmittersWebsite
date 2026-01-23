@@ -166,6 +166,47 @@ export default function PCAIAssistant() {
   const [animationState, setAnimationState] = useState<'idle' | 'listening' | 'processing' | 'speaking'>('idle')
   const [particleColor, setParticleColor] = useState('#ffffff')
   const [inputMessage, setInputMessage] = useState('')
+  const [conversationLines, setConversationLines] = useState<string[]>([])
+
+  // Audio objects for status change sounds
+  const [audioEnabled, setAudioEnabled] = useState(false)
+  const statusChangeSound = useRef<HTMLAudioElement | null>(null)
+  const processingSound = useRef<HTMLAudioElement | null>(null)
+
+  useEffect(() => {
+    // Initialize audio objects
+    statusChangeSound.current = new Audio('/joseegn_ui_sound_select.wav')
+    processingSound.current = new Audio('/squirrel_404_click_tick.wav')
+
+    // Enable audio on user interaction
+    const enableAudio = () => {
+      setAudioEnabled(true)
+      document.removeEventListener('click', enableAudio)
+      document.removeEventListener('keydown', enableAudio)
+    }
+
+    document.addEventListener('click', enableAudio)
+    document.addEventListener('keydown', enableAudio)
+
+    return () => {
+      document.removeEventListener('click', enableAudio)
+      document.removeEventListener('keydown', enableAudio)
+    }
+  }, [])
+
+  // Play sound on status change
+  useEffect(() => {
+    if (status !== 'Ready 🎨' && audioEnabled && statusChangeSound.current && processingSound.current) {
+      // Play different sound for processing vs other states
+      if (status.includes('Processing')) {
+        processingSound.current.currentTime = 0
+        processingSound.current.play().catch(e => console.log('Audio play failed:', e))
+      } else {
+        statusChangeSound.current.currentTime = 0
+        statusChangeSound.current.play().catch(e => console.log('Audio play failed:', e))
+      }
+    }
+  }, [status, audioEnabled])
 
   useEffect(() => {
     console.log('PC AI Assistant: Initializing Socket.io connection...')
@@ -222,6 +263,17 @@ export default function PCAIAssistant() {
         setStatus('Ready 🎨')
       })
 
+      // Conversation text events
+      newSocket.on('user_speech', (text: string) => {
+        console.log('PC AI Assistant: User speech received:', text)
+        addConversationText(`You: ${text}`)
+      })
+
+      newSocket.on('ai_response', (text: string) => {
+        console.log('PC AI Assistant: AI response text received:', text)
+        addConversationText(`AI: ${text}`)
+      })
+
     } catch (error) {
       console.error('PC AI Assistant: Error initializing socket:', error)
       setStatus('Socket Error ❌')
@@ -243,6 +295,11 @@ export default function PCAIAssistant() {
     }
   }
 
+  const addConversationText = (text: string) => {
+    // Add full text as single line
+    setConversationLines(prev => [...prev, text])
+  }
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
@@ -252,11 +309,6 @@ export default function PCAIAssistant() {
 
   return (
     <div className="relative w-full h-screen bg-black overflow-hidden">
-      {/* Status Display */}
-      <div className="absolute top-5 left-5 z-10 bg-black/30 backdrop-blur-md border border-white/10 rounded-full px-4 py-2">
-        <span className="text-white text-lg font-light">{status}</span>
-      </div>
-
       {/* Title */}
       <div className="absolute top-5 right-5 z-10 text-right">
         <h1 className="text-white text-2xl font-semibold drop-shadow-lg">
@@ -266,6 +318,30 @@ export default function PCAIAssistant() {
           Voice-Activated Neural Network
         </p>
       </div>
+
+      {/* Conversation Text Display */}
+      <div
+        className="fixed bottom-[50%] top-[0%] left-1/2 transform -translate-x-1/2 text-center z-20 flex flex-col justify-end"
+        style={{
+          maskImage: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 60%, rgba(0,0,0,0) 100%)',
+          WebkitMaskImage: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 60%, rgba(0,0,0,0) 100%)'
+        }}
+      >
+        {conversationLines.slice(-10).map((line, index) => (
+          <div
+            key={conversationLines.length - 10 + index}
+            className="text-white text-lg font-light mb-8 transition-all duration-500"
+          >
+            {line}
+          </div>
+        ))}
+      </div>
+
+      {/* Status Display */}
+      <div className="fixed bottom-[40%] left-1/2 transform -translate-x-1/2 z-10 bg-black/30 backdrop-blur-md border border-white/10 rounded-full px-4 py-2">
+        <span className="text-white text-lg font-light">{status}</span>
+      </div>
+
 
       {/* 3D Canvas */}
       <div className="absolute inset-0">
@@ -318,7 +394,7 @@ export default function PCAIAssistant() {
                 luminanceThreshold={0}
                 luminanceSmoothing={1}
                 height={100}
-                intensity={10}
+                intensity={100}
               />
               <Noise opacity={0.03} />
               <Vignette
