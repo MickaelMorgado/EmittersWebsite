@@ -3,12 +3,14 @@
 import { Environment, OrbitControls } from '@react-three/drei';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Bloom, EffectComposer } from '@react-three/postprocessing';
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import Sidebar from '../../components/sidebar';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { GCodePoint, parseGCode } from './gcodeParser';
+import { loadSTLModel, setupSTLModelForVisualization } from './stlLoader';
+
 
 function GCodeVisualizer({ points, isPlaying, speed, progress, onProgressChange }: {
   points: GCodePoint[],
@@ -83,7 +85,7 @@ function GCodeVisualizer({ points, isPlaying, speed, progress, onProgressChange 
     const geometry = new THREE.BufferGeometry();
     const material = new THREE.LineBasicMaterial({
       color: 0xffffff,
-      opacity: 0.01, // Will be set to 1.0 when drawing positive extrusion
+      opacity: 1, // Will be set to 1.0 when drawing positive extrusion
       transparent: true,
       depthTest: false,
       depthWrite: false
@@ -211,12 +213,45 @@ function GCodeVisualizer({ points, isPlaying, speed, progress, onProgressChange 
   );
 }
 
+function STLModelRenderer({ mesh, isVisible, isPlaying }: {
+  mesh: THREE.Mesh;
+  isVisible: boolean;
+  isPlaying: boolean;
+}) {
+  useFrame(() => {
+    if (mesh) {
+      const material = mesh.material as THREE.MeshStandardMaterial;
+      if (isVisible) {
+        material.opacity = 0.1;
+        material.color = new THREE.Color(0x333333);
+        mesh.visible = true;
+      } else {
+        mesh.visible = false;
+      }
+    }
+  });
+
+  return <primitive object={mesh} />;
+}
+
 export default function GCodeTimelapsePage() {
   const [gcodePoints, setGcodePoints] = useState<GCodePoint[]>([]);
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [speed, setSpeed] = useState<number>(1);
   const [progress, setProgress] = useState<number>(0);
+  const [stlModel, setStlModel] = useState<THREE.Mesh | null>(null);
+  const [isStlVisible, setIsStlVisible] = useState<boolean>(false);
+  const [stlFile, setStlFile] = useState<File | null>(null);
+  const [offsets, setOffsets] = useState({ x: 0, y: 0, z: 0 });
+  const [meshPosition, setMeshPosition] = useState({ x: -100, y: -65, z: 145 });
+
+  // Update mesh position when state changes
+  useEffect(() => {
+    if (stlModel) {
+      stlModel.position.set(meshPosition.x, meshPosition.y, meshPosition.z);
+    }
+  }, [stlModel, meshPosition]);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -232,6 +267,34 @@ export default function GCodeTimelapsePage() {
     };
     reader.readAsText(file);
   };
+
+  const handleSTLFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setStlFile(file);
+    
+    try {
+      // Load the STL model
+      const stlData = await loadSTLModel(file);
+      
+      // Set up the model for visualization with the current G-code points
+      const mesh = setupSTLModelForVisualization(stlData, gcodePoints, offsets);
+
+      // Set the mesh at initial position
+      mesh.position.set(meshPosition.x, meshPosition.y, meshPosition.z);
+      
+      // Add the mesh to the scene
+      setStlModel(mesh);
+      
+      // Make it visible by default
+      setIsStlVisible(true);
+    } catch (error) {
+      console.error('Error loading STL file:', error);
+      // You could add error handling UI here
+    }
+  };
+
 
   const handlePlayPause = () => {
     setIsPlaying(!isPlaying);
@@ -264,6 +327,82 @@ export default function GCodeTimelapsePage() {
               className="bg-white/10 border-white/20 text-white placeholder:text-white/60"
             />
           </div>
+
+          {/* STL File Upload */}
+          <div className="flex flex-col gap-1">
+            <label className="text-white text-xs">Upload STL Model</label>
+            <Input
+              type="file"
+              accept=".stl"
+              onChange={handleSTLFileUpload}
+              className="bg-white/10 border-white/20 text-white placeholder:text-white/60"
+            />
+          </div>
+
+          {/* STL Model Controls */}
+          {stlModel && (
+            <div className="flex flex-col gap-3">
+              <label className="text-white text-xs">STL Model Controls</label>
+              <div className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  id="stl-visibility-toggle"
+                  checked={isStlVisible}
+                  onChange={() => setIsStlVisible(!isStlVisible)}
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                />
+                <label htmlFor="stl-visibility-toggle" className="text-white text-sm cursor-pointer">
+                  Show STL Model
+                </label>
+              </div>
+              <div className="text-white text-xs">
+                <div>STL File: {stlFile?.name}</div>
+                <div>Visibility: {isStlVisible ? 'Visible' : 'Hidden'}</div>
+              </div>
+
+              {/* Position Controls 
+              <div className="flex flex-col gap-2">
+                <label className="text-white text-xs">Position Controls</label>
+                <div className="flex flex-col gap-1">
+                  <label className="text-white text-xs">X: {meshPosition.x}</label>
+                  <Input
+                    type="range"
+                    min="-500"
+                    max="500"
+                    step="1"
+                    value={meshPosition.x}
+                    onChange={(e) => setMeshPosition(prev => ({ ...prev, x: Number(e.target.value) }))}
+                    className="bg-white/10 border-white/20"
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-white text-xs">Y: {meshPosition.y}</label>
+                  <Input
+                    type="range"
+                    min="-500"
+                    max="500"
+                    step="1"
+                    value={meshPosition.y}
+                    onChange={(e) => setMeshPosition(prev => ({ ...prev, y: Number(e.target.value) }))}
+                    className="bg-white/10 border-white/20"
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-white text-xs">Z: {meshPosition.z}</label>
+                  <Input
+                    type="range"
+                    min="-500"
+                    max="500"
+                    step="1"
+                    value={meshPosition.z}
+                    onChange={(e) => setMeshPosition(prev => ({ ...prev, z: Number(e.target.value) }))}
+                    className="bg-white/10 border-white/20"
+                  />
+                </div>
+              </div>
+              */}
+            </div>
+          )}
 
           {/* Animation Controls */}
           <div className="flex flex-col gap-2">
@@ -337,7 +476,7 @@ export default function GCodeTimelapsePage() {
           style={{ background: 'black' }}
         >
           <Environment preset="studio" environmentIntensity={0.05} />
-          <ambientLight intensity={0.5} color={0xff0000} />
+          <ambientLight intensity={0.5} color={0xffffff} />
           <directionalLight position={[1, 1, 1]} intensity={1} />
 
           <GCodeVisualizer
@@ -347,6 +486,15 @@ export default function GCodeTimelapsePage() {
             progress={progress}
             onProgressChange={handleProgressChange}
           />
+
+          {/* STL Model */}
+          {stlModel && (
+            <STLModelRenderer
+              mesh={stlModel}
+              isVisible={isStlVisible}
+              isPlaying={isPlaying}
+            />
+          )}
 
           <OrbitControls enablePan={true} enableZoom={true} enableRotate={true} />
 

@@ -40,7 +40,8 @@
     "tailwind-merge": "^3.3.1",
     "tailwindcss-animate": "^1.0.7",
     "three": "^0.180.0",
-    "tone": "^15.1.22"
+    "tone": "^15.1.22",
+    "three-stdlib": "^2.29.4"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
