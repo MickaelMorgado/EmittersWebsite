@@ -1,0 +1,19 @@
+# Core Python packages for quantitative trading
+pandas>=1.5.0          # Data manipulation and analysis
+numpy>=1.21.0          # Numerical computing
+matplotlib>=3.5.0      # Basic plotting
+plotly>=5.10.0         # Interactive charts and equity curves
+jupyterlab>=3.4.0      # Interactive development environment
+
+# Backtesting and trading
+backtrader>=1.9.0      # Professional backtesting framework
+ta-lib>=0.4.0          # Technical analysis library (optional, for advanced indicators)
+
+# Utilities
+scipy>=1.7.0           # Scientific computing
+seaborn>=0.11.0        # Statistical data visualization
+tqdm>=4.64.0           # Progress bars for long calculations
+
+# Jupyter extensions (optional but recommended)
+ipywidgets>=7.6.0      # Interactive widgets in notebooks
+jupyter-dash>=0.4.0    # Jupyter integration for Plotly Dash
