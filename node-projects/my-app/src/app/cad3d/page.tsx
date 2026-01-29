@@ -1,11 +1,11 @@
 'use client'
-import { Grid, OrbitControls } from '@react-three/drei'
-import { Canvas } from '@react-three/fiber'
+import { Grid, OrbitControls, TransformControls } from '@react-three/drei'
+import { Canvas, useThree } from '@react-three/fiber'
 import { Box, Download, Edit3, Expand, MousePointer, Move, RotateCcw, Trash2 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
-import { STLExporter } from 'three/examples/jsm/exporters/STLExporter.js'
 import { OBJExporter } from 'three/examples/jsm/exporters/OBJExporter.js'
+import { STLExporter } from 'three/examples/jsm/exporters/STLExporter.js'
 
 export default function CAD3D() {
   const [objects, setObjects] = useState<Array<{type: string, position: [number, number, number], rotation: [number, number, number], scale: [number, number, number], color: string}>>([])
@@ -16,6 +16,7 @@ export default function CAD3D() {
   const [selectedObjectIndex, setSelectedObjectIndex] = useState<number | null>(null)
   const [isSelectionMode, setIsSelectionMode] = useState<boolean>(false)
   const [controlMode, setControlMode] = useState<'move' | 'rotate' | 'scale' | 'edit'>('move')
+  const [isTransformDragging, setIsTransformDragging] = useState<boolean>(false)
   
   const addPrimitive = (type: string) => {
     const newObject = {
@@ -35,6 +36,41 @@ export default function CAD3D() {
   const updateObject = (index: number, updates: Partial<typeof objects[0]>) => {
     setObjects(prev => prev.map((obj, i) => i === index ? { ...obj, ...updates } : obj))
   }
+
+  // Keyboard Shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignore if input is focused
+      if (document.activeElement?.tagName === 'INPUT') return
+
+      switch (e.key.toLowerCase()) {
+        case 'g': // Grab / Move
+          if (isSelectionMode) setControlMode('move')
+          break
+        case 'r': // Rotate
+          if (isSelectionMode) setControlMode('rotate')
+          break
+        case 's': // Scale
+          if (isSelectionMode) setControlMode('scale')
+          break
+        case 'escape': // Cancel / Deselect
+          setIsSelectionMode(false)
+          setSelectedObjectIndex(null)
+          break
+        case 'delete': // Delete
+        case 'backspace':
+          if (selectedObjectIndex !== null) {
+            removeObject(selectedObjectIndex)
+            setSelectedObjectIndex(null)
+            setIsSelectionMode(false)
+          }
+          break
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [selectedObjectIndex, isSelectionMode, removeObject])
 
   const exportSTL = () => {
     // Create a scene to hold all objects for export
@@ -339,7 +375,7 @@ export default function CAD3D() {
         <OrbitControls 
           enableDamping 
           dampingFactor={0.05} 
-          enabled={true}
+          enabled={!(selectedObjectIndex !== null && isSelectionMode && controlMode !== 'edit')}
         />
         <Grid 
           args={[20, 20]} 
@@ -358,12 +394,24 @@ export default function CAD3D() {
         {objects.map((obj, index) => (
           <Object3D 
             key={index} 
+            name={`object-${index}`}
             {...obj} 
             isSelected={selectedObjectIndex === index}
             onClick={() => isSelectionMode && setSelectedObjectIndex(index)}
             controlMode={controlMode}
           />
         ))}
+        
+        {/* Transform Controls - Only show when object is selected AND in selection mode AND not in edit mode */}
+        {selectedObjectIndex !== null && isSelectionMode && (
+          <SceneControls 
+            selectedObjectName={`object-${selectedObjectIndex}`}
+            controlMode={controlMode}
+            setIsTransformDragging={setIsTransformDragging}
+            updateObject={updateObject}
+            selectedIndex={selectedObjectIndex}
+          />
+        )}
         
       </Canvas>
 
@@ -452,7 +500,56 @@ export default function CAD3D() {
   )
 }
 
-function Object3D({ type, position, rotation, scale, color, isSelected, onClick, controlMode }: {type: string, position: [number, number, number], rotation: [number, number, number], scale: [number, number, number], color: string, isSelected?: boolean, onClick?: () => void, controlMode?: 'select' | 'move' | 'rotate' | 'scale' | 'edit'}) {
+function SceneControls({ 
+  selectedObjectName, 
+  controlMode, 
+  setIsTransformDragging, 
+  updateObject, 
+  selectedIndex 
+}: { 
+  selectedObjectName: string | null
+  controlMode: 'move' | 'rotate' | 'scale' | 'edit'
+  setIsTransformDragging: (val: boolean) => void
+  updateObject: (index: number, updates: any) => void
+  selectedIndex: number | null
+}) {
+  const { scene } = useThree()
+  const targetObject = selectedObjectName ? scene.getObjectByName(selectedObjectName) : undefined
+
+  if (!targetObject || controlMode === 'edit') return null
+
+  return (
+    <TransformControls
+      object={targetObject}
+      mode={controlMode === 'move' ? 'translate' : controlMode === 'rotate' ? 'rotate' : 'scale'}
+      space="local"
+      showX={true}
+      showY={true}
+      showZ={true}
+      enabled={true}
+      onMouseDown={() => setIsTransformDragging(true)}
+      onMouseUp={() => setIsTransformDragging(false)}
+      onObjectChange={(e) => {
+        if (e && selectedIndex !== null) {
+          // e.target is the TransformControls instance
+          // e.target.object is the object being transformed
+          const controls = e.target as any // casting to any to avoid strict type checks on internal properties if types are missing
+          const obj = controls.object
+          
+          if (obj) {
+            updateObject(selectedIndex, {
+              position: [obj.position.x, obj.position.y, obj.position.z],
+              rotation: [obj.rotation.x, obj.rotation.y, obj.rotation.z],
+              scale: [obj.scale.x, obj.scale.y, obj.scale.z]
+            })
+          }
+        }
+      }}
+    />
+  )
+}
+
+function Object3D({ name, type, position, rotation, scale, color, isSelected, onClick, controlMode }: {name: string, type: string, position: [number, number, number], rotation: [number, number, number], scale: [number, number, number], color: string, isSelected?: boolean, onClick?: () => void, controlMode?: 'select' | 'move' | 'rotate' | 'scale' | 'edit'}) {
   const meshRef = useRef<THREE.Mesh>(null)
   
   useEffect(() => {
@@ -479,6 +576,7 @@ function Object3D({ type, position, rotation, scale, color, isSelected, onClick,
         <group>
           <mesh 
             ref={meshRef}
+            name={name}
             position={position} 
             rotation={rotation} 
             scale={scale}
@@ -511,6 +609,7 @@ function Object3D({ type, position, rotation, scale, color, isSelected, onClick,
         <group>
           <mesh 
             ref={meshRef}
+            name={name}
             position={position} 
             rotation={rotation} 
             scale={scale}
@@ -543,6 +642,7 @@ function Object3D({ type, position, rotation, scale, color, isSelected, onClick,
         <group>
           <mesh 
             ref={meshRef}
+            name={name}
             position={position} 
             rotation={rotation} 
             scale={scale}
