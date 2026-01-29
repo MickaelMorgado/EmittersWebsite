@@ -18,6 +18,18 @@ export default function CAD3D() {
   const [controlMode, setControlMode] = useState<'move' | 'rotate' | 'scale' | 'edit'>('move')
   const [isTransformDragging, setIsTransformDragging] = useState<boolean>(false)
   
+  // Primary purple color variable for consistent theming (RGBA format)
+  const primaryColorHex = '#c8f65c'
+  const primaryColor = 'rgba(200, 246, 92, 1)'
+  const buttonTextColor = '#000000'
+  const buttonColor = '#000000'
+  const primaryButtonTextColor = '#000000'
+  const panelColor = 'rgba(0, 0, 0, 0.4)'
+  const panelPadding = '12px'
+  const panelBorderRadius = '8px'
+  const inputBackgroundColor = '#222222'
+  const inputBorderColor = '#333'
+  
   const addPrimitive = (type: string) => {
     const newObject = {
       type,
@@ -209,14 +221,18 @@ export default function CAD3D() {
   return (
     <div className="h-screen w-screen relative">
       {/* Toolbar */}
-      <div className="absolute top-4 left-4 bg-black bg-opacity-40 backdrop-blur-md p-3 rounded-lg text-white z-10">
-        <h2 className="text-sm font-semibold mb-3 text-purple-400">3D CAD Tools</h2>
+      <div className="absolute top-4 left-4" style={{ backgroundColor: panelColor, backdropFilter: 'blur(10px)', padding: panelPadding, borderRadius: panelBorderRadius, color: 'white', zIndex: 50 }}>
+        <h2 className="text-sm font-semibold mb-3" style={{ color: primaryColor }}>3D CAD Tools</h2>
         <div className="space-y-2">
           <button
             onClick={() => addPrimitive('box')}
             className={`w-full px-3 py-1.5 rounded text-xs font-medium transition-colors flex items-center gap-2 ${
-              selectedTool === 'box' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-700 hover:bg-gray-600'
+              selectedTool === 'box' ? '' : ''
             }`}
+            style={{
+              backgroundColor: selectedTool === 'box' ? primaryColor : buttonColor,
+              color: selectedTool === 'box' ? buttonTextColor : 'white'
+            }}
           >
             <Box size={14} />
             Add Box
@@ -224,8 +240,12 @@ export default function CAD3D() {
           <button
             onClick={() => addPrimitive('sphere')}
             className={`w-full px-3 py-1.5 rounded text-xs font-medium transition-colors flex items-center gap-2 ${
-              selectedTool === 'sphere' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-700 hover:bg-gray-600'
+              selectedTool === 'sphere' ? '' : ''
             }`}
+            style={{
+              backgroundColor: selectedTool === 'sphere' ? primaryColor : buttonColor,
+              color: selectedTool === 'sphere' ? buttonTextColor : 'white'
+            }}
           >
             <Box size={14} />
             Add Sphere
@@ -233,8 +253,12 @@ export default function CAD3D() {
           <button
             onClick={() => addPrimitive('cylinder')}
             className={`w-full px-3 py-1.5 rounded text-xs font-medium transition-colors flex items-center gap-2 ${
-              selectedTool === 'cylinder' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-700 hover:bg-gray-600'
+              selectedTool === 'cylinder' ? '' : ''
             }`}
+            style={{
+              backgroundColor: selectedTool === 'cylinder' ? primaryColor : buttonColor,
+              color: selectedTool === 'cylinder' ? buttonTextColor : 'white'
+            }}
           >
             <Box size={14} />
             Add Cylinder
@@ -243,14 +267,22 @@ export default function CAD3D() {
             <>
               <button
                 onClick={exportSTL}
-                className="w-full px-3 py-1.5 rounded text-xs font-medium bg-orange-600 hover:bg-orange-700 text-white transition-colors flex items-center gap-2"
+                className="w-full px-3 py-1.5 rounded text-xs font-medium transition-colors flex items-center gap-2"
+                style={{
+                  backgroundColor: buttonColor,
+                  color: 'white'
+                }}
               >
                 <Download size={14} />
                 Export STL
               </button>
               <button
                 onClick={exportOBJ}
-                className="w-full px-3 py-1.5 rounded text-xs font-medium bg-green-600 hover:bg-green-700 text-white transition-colors flex items-center gap-2"
+                className="w-full px-3 py-1.5 rounded text-xs font-medium transition-colors flex items-center gap-2"
+                style={{
+                  backgroundColor: buttonColor,
+                  color: 'white'
+                }}
               >
                 <Download size={14} />
                 Export OBJ
@@ -261,8 +293,8 @@ export default function CAD3D() {
       </div>
 
       {/* 3D Outline Panel */}
-      <div className="absolute top-4 right-4 bg-black bg-opacity-40 backdrop-blur-md p-2 rounded-lg text-white z-10 max-h-80 overflow-y-auto">
-        <h2 className="text-xs font-semibold mb-2 text-purple-400">3D Outline ({objects.length})</h2>
+      <div className="absolute top-4 right-4" style={{ backgroundColor: panelColor, backdropFilter: 'blur(10px)', padding: '8px', borderRadius: '8px', color: 'white', zIndex: 50, maxHeight: '320px', overflowY: 'auto' }}>
+        <h2 className="text-xs font-semibold mb-2" style={{ color: primaryColor }}>3D Outline ({objects.length})</h2>
         {objects.length === 0 ? (
           <p className="text-gray-400 text-xs">No objects yet</p>
         ) : (
@@ -271,12 +303,12 @@ export default function CAD3D() {
               key={index} 
               className={`mb-1 p-1.5 rounded transition-all duration-200 cursor-pointer ${
                 selectedObjectIndex === index 
-                  ? 'bg-blue-600/30 border border-blue-400/50' 
-                  : 'bg-gray-800 hover:bg-gray-700'
+                  ? `border-2 border-[${primaryColor}]` 
+                  : `hover:bg-[${primaryColorHex}]`
               }`}
+
               onClick={() => {
                 setSelectedObjectIndex(index)
-                // Switch to selection mode when clicking an object in 3D Outline panel
                 if (!isSelectionMode) {
                   setIsSelectionMode(true)
                 }
@@ -289,8 +321,8 @@ export default function CAD3D() {
                     style={{ backgroundColor: obj.color }}
                   />
                   <span className={`text-xs font-medium ${
-                    selectedObjectIndex === index ? 'text-blue-300' : 'text-gray-200'
-                  }`}>
+                    selectedObjectIndex === index ? 'text-purple-300' : 'text-gray-200'
+                  }`} style={{ color: selectedObjectIndex === index ? primaryColor : undefined }}>
                     {obj.type}
                   </span>
                 </div>
@@ -299,7 +331,13 @@ export default function CAD3D() {
                     e.stopPropagation() // Prevent selection when clicking delete
                     removeObject(index)
                   }}
-                  className="text-red-400 hover:text-red-300 transition-colors"
+                  className="transition-colors"
+                  style={{
+                    color: 'red',
+                    backgroundColor: buttonColor,
+                    padding: '2px 6px',
+                    borderRadius: '4px'
+                  }}
                 >
                   <Trash2 size={12} />
                 </button>
@@ -314,7 +352,13 @@ export default function CAD3D() {
                       placeholder="X"
                       value={obj.position[0]}
                       onChange={(e) => updateObject(index, { position: [parseFloat(e.target.value), obj.position[1], obj.position[2]] })}
-                      className="w-[100px] bg-gray-700 rounded px-0.5 py-0.5 text-xs"
+                      className="w-[100px] rounded px-0.5 py-0.5 text-xs"
+                      style={{
+                        backgroundColor: inputBackgroundColor,
+                        borderColor: inputBorderColor,
+                        borderWidth: '1px',
+                        color: 'white'
+                      }}
                     />
                   </div>
                   <div className="flex items-center gap-2">
@@ -324,7 +368,13 @@ export default function CAD3D() {
                       placeholder="Y"
                       value={obj.position[2]}
                       onChange={(e) => updateObject(index, { position: [obj.position[0], obj.position[1], parseFloat(e.target.value)] })}
-                      className="w-[100px] bg-gray-700 rounded px-0.5 py-0.5 text-xs"
+                      className="w-[100px] rounded px-0.5 py-0.5 text-xs"
+                      style={{
+                        backgroundColor: inputBackgroundColor,
+                        borderColor: inputBorderColor,
+                        borderWidth: '1px',
+                        color: 'white'
+                      }}
                     />
                   </div>
                   <div className="flex items-center gap-2">
@@ -334,7 +384,13 @@ export default function CAD3D() {
                       placeholder="Z"
                       value={obj.position[1]}
                       onChange={(e) => updateObject(index, { position: [obj.position[0], parseFloat(e.target.value), obj.position[2]] })}
-                      className="w-[100px] bg-gray-700 rounded px-0.5 py-0.5 text-xs"
+                      className="w-[100px] rounded px-0.5 py-0.5 text-xs"
+                      style={{
+                        backgroundColor: inputBackgroundColor,
+                        borderColor: inputBorderColor,
+                        borderWidth: '1px',
+                        color: 'white'
+                      }}
                     />
                   </div>
                 </div>
@@ -348,7 +404,13 @@ export default function CAD3D() {
                       const val = parseFloat(e.target.value)
                       updateObject(index, { scale: [val, val, val] })
                     }}
-                    className="w-[100px] bg-gray-700 rounded px-0.5 py-0.5 text-xs"
+                    className="w-[100px] rounded px-0.5 py-0.5 text-xs"
+                    style={{
+                      backgroundColor: inputBackgroundColor,
+                      borderColor: inputBorderColor,
+                      borderWidth: '1px',
+                      color: 'white'
+                    }}
                   />
                   <span className="text-xs text-gray-400">Color</span>
                   <input
@@ -356,6 +418,11 @@ export default function CAD3D() {
                     value={obj.color}
                     onChange={(e) => updateObject(index, { color: e.target.value })}
                     className="w-5 h-5 rounded-full overflow-hidden cursor-pointer"
+                    style={{
+                      backgroundColor: inputBackgroundColor,
+                      borderColor: inputBorderColor,
+                      borderWidth: '1px'
+                    }}
                   />
                 </div>
               </div>
@@ -375,7 +442,7 @@ export default function CAD3D() {
         <OrbitControls 
           enableDamping 
           dampingFactor={0.05} 
-          enabled={!(selectedObjectIndex !== null && isSelectionMode && controlMode !== 'edit')}
+          enabled={!(selectedObjectIndex !== null && isSelectionMode)}
         />
         <Grid 
           args={[20, 20]} 
@@ -416,7 +483,7 @@ export default function CAD3D() {
       </Canvas>
 
       {/* Control Tools - Center Bottom Toolbar */}
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 backdrop-blur-md p-3 rounded-xl text-white z-10 flex gap-3 items-center">
+      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2" style={{ backgroundColor: panelColor, backdropFilter: 'blur(10px)', padding: panelPadding, borderRadius: panelBorderRadius, color: 'white', zIndex: 50, display: 'flex', gap: '12px', alignItems: 'center' }}>
         {/* Select Tool */}
         <button
           onClick={() => {
@@ -427,11 +494,16 @@ export default function CAD3D() {
               setIsSelectionMode(true)
             }
           }}
-          className={`p-3 rounded-lg transition-all duration-200 flex flex-col items-center gap-1 ${
+            className={`p-3 rounded-lg transition-all duration-200 flex flex-col items-center gap-1 ${
             isSelectionMode 
-              ? 'bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-500/25' 
-              : 'bg-gray-700 hover:bg-gray-600'
+              ? '' 
+              : ''
           }`}
+            style={{
+            backgroundColor: isSelectionMode ? primaryColor : buttonColor,
+            color: isSelectionMode ? buttonTextColor : 'white',
+            boxShadow: isSelectionMode ? `0 0 15px rgba(200, 246, 92, 0.25), 0 0 30px rgba(200, 246, 92, 0.12)` : undefined
+          }}
           title="Select"
         >
           <MousePointer size={24} />
@@ -445,11 +517,16 @@ export default function CAD3D() {
             {/* Move Tool */}
             <button
               onClick={() => setControlMode('move')}
-              className={`p-3 rounded-lg transition-all duration-200 flex flex-col items-center gap-1 ${
+            className={`p-3 rounded-lg transition-all duration-200 flex flex-col items-center gap-1 ${
                 controlMode === 'move' 
-                  ? 'bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-500/25' 
-                  : 'bg-gray-700 hover:bg-gray-600'
+                  ? '' 
+                  : ''
               }`}
+              style={{
+                backgroundColor: controlMode === 'move' ? primaryColor : buttonColor,
+                color: controlMode === 'move' ? buttonTextColor : 'white',
+                boxShadow: controlMode === 'move' ? `0 0 15px rgba(200, 246, 92, 0.25), 0 0 30px rgba(200, 246, 92, 0.12)` : undefined
+              }}
               title="Move"
             >
               <Move size={24} />
@@ -458,11 +535,16 @@ export default function CAD3D() {
             {/* Rotate Tool */}
             <button
               onClick={() => setControlMode('rotate')}
-              className={`p-3 rounded-lg transition-all duration-200 flex flex-col items-center gap-1 ${
+            className={`p-3 rounded-lg transition-all duration-200 flex flex-col items-center gap-1 ${
                 controlMode === 'rotate' 
-                  ? 'bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-500/25' 
-                  : 'bg-gray-700 hover:bg-gray-600'
+                  ? '' 
+                  : ''
               }`}
+              style={{
+                backgroundColor: controlMode === 'rotate' ? primaryColor : buttonColor,
+                color: controlMode === 'rotate' ? buttonTextColor : 'white',
+                boxShadow: controlMode === 'rotate' ? `0 0 15px rgba(200, 246, 92, 0.25), 0 0 30px rgba(200, 246, 92, 0.12)` : undefined
+              }}
               title="Rotate"
             >
               <RotateCcw size={24} />
@@ -471,11 +553,16 @@ export default function CAD3D() {
             {/* Scale Tool */}
             <button
               onClick={() => setControlMode('scale')}
-              className={`p-3 rounded-lg transition-all duration-200 flex flex-col items-center gap-1 ${
+            className={`p-3 rounded-lg transition-all duration-200 flex flex-col items-center gap-1 ${
                 controlMode === 'scale' 
-                  ? 'bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-500/25' 
-                  : 'bg-gray-700 hover:bg-gray-600'
+                  ? '' 
+                  : ''
               }`}
+              style={{
+                backgroundColor: controlMode === 'scale' ? primaryColor : buttonColor,
+                color: controlMode === 'scale' ? buttonTextColor : 'white',
+                boxShadow: controlMode === 'scale' ? `0 0 15px rgba(200, 246, 92, 0.25), 0 0 30px rgba(200, 246, 92, 0.12)` : undefined
+              }}
               title="Scale"
             >
               <Expand size={24} />
@@ -484,11 +571,16 @@ export default function CAD3D() {
             {/* Edit Tool */}
             <button
               onClick={() => setControlMode('edit')}
-              className={`p-3 rounded-lg transition-all duration-200 flex flex-col items-center gap-1 ${
+            className={`p-3 rounded-lg transition-all duration-200 flex flex-col items-center gap-1 ${
                 controlMode === 'edit' 
-                  ? 'bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-500/25' 
-                  : 'bg-gray-700 hover:bg-gray-600'
+                  ? '' 
+                  : ''
               }`}
+              style={{
+                backgroundColor: controlMode === 'edit' ? primaryColor : buttonColor,
+                color: controlMode === 'edit' ? buttonTextColor : 'white',
+                boxShadow: controlMode === 'edit' ? `0 0 15px rgba(200, 246, 92, 0.25), 0 0 30px rgba(200, 246, 92, 0.12)` : undefined
+              }}
               title="Edit Vertices"
             >
               <Edit3 size={24} />
@@ -558,16 +650,6 @@ function Object3D({ name, type, position, rotation, scale, color, isSelected, on
     }
   }, [onClick])
 
-  // Create outline material for selected objects
-  const outlineMaterial = new THREE.MeshBasicMaterial({
-    color: 0xffffff,
-    wireframe: true,
-    transparent: true,
-    opacity: 0.5,
-    depthTest: false,
-    depthWrite: false
-  })
-
   const shouldShowOutline = isSelected
 
   switch (type) {
@@ -591,7 +673,7 @@ function Object3D({ name, type, position, rotation, scale, color, isSelected, on
               rotation={rotation} 
               scale={scale}
             >
-              <boxGeometry args={[1.05, 1.05, 1.05]} />
+              <boxGeometry args={[1, 1, 1]} />
               <meshBasicMaterial 
                 color={0xffffff} 
                 wireframe={true} 
@@ -624,7 +706,7 @@ function Object3D({ name, type, position, rotation, scale, color, isSelected, on
               rotation={rotation} 
               scale={scale}
             >
-              <sphereGeometry args={[0.525, 32, 32]} />
+              <sphereGeometry args={[0.5, 32, 32]} />
               <meshBasicMaterial 
                 color={0xffffff} 
                 wireframe={true} 
@@ -657,7 +739,7 @@ function Object3D({ name, type, position, rotation, scale, color, isSelected, on
               rotation={rotation} 
               scale={scale}
             >
-              <cylinderGeometry args={[0.525, 0.525, 1.05, 32]} />
+              <cylinderGeometry args={[0.5, 0.5, 1, 32]} />
               <meshBasicMaterial 
                 color={0xffffff} 
                 wireframe={true} 
