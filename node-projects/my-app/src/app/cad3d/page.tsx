@@ -1,0 +1,576 @@
+'use client'
+import { Grid, OrbitControls } from '@react-three/drei'
+import { Canvas } from '@react-three/fiber'
+import { Box, Download, Edit3, Expand, MousePointer, Move, RotateCcw, Trash2 } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import * as THREE from 'three'
+import { STLExporter } from 'three/examples/jsm/exporters/STLExporter.js'
+import { OBJExporter } from 'three/examples/jsm/exporters/OBJExporter.js'
+
+export default function CAD3D() {
+  const [objects, setObjects] = useState<Array<{type: string, position: [number, number, number], rotation: [number, number, number], scale: [number, number, number], color: string}>>([])
+  const [selectedTool, setSelectedTool] = useState('box')
+  const [isDragging, setIsDragging] = useState(false)
+  const [dragStart, setDragStart] = useState<[number, number] | null>(null)
+  const [dragEnd, setDragEnd] = useState<[number, number] | null>(null)
+  const [selectedObjectIndex, setSelectedObjectIndex] = useState<number | null>(null)
+  const [isSelectionMode, setIsSelectionMode] = useState<boolean>(false)
+  const [controlMode, setControlMode] = useState<'move' | 'rotate' | 'scale' | 'edit'>('move')
+  
+  const addPrimitive = (type: string) => {
+    const newObject = {
+      type,
+      position: [0, 0, 0] as [number, number, number],
+      rotation: [0, 0, 0] as [number, number, number],
+      scale: [1, 1, 1] as [number, number, number],
+      color: '#cccccc'
+    }
+    setObjects(prev => [...prev, newObject])
+  }
+
+  const removeObject = (index: number) => {
+    setObjects(prev => prev.filter((_, i) => i !== index))
+  }
+
+  const updateObject = (index: number, updates: Partial<typeof objects[0]>) => {
+    setObjects(prev => prev.map((obj, i) => i === index ? { ...obj, ...updates } : obj))
+  }
+
+  const exportSTL = () => {
+    // Create a scene to hold all objects for export
+    const scene = new THREE.Scene()
+    
+    // Add all objects to the scene using the same logic as the main scene
+    objects.forEach(obj => {
+      let geometry
+      switch (obj.type) {
+        case 'box':
+          geometry = new THREE.BoxGeometry(1, 1, 1)
+          break
+        case 'sphere':
+          geometry = new THREE.SphereGeometry(0.5, 32, 32)
+          break
+        case 'cylinder':
+          geometry = new THREE.CylinderGeometry(0.5, 0.5, 1, 32)
+          break
+        default:
+          return
+      }
+      
+      const mesh = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ color: obj.color }))
+      mesh.position.set(obj.position[0], obj.position[1], obj.position[2])
+      mesh.rotation.set(obj.rotation[0], obj.rotation[1], obj.rotation[2])
+      mesh.scale.set(obj.scale[0], obj.scale[1], obj.scale[2])
+      
+      // Apply transformations to geometry by baking them into the vertices
+      mesh.updateMatrixWorld(true)
+      geometry.applyMatrix4(mesh.matrixWorld)
+      
+      // Create a new mesh with the transformed geometry to ensure clean export
+      const transformedMesh = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ color: obj.color }))
+      scene.add(transformedMesh)
+    })
+    
+    // Fake rotate the scene to match OBJ coordinate system
+    // Rotate -90 degrees around X axis to convert Y-up to Z-up
+    scene.rotation.x = -Math.PI / 2
+    
+    // Use STLExporter for professional-grade export
+    const exporter = new STLExporter()
+    
+    // Export options
+    const options = {
+      binary: false, // Use ASCII format for better compatibility
+      includeNormals: true, // Include face normals
+      includeColors: false, // Don't include colors in STL
+      includeMaterials: false // Don't include materials in STL
+    }
+    
+    // Generate STL string
+    const stlString = exporter.parse(scene, options) as string
+    
+    // Log STL export result
+    console.log('STL Export Result:')
+    console.log('Objects exported:', objects.length)
+    console.log('STL string length:', stlString.length)
+    console.log('STL content preview:', stlString.substring(0, 200) + '...')
+    
+    // Create download link
+    const blob = new Blob([stlString], { type: 'text/plain' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'cad_model.stl'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+  }
+
+  const exportOBJ = () => {
+    // Create a scene to hold all objects for export
+    const scene = new THREE.Scene()
+    
+    // Add all objects to the scene using the same logic as the main scene
+    objects.forEach((obj, index) => {
+      let geometry
+      switch (obj.type) {
+        case 'box':
+          geometry = new THREE.BoxGeometry(1, 1, 1)
+          break
+        case 'sphere':
+          geometry = new THREE.SphereGeometry(0.5, 32, 32)
+          break
+        case 'cylinder':
+          geometry = new THREE.CylinderGeometry(0.5, 0.5, 1, 32)
+          break
+        default:
+          return
+      }
+      
+      const mesh = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ color: obj.color }))
+      mesh.position.set(obj.position[0], obj.position[1], obj.position[2])
+      mesh.rotation.set(obj.rotation[0], obj.rotation[1], obj.rotation[2])
+      mesh.scale.set(obj.scale[0], obj.scale[1], obj.scale[2])
+      
+      // Apply transformations to geometry by baking them into the vertices
+      mesh.updateMatrixWorld(true)
+      geometry.applyMatrix4(mesh.matrixWorld)
+      
+      // Create a new mesh with the transformed geometry to ensure clean export
+      const transformedMesh = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ color: obj.color }))
+      
+      // Set object name for grouping in OBJ file
+      transformedMesh.name = `${obj.type}_${index}`
+      
+      scene.add(transformedMesh)
+    })
+    
+    // Use OBJExporter for human-readable export
+    const exporter = new OBJExporter()
+    
+    // Generate OBJ string
+    const objString = exporter.parse(scene)
+    
+    // Log OBJ export result
+    console.log('OBJ Export Result:')
+    console.log('Objects exported:', objects.length)
+    console.log('OBJ string length:', objString.length)
+    console.log('OBJ content preview:', objString.substring(0, 300) + '...')
+    
+    // Create download link
+    const blob = new Blob([objString], { type: 'text/plain' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'cad_model.obj'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+  }
+
+  return (
+    <div className="h-screen w-screen relative">
+      {/* Toolbar */}
+      <div className="absolute top-4 left-4 bg-black bg-opacity-40 backdrop-blur-md p-3 rounded-lg text-white z-10">
+        <h2 className="text-sm font-semibold mb-3 text-purple-400">3D CAD Tools</h2>
+        <div className="space-y-2">
+          <button
+            onClick={() => addPrimitive('box')}
+            className={`w-full px-3 py-1.5 rounded text-xs font-medium transition-colors flex items-center gap-2 ${
+              selectedTool === 'box' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-700 hover:bg-gray-600'
+            }`}
+          >
+            <Box size={14} />
+            Add Box
+          </button>
+          <button
+            onClick={() => addPrimitive('sphere')}
+            className={`w-full px-3 py-1.5 rounded text-xs font-medium transition-colors flex items-center gap-2 ${
+              selectedTool === 'sphere' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-700 hover:bg-gray-600'
+            }`}
+          >
+            <Box size={14} />
+            Add Sphere
+          </button>
+          <button
+            onClick={() => addPrimitive('cylinder')}
+            className={`w-full px-3 py-1.5 rounded text-xs font-medium transition-colors flex items-center gap-2 ${
+              selectedTool === 'cylinder' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-700 hover:bg-gray-600'
+            }`}
+          >
+            <Box size={14} />
+            Add Cylinder
+          </button>
+          {!isSelectionMode && (
+            <>
+              <button
+                onClick={exportSTL}
+                className="w-full px-3 py-1.5 rounded text-xs font-medium bg-orange-600 hover:bg-orange-700 text-white transition-colors flex items-center gap-2"
+              >
+                <Download size={14} />
+                Export STL
+              </button>
+              <button
+                onClick={exportOBJ}
+                className="w-full px-3 py-1.5 rounded text-xs font-medium bg-green-600 hover:bg-green-700 text-white transition-colors flex items-center gap-2"
+              >
+                <Download size={14} />
+                Export OBJ
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* 3D Outline Panel */}
+      <div className="absolute top-4 right-4 bg-black bg-opacity-40 backdrop-blur-md p-2 rounded-lg text-white z-10 max-h-80 overflow-y-auto">
+        <h2 className="text-xs font-semibold mb-2 text-purple-400">3D Outline ({objects.length})</h2>
+        {objects.length === 0 ? (
+          <p className="text-gray-400 text-xs">No objects yet</p>
+        ) : (
+          objects.map((obj, index) => (
+            <div 
+              key={index} 
+              className={`mb-1 p-1.5 rounded transition-all duration-200 cursor-pointer ${
+                selectedObjectIndex === index 
+                  ? 'bg-blue-600/30 border border-blue-400/50' 
+                  : 'bg-gray-800 hover:bg-gray-700'
+              }`}
+              onClick={() => {
+                setSelectedObjectIndex(index)
+                // Switch to selection mode when clicking an object in 3D Outline panel
+                if (!isSelectionMode) {
+                  setIsSelectionMode(true)
+                }
+              }}
+            >
+              <div className="flex justify-between items-center mb-1">
+                <div className="flex items-center gap-1.5">
+                  <div 
+                    className="w-2 h-2 rounded-full border border-white/50"
+                    style={{ backgroundColor: obj.color }}
+                  />
+                  <span className={`text-xs font-medium ${
+                    selectedObjectIndex === index ? 'text-blue-300' : 'text-gray-200'
+                  }`}>
+                    {obj.type}
+                  </span>
+                </div>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation() // Prevent selection when clicking delete
+                    removeObject(index)
+                  }}
+                  className="text-red-400 hover:text-red-300 transition-colors"
+                >
+                  <Trash2 size={12} />
+                </button>
+              </div>
+              <div className="grid grid-cols-2">
+                <div className="flex flex-col">
+                  <div className="text-xs font-medium text-gray-200 mb-1">Translation</div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-400">X</span>
+                    <input
+                      type="number"
+                      placeholder="X"
+                      value={obj.position[0]}
+                      onChange={(e) => updateObject(index, { position: [parseFloat(e.target.value), obj.position[1], obj.position[2]] })}
+                      className="w-[100px] bg-gray-700 rounded px-0.5 py-0.5 text-xs"
+                    />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-400">Y</span>
+                    <input
+                      type="number"
+                      placeholder="Y"
+                      value={obj.position[2]}
+                      onChange={(e) => updateObject(index, { position: [obj.position[0], obj.position[1], parseFloat(e.target.value)] })}
+                      className="w-[100px] bg-gray-700 rounded px-0.5 py-0.5 text-xs"
+                    />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-400">Z</span>
+                    <input
+                      type="number"
+                      placeholder="Z"
+                      value={obj.position[1]}
+                      onChange={(e) => updateObject(index, { position: [obj.position[0], parseFloat(e.target.value), obj.position[2]] })}
+                      className="w-[100px] bg-gray-700 rounded px-0.5 py-0.5 text-xs"
+                    />
+                  </div>
+                </div>
+                <div className="flex items-end">
+                  <span className="text-xs text-gray-400">Scale</span>
+                  <input
+                    type="number"
+                    placeholder="Scale"
+                    value={obj.scale[0]}
+                    onChange={(e) => {
+                      const val = parseFloat(e.target.value)
+                      updateObject(index, { scale: [val, val, val] })
+                    }}
+                    className="w-[100px] bg-gray-700 rounded px-0.5 py-0.5 text-xs"
+                  />
+                  <span className="text-xs text-gray-400">Color</span>
+                  <input
+                    type="color"
+                    value={obj.color}
+                    onChange={(e) => updateObject(index, { color: e.target.value })}
+                    className="w-5 h-5 rounded-full overflow-hidden cursor-pointer"
+                  />
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* 3D Viewport */}
+      <Canvas 
+        camera={{ position: [5, 5, 5], fov: 50 }}
+        style={{ width: '100%', height: '100%' }}
+        onClick={(e) => {}}
+      >
+        <ambientLight intensity={0.6} />
+        <directionalLight position={[10, 10, 5]} intensity={1.2} />
+        <OrbitControls 
+          enableDamping 
+          dampingFactor={0.05} 
+          enabled={true}
+        />
+        <Grid 
+          args={[20, 20]} 
+          cellSize={1} 
+          cellThickness={0.5} 
+          cellColor="#333333" 
+          sectionSize={2} 
+          sectionThickness={1} 
+          sectionColor="#222222" 
+          fadeDistance={20}
+          followCamera={true}
+          infiniteGrid={true}
+        />
+        
+        {/* Render Objects */}
+        {objects.map((obj, index) => (
+          <Object3D 
+            key={index} 
+            {...obj} 
+            isSelected={selectedObjectIndex === index}
+            onClick={() => isSelectionMode && setSelectedObjectIndex(index)}
+            controlMode={controlMode}
+          />
+        ))}
+        
+      </Canvas>
+
+      {/* Control Tools - Center Bottom Toolbar */}
+      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 backdrop-blur-md p-3 rounded-xl text-white z-10 flex gap-3 items-center">
+        {/* Select Tool */}
+        <button
+          onClick={() => {
+            if (isSelectionMode) {
+              setIsSelectionMode(false)
+              setSelectedObjectIndex(null) // Clear selection when exiting select mode
+            } else {
+              setIsSelectionMode(true)
+            }
+          }}
+          className={`p-3 rounded-lg transition-all duration-200 flex flex-col items-center gap-1 ${
+            isSelectionMode 
+              ? 'bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-500/25' 
+              : 'bg-gray-700 hover:bg-gray-600'
+          }`}
+          title="Select"
+        >
+          <MousePointer size={24} />
+        </button>
+
+        {/* Object Transformation Tools - Only show when object is selected AND in selection mode */}
+        {selectedObjectIndex !== null && isSelectionMode && (
+          <>
+            <div className="w-px h-12 bg-gray-500 mx-2" />
+            
+            {/* Move Tool */}
+            <button
+              onClick={() => setControlMode('move')}
+              className={`p-3 rounded-lg transition-all duration-200 flex flex-col items-center gap-1 ${
+                controlMode === 'move' 
+                  ? 'bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-500/25' 
+                  : 'bg-gray-700 hover:bg-gray-600'
+              }`}
+              title="Move"
+            >
+              <Move size={24} />
+            </button>
+
+            {/* Rotate Tool */}
+            <button
+              onClick={() => setControlMode('rotate')}
+              className={`p-3 rounded-lg transition-all duration-200 flex flex-col items-center gap-1 ${
+                controlMode === 'rotate' 
+                  ? 'bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-500/25' 
+                  : 'bg-gray-700 hover:bg-gray-600'
+              }`}
+              title="Rotate"
+            >
+              <RotateCcw size={24} />
+            </button>
+
+            {/* Scale Tool */}
+            <button
+              onClick={() => setControlMode('scale')}
+              className={`p-3 rounded-lg transition-all duration-200 flex flex-col items-center gap-1 ${
+                controlMode === 'scale' 
+                  ? 'bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-500/25' 
+                  : 'bg-gray-700 hover:bg-gray-600'
+              }`}
+              title="Scale"
+            >
+              <Expand size={24} />
+            </button>
+
+            {/* Edit Tool */}
+            <button
+              onClick={() => setControlMode('edit')}
+              className={`p-3 rounded-lg transition-all duration-200 flex flex-col items-center gap-1 ${
+                controlMode === 'edit' 
+                  ? 'bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-500/25' 
+                  : 'bg-gray-700 hover:bg-gray-600'
+              }`}
+              title="Edit Vertices"
+            >
+              <Edit3 size={24} />
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function Object3D({ type, position, rotation, scale, color, isSelected, onClick, controlMode }: {type: string, position: [number, number, number], rotation: [number, number, number], scale: [number, number, number], color: string, isSelected?: boolean, onClick?: () => void, controlMode?: 'select' | 'move' | 'rotate' | 'scale' | 'edit'}) {
+  const meshRef = useRef<THREE.Mesh>(null)
+  
+  useEffect(() => {
+    if (meshRef.current && onClick) {
+      meshRef.current.userData = { onClick }
+    }
+  }, [onClick])
+
+  // Create outline material for selected objects
+  const outlineMaterial = new THREE.MeshBasicMaterial({
+    color: 0xffffff,
+    wireframe: true,
+    transparent: true,
+    opacity: 0.5,
+    depthTest: false,
+    depthWrite: false
+  })
+
+  const shouldShowOutline = isSelected
+
+  switch (type) {
+    case 'box':
+      return (
+        <group>
+          <mesh 
+            ref={meshRef}
+            position={position} 
+            rotation={rotation} 
+            scale={scale}
+            onClick={onClick}
+          >
+            <boxGeometry args={[1, 1, 1]} />
+            <meshStandardMaterial color={color} />
+          </mesh>
+          {shouldShowOutline && (
+            <mesh 
+              position={position} 
+              rotation={rotation} 
+              scale={scale}
+            >
+              <boxGeometry args={[1.05, 1.05, 1.05]} />
+              <meshBasicMaterial 
+                color={0xffffff} 
+                wireframe={true} 
+                transparent={true} 
+                opacity={0.5}
+                depthTest={false}
+                depthWrite={false}
+              />
+            </mesh>
+          )}
+        </group>
+      )
+    case 'sphere':
+      return (
+        <group>
+          <mesh 
+            ref={meshRef}
+            position={position} 
+            rotation={rotation} 
+            scale={scale}
+            onClick={onClick}
+          >
+            <sphereGeometry args={[0.5, 32, 32]} />
+            <meshStandardMaterial color={color} />
+          </mesh>
+          {shouldShowOutline && (
+            <mesh 
+              position={position} 
+              rotation={rotation} 
+              scale={scale}
+            >
+              <sphereGeometry args={[0.525, 32, 32]} />
+              <meshBasicMaterial 
+                color={0xffffff} 
+                wireframe={true} 
+                transparent={true} 
+                opacity={0.5}
+                depthTest={false}
+                depthWrite={false}
+              />
+            </mesh>
+          )}
+        </group>
+      )
+    case 'cylinder':
+      return (
+        <group>
+          <mesh 
+            ref={meshRef}
+            position={position} 
+            rotation={rotation} 
+            scale={scale}
+            onClick={onClick}
+          >
+            <cylinderGeometry args={[0.5, 0.5, 1, 32]} />
+            <meshStandardMaterial color={color} />
+          </mesh>
+          {shouldShowOutline && (
+            <mesh 
+              position={position} 
+              rotation={rotation} 
+              scale={scale}
+            >
+              <cylinderGeometry args={[0.525, 0.525, 1.05, 32]} />
+              <meshBasicMaterial 
+                color={0xffffff} 
+                wireframe={true} 
+                transparent={true} 
+                opacity={0.5}
+                depthTest={false}
+                depthWrite={false}
+              />
+            </mesh>
+          )}
+        </group>
+      )
+    default:
+      return null
+  }
+}

@@ -166,6 +166,16 @@ export default function Home() {
               </CardContent>
             </Card>
           </Link>
+          <Link href="/cad3d" className="h-full">
+            <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
+              <CardHeader>
+                <CardTitle>3D CAD App</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">Simple 3D CAD software for creating and manipulating 3D objects</p>
+              </CardContent>
+            </Card>
+          </Link>
         </div>
       </section>
     </div>
