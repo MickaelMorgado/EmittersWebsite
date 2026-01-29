@@ -442,7 +442,18 @@ export default function CAD3D() {
         <OrbitControls 
           enableDamping 
           dampingFactor={0.05} 
-          enabled={!(selectedObjectIndex !== null && isSelectionMode)}
+          enabled={true}
+          mouseButtons={{
+            LEFT: undefined, // Disable left mouse button for orbiting
+            MIDDLE: THREE.MOUSE.ROTATE,
+            RIGHT: THREE.MOUSE.DOLLY
+          }}
+          keys={{
+            LEFT: 'KeyA', // A key
+            UP: 'KeyW',   // W key
+            RIGHT: 'KeyD', // D key
+            BOTTOM: 'KeyS' // S key
+          }}
         />
         <Grid 
           args={[20, 20]} 
