@@ -218,11 +218,13 @@ export default function CAD3D() {
 
   // Handle canvas click to deselect when clicking on empty space
   const handleCanvasClick = (e: any) => {
-    // Check if the click target is the canvas itself (background)
-    // If it's the canvas, we clicked on empty space
-    if (e.target && e.target.tagName === 'CANVAS') {
+    // In React Three Fiber, we need to check if the click actually hit an object
+    // The onClick event on Canvas provides intersection information
+    if (e.intersections && e.intersections.length === 0) {
+      // No intersections means we clicked on empty space
       setSelectedObjectIndex(null)
     }
+    // If there are intersections, we clicked on an object, so don't deselect
   }
 
   return (
