@@ -221,10 +221,7 @@ export default function CAD3D() {
     // Check if the click target is the canvas itself (background)
     // If it's the canvas, we clicked on empty space
     if (e.target && e.target.tagName === 'CANVAS') {
-      console.log('Clicked on canvas background, deselecting object')
       setSelectedObjectIndex(null)
-    } else {
-      console.log('Clicked on object or UI element, not deselecting')
     }
   }
 
