@@ -350,71 +350,129 @@ export default function CAD3D() {
                   <div className="text-xs font-medium text-gray-200 mb-1">Translation</div>
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-gray-400">X</span>
-                    <input
-                      type="number"
-                      placeholder="X"
-                      value={obj.position[0]}
-                      onChange={(e) => updateObject(index, { position: [parseFloat(e.target.value), obj.position[1], obj.position[2]] })}
-                      className="w-[100px] rounded px-0.5 py-0.5 text-xs"
-                      style={{
-                        backgroundColor: inputBackgroundColor,
-                        borderColor: inputBorderColor,
-                        borderWidth: '1px',
-                        color: 'white'
-                      }}
-                    />
+                    <div className="flex items-center border border-gray-600 rounded bg-gray-800">
+                      <button
+                        onClick={() => updateObject(index, { position: [obj.position[0] - 0.1, obj.position[1], obj.position[2]] })}
+                        className="px-2 py-1 text-xs hover:bg-gray-700 transition-colors"
+                        style={{ color: 'white' }}
+                      >
+                        -
+                      </button>
+                      <input
+                        type="number"
+                        step="0.1"
+                        min="-100"
+                        max="100"
+                        value={obj.position[0]}
+                        onChange={(e) => updateObject(index, { position: [parseFloat(e.target.value), obj.position[1], obj.position[2]] })}
+                        className="w-[80px] px-2 py-1 text-xs bg-transparent border-0 text-center focus:outline-none"
+                        style={{ color: 'white' }}
+                      />
+                      <button
+                        onClick={() => updateObject(index, { position: [obj.position[0] + 0.1, obj.position[1], obj.position[2]] })}
+                        className="px-2 py-1 text-xs hover:bg-gray-700 transition-colors"
+                        style={{ color: 'white' }}
+                      >
+                        +
+                      </button>
+                    </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-gray-400">Y</span>
-                    <input
-                      type="number"
-                      placeholder="Y"
-                      value={obj.position[2]}
-                      onChange={(e) => updateObject(index, { position: [obj.position[0], obj.position[1], parseFloat(e.target.value)] })}
-                      className="w-[100px] rounded px-0.5 py-0.5 text-xs"
-                      style={{
-                        backgroundColor: inputBackgroundColor,
-                        borderColor: inputBorderColor,
-                        borderWidth: '1px',
-                        color: 'white'
-                      }}
-                    />
+                    <div className="flex items-center border border-gray-600 rounded bg-gray-800">
+                      <button
+                        onClick={() => updateObject(index, { position: [obj.position[0], obj.position[1], obj.position[2] - 0.1] })}
+                        className="px-2 py-1 text-xs hover:bg-gray-700 transition-colors"
+                        style={{ color: 'white' }}
+                      >
+                        -
+                      </button>
+                      <input
+                        type="number"
+                        step="0.1"
+                        min="-100"
+                        max="100"
+                        value={obj.position[2]}
+                        onChange={(e) => updateObject(index, { position: [obj.position[0], obj.position[1], parseFloat(e.target.value)] })}
+                        className="w-[80px] px-2 py-1 text-xs bg-transparent border-0 text-center focus:outline-none"
+                        style={{ color: 'white' }}
+                      />
+                      <button
+                        onClick={() => updateObject(index, { position: [obj.position[0], obj.position[1], obj.position[2] + 0.1] })}
+                        className="px-2 py-1 text-xs hover:bg-gray-700 transition-colors"
+                        style={{ color: 'white' }}
+                      >
+                        +
+                      </button>
+                    </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-gray-400">Z</span>
-                    <input
-                      type="number"
-                      placeholder="Z"
-                      value={obj.position[1]}
-                      onChange={(e) => updateObject(index, { position: [obj.position[0], parseFloat(e.target.value), obj.position[2]] })}
-                      className="w-[100px] rounded px-0.5 py-0.5 text-xs"
-                      style={{
-                        backgroundColor: inputBackgroundColor,
-                        borderColor: inputBorderColor,
-                        borderWidth: '1px',
-                        color: 'white'
-                      }}
-                    />
+                    <div className="flex items-center border border-gray-600 rounded bg-gray-800">
+                      <button
+                        onClick={() => updateObject(index, { position: [obj.position[0], obj.position[1] - 0.1, obj.position[2]] })}
+                        className="px-2 py-1 text-xs hover:bg-gray-700 transition-colors"
+                        style={{ color: 'white' }}
+                      >
+                        -
+                      </button>
+                      <input
+                        type="number"
+                        step="0.1"
+                        min="-100"
+                        max="100"
+                        value={obj.position[1]}
+                        onChange={(e) => updateObject(index, { position: [obj.position[0], parseFloat(e.target.value), obj.position[2]] })}
+                        className="w-[80px] px-2 py-1 text-xs bg-transparent border-0 text-center focus:outline-none"
+                        style={{ color: 'white' }}
+                      />
+                      <button
+                        onClick={() => updateObject(index, { position: [obj.position[0], obj.position[1] + 0.1, obj.position[2]] })}
+                        className="px-2 py-1 text-xs hover:bg-gray-700 transition-colors"
+                        style={{ color: 'white' }}
+                      >
+                        +
+                      </button>
+                    </div>
                   </div>
                 </div>
                 <div className="flex items-end">
                   <span className="text-xs text-gray-400">Scale</span>
-                  <input
-                    type="number"
-                    placeholder="Scale"
-                    value={obj.scale[0]}
-                    onChange={(e) => {
-                      const val = parseFloat(e.target.value)
-                      updateObject(index, { scale: [val, val, val] })
-                    }}
-                    className="w-[100px] rounded px-0.5 py-0.5 text-xs"
-                    style={{
-                      backgroundColor: inputBackgroundColor,
-                      borderColor: inputBorderColor,
-                      borderWidth: '1px',
-                      color: 'white'
-                    }}
-                  />
+                  <div className="flex items-center border border-gray-600 rounded bg-gray-800">
+                    <button
+                      onClick={() => {
+                        const val = Math.max(0.1, obj.scale[0] - 0.1)
+                        updateObject(index, { scale: [val, val, val] })
+                      }}
+                      className="px-2 py-1 text-xs hover:bg-gray-700 transition-colors"
+                      style={{ color: 'white' }}
+                    >
+                      -
+                    </button>
+                    <input
+                      type="number"
+                      step="0.1"
+                      min="0.1"
+                      max="100"
+                      value={obj.scale[0]}
+                      onChange={(e) => {
+                        const val = parseFloat(e.target.value)
+                        updateObject(index, { scale: [val, val, val] })
+                      }}
+                      className="w-[80px] px-2 py-1 text-xs bg-transparent border-0 text-center focus:outline-none"
+                      style={{ color: 'white' }}
+                    />
+                    <button
+                      onClick={() => {
+                        const val = obj.scale[0] + 0.1
+                        updateObject(index, { scale: [val, val, val] })
+                      }}
+                      className="px-2 py-1 text-xs hover:bg-gray-700 transition-colors"
+                      style={{ color: 'white' }}
+                    >
+                      +
+                    </button>
+                  </div>
                   <span className="text-xs text-gray-400">Color</span>
                   <input
                     type="color"
