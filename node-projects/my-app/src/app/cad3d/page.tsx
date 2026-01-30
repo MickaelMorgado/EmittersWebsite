@@ -1,7 +1,7 @@
 'use client'
 import { Grid, OrbitControls, TransformControls } from '@react-three/drei'
 import { Canvas, useThree } from '@react-three/fiber'
-import { Box, Download, Edit3, Expand, Move, RotateCcw, Trash2 } from 'lucide-react'
+import { Box, Download, Edit3, Expand, Move, RotateCcw, Trash2, MousePointer } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { OBJExporter } from 'three/examples/jsm/exporters/OBJExporter.js'
@@ -571,6 +571,20 @@ export default function CAD3D() {
               title="Edit Vertices"
             >
               <Edit3 size={24} />
+            </button>
+
+            {/* Deselect Tool */}
+            <button
+              onClick={() => setSelectedObjectIndex(null)}
+            className={`p-3 rounded-lg transition-all duration-200 flex flex-col items-center gap-1`}
+              style={{
+                backgroundColor: buttonColor,
+                color: 'white',
+                boxShadow: `0 0 15px rgba(200, 246, 92, 0.25), 0 0 30px rgba(200, 246, 92, 0.12)`
+              }}
+              title="Deselect All (Escape)"
+            >
+              <MousePointer size={24} />
             </button>
           </>
         )}
