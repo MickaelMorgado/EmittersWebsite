@@ -1,7 +1,7 @@
 'use client'
 import { Grid, OrbitControls, TransformControls } from '@react-three/drei'
 import { Canvas, useThree } from '@react-three/fiber'
-import { Box, Download, Edit3, Expand, MousePointer, Move, RotateCcw, Trash2 } from 'lucide-react'
+import { Box, Download, Edit3, Expand, Move, RotateCcw, Trash2 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { OBJExporter } from 'three/examples/jsm/exporters/OBJExporter.js'
@@ -216,6 +216,14 @@ export default function CAD3D() {
     URL.revokeObjectURL(url)
   }
 
+  // Handle canvas click to deselect when clicking on empty space
+  const handleCanvasClick = (e: any) => {
+    // If clicking on empty space (not on an object), deselect current selection
+    if (e.intersections && e.intersections.length === 0) {
+      setSelectedObjectIndex(null)
+    }
+  }
+
   return (
     <div className="h-screen w-screen relative">
       {/* Toolbar */}
@@ -426,7 +434,7 @@ export default function CAD3D() {
       <Canvas 
         camera={{ position: [5, 5, 5], fov: 50 }}
         style={{ width: '100%', height: '100%' }}
-        onClick={(e) => {}}
+        onClick={handleCanvasClick}
       >
         <ambientLight intensity={0.6} />
         <directionalLight position={[10, 10, 5]} intensity={1.2} />
