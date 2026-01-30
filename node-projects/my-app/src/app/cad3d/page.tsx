@@ -1,7 +1,7 @@
 'use client'
 import { Grid, OrbitControls, TransformControls } from '@react-three/drei'
 import { Canvas, useThree } from '@react-three/fiber'
-import { Box, Download, Edit3, Expand, Move, RotateCcw, Trash2, MousePointer } from 'lucide-react'
+import { Box, Download, Edit3, Expand, MousePointer, Move, RotateCcw, Trash2 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { OBJExporter } from 'three/examples/jsm/exporters/OBJExporter.js'
@@ -24,11 +24,12 @@ export default function CAD3D() {
   const buttonTextColor = '#000000'
   const buttonColor = '#000000'
   const primaryButtonTextColor = '#000000'
-  const panelColor = 'rgba(0, 0, 0, 0.4)'
-  const panelPadding = '12px'
+  const panelColor = 'rgba(0, 0, 0, 0.8)'
+  const panelPadding = '10px'
   const panelBorderRadius = '8px'
   const inputBackgroundColor = '#222222'
   const inputBorderColor = '#333'
+  const defaultMeshColor = '#888'
   
   const addPrimitive = (type: string) => {
     const newObject = {
@@ -36,7 +37,7 @@ export default function CAD3D() {
       position: [0, 0, 0] as [number, number, number],
       rotation: [0, 0, 0] as [number, number, number],
       scale: [1, 1, 1] as [number, number, number],
-      color: '#cccccc'
+      color: defaultMeshColor
     }
     setObjects(prev => [...prev, newObject])
   }
@@ -230,7 +231,7 @@ export default function CAD3D() {
   return (
     <div className="h-screen w-screen relative">
       {/* Toolbar */}
-      <div className="absolute top-4 left-4" style={{ backgroundColor: panelColor, backdropFilter: 'blur(10px)', padding: panelPadding, borderRadius: panelBorderRadius, color: 'white', zIndex: 50 }}>
+      <div className="absolute top-4 left-4" style={{ backgroundColor: panelColor, backdropFilter: 'blur(3px)', padding: panelPadding, borderRadius: panelBorderRadius, color: 'white', zIndex: 50 }}>
         <h2 className="text-sm font-semibold mb-3" style={{ color: primaryColor }}>3D CAD Tools</h2>
         <div className="space-y-2">
           <button
@@ -300,7 +301,7 @@ export default function CAD3D() {
       </div>
 
       {/* 3D Outline Panel */}
-      <div className="absolute top-4 right-4" style={{ backgroundColor: panelColor, backdropFilter: 'blur(10px)', padding: '8px', borderRadius: '8px', color: 'white', zIndex: 50, maxHeight: '320px', overflowY: 'auto' }}>
+      <div className="absolute top-4 right-4" style={{ backgroundColor: panelColor, backdropFilter: 'blur(3px)', padding: panelPadding, borderRadius: panelBorderRadius, color: 'white', zIndex: 50, maxHeight: '100%', overflowY: 'auto' }}>
         <h2 className="text-xs font-semibold mb-2" style={{ color: primaryColor }}>3D Outline ({objects.length})</h2>
         {objects.length === 0 ? (
           <p className="text-gray-400 text-xs">No objects yet</p>
@@ -440,7 +441,7 @@ export default function CAD3D() {
         onClick={handleCanvasClick}
       >
         <ambientLight intensity={0.6} />
-        <directionalLight position={[10, 10, 5]} intensity={1.2} />
+        <directionalLight position={[10, 10, 5]} intensity={1} />
         <OrbitControls 
           enableDamping 
           dampingFactor={0.05} 
@@ -496,7 +497,7 @@ export default function CAD3D() {
       </Canvas>
 
       {/* Control Tools - Center Bottom Toolbar */}
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2" style={{ backgroundColor: panelColor, backdropFilter: 'blur(10px)', padding: panelPadding, borderRadius: panelBorderRadius, color: 'white', zIndex: 50, display: 'flex', gap: '12px', alignItems: 'center' }}>
+      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2" style={{ backgroundColor: panelColor, backdropFilter: 'blur(3px)', padding: panelPadding, borderRadius: panelBorderRadius, color: 'white', zIndex: 50, display: 'flex', gap: '10px', alignItems: 'center' }}>
         {/* Object Transformation Tools - Only show when object is selected */}
         {selectedObjectIndex !== null && (
           <>
@@ -504,7 +505,7 @@ export default function CAD3D() {
             {/* Move Tool */}
             <button
               onClick={() => setControlMode('move')}
-            className={`p-3 rounded-lg transition-all duration-200 flex flex-col items-center gap-1 ${
+              className={`p-2 rounded-lg transition-all duration-200 flex flex-col items-center ${
                 controlMode === 'move' 
                   ? '' 
                   : ''
@@ -522,7 +523,7 @@ export default function CAD3D() {
             {/* Rotate Tool */}
             <button
               onClick={() => setControlMode('rotate')}
-            className={`p-3 rounded-lg transition-all duration-200 flex flex-col items-center gap-1 ${
+              className={`p-2 rounded-lg transition-all duration-200 flex flex-col items-center ${
                 controlMode === 'rotate' 
                   ? '' 
                   : ''
@@ -540,7 +541,7 @@ export default function CAD3D() {
             {/* Scale Tool */}
             <button
               onClick={() => setControlMode('scale')}
-            className={`p-3 rounded-lg transition-all duration-200 flex flex-col items-center gap-1 ${
+              className={`p-2 rounded-lg transition-all duration-200 flex flex-col items-center ${
                 controlMode === 'scale' 
                   ? '' 
                   : ''
@@ -558,7 +559,7 @@ export default function CAD3D() {
             {/* Edit Tool */}
             <button
               onClick={() => setControlMode('edit')}
-            className={`p-3 rounded-lg transition-all duration-200 flex flex-col items-center gap-1 ${
+              className={`p-2 rounded-lg transition-all duration-200 flex flex-col items-center ${
                 controlMode === 'edit' 
                   ? '' 
                   : ''
@@ -576,7 +577,7 @@ export default function CAD3D() {
             {/* Deselect Tool */}
             <button
               onClick={() => setSelectedObjectIndex(null)}
-            className={`p-3 rounded-lg transition-all duration-200 flex flex-col items-center gap-1`}
+              className={`p-2 rounded-lg transition-all duration-200 flex flex-col items-center`}
               style={{
                 backgroundColor: buttonColor,
                 color: 'white',
