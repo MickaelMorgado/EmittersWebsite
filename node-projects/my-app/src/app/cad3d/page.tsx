@@ -19,8 +19,8 @@ export default function CAD3D() {
   const [isTransformDragging, setIsTransformDragging] = useState<boolean>(false)
   
   // Primary purple color variable for consistent theming (RGBA format)
-  const primaryColorHex = '#c8f65c'
-  const primaryColor = 'rgba(200, 246, 92, 1)'
+  const primaryColorHex = '#c0f052'
+  const primaryColor = 'rgba(192, 240, 82, 1)'
   const buttonTextColor = '#000000'
   const buttonColor = '#000000'
   const primaryButtonTextColor = '#000000'
