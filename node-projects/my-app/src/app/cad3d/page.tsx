@@ -364,7 +364,16 @@ export default function CAD3D() {
                         min="-100"
                         max="100"
                         value={obj.position[0]}
-                        onChange={(e) => updateObject(index, { position: [parseFloat(e.target.value), obj.position[1], obj.position[2]] })}
+                        onChange={(e) => {
+                          // Auto-convert ".5" to "0.5" when user types decimal
+                          let value = e.target.value
+                          if (value.startsWith('.')) {
+                            value = '0' + value
+                            e.target.value = value
+                          }
+                          updateObject(index, { position: [parseFloat(value), obj.position[1], obj.position[2]] })
+                        }}
+                        onFocus={(e) => e.target.select()}
                         className="w-[80px] px-2 py-1 text-xs bg-transparent border-0 text-center focus:outline-none"
                         style={{ color: 'white' }}
                       />
@@ -393,7 +402,16 @@ export default function CAD3D() {
                         min="-100"
                         max="100"
                         value={obj.position[2]}
-                        onChange={(e) => updateObject(index, { position: [obj.position[0], obj.position[1], parseFloat(e.target.value)] })}
+                        onChange={(e) => {
+                          // Auto-convert ".5" to "0.5" when user types decimal
+                          let value = e.target.value
+                          if (value.startsWith('.')) {
+                            value = '0' + value
+                            e.target.value = value
+                          }
+                          updateObject(index, { position: [obj.position[0], obj.position[1], parseFloat(value)] })
+                        }}
+                        onFocus={(e) => e.target.select()}
                         className="w-[80px] px-2 py-1 text-xs bg-transparent border-0 text-center focus:outline-none"
                         style={{ color: 'white' }}
                       />
@@ -422,7 +440,16 @@ export default function CAD3D() {
                         min="-100"
                         max="100"
                         value={obj.position[1]}
-                        onChange={(e) => updateObject(index, { position: [obj.position[0], parseFloat(e.target.value), obj.position[2]] })}
+                        onChange={(e) => {
+                          // Auto-convert ".5" to "0.5" when user types decimal
+                          let value = e.target.value
+                          if (value.startsWith('.')) {
+                            value = '0' + value
+                            e.target.value = value
+                          }
+                          updateObject(index, { position: [obj.position[0], parseFloat(value), obj.position[2]] })
+                        }}
+                        onFocus={(e) => e.target.select()}
                         className="w-[80px] px-2 py-1 text-xs bg-transparent border-0 text-center focus:outline-none"
                         style={{ color: 'white' }}
                       />
@@ -456,9 +483,16 @@ export default function CAD3D() {
                       max="100"
                       value={obj.scale[0]}
                       onChange={(e) => {
-                        const val = parseFloat(e.target.value)
+                        // Auto-convert ".5" to "0.5" when user types decimal
+                        let value = e.target.value
+                        if (value.startsWith('.')) {
+                          value = '0' + value
+                          e.target.value = value
+                        }
+                        const val = parseFloat(value)
                         updateObject(index, { scale: [val, val, val] })
                       }}
+                      onFocus={(e) => e.target.select()}
                       className="w-[80px] px-2 py-1 text-xs bg-transparent border-0 text-center focus:outline-none"
                       style={{ color: 'white' }}
                     />
