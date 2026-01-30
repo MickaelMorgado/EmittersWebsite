@@ -14,7 +14,7 @@ export default function CAD3D() {
   const [dragStart, setDragStart] = useState<[number, number] | null>(null)
   const [dragEnd, setDragEnd] = useState<[number, number] | null>(null)
   const [selectedObjectIndex, setSelectedObjectIndex] = useState<number | null>(null)
-  const [isSelectionMode, setIsSelectionMode] = useState<boolean>(false)
+  const [isSelectionMode, setIsSelectionMode] = useState<boolean>(true)
   const [controlMode, setControlMode] = useState<'move' | 'rotate' | 'scale' | 'edit'>('move')
   const [isTransformDragging, setIsTransformDragging] = useState<boolean>(false)
   
@@ -57,16 +57,15 @@ export default function CAD3D() {
 
       switch (e.key.toLowerCase()) {
         case 'g': // Grab / Move
-          if (isSelectionMode) setControlMode('move')
+          if (selectedObjectIndex !== null) setControlMode('move')
           break
         case 'r': // Rotate
-          if (isSelectionMode) setControlMode('rotate')
+          if (selectedObjectIndex !== null) setControlMode('rotate')
           break
         case 's': // Scale
-          if (isSelectionMode) setControlMode('scale')
+          if (selectedObjectIndex !== null) setControlMode('scale')
           break
         case 'escape': // Cancel / Deselect
-          setIsSelectionMode(false)
           setSelectedObjectIndex(null)
           break
         case 'delete': // Delete
@@ -74,7 +73,6 @@ export default function CAD3D() {
           if (selectedObjectIndex !== null) {
             removeObject(selectedObjectIndex)
             setSelectedObjectIndex(null)
-            setIsSelectionMode(false)
           }
           break
       }
@@ -82,7 +80,7 @@ export default function CAD3D() {
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [selectedObjectIndex, isSelectionMode, removeObject])
+  }, [selectedObjectIndex, removeObject])
 
   const exportSTL = () => {
     // Create a scene to hold all objects for export
@@ -263,32 +261,30 @@ export default function CAD3D() {
             <Box size={14} />
             Add Cylinder
           </button>
-          {!isSelectionMode && (
-            <>
-              <button
-                onClick={exportSTL}
-                className="w-full px-3 py-1.5 rounded text-xs font-medium transition-colors flex items-center gap-2"
-                style={{
-                  backgroundColor: buttonColor,
-                  color: 'white'
-                }}
-              >
-                <Download size={14} />
-                Export STL
-              </button>
-              <button
-                onClick={exportOBJ}
-                className="w-full px-3 py-1.5 rounded text-xs font-medium transition-colors flex items-center gap-2"
-                style={{
-                  backgroundColor: buttonColor,
-                  color: 'white'
-                }}
-              >
-                <Download size={14} />
-                Export OBJ
-              </button>
-            </>
-          )}
+          <>
+            <button
+              onClick={exportSTL}
+              className="w-full px-3 py-1.5 rounded text-xs font-medium transition-colors flex items-center gap-2"
+              style={{
+                backgroundColor: buttonColor,
+                color: 'white'
+              }}
+            >
+              <Download size={14} />
+              Export STL
+            </button>
+            <button
+              onClick={exportOBJ}
+              className="w-full px-3 py-1.5 rounded text-xs font-medium transition-colors flex items-center gap-2"
+              style={{
+                backgroundColor: buttonColor,
+                color: 'white'
+              }}
+            >
+              <Download size={14} />
+              Export OBJ
+            </button>
+          </>
         </div>
       </div>
 
@@ -307,12 +303,7 @@ export default function CAD3D() {
                   : `hover:bg-[${primaryColorHex}]`
               }`}
 
-              onClick={() => {
-                setSelectedObjectIndex(index)
-                if (!isSelectionMode) {
-                  setIsSelectionMode(true)
-                }
-              }}
+              onClick={() => setSelectedObjectIndex(index)}
             >
               <div className="flex justify-between items-center mb-1">
                 <div className="flex items-center gap-1.5">
@@ -475,13 +466,13 @@ export default function CAD3D() {
             name={`object-${index}`}
             {...obj} 
             isSelected={selectedObjectIndex === index}
-            onClick={() => isSelectionMode && setSelectedObjectIndex(index)}
+            onClick={() => setSelectedObjectIndex(index)}
             controlMode={controlMode}
           />
         ))}
         
-        {/* Transform Controls - Only show when object is selected AND in selection mode AND not in edit mode */}
-        {selectedObjectIndex !== null && isSelectionMode && (
+        {/* Transform Controls - Only show when object is selected AND not in edit mode */}
+        {selectedObjectIndex !== null && (
           <SceneControls 
             selectedObjectName={`object-${selectedObjectIndex}`}
             controlMode={controlMode}
@@ -495,35 +486,9 @@ export default function CAD3D() {
 
       {/* Control Tools - Center Bottom Toolbar */}
       <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2" style={{ backgroundColor: panelColor, backdropFilter: 'blur(10px)', padding: panelPadding, borderRadius: panelBorderRadius, color: 'white', zIndex: 50, display: 'flex', gap: '12px', alignItems: 'center' }}>
-        {/* Select Tool */}
-        <button
-          onClick={() => {
-            if (isSelectionMode) {
-              setIsSelectionMode(false)
-              setSelectedObjectIndex(null) // Clear selection when exiting select mode
-            } else {
-              setIsSelectionMode(true)
-            }
-          }}
-            className={`p-3 rounded-lg transition-all duration-200 flex flex-col items-center gap-1 ${
-            isSelectionMode 
-              ? '' 
-              : ''
-          }`}
-            style={{
-            backgroundColor: isSelectionMode ? primaryColor : buttonColor,
-            color: isSelectionMode ? buttonTextColor : 'white',
-            boxShadow: isSelectionMode ? `0 0 15px rgba(200, 246, 92, 0.25), 0 0 30px rgba(200, 246, 92, 0.12)` : undefined
-          }}
-          title="Select"
-        >
-          <MousePointer size={24} />
-        </button>
-
-        {/* Object Transformation Tools - Only show when object is selected AND in selection mode */}
-        {selectedObjectIndex !== null && isSelectionMode && (
+        {/* Object Transformation Tools - Only show when object is selected */}
+        {selectedObjectIndex !== null && (
           <>
-            <div className="w-px h-12 bg-gray-500 mx-2" />
             
             {/* Move Tool */}
             <button
