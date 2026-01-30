@@ -218,9 +218,18 @@ export default function CAD3D() {
 
   // Handle canvas click to deselect when clicking on empty space
   const handleCanvasClick = (e: any) => {
+    console.log('Canvas clicked:', e)
+    console.log('Intersections:', e.intersections)
+    console.log('Intersections length:', e.intersections?.length)
+    
     // If clicking on empty space (not on an object), deselect current selection
     if (e.intersections && e.intersections.length === 0) {
+      console.log('Deselecting object - clicked on empty space')
       setSelectedObjectIndex(null)
+    } else if (e.intersections && e.intersections.length > 0) {
+      console.log('Clicked on object, not deselecting')
+    } else {
+      console.log('No intersections property found')
     }
   }
 
