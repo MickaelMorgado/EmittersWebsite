@@ -463,62 +463,157 @@ export default function CAD3D() {
                     </div>
                   </div>
                 </div>
-                <div className="flex items-end">
-                  <span className="text-xs text-gray-400">Scale</span>
-                  <div className="flex items-center border border-gray-600 rounded bg-gray-800">
-                    <button
-                      onClick={() => {
-                        const val = Math.max(0.1, obj.scale[0] - 0.1)
-                        updateObject(index, { scale: [val, val, val] })
-                      }}
-                      className="px-2 py-1 text-xs hover:bg-gray-700 transition-colors"
-                      style={{ color: 'white' }}
-                    >
-                      -
-                    </button>
-                    <input
-                      type="number"
-                      step="0.1"
-                      min="0.1"
-                      max="100"
-                      value={obj.scale[0]}
-                      onChange={(e) => {
-                        // Auto-convert ".5" to "0.5" when user types decimal
-                        let value = e.target.value
-                        if (value.startsWith('.')) {
-                          value = '0' + value
-                          e.target.value = value
-                        }
-                        const val = parseFloat(value)
-                        updateObject(index, { scale: [val, val, val] })
-                      }}
-                      onFocus={(e) => e.target.select()}
-                      className="w-[80px] px-2 py-1 text-xs bg-transparent border-0 text-center focus:outline-none"
-                      style={{ color: 'white' }}
-                    />
-                    <button
-                      onClick={() => {
-                        const val = obj.scale[0] + 0.1
-                        updateObject(index, { scale: [val, val, val] })
-                      }}
-                      className="px-2 py-1 text-xs hover:bg-gray-700 transition-colors"
-                      style={{ color: 'white' }}
-                    >
-                      +
-                    </button>
+                <div className="flex flex-col">
+                  <div className="text-xs font-medium text-gray-200 mb-1">Scale</div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-400">X</span>
+                    <div className="flex items-center border border-gray-600 rounded bg-gray-800">
+                      <button
+                        onClick={() => {
+                          const val = Math.max(0.1, obj.scale[0] - 0.1)
+                          updateObject(index, { scale: [val, obj.scale[1], obj.scale[2]] })
+                        }}
+                        className="px-2 py-1 text-xs hover:bg-gray-700 transition-colors"
+                        style={{ color: 'white' }}
+                      >
+                        -
+                      </button>
+                      <input
+                        type="number"
+                        step="0.1"
+                        min="0.1"
+                        max="100"
+                        value={obj.scale[0]}
+                        onChange={(e) => {
+                          // Auto-convert ".5" to "0.5" when user types decimal
+                          let value = e.target.value
+                          if (value.startsWith('.')) {
+                            value = '0' + value
+                            e.target.value = value
+                          }
+                          const val = parseFloat(value)
+                          updateObject(index, { scale: [val, obj.scale[1], obj.scale[2]] })
+                        }}
+                        onFocus={(e) => e.target.select()}
+                        className="w-[80px] px-2 py-1 text-xs bg-transparent border-0 text-center focus:outline-none"
+                        style={{ color: 'white' }}
+                      />
+                      <button
+                        onClick={() => {
+                          const val = obj.scale[0] + 0.1
+                          updateObject(index, { scale: [val, obj.scale[1], obj.scale[2]] })
+                        }}
+                        className="px-2 py-1 text-xs hover:bg-gray-700 transition-colors"
+                        style={{ color: 'white' }}
+                      >
+                        +
+                      </button>
+                    </div>
                   </div>
-                  <span className="text-xs text-gray-400">Color</span>
-                  <input
-                    type="color"
-                    value={obj.color}
-                    onChange={(e) => updateObject(index, { color: e.target.value })}
-                    className="w-5 h-5 rounded-full overflow-hidden cursor-pointer"
-                    style={{
-                      backgroundColor: inputBackgroundColor,
-                      borderColor: inputBorderColor,
-                      borderWidth: '1px'
-                    }}
-                  />
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-400">Y</span>
+                    <div className="flex items-center border border-gray-600 rounded bg-gray-800">
+                      <button
+                        onClick={() => {
+                          const val = Math.max(0.1, obj.scale[1] - 0.1)
+                          updateObject(index, { scale: [obj.scale[0], val, obj.scale[2]] })
+                        }}
+                        className="px-2 py-1 text-xs hover:bg-gray-700 transition-colors"
+                        style={{ color: 'white' }}
+                      >
+                        -
+                      </button>
+                      <input
+                        type="number"
+                        step="0.1"
+                        min="0.1"
+                        max="100"
+                        value={obj.scale[1]}
+                        onChange={(e) => {
+                          // Auto-convert ".5" to "0.5" when user types decimal
+                          let value = e.target.value
+                          if (value.startsWith('.')) {
+                            value = '0' + value
+                            e.target.value = value
+                          }
+                          const val = parseFloat(value)
+                          updateObject(index, { scale: [obj.scale[0], val, obj.scale[2]] })
+                        }}
+                        onFocus={(e) => e.target.select()}
+                        className="w-[80px] px-2 py-1 text-xs bg-transparent border-0 text-center focus:outline-none"
+                        style={{ color: 'white' }}
+                      />
+                      <button
+                        onClick={() => {
+                          const val = obj.scale[1] + 0.1
+                          updateObject(index, { scale: [obj.scale[0], val, obj.scale[2]] })
+                        }}
+                        className="px-2 py-1 text-xs hover:bg-gray-700 transition-colors"
+                        style={{ color: 'white' }}
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-400">Z</span>
+                    <div className="flex items-center border border-gray-600 rounded bg-gray-800">
+                      <button
+                        onClick={() => {
+                          const val = Math.max(0.1, obj.scale[2] - 0.1)
+                          updateObject(index, { scale: [obj.scale[0], obj.scale[1], val] })
+                        }}
+                        className="px-2 py-1 text-xs hover:bg-gray-700 transition-colors"
+                        style={{ color: 'white' }}
+                      >
+                        -
+                      </button>
+                      <input
+                        type="number"
+                        step="0.1"
+                        min="0.1"
+                        max="100"
+                        value={obj.scale[2]}
+                        onChange={(e) => {
+                          // Auto-convert ".5" to "0.5" when user types decimal
+                          let value = e.target.value
+                          if (value.startsWith('.')) {
+                            value = '0' + value
+                            e.target.value = value
+                          }
+                          const val = parseFloat(value)
+                          updateObject(index, { scale: [obj.scale[0], obj.scale[1], val] })
+                        }}
+                        onFocus={(e) => e.target.select()}
+                        className="w-[80px] px-2 py-1 text-xs bg-transparent border-0 text-center focus:outline-none"
+                        style={{ color: 'white' }}
+                      />
+                      <button
+                        onClick={() => {
+                          const val = obj.scale[2] + 0.1
+                          updateObject(index, { scale: [obj.scale[0], obj.scale[1], val] })
+                        }}
+                        className="px-2 py-1 text-xs hover:bg-gray-700 transition-colors"
+                        style={{ color: 'white' }}
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="text-xs text-gray-400">Color</span>
+                    <input
+                      type="color"
+                      value={obj.color}
+                      onChange={(e) => updateObject(index, { color: e.target.value })}
+                      className="w-5 h-5 rounded-full overflow-hidden cursor-pointer"
+                      style={{
+                        backgroundColor: inputBackgroundColor,
+                        borderColor: inputBorderColor,
+                        borderWidth: '1px'
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
