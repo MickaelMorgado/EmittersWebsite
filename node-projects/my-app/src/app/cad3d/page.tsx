@@ -1,6 +1,6 @@
 'use client'
 import DraggableNumberInput from '@/components/DraggableNumberInput'
-import { Grid, OrbitControls, TransformControls } from '@react-three/drei'
+import { GizmoHelper, GizmoViewcube, Grid, OrbitControls, TransformControls } from '@react-three/drei'
 import { Canvas, useThree } from '@react-three/fiber'
 import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Box, Camera, Download, Edit3, Expand, Eye, EyeOff, MousePointer, Move, RotateCcw, Trash2 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
@@ -19,6 +19,16 @@ export default function CAD3D() {
   const [controlMode, setControlMode] = useState<'move' | 'rotate' | 'scale' | 'edit'>('move')
   const [isTransformDragging, setIsTransformDragging] = useState<boolean>(false)
   const [isCameraDragging, setIsCameraDragging] = useState<boolean>(false)
+  
+  // Ref to access camera controls from outside the Canvas
+  const cameraControlsRef = useRef<{
+    setCameraView: (view: 'front' | 'back' | 'right' | 'left' | 'top' | 'bottom' | 'camera') => void
+    toggleCameraMode: () => void
+    switchToPerspective: () => void
+  } | null>(null)
+  
+  // Ref for OrbitControls to enforce update when we manually set camera
+  const orbitControlsRef = useRef<any>(null)
   
   // Primary purple color variable for consistent theming (RGBA format)
   const primaryColorHex = '#c0f052'
@@ -116,14 +126,20 @@ export default function CAD3D() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [selectedObjectIndex, removeObject])
 
-  // Camera control functions
+  // Camera control functions - these will be passed to the CameraControls component
   const setCameraView = (view: 'front' | 'back' | 'right' | 'left' | 'top' | 'bottom' | 'camera') => {
-    // This will be implemented in the CameraGizmo component
+    // Call the function from the ref if it exists
+    if (cameraControlsRef.current) {
+      cameraControlsRef.current.setCameraView(view)
+    }
     console.log('Camera view:', view)
   }
 
   const toggleCameraMode = () => {
-    // This will be implemented in the CameraGizmo component
+    // Call the function from the ref if it exists
+    if (cameraControlsRef.current) {
+      cameraControlsRef.current.toggleCameraMode()
+    }
     console.log('Toggle camera mode')
   }
 
@@ -552,6 +568,8 @@ export default function CAD3D() {
         <ambientLight intensity={0.6} />
         <directionalLight position={[10, 10, 5]} intensity={1} />
         <OrbitControls 
+          ref={orbitControlsRef}
+          makeDefault
           enableDamping 
           dampingFactor={0.05} 
           enabled={true}
@@ -602,6 +620,21 @@ export default function CAD3D() {
             selectedIndex={selectedObjectIndex}
           />
         )}
+        
+        {/* Camera Controls Component with Ref */}
+        <CameraControls 
+          controlsRef={cameraControlsRef}
+          orbitControlsRef={orbitControlsRef}
+        />
+        
+        {/* Camera Gizmo - Bottom Right Corner */}
+        <GizmoHelper
+          alignment="bottom-right"
+          margin={[80, 80]}
+          onUpdate={() => {}}
+        >
+          <GizmoViewcube />
+        </GizmoHelper>
         
         
       </Canvas>
@@ -987,4 +1020,114 @@ function CameraGizmo({
       </div>
     </div>
   )
+}
+
+// Camera Controls Component - handles actual camera functionality inside Canvas
+function CameraControls({ 
+  controlsRef,
+  orbitControlsRef
+}: { 
+  controlsRef: React.MutableRefObject<{
+    setCameraView: (view: 'front' | 'back' | 'right' | 'left' | 'top' | 'bottom' | 'camera') => void
+    toggleCameraMode: () => void
+    switchToPerspective: () => void
+  } | null>
+  orbitControlsRef: React.MutableRefObject<any>
+}) {
+  const { camera, gl, set } = useThree()
+  
+  const switchToPerspective = () => {
+    if (camera instanceof THREE.PerspectiveCamera) return // Already perspective
+
+    const perspectiveCamera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000)
+    perspectiveCamera.position.copy(camera.position)
+    perspectiveCamera.quaternion.copy(camera.quaternion)
+    perspectiveCamera.updateProjectionMatrix()
+    
+    set({ camera: perspectiveCamera })
+  }
+
+  const switchToOrtho = () => {
+    if (camera instanceof THREE.OrthographicCamera) return // Already ortho
+
+    const aspect = window.innerWidth / window.innerHeight
+    const distance = camera.position.length() || 10
+    const frustumSize = distance
+    
+    const orthoCamera = new THREE.OrthographicCamera(
+      -frustumSize * aspect / 2, 
+      frustumSize * aspect / 2, 
+      frustumSize / 2, 
+      -frustumSize / 2, 
+      0.1, 
+      1000
+    )
+    
+    orthoCamera.position.copy(camera.position)
+    orthoCamera.quaternion.copy(camera.quaternion)
+    orthoCamera.updateProjectionMatrix()
+
+    set({ camera: orthoCamera })
+  }
+
+  // Override the setCameraView function to actually implement camera control
+  const handleSetCameraView = (view: 'front' | 'back' | 'right' | 'left' | 'top' | 'bottom' | 'camera') => {
+    // Define camera positions for each view
+    const viewPositions = {
+      front: { position: [0, 0, 10], target: [0, 0, 0] },
+      back: { position: [0, 0, -10], target: [0, 0, 0] },
+      right: { position: [10, 0, 0], target: [0, 0, 0] },
+      left: { position: [-10, 0, 0], target: [0, 0, 0] },
+      top: { position: [0, 10, 0], target: [0, 0, 0] },
+      bottom: { position: [0, -10, 0], target: [0, 0, 0] },
+      camera: { position: [5, 5, 5], target: [0, 0, 0] }
+    }
+    
+    const targetView = viewPositions[view]
+    if (targetView) {
+      // Just move the active camera, do not auto-switch modes
+      camera.position.set(targetView.position[0], targetView.position[1], targetView.position[2])
+      camera.lookAt(targetView.target[0], targetView.target[1], targetView.target[2])
+      
+      // Ensure orientation is upright for standard views to prevent roll
+      if (view === 'top' || view === 'bottom') {
+        camera.up.set(0, 0, -1) 
+      } else {
+        camera.up.set(0, 1, 0)
+      }
+      
+      camera.updateProjectionMatrix()
+      
+      // Reset OrbitControls target to center to avoid jumps
+      if (orbitControlsRef.current) {
+        orbitControlsRef.current.target.set(0, 0, 0)
+        orbitControlsRef.current.update()
+      }
+      
+      // Trigger a render
+      gl.render()
+    }
+  }
+
+  // Manual toggle for camera mode
+  const handleToggleCameraMode = () => {
+    if (camera instanceof THREE.PerspectiveCamera) {
+      switchToOrtho()
+    } else {
+      switchToPerspective()
+    }
+  }
+
+  // Update the parent component's functions
+  useEffect(() => {
+    if (controlsRef) {
+      controlsRef.current = {
+        setCameraView: handleSetCameraView,
+        toggleCameraMode: handleToggleCameraMode,
+        switchToPerspective: switchToPerspective
+      }
+    }
+  }, [camera, gl, set])
+
+  return null
 }
