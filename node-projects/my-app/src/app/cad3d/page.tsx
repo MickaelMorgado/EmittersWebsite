@@ -2,7 +2,7 @@
 import DraggableNumberInput from '@/components/DraggableNumberInput'
 import { Grid, OrbitControls, TransformControls } from '@react-three/drei'
 import { Canvas, useThree } from '@react-three/fiber'
-import { Box, Download, Edit3, Expand, MousePointer, Move, RotateCcw, Trash2 } from 'lucide-react'
+import { Box, Download, Edit3, Expand, MousePointer, Move, RotateCcw, Trash2, Camera, Eye, EyeOff, ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { OBJExporter } from 'three/examples/jsm/exporters/OBJExporter.js'
@@ -18,6 +18,7 @@ export default function CAD3D() {
   const [isSelectionMode, setIsSelectionMode] = useState<boolean>(true)
   const [controlMode, setControlMode] = useState<'move' | 'rotate' | 'scale' | 'edit'>('move')
   const [isTransformDragging, setIsTransformDragging] = useState<boolean>(false)
+  const [isCameraDragging, setIsCameraDragging] = useState<boolean>(false)
   
   // Primary purple color variable for consistent theming (RGBA format)
   const primaryColorHex = '#c0f052'
@@ -77,12 +78,54 @@ export default function CAD3D() {
             setSelectedObjectIndex(null)
           }
           break
+        // Camera orientation shortcuts (Blender-style)
+        case '1': // Front view
+          if (e.ctrlKey) {
+            // Ctrl+1 for back view
+            setCameraView('back')
+          } else {
+            setCameraView('front')
+          }
+          break
+        case '3': // Right view
+          if (e.ctrlKey) {
+            // Ctrl+3 for left view
+            setCameraView('left')
+          } else {
+            setCameraView('right')
+          }
+          break
+        case '7': // Top view
+          if (e.ctrlKey) {
+            // Ctrl+7 for bottom view
+            setCameraView('bottom')
+          } else {
+            setCameraView('top')
+          }
+          break
+        case '5': // Toggle orthographic/perspective
+          toggleCameraMode()
+          break
+        case '0': // Camera view
+          setCameraView('camera')
+          break
       }
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [selectedObjectIndex, removeObject])
+
+  // Camera control functions
+  const setCameraView = (view: 'front' | 'back' | 'right' | 'left' | 'top' | 'bottom' | 'camera') => {
+    // This will be implemented in the CameraGizmo component
+    console.log('Camera view:', view)
+  }
+
+  const toggleCameraMode = () => {
+    // This will be implemented in the CameraGizmo component
+    console.log('Toggle camera mode')
+  }
 
   const exportSTL = () => {
     // Create a scene to hold all objects for export
@@ -551,6 +594,14 @@ export default function CAD3D() {
           />
         )}
         
+        {/* Camera Gizmo - Inside Canvas */}
+        <CameraGizmo 
+          setCameraView={setCameraView}
+          toggleCameraMode={toggleCameraMode}
+          isCameraDragging={isCameraDragging}
+          setIsCameraDragging={setIsCameraDragging}
+        />
+        
       </Canvas>
 
       {/* Control Tools - Center Bottom Toolbar */}
@@ -814,4 +865,213 @@ function Object3D({ name, type, position, rotation, scale, color, isSelected, on
     default:
       return null
   }
+}
+
+// Camera Gizmo Component
+function CameraGizmo({ 
+  setCameraView, 
+  toggleCameraMode, 
+  isCameraDragging, 
+  setIsCameraDragging 
+}: { 
+  setCameraView: (view: 'front' | 'back' | 'right' | 'left' | 'top' | 'bottom' | 'camera') => void
+  toggleCameraMode: () => void
+  isCameraDragging: boolean
+  setIsCameraDragging: (val: boolean) => void
+}) {
+  const { camera, gl } = useThree()
+  
+  // Camera control implementation
+  const handleCameraView = (view: 'front' | 'back' | 'right' | 'left' | 'top' | 'bottom' | 'camera') => {
+    const target = new THREE.Vector3(0, 0, 0)
+    let position: THREE.Vector3
+    
+    switch (view) {
+      case 'front':
+        position = new THREE.Vector3(0, 0, 5)
+        break
+      case 'back':
+        position = new THREE.Vector3(0, 0, -5)
+        break
+      case 'right':
+        position = new THREE.Vector3(5, 0, 0)
+        break
+      case 'left':
+        position = new THREE.Vector3(-5, 0, 0)
+        break
+      case 'top':
+        position = new THREE.Vector3(0, 5, 0)
+        break
+      case 'bottom':
+        position = new THREE.Vector3(0, -5, 0)
+        break
+      case 'camera':
+        // Use current camera position
+        position = camera.position.clone()
+        break
+    }
+    
+    // Smoothly animate camera to new position
+    const startPos = camera.position.clone()
+    const startLook = camera.getWorldDirection(new THREE.Vector3()).clone()
+    const endLook = new THREE.Vector3().subVectors(target, position).normalize()
+    
+    const duration = 500 // ms
+    const startTime = Date.now()
+    
+    const animateCamera = () => {
+      const elapsed = Date.now() - startTime
+      const progress = Math.min(elapsed / duration, 1)
+      
+      // Ease out cubic
+      const ease = 1 - Math.pow(1 - progress, 3)
+      
+      camera.position.lerpVectors(startPos, position, ease)
+      camera.lookAt(target)
+      
+      if (progress < 1) {
+        requestAnimationFrame(animateCamera)
+      } else {
+        camera.lookAt(target)
+      }
+    }
+    
+    animateCamera()
+  }
+  
+  // Override the setCameraView function to use actual implementation
+  const actualSetCameraView = (view: 'front' | 'back' | 'right' | 'left' | 'top' | 'bottom' | 'camera') => {
+    handleCameraView(view)
+  }
+  
+  const actualToggleCameraMode = () => {
+    // Toggle between perspective and orthographic
+    const isPerspective = camera.type === 'PerspectiveCamera'
+    
+    if (isPerspective) {
+      // Switch to orthographic
+      const aspect = gl.domElement.clientWidth / gl.domElement.clientHeight
+      const d = 5
+      const orthoCamera = new THREE.OrthographicCamera(-d * aspect, d * aspect, d, -d, 1, 1000)
+      orthoCamera.position.copy(camera.position)
+      orthoCamera.rotation.copy(camera.rotation)
+      // Replace camera in scene
+      camera.parent?.add(orthoCamera)
+      camera.parent?.remove(camera)
+    } else {
+      // Switch to perspective
+      const perspectiveCamera = new THREE.PerspectiveCamera(50, gl.domElement.clientWidth / gl.domElement.clientHeight, 0.1, 1000)
+      perspectiveCamera.position.copy(camera.position)
+      perspectiveCamera.rotation.copy(camera.rotation)
+      // Replace camera in scene
+      camera.parent?.add(perspectiveCamera)
+      camera.parent?.remove(camera)
+    }
+  }
+
+  return (
+    <div className="absolute bottom-4 right-4" style={{ zIndex: 60 }}>
+      <div 
+        className="bg-black bg-opacity-80 backdrop-blur-md rounded-lg p-3 border border-gray-600"
+        style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(3, 1fr)', 
+          gap: '6px',
+          minWidth: '120px'
+        }}
+      >
+        {/* Top Row: Top, Camera, Bottom */}
+        <button
+          onClick={() => actualSetCameraView('top')}
+          className="w-8 h-8 rounded flex items-center justify-center transition-all hover:bg-gray-600"
+          style={{
+            backgroundColor: '#333',
+            color: '#fff',
+            border: '1px solid #555'
+          }}
+          title="Top View (7)"
+        >
+          <ArrowUp size={16} />
+        </button>
+        <button
+          onClick={() => actualToggleCameraMode()}
+          className="w-8 h-8 rounded flex items-center justify-center transition-all hover:bg-gray-600"
+          style={{
+            backgroundColor: '#333',
+            color: '#fff',
+            border: '1px solid #555'
+          }}
+          title="Toggle Camera Mode (5)"
+        >
+          <Camera size={16} />
+        </button>
+        <button
+          onClick={() => actualSetCameraView('bottom')}
+          className="w-8 h-8 rounded flex items-center justify-center transition-all hover:bg-gray-600"
+          style={{
+            backgroundColor: '#333',
+            color: '#fff',
+            border: '1px solid #555'
+          }}
+          title="Bottom View (Ctrl+7)"
+        >
+          <ArrowDown size={16} />
+        </button>
+
+        {/* Middle Row: Left, Front, Right */}
+        <button
+          onClick={() => actualSetCameraView('left')}
+          className="w-8 h-8 rounded flex items-center justify-center transition-all hover:bg-gray-600"
+          style={{
+            backgroundColor: '#333',
+            color: '#fff',
+            border: '1px solid #555'
+          }}
+          title="Left View (Ctrl+3)"
+        >
+          <ArrowLeft size={16} />
+        </button>
+        <button
+          onClick={() => actualSetCameraView('front')}
+          className="w-8 h-8 rounded flex items-center justify-center transition-all hover:bg-gray-600"
+          style={{
+            backgroundColor: '#333',
+            color: '#fff',
+            border: '1px solid #555'
+          }}
+          title="Front View (1)"
+        >
+          <Eye size={16} />
+        </button>
+        <button
+          onClick={() => actualSetCameraView('right')}
+          className="w-8 h-8 rounded flex items-center justify-center transition-all hover:bg-gray-600"
+          style={{
+            backgroundColor: '#333',
+            color: '#fff',
+            border: '1px solid #555'
+          }}
+          title="Right View (3)"
+        >
+          <ArrowRight size={16} />
+        </button>
+
+        {/* Bottom Row: Back, Empty, Empty */}
+        <button
+          onClick={() => actualSetCameraView('back')}
+          className="w-8 h-8 rounded flex items-center justify-center transition-all hover:bg-gray-600"
+          style={{
+            backgroundColor: '#333',
+            color: '#fff',
+            border: '1px solid #555'
+          }}
+          title="Back View (Ctrl+1)"
+        >
+          <EyeOff size={16} />
+        </button>
+        <div className="w-8 h-8"></div>
+        <div className="w-8 h-8"></div>
+      </div>
+    </div>
+  )
 }
