@@ -322,6 +322,7 @@ export default function CAD3D() {
                   ? '0 0 20px rgba(192, 240, 82, 0.4), 0 0 40px rgba(192, 240, 82, 0.25), inset 0 0 15px rgba(192, 240, 82, 0.1)' 
                   : '',
                 transform: selectedObjectIndex === index ? 'translateY(-1px)' : 'translateY(0)',
+                boxSizing: 'border-box',
                 ...(!isTransformDragging && {
                   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                 })
