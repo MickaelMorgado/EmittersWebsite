@@ -2,7 +2,7 @@
 import DraggableNumberInput from '@/components/DraggableNumberInput'
 import { Grid, OrbitControls, TransformControls } from '@react-three/drei'
 import { Canvas, useThree } from '@react-three/fiber'
-import { Box, Download, Edit3, Expand, MousePointer, Move, RotateCcw, Trash2, Camera, Eye, EyeOff, ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from 'lucide-react'
+import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Box, Camera, Download, Edit3, Expand, Eye, EyeOff, MousePointer, Move, RotateCcw, Trash2 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { OBJExporter } from 'three/examples/jsm/exporters/OBJExporter.js'
@@ -125,6 +125,15 @@ export default function CAD3D() {
   const toggleCameraMode = () => {
     // This will be implemented in the CameraGizmo component
     console.log('Toggle camera mode')
+  }
+
+  // Camera control implementation for external use
+  const handleCameraView = (view: 'front' | 'back' | 'right' | 'left' | 'top' | 'bottom' | 'camera') => {
+    // This will be passed to CameraGizmo as a prop
+  }
+
+  const handleToggleCameraMode = () => {
+    // This will be passed to CameraGizmo as a prop
   }
 
   const exportSTL = () => {
@@ -594,13 +603,6 @@ export default function CAD3D() {
           />
         )}
         
-        {/* Camera Gizmo - Inside Canvas */}
-        <CameraGizmo 
-          setCameraView={setCameraView}
-          toggleCameraMode={toggleCameraMode}
-          isCameraDragging={isCameraDragging}
-          setIsCameraDragging={setIsCameraDragging}
-        />
         
       </Canvas>
 
@@ -879,96 +881,7 @@ function CameraGizmo({
   isCameraDragging: boolean
   setIsCameraDragging: (val: boolean) => void
 }) {
-  const { camera, gl } = useThree()
-  
-  // Camera control implementation
-  const handleCameraView = (view: 'front' | 'back' | 'right' | 'left' | 'top' | 'bottom' | 'camera') => {
-    const target = new THREE.Vector3(0, 0, 0)
-    let position: THREE.Vector3
-    
-    switch (view) {
-      case 'front':
-        position = new THREE.Vector3(0, 0, 5)
-        break
-      case 'back':
-        position = new THREE.Vector3(0, 0, -5)
-        break
-      case 'right':
-        position = new THREE.Vector3(5, 0, 0)
-        break
-      case 'left':
-        position = new THREE.Vector3(-5, 0, 0)
-        break
-      case 'top':
-        position = new THREE.Vector3(0, 5, 0)
-        break
-      case 'bottom':
-        position = new THREE.Vector3(0, -5, 0)
-        break
-      case 'camera':
-        // Use current camera position
-        position = camera.position.clone()
-        break
-    }
-    
-    // Smoothly animate camera to new position
-    const startPos = camera.position.clone()
-    const startLook = camera.getWorldDirection(new THREE.Vector3()).clone()
-    const endLook = new THREE.Vector3().subVectors(target, position).normalize()
-    
-    const duration = 500 // ms
-    const startTime = Date.now()
-    
-    const animateCamera = () => {
-      const elapsed = Date.now() - startTime
-      const progress = Math.min(elapsed / duration, 1)
-      
-      // Ease out cubic
-      const ease = 1 - Math.pow(1 - progress, 3)
-      
-      camera.position.lerpVectors(startPos, position, ease)
-      camera.lookAt(target)
-      
-      if (progress < 1) {
-        requestAnimationFrame(animateCamera)
-      } else {
-        camera.lookAt(target)
-      }
-    }
-    
-    animateCamera()
-  }
-  
-  // Override the setCameraView function to use actual implementation
-  const actualSetCameraView = (view: 'front' | 'back' | 'right' | 'left' | 'top' | 'bottom' | 'camera') => {
-    handleCameraView(view)
-  }
-  
-  const actualToggleCameraMode = () => {
-    // Toggle between perspective and orthographic
-    const isPerspective = camera.type === 'PerspectiveCamera'
-    
-    if (isPerspective) {
-      // Switch to orthographic
-      const aspect = gl.domElement.clientWidth / gl.domElement.clientHeight
-      const d = 5
-      const orthoCamera = new THREE.OrthographicCamera(-d * aspect, d * aspect, d, -d, 1, 1000)
-      orthoCamera.position.copy(camera.position)
-      orthoCamera.rotation.copy(camera.rotation)
-      // Replace camera in scene
-      camera.parent?.add(orthoCamera)
-      camera.parent?.remove(camera)
-    } else {
-      // Switch to perspective
-      const perspectiveCamera = new THREE.PerspectiveCamera(50, gl.domElement.clientWidth / gl.domElement.clientHeight, 0.1, 1000)
-      perspectiveCamera.position.copy(camera.position)
-      perspectiveCamera.rotation.copy(camera.rotation)
-      // Replace camera in scene
-      camera.parent?.add(perspectiveCamera)
-      camera.parent?.remove(camera)
-    }
-  }
-
+  // Camera Gizmo UI only - camera controls are handled by the version inside Canvas
   return (
     <div className="absolute bottom-4 right-4" style={{ zIndex: 60 }}>
       <div 
@@ -982,7 +895,7 @@ function CameraGizmo({
       >
         {/* Top Row: Top, Camera, Bottom */}
         <button
-          onClick={() => actualSetCameraView('top')}
+          onClick={() => setCameraView('top')}
           className="w-8 h-8 rounded flex items-center justify-center transition-all hover:bg-gray-600"
           style={{
             backgroundColor: '#333',
@@ -994,7 +907,7 @@ function CameraGizmo({
           <ArrowUp size={16} />
         </button>
         <button
-          onClick={() => actualToggleCameraMode()}
+          onClick={toggleCameraMode}
           className="w-8 h-8 rounded flex items-center justify-center transition-all hover:bg-gray-600"
           style={{
             backgroundColor: '#333',
@@ -1006,7 +919,7 @@ function CameraGizmo({
           <Camera size={16} />
         </button>
         <button
-          onClick={() => actualSetCameraView('bottom')}
+          onClick={() => setCameraView('bottom')}
           className="w-8 h-8 rounded flex items-center justify-center transition-all hover:bg-gray-600"
           style={{
             backgroundColor: '#333',
@@ -1020,7 +933,7 @@ function CameraGizmo({
 
         {/* Middle Row: Left, Front, Right */}
         <button
-          onClick={() => actualSetCameraView('left')}
+          onClick={() => setCameraView('left')}
           className="w-8 h-8 rounded flex items-center justify-center transition-all hover:bg-gray-600"
           style={{
             backgroundColor: '#333',
@@ -1032,7 +945,7 @@ function CameraGizmo({
           <ArrowLeft size={16} />
         </button>
         <button
-          onClick={() => actualSetCameraView('front')}
+          onClick={() => setCameraView('front')}
           className="w-8 h-8 rounded flex items-center justify-center transition-all hover:bg-gray-600"
           style={{
             backgroundColor: '#333',
@@ -1044,7 +957,7 @@ function CameraGizmo({
           <Eye size={16} />
         </button>
         <button
-          onClick={() => actualSetCameraView('right')}
+          onClick={() => setCameraView('right')}
           className="w-8 h-8 rounded flex items-center justify-center transition-all hover:bg-gray-600"
           style={{
             backgroundColor: '#333',
@@ -1058,7 +971,7 @@ function CameraGizmo({
 
         {/* Bottom Row: Back, Empty, Empty */}
         <button
-          onClick={() => actualSetCameraView('back')}
+          onClick={() => setCameraView('back')}
           className="w-8 h-8 rounded flex items-center justify-center transition-all hover:bg-gray-600"
           style={{
             backgroundColor: '#333',
