@@ -1,4 +1,5 @@
 'use client'
+import DraggableNumberInput from '@/components/DraggableNumberInput'
 import { Grid, OrbitControls, TransformControls } from '@react-three/drei'
 import { Canvas, useThree } from '@react-three/fiber'
 import { Box, Download, Edit3, Expand, MousePointer, Move, RotateCcw, Trash2 } from 'lucide-react'
@@ -345,262 +346,121 @@ export default function CAD3D() {
                   <Trash2 size={12} />
                 </button>
               </div>
-              <div className="grid grid-cols-2">
-                <div className="flex flex-col">
-                  <div className="text-xs font-medium text-gray-200 mb-1">Translation</div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-gray-400">X</span>
-                    <div className="flex items-center border border-gray-600 rounded bg-gray-800">
-                      <button
-                        onClick={() => updateObject(index, { position: [obj.position[0] - 0.1, obj.position[1], obj.position[2]] })}
-                        className="px-2 py-1 text-xs hover:bg-gray-700 transition-colors"
-                        style={{ color: 'white' }}
-                      >
-                        -
-                      </button>
-                      <input
-                        type="number"
-                        step="0.1"
-                        min="-100"
-                        max="100"
+              <div className="flex gap-4">
+                <div className="flex flex-col gap-2">
+                  <div className="flex flex-col">             
+                    <div className="flex" style={{ borderRadius: '6px', overflow: 'hidden' }}>
+                      <DraggableNumberInput
                         value={obj.position[0]}
-                        onChange={(e) => {
-                          // Auto-convert ".5" to "0.5" when user types decimal
-                          let value = e.target.value
-                          if (value.startsWith('.')) {
-                            value = '0' + value
-                            e.target.value = value
-                          }
-                          updateObject(index, { position: [parseFloat(value), obj.position[1], obj.position[2]] })
-                        }}
-                        onFocus={(e) => e.target.select()}
-                        className="w-[80px] px-2 py-1 text-xs bg-transparent border-0 text-center focus:outline-none"
-                        style={{ color: 'white' }}
+                        onChange={(value) => updateObject(index, { position: [value, obj.position[1], obj.position[2]] })}
+                        min={-100}
+                        max={100}
+                        step={0.1}
+                        label="X"
+                        dragSensitivity={0.01}
+                        decimals={1}
+                        className="w-full"
                       />
-                      <button
-                        onClick={() => updateObject(index, { position: [obj.position[0] + 0.1, obj.position[1], obj.position[2]] })}
-                        className="px-2 py-1 text-xs hover:bg-gray-700 transition-colors"
-                        style={{ color: 'white' }}
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-gray-400">Y</span>
-                    <div className="flex items-center border border-gray-600 rounded bg-gray-800">
-                      <button
-                        onClick={() => updateObject(index, { position: [obj.position[0], obj.position[1], obj.position[2] - 0.1] })}
-                        className="px-2 py-1 text-xs hover:bg-gray-700 transition-colors"
-                        style={{ color: 'white' }}
-                      >
-                        -
-                      </button>
-                      <input
-                        type="number"
-                        step="0.1"
-                        min="-100"
-                        max="100"
+                      <DraggableNumberInput
                         value={obj.position[2]}
-                        onChange={(e) => {
-                          // Auto-convert ".5" to "0.5" when user types decimal
-                          let value = e.target.value
-                          if (value.startsWith('.')) {
-                            value = '0' + value
-                            e.target.value = value
-                          }
-                          updateObject(index, { position: [obj.position[0], obj.position[1], parseFloat(value)] })
-                        }}
-                        onFocus={(e) => e.target.select()}
-                        className="w-[80px] px-2 py-1 text-xs bg-transparent border-0 text-center focus:outline-none"
-                        style={{ color: 'white' }}
+                        onChange={(value) => updateObject(index, { position: [obj.position[0], obj.position[1], value] })}
+                        min={-100}
+                        max={100}
+                        step={0.1}
+                        label="Y"
+                        dragSensitivity={0.01}
+                        decimals={1}
+                        className="w-full"
                       />
-                      <button
-                        onClick={() => updateObject(index, { position: [obj.position[0], obj.position[1], obj.position[2] + 0.1] })}
-                        className="px-2 py-1 text-xs hover:bg-gray-700 transition-colors"
-                        style={{ color: 'white' }}
-                      >
-                        +
-                      </button>
+                      <DraggableNumberInput
+                        value={obj.position[1]}
+                        onChange={(value) => updateObject(index, { position: [obj.position[0], value, obj.position[2]] })}
+                        min={-100}
+                        max={100}
+                        step={0.1}
+                        label="Z"
+                        dragSensitivity={0.01}
+                        decimals={1}
+                        className="w-full"
+                      />
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-gray-400">Z</span>
-                    <div className="flex items-center border border-gray-600 rounded bg-gray-800">
-                      <button
-                        onClick={() => updateObject(index, { position: [obj.position[0], obj.position[1] - 0.1, obj.position[2]] })}
-                        className="px-2 py-1 text-xs hover:bg-gray-700 transition-colors"
-                        style={{ color: 'white' }}
-                      >
-                        -
-                      </button>
-                      <input
-                        type="number"
-                        step="0.1"
-                        min="-100"
-                        max="100"
-                        value={obj.position[1]}
-                        onChange={(e) => {
-                          // Auto-convert ".5" to "0.5" when user types decimal
-                          let value = e.target.value
-                          if (value.startsWith('.')) {
-                            value = '0' + value
-                            e.target.value = value
-                          }
-                          updateObject(index, { position: [obj.position[0], parseFloat(value), obj.position[2]] })
-                        }}
-                        onFocus={(e) => e.target.select()}
-                        className="w-[80px] px-2 py-1 text-xs bg-transparent border-0 text-center focus:outline-none"
-                        style={{ color: 'white' }}
+                  <div className="flex flex-col">    
+                    <div className="flex" style={{ borderRadius: '6px', overflow: 'hidden' }}>
+                      <DraggableNumberInput
+                        value={obj.rotation[0]}
+                        onChange={(value) => updateObject(index, { rotation: [value, obj.rotation[1], obj.rotation[2]] })}
+                        min={-6.28}
+                        max={6.28}
+                        step={0.1}
+                        label="X"
+                        dragSensitivity={0.005}
+                        decimals={2}
+                        className="w-full"
                       />
-                      <button
-                        onClick={() => updateObject(index, { position: [obj.position[0], obj.position[1] + 0.1, obj.position[2]] })}
-                        className="px-2 py-1 text-xs hover:bg-gray-700 transition-colors"
-                        style={{ color: 'white' }}
-                      >
-                        +
-                      </button>
+                      <DraggableNumberInput
+                        value={obj.rotation[1]}
+                        onChange={(value) => updateObject(index, { rotation: [obj.rotation[0], value, obj.rotation[2]] })}
+                        min={-6.28}
+                        max={6.28}
+                        step={0.1}
+                        label="Y"
+                        dragSensitivity={0.005}
+                        decimals={2}
+                        className="w-full"
+                      />
+                      <DraggableNumberInput
+                        value={obj.rotation[2]}
+                        onChange={(value) => updateObject(index, { rotation: [obj.rotation[0], obj.rotation[1], value] })}
+                        min={-6.28}
+                        max={6.28}
+                        step={0.1}
+                        label="Z"
+                        dragSensitivity={0.005}
+                        decimals={2}
+                        className="w-full"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex flex-col">             
+                    <div className="flex" style={{ borderRadius: '6px', overflow: 'hidden' }}>
+                      <DraggableNumberInput
+                        value={obj.scale[0]}
+                        onChange={(value) => updateObject(index, { scale: [value, obj.scale[1], obj.scale[2]] })}
+                        min={0.1}
+                        max={100}
+                        step={0.1}
+                        label="X"
+                        dragSensitivity={0.01}
+                        decimals={1}
+                        className="w-full"
+                      />
+                      <DraggableNumberInput
+                        value={obj.scale[1]}
+                        onChange={(value) => updateObject(index, { scale: [obj.scale[0], value, obj.scale[2]] })}
+                        min={0.1}
+                        max={100}
+                        step={0.1}
+                        label="Y"
+                        dragSensitivity={0.01}
+                        decimals={1}
+                        className="w-full"
+                      />
+                      <DraggableNumberInput
+                        value={obj.scale[2]}
+                        onChange={(value) => updateObject(index, { scale: [obj.scale[0], obj.scale[1], value] })}
+                        min={0.1}
+                        max={100}
+                        step={0.1}
+                        label="Z"
+                        dragSensitivity={0.01}
+                        decimals={1}
+                        className="w-full"
+                      />
                     </div>
                   </div>
                 </div>
-                <div className="flex flex-col">
-                  <div className="text-xs font-medium text-gray-200 mb-1">Scale</div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-gray-400">X</span>
-                    <div className="flex items-center border border-gray-600 rounded bg-gray-800">
-                      <button
-                        onClick={() => {
-                          const val = Math.max(0.1, obj.scale[0] - 0.1)
-                          updateObject(index, { scale: [val, obj.scale[1], obj.scale[2]] })
-                        }}
-                        className="px-2 py-1 text-xs hover:bg-gray-700 transition-colors"
-                        style={{ color: 'white' }}
-                      >
-                        -
-                      </button>
-                      <input
-                        type="number"
-                        step="0.1"
-                        min="0.1"
-                        max="100"
-                        value={obj.scale[0]}
-                        onChange={(e) => {
-                          // Auto-convert ".5" to "0.5" when user types decimal
-                          let value = e.target.value
-                          if (value.startsWith('.')) {
-                            value = '0' + value
-                            e.target.value = value
-                          }
-                          const val = parseFloat(value)
-                          updateObject(index, { scale: [val, obj.scale[1], obj.scale[2]] })
-                        }}
-                        onFocus={(e) => e.target.select()}
-                        className="w-[80px] px-2 py-1 text-xs bg-transparent border-0 text-center focus:outline-none"
-                        style={{ color: 'white' }}
-                      />
-                      <button
-                        onClick={() => {
-                          const val = obj.scale[0] + 0.1
-                          updateObject(index, { scale: [val, obj.scale[1], obj.scale[2]] })
-                        }}
-                        className="px-2 py-1 text-xs hover:bg-gray-700 transition-colors"
-                        style={{ color: 'white' }}
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-gray-400">Y</span>
-                    <div className="flex items-center border border-gray-600 rounded bg-gray-800">
-                      <button
-                        onClick={() => {
-                          const val = Math.max(0.1, obj.scale[1] - 0.1)
-                          updateObject(index, { scale: [obj.scale[0], val, obj.scale[2]] })
-                        }}
-                        className="px-2 py-1 text-xs hover:bg-gray-700 transition-colors"
-                        style={{ color: 'white' }}
-                      >
-                        -
-                      </button>
-                      <input
-                        type="number"
-                        step="0.1"
-                        min="0.1"
-                        max="100"
-                        value={obj.scale[1]}
-                        onChange={(e) => {
-                          // Auto-convert ".5" to "0.5" when user types decimal
-                          let value = e.target.value
-                          if (value.startsWith('.')) {
-                            value = '0' + value
-                            e.target.value = value
-                          }
-                          const val = parseFloat(value)
-                          updateObject(index, { scale: [obj.scale[0], val, obj.scale[2]] })
-                        }}
-                        onFocus={(e) => e.target.select()}
-                        className="w-[80px] px-2 py-1 text-xs bg-transparent border-0 text-center focus:outline-none"
-                        style={{ color: 'white' }}
-                      />
-                      <button
-                        onClick={() => {
-                          const val = obj.scale[1] + 0.1
-                          updateObject(index, { scale: [obj.scale[0], val, obj.scale[2]] })
-                        }}
-                        className="px-2 py-1 text-xs hover:bg-gray-700 transition-colors"
-                        style={{ color: 'white' }}
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-gray-400">Z</span>
-                    <div className="flex items-center border border-gray-600 rounded bg-gray-800">
-                      <button
-                        onClick={() => {
-                          const val = Math.max(0.1, obj.scale[2] - 0.1)
-                          updateObject(index, { scale: [obj.scale[0], obj.scale[1], val] })
-                        }}
-                        className="px-2 py-1 text-xs hover:bg-gray-700 transition-colors"
-                        style={{ color: 'white' }}
-                      >
-                        -
-                      </button>
-                      <input
-                        type="number"
-                        step="0.1"
-                        min="0.1"
-                        max="100"
-                        value={obj.scale[2]}
-                        onChange={(e) => {
-                          // Auto-convert ".5" to "0.5" when user types decimal
-                          let value = e.target.value
-                          if (value.startsWith('.')) {
-                            value = '0' + value
-                            e.target.value = value
-                          }
-                          const val = parseFloat(value)
-                          updateObject(index, { scale: [obj.scale[0], obj.scale[1], val] })
-                        }}
-                        onFocus={(e) => e.target.select()}
-                        className="w-[80px] px-2 py-1 text-xs bg-transparent border-0 text-center focus:outline-none"
-                        style={{ color: 'white' }}
-                      />
-                      <button
-                        onClick={() => {
-                          const val = obj.scale[2] + 0.1
-                          updateObject(index, { scale: [obj.scale[0], obj.scale[1], val] })
-                        }}
-                        className="px-2 py-1 text-xs hover:bg-gray-700 transition-colors"
-                        style={{ color: 'white' }}
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 mt-2">
+                <div className="flex items-center gap-2 mt-2">
                     <span className="text-xs text-gray-400">Color</span>
                     <input
                       type="color"
@@ -613,7 +473,6 @@ export default function CAD3D() {
                         borderWidth: '1px'
                       }}
                     />
-                  </div>
                 </div>
               </div>
             </div>
