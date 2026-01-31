@@ -125,8 +125,8 @@ export default function DraggableNumberInput({
     }
   }, [isDragging, dragStartValue, dragStartX, dragSensitivity, min, max, step, onChange])
 
-  // Format display value
-  const displayValue = isNaN(value) ? placeholder : value.toFixed(decimals)
+  // Format display value with more precision
+  const displayValue = isNaN(value) ? placeholder : value.toFixed(Math.max(decimals, 3))
 
   return (
     <div 

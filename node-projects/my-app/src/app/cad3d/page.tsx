@@ -387,39 +387,39 @@ export default function CAD3D() {
                   </div>
                   <div className="flex flex-col">    
                     <div className="flex" style={{ borderRadius: '6px', overflow: 'hidden' }}>
-                      <DraggableNumberInput
-                        value={obj.rotation[0]}
-                        onChange={(value) => updateObject(index, { rotation: [value, obj.rotation[1], obj.rotation[2]] })}
-                        min={-6.28}
-                        max={6.28}
-                        step={0.1}
-                        label="X"
-                        dragSensitivity={0.005}
-                        decimals={2}
-                        className="w-full"
-                      />
-                      <DraggableNumberInput
-                        value={obj.rotation[1]}
-                        onChange={(value) => updateObject(index, { rotation: [obj.rotation[0], value, obj.rotation[2]] })}
-                        min={-6.28}
-                        max={6.28}
-                        step={0.1}
-                        label="Y"
-                        dragSensitivity={0.005}
-                        decimals={2}
-                        className="w-full"
-                      />
-                      <DraggableNumberInput
-                        value={obj.rotation[2]}
-                        onChange={(value) => updateObject(index, { rotation: [obj.rotation[0], obj.rotation[1], value] })}
-                        min={-6.28}
-                        max={6.28}
-                        step={0.1}
-                        label="Z"
-                        dragSensitivity={0.005}
-                        decimals={2}
-                        className="w-full"
-                      />
+                    <DraggableNumberInput
+                      value={obj.rotation[0]}
+                      onChange={(value) => updateObject(index, { rotation: [value, obj.rotation[1], obj.rotation[2]] })}
+                      min={-6.28}
+                      max={6.28}
+                      step={0.1}
+                      label="X"
+                      dragSensitivity={0.005}
+                      decimals={4}
+                      className="w-full"
+                    />
+                    <DraggableNumberInput
+                      value={obj.rotation[1]}
+                      onChange={(value) => updateObject(index, { rotation: [obj.rotation[0], value, obj.rotation[2]] })}
+                      min={-6.28}
+                      max={6.28}
+                      step={0.1}
+                      label="Y"
+                      dragSensitivity={0.005}
+                      decimals={4}
+                      className="w-full"
+                    />
+                    <DraggableNumberInput
+                      value={obj.rotation[2]}
+                      onChange={(value) => updateObject(index, { rotation: [obj.rotation[0], obj.rotation[1], value] })}
+                      min={-6.28}
+                      max={6.28}
+                      step={0.1}
+                      label="Z"
+                      dragSensitivity={0.005}
+                      decimals={4}
+                      className="w-full"
+                    />
                     </div>
                   </div>
                   <div className="flex flex-col">             
