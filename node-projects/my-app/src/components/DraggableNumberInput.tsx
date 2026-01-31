@@ -73,20 +73,12 @@ export default function DraggableNumberInput({
     setDragStartX(0)
   }
 
-  // Handle wheel events for fine-tuning
+  // Handle wheel events for fine-tuning - DISABLED to prevent accidental changes
   const handleWheel = (e: React.WheelEvent) => {
+    // Wheel scrolling is disabled to prevent accidental value changes
+    // Users can still use keyboard shortcuts for fine adjustments
     e.preventDefault()
-    
-    // Calculate delta based on wheel direction and modifier keys
-    let delta = 0
-    if (e.shiftKey) delta = step * 10 // Shift for larger steps
-    else if (e.ctrlKey || e.metaKey) delta = step * 0.1 // Ctrl/Cmd for smaller steps
-    else delta = step
-    
-    if (e.deltaY > 0) delta = -delta // Invert direction
-    
-    const newValue = Math.max(min, Math.min(max, value + delta))
-    onChange(newValue)
+    return
   }
 
   // Handle input change for direct typing
