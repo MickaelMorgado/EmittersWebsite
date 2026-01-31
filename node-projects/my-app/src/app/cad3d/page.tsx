@@ -78,26 +78,26 @@ export default function CAD3D() {
             setSelectedObjectIndex(null)
           }
           break
-        // Camera orientation shortcuts (Blender-style)
+        // Camera orientation shortcuts (Web-friendly)
         case '1': // Front view
-          if (e.ctrlKey) {
-            // Ctrl+1 for back view
+          if (e.shiftKey) {
+            // Shift+1 for back view
             setCameraView('back')
           } else {
             setCameraView('front')
           }
           break
         case '3': // Right view
-          if (e.ctrlKey) {
-            // Ctrl+3 for left view
+          if (e.shiftKey) {
+            // Shift+3 for left view
             setCameraView('left')
           } else {
             setCameraView('right')
           }
           break
         case '7': // Top view
-          if (e.ctrlKey) {
-            // Ctrl+7 for bottom view
+          if (e.shiftKey) {
+            // Shift+7 for bottom view
             setCameraView('bottom')
           } else {
             setCameraView('top')
