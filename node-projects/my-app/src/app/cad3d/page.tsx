@@ -310,12 +310,22 @@ export default function CAD3D() {
           objects.map((obj, index) => (
             <div 
               key={index} 
-              className={`mb-1 p-1.5 rounded transition-all duration-200 cursor-pointer ${
+              className={`mb-1 p-1.5 rounded transition-all duration-300 cursor-pointer ${
                 selectedObjectIndex === index 
-                  ? `border-2 border-[${primaryColor}]` 
-                  : `hover:bg-[${primaryColorHex}]`
+                  ? 'shadow-2xl' 
+                  : ''
               }`}
-
+              style={{
+                backgroundColor: selectedObjectIndex === index ? 'rgba(192, 240, 82, 0.15)' : '',
+                border: selectedObjectIndex === index ? '2px solid rgba(192, 240, 82, 0.8)' : '',
+                boxShadow: selectedObjectIndex === index 
+                  ? '0 0 20px rgba(192, 240, 82, 0.4), 0 0 40px rgba(192, 240, 82, 0.25), inset 0 0 15px rgba(192, 240, 82, 0.1)' 
+                  : '',
+                transform: selectedObjectIndex === index ? 'translateY(-1px)' : 'translateY(0)',
+                ...(!isTransformDragging && {
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                })
+              }}
               onClick={() => setSelectedObjectIndex(index)}
             >
               <div className="flex justify-between items-center mb-1">
