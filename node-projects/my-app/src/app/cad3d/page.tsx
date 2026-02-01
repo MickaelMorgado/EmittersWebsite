@@ -1,34 +1,40 @@
 'use client'
 import DraggableNumberInput from '@/components/DraggableNumberInput'
-import { GizmoHelper, GizmoViewcube, Grid, OrbitControls, TransformControls } from '@react-three/drei'
-import { Canvas, useThree } from '@react-three/fiber'
-import { AlertTriangle, ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Camera, Download, Edit3, Eye, EyeOff, Move, Trash2 } from 'lucide-react'
+import { ContactShadows, Edges, Environment, GizmoHelper, GizmoViewcube, Grid, OrbitControls } from '@react-three/drei'
+import { Canvas, useFrame, useThree } from '@react-three/fiber'
+import { AlertTriangle, ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Camera, Download, Edit3, Eye, EyeOff, Move, RotateCcw, RotateCw, Trash2 } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { OBJExporter } from 'three/examples/jsm/exporters/OBJExporter.js'
 import { STLExporter } from 'three/examples/jsm/exporters/STLExporter.js'
 
 export default function CAD3D() {
-  const [objects, setObjects] = useState<Array<{type: string, position: [number, number, number], rotation: [number, number, number], scale: [number, number, number], color: string, shapePoints?: number[][], sketchId?: string, visible?: boolean}>>([])
+  const [objects, setObjects] = useState<Array<{type: string, name?: string, position: [number, number, number], rotation: [number, number, number], scale: [number, number, number], color: string, shapePoints?: number[][], sketchId?: string, visible?: boolean}>>([])
   const [selectedTool, setSelectedTool] = useState('box')
   const [isDragging, setIsDragging] = useState(false)
   const [dragStart, setDragStart] = useState<[number, number] | null>(null)
   const [dragEnd, setDragEnd] = useState<[number, number] | null>(null)
   const [selectedObjectIndex, setSelectedObjectIndex] = useState<number | null>(null)
   const [isSelectionMode, setIsSelectionMode] = useState<boolean>(true)
-  const [controlMode, setControlMode] = useState<'move' | 'rotate' | 'scale' | 'edit'>('move')
-  const [isTransformDragging, setIsTransformDragging] = useState<boolean>(false)
   const [isCameraDragging, setIsCameraDragging] = useState<boolean>(false)
   
   // CAD Mode State
   const [mode, setMode] = useState<'3d' | 'sketch'>('3d')
   const [sketchTool, setSketchTool] = useState<'draw' | 'rectangle' | 'circle' | 'select' | 'edit'>('draw')
-  const [sketchShapes, setSketchShapes] = useState<Array<{id: string, type: string, points: Array<[number, number]>, color: string, extruded: boolean}>>([])
+  const [sketchShapes, setSketchShapes] = useState<Array<{id: string, type: string, points: Array<[number, number]>, color: string, extruded: boolean, orientation: 'TOP' | 'FRONT' | 'RIGHT' | 'BOTTOM' | 'BACK' | 'LEFT'}>>([])
   const [selectedVertex, setSelectedVertex] = useState<{shapeIndex: number, vertexIndex: number} | null>(null)
   const [isDrawing, setIsDrawing] = useState<boolean>(false)
   const [currentSketchPoints, setCurrentSketchPoints] = useState<Array<[number, number]>>([])
   const [collisions, setCollisions] = useState<Array<{shape1: number, shape2: number}>>([])
   const [showCollisionDialog, setShowCollisionDialog] = useState(false)
+  const [sketchPlaneOrientation, setSketchPlaneOrientation] = useState<'TOP' | 'BOTTOM' | 'FRONT' | 'BACK' | 'RIGHT' | 'LEFT' | 'NONE'>('NONE')
+  
+  // History State for Undo/Redo
+  const [history, setHistory] = useState<Array<{objects: typeof objects, sketchShapes: typeof sketchShapes}>>([])
+  const [redoStack, setRedoStack] = useState<Array<{objects: typeof objects, sketchShapes: typeof sketchShapes}>>([])
+  
+  // Flag to prevent history push during undo/redo or initial load
+  const isInternalUpdate = useRef(false)
   
   // Ref to access camera controls from outside the Canvas
   const cameraControlsRef = useRef<{
@@ -40,20 +46,75 @@ export default function CAD3D() {
   // Ref for OrbitControls to enforce update when we manually set camera
   const orbitControlsRef = useRef<any>(null)
   
-  // Primary purple color variable for consistent theming (RGBA format)
-  const primaryColorHex = '#c0f052'
-  const primaryColor = 'rgba(192, 240, 82, 1)'
+  // Primary neon-lime color variable for consistent theming (RGBA format)
+  const primaryColorHex = '#d4ff00'
+  const primaryColor = 'rgba(212, 255, 0, 1)'
   const buttonTextColor = '#000000'
-  const buttonColor = '#000000'
+  const buttonColor = 'rgba(255, 255, 255, 0.05)'
   const primaryButtonTextColor = '#000000'
-  const panelColor = 'rgba(0, 0, 0, 0.8)'
-  const panelPadding = '10px'
-  const panelBorderRadius = '8px'
-  const inputBackgroundColor = '#222222'
-  const inputBorderColor = '#333'
-  const defaultMeshColor = '#888'
+  const panelColor = 'rgba(15, 15, 15, 0.7)'
+  const panelPadding = '12px'
+  const panelBorderRadius = '12px'
+  const inputBackgroundColor = 'rgba(0, 0, 0, 0.3)'
+  const inputBorderColor = 'rgba(255, 255, 255, 0.1)'
+  const defaultMeshColor = '#aaaaaa'
   
+  // Persistence: Load from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem('cad3d_scene')
+    if (saved) {
+      try {
+        const { objects: savedObjects, sketchShapes: savedShapes } = JSON.parse(saved)
+        isInternalUpdate.current = true
+        setObjects(savedObjects)
+        setSketchShapes(savedShapes)
+        setTimeout(() => { isInternalUpdate.current = false }, 100)
+      } catch (e) {
+        console.error('Failed to load scene', e)
+      }
+    }
+  }, [])
+
+  // Persistence: Save to localStorage
+  useEffect(() => {
+    if (isInternalUpdate.current) return
+    localStorage.setItem('cad3d_scene', JSON.stringify({ objects, sketchShapes }))
+  }, [objects, sketchShapes])
+
+  const pushToHistory = (newObjects = objects, newShapes = sketchShapes) => {
+    if (isInternalUpdate.current) return
+    setHistory(prev => [...prev.slice(-49), { objects: JSON.parse(JSON.stringify(objects)), sketchShapes: JSON.parse(JSON.stringify(sketchShapes)) }])
+    setRedoStack([])
+  }
+
+  const undo = () => {
+    if (history.length === 0) return
+    const prevState = history[history.length - 1]
+    
+    setRedoStack(prev => [...prev, { objects: JSON.parse(JSON.stringify(objects)), sketchShapes: JSON.parse(JSON.stringify(sketchShapes)) }])
+    
+    isInternalUpdate.current = true
+    setObjects(prevState.objects)
+    setSketchShapes(prevState.sketchShapes)
+    setHistory(prev => prev.slice(0, -1))
+    setTimeout(() => { isInternalUpdate.current = false }, 100)
+  }
+
+  const redo = () => {
+    if (redoStack.length === 0) return
+    const nextState = redoStack[redoStack.length - 1]
+    
+    setHistory(prev => [...prev, { objects: JSON.parse(JSON.stringify(objects)), sketchShapes: JSON.parse(JSON.stringify(sketchShapes)) }])
+    
+    isInternalUpdate.current = true
+    setObjects(nextState.objects)
+    setSketchShapes(nextState.sketchShapes)
+    setRedoStack(prev => prev.slice(0, -1))
+    setTimeout(() => { isInternalUpdate.current = false }, 100)
+  }
+
   const removeObject = (index: number) => {
+    pushToHistory()
     setObjects(prev => prev.filter((_, i) => i !== index))
   }
 
@@ -69,29 +130,29 @@ export default function CAD3D() {
     
     // Constraints
     if (shape.type === 'polyline' && shape.points.length <= 2) {
-       setSketchShapes((prev: Array<{id: string, type: string, points: Array<[number, number]>, color: string, extruded: boolean}>) => prev.filter((_, i) => i !== shapeIndex))
+       setSketchShapes((prev: any) => prev.filter((_: any, i: number) => i !== shapeIndex))
        setSelectedVertex(null)
     } else if (shape.type === 'polygon' && shape.points.length <= 3) {
-       setSketchShapes((prev: Array<{id: string, type: string, points: Array<[number, number]>, color: string, extruded: boolean}>) => prev.filter((_, i) => i !== shapeIndex))
+       setSketchShapes((prev: any) => prev.filter((_: any, i: number) => i !== shapeIndex))
        setSelectedVertex(null)
     } else {
        const newPoints = shape.points.filter((_, i) => i !== vertexIndex)
        
        if (shape.type === 'rectangle') {
            const newShape = { ...shape, type: 'polygon', points: newPoints }
-            setSketchShapes((prev: Array<{id: string, type: string, points: Array<[number, number]>, color: string, extruded: boolean}>) => prev.map((s, i) => i === shapeIndex ? newShape : s))
+            setSketchShapes((prev: any) => prev.map((s: any, i: number) => i === shapeIndex ? newShape : s))
        } else if (shape.type === 'circle') {
-            setSketchShapes((prev: Array<{id: string, type: string, points: Array<[number, number]>, color: string, extruded: boolean}>) => prev.filter((_, i) => i !== shapeIndex))
+            setSketchShapes((prev: any) => prev.filter((_: any, i: number) => i !== shapeIndex))
        } else {
             const newShape = { ...shape, points: newPoints }
-            setSketchShapes((prev: Array<{id: string, type: string, points: Array<[number, number]>, color: string, extruded: boolean}>) => prev.map((s, i) => i === shapeIndex ? newShape : s))
+            setSketchShapes((prev: any) => prev.map((s: any, i: number) => i === shapeIndex ? newShape : s))
        }
        setSelectedVertex(null)
     }
   }
 
   // Detect collisions between shapes (shared vertices)
-  const detectShapeCollisions = (shapes: Array<{id: string, type: string, points: Array<[number, number]>, color: string, extruded: boolean}>) => {
+  const detectShapeCollisions = (shapes: typeof sketchShapes) => {
     const collisionPairs: Array<{shape1: number, shape2: number}> = []
     const threshold = 0.3 // Distance threshold for considering points as "touching"
     
@@ -131,6 +192,7 @@ export default function CAD3D() {
       return
     }
     
+    pushToHistory()
     proceedWithFinish()
   }
 
@@ -138,117 +200,120 @@ export default function CAD3D() {
   const combineOverlappingShapes = () => {
     if (collisions.length === 0) return
     
-    setSketchShapes((prev: Array<{id: string, type: string, points: Array<[number, number]>, color: string, extruded: boolean}>) => {
-      let nextShapes = [...prev]
+    let nextShapes = [...sketchShapes]
+    const processedIndices = new Set<number>()
+    const mergedShapes: typeof sketchShapes = []
+    
+    for (let i = 0; i < nextShapes.length; i++) {
+      if (processedIndices.has(i)) continue
       
-      const processedIndices = new Set<number>()
-      const mergedShapes: Array<{id: string, type: string, points: Array<[number, number]>, color: string, extruded: boolean}> = []
+      let currentShape = { ...nextShapes[i] }
+      processedIndices.add(i)
       
-      for (let i = 0; i < nextShapes.length; i++) {
-        if (processedIndices.has(i)) continue
-        
-        let currentShape = { ...nextShapes[i] }
-        processedIndices.add(i)
-        
-        // Find all shapes that collide with this one (directly or indirectly)
-        let foundNewCollision = true
-        while (foundNewCollision) {
-          foundNewCollision = false
-          for (let j = 0; j < nextShapes.length; j++) {
-            if (processedIndices.has(j)) continue
-            
-            // Check if shape j collides with our growing currentShape
-            const collisionPairs = detectShapeCollisions([currentShape, nextShapes[j]])
-            if (collisionPairs.length > 0) {
-              // Merge points
-              currentShape.points = [...currentShape.points, ...nextShapes[j].points]
-              processedIndices.add(j)
-              foundNewCollision = true
-            }
+      let foundNewCollision = true
+      while (foundNewCollision) {
+        foundNewCollision = false
+        for (let j = 0; j < nextShapes.length; j++) {
+          if (processedIndices.has(j)) continue
+          
+          const collisionPairs = detectShapeCollisions([currentShape, nextShapes[j]])
+          if (collisionPairs.length > 0) {
+            currentShape.points = [...currentShape.points, ...nextShapes[j].points]
+            processedIndices.add(j)
+            foundNewCollision = true
           }
         }
-        
-        // Remove duplicate points within threshold
-        const uniquePoints: Array<[number, number]> = []
-        currentShape.points.forEach(p1 => {
-          if (!uniquePoints.some(p2 => Math.sqrt(Math.pow(p1[0]-p2[0], 2) + Math.pow(p1[1]-p2[1], 2)) < 0.1)) {
-            uniquePoints.push(p1)
-          }
-        })
-        currentShape.points = uniquePoints
-        
-        mergedShapes.push(currentShape)
       }
       
-      return mergedShapes
-    })
+      const uniquePoints: Array<[number, number]> = []
+      currentShape.points.forEach(p1 => {
+        if (!uniquePoints.some(p2 => Math.sqrt(Math.pow(p1[0]-p2[0], 2) + Math.pow(p1[1]-p2[1], 2)) < 0.1)) {
+          uniquePoints.push(p1)
+        }
+      })
+      currentShape.points = uniquePoints
+      mergedShapes.push(currentShape)
+    }
     
-    // After merging, proceed with finish
-    setTimeout(() => proceedWithFinish(), 0)
+    pushToHistory(objects, mergedShapes)
+    setSketchShapes(mergedShapes)
+    proceedWithFinish(mergedShapes)
   }
   
-  const proceedWithFinish = () => {
+  const proceedWithFinish = (shapesToUse = sketchShapes) => {
     // Note: We don't check for length === 0 because we might need to remove orphaned objects if user deleted all sketches
     // if (sketchShapes.length === 0) { setMode('3d'); return; }
 
     setObjects(prev => {
         // 1. Identify sketches that still exist
-        const activeSketchIds = new Set(sketchShapes.map(s => s.id))
+        const activeSketchIds = new Set(shapesToUse.map(s => s.id))
         
         // 2. Remove objects that were linked to sketches that no longer exist
-        // Keep objects that have NO sketchId (primitives added manually) match activeSketchIds
         let nextObjects = prev.filter(obj => !obj.sketchId || activeSketchIds.has(obj.sketchId))
 
-        const BAKED_HEIGHT = 0.1
+        const DEFAULT_EXTRUSION = 0.5
 
         // 3. Update or Create objects for current sketches
-        sketchShapes.forEach(shape => {
-             // Calculate geometry properties based on shape type
+        shapesToUse.forEach((shape, index) => {
              let props: any = null
 
-             // Convert all shapes to extrusion format for proper shape-based 3D meshes
              if (shape.points.length >= 2) {
-                 // Calculate centroid for positioning
-                 let cx = 0, cz = 0
-                 shape.points.forEach(p => { cx += p[0]; cz += p[1] })
-                 cx /= shape.points.length
-                 cz /= shape.points.length
+                 // Calculate centroid for positioning (in 2D sketch space)
+                 let cu = 0, cv = 0
+                 shape.points.forEach(p => { cu += p[0]; cv += p[1] })
+                 cu /= shape.points.length
+                 cv /= shape.points.length
                  
                  // Convert points to relative coordinates (centered at origin)
-                 const rel = shape.points.map(p => [p[0] - cx, p[1] - cz])
+                 const rel = shape.points.map(p => [p[0] - cu, p[1] - cv])
+                 
+                 // Map 2D sketch space to 3D based on orientation
+                 let position: [number, number, number] = [0, 0, 0]
+                 let rotation: [number, number, number] = [0, 0, 0]
+                 let scale: [number, number, number] = [1, 1, DEFAULT_EXTRUSION]
+
+                 switch (shape.orientation) {
+                    case 'TOP':
+                    case 'BOTTOM':
+                        position = [cu, 0, cv]
+                        rotation = [Math.PI/2, 0, 0]
+                        break
+                    case 'FRONT':
+                    case 'BACK':
+                        position = [cu, cv, 0]
+                        rotation = [0, 0, 0]
+                        break
+                    case 'RIGHT':
+                    case 'LEFT':
+                        position = [0, cv, cu]
+                        rotation = [0, -Math.PI/2, 0]
+                        break
+                 }
                  
                  props = {
                    type: 'extrusion',
-                   position: [cx, 0, cz],
-                   rotation: [Math.PI/2, 0, 0],
-                   scale: [1, 1, BAKED_HEIGHT],
-                   color: shape.color,
+                   name: `Extrusion ${index + 1}`,
+                   position: position,
+                   rotation: rotation,
+                   scale: scale,
+                   color: '#888888',
                    shapePoints: rel,
-                   visible: true
+                   visible: true,
+                   orientation: shape.orientation
                  }
              }
 
              if (props) {
-                 // Check if object exists
                  const existingIdx = nextObjects.findIndex(obj => obj.sketchId === shape.id)
                  if (existingIdx !== -1) {
-                     // Update existing
-                     // We keep the object's CURRENT Y position (in case user raised it) 
-                     // but update X/Z and Scale/Geometry from sketch? 
-                     // User said "edit back again". If I move it in 3D, then edit in 2D...
-                     // Ideally 2D update assumes Z=0 (plane). 
-                     // Let's reset position to plane to ensure consistency with sketch, 
-                     // OR only update X/Z.
-                     // For now, let's doing a hard sync of geometry/transform logic, 
-                     // but maybe we can preserve Y if we want?
-                     // Let's just override for now as "Sketch is Truth".
                      nextObjects[existingIdx] = {
                          ...nextObjects[existingIdx],
                          ...props,
-                         sketchId: shape.id // Ensure ID is kept
+                         name: nextObjects[existingIdx].name || props.name,
+                         scale: nextObjects[existingIdx].scale, // Preserving current extrusion depth
+                         sketchId: shape.id
                      }
                  } else {
-                     // Create new
                      nextObjects.push({
                          ...props,
                          sketchId: shape.id
@@ -260,8 +325,6 @@ export default function CAD3D() {
         return nextObjects
     })
 
-    // Do NOT clear sketches
-    // setSketchShapes([]) 
     setMode('3d')
   }
 
@@ -272,15 +335,6 @@ export default function CAD3D() {
       if (document.activeElement?.tagName === 'INPUT') return
 
       switch (e.key.toLowerCase()) {
-        case 'g': // Grab / Move
-          if (selectedObjectIndex !== null) setControlMode('move')
-          break
-        case 'r': // Rotate
-          if (selectedObjectIndex !== null) setControlMode('rotate')
-          break
-        case 's': // Scale
-          if (selectedObjectIndex !== null) setControlMode('scale')
-          break
         case 'escape': // Cancel / Deselect
           setSelectedObjectIndex(null)
           break
@@ -329,6 +383,18 @@ export default function CAD3D() {
           break
         case '0': // Camera view
           setCameraView('camera')
+          break
+        case 'z': // Undo
+          if (e.ctrlKey || e.metaKey) {
+            e.preventDefault()
+            undo()
+          }
+          break
+        case 'y': // Redo
+          if (e.ctrlKey || e.metaKey) {
+            e.preventDefault()
+            redo()
+          }
           break
       }
     }
@@ -517,11 +583,33 @@ export default function CAD3D() {
 
   return (
     <div className="h-screen w-screen relative">
-      {/* Toolbar */}
-      <div className="absolute top-4 left-4" style={{ backgroundColor: panelColor, backdropFilter: 'blur(3px)', padding: panelPadding, borderRadius: panelBorderRadius, color: 'white', zIndex: 50 }}>
-        <h2 className="text-sm font-semibold mb-3" style={{ color: primaryColor }}>3D CAD Tools</h2>
-        <div className="space-y-2">
-          <>
+          
+      <div className="absolute top-4 left-4" style={{ zIndex: 50, display: 'flex', flexDirection: 'row', alignItems: 'flex-start', gap: '12px' }}>
+        {/* Main Panel */}
+        <div style={{ backgroundColor: panelColor, backdropFilter: 'blur(3px)', padding: panelPadding, borderRadius: panelBorderRadius, color: 'white', border: '1px solid rgba(255,255,255,0.1)' }}>
+          <h2 className="text-sm font-semibold mb-3" style={{ color: primaryColor }}>3D CAD Tools</h2>
+          <div className="space-y-2">
+            <div className="flex gap-2">
+              <button
+                  onClick={undo}
+                  disabled={history.length === 0}
+                  className="flex-1 p-2 rounded bg-black/50 hover:bg-black/70 disabled:opacity-30 transition-all flex items-center justify-center gap-1"
+                  title="Undo (Ctrl+Z)"
+              >
+                  <RotateCcw size={14} />
+                  <span className="text-[10px]">Undo</span>
+              </button>
+              <button
+                  onClick={redo}
+                  disabled={redoStack.length === 0}
+                  className="flex-1 p-2 rounded bg-black/50 hover:bg-black/70 disabled:opacity-30 transition-all flex items-center justify-center gap-1"
+                  title="Redo (Ctrl+Y)"
+              >
+                  <RotateCw size={14} />
+                  <span className="text-[10px]">Redo</span>
+              </button>
+            </div>
+            
             <button
               onClick={exportSTL}
               className="w-full px-3 py-1.5 rounded text-xs font-medium transition-colors flex items-center gap-2"
@@ -544,9 +632,45 @@ export default function CAD3D() {
               <Download size={14} />
               Export OBJ
             </button>
-          </>
+          </div>
         </div>
+
+        {/* Plane Warning (Next to/Below tools) */}
+        {mode === 'sketch' && sketchPlaneOrientation === 'NONE' && (
+          <div 
+            className="p-3 shadow-2xl animate-in fade-in slide-in-from-left-4 duration-500"
+            style={{ 
+              backgroundColor: 'rgba(239, 68, 68, 0.1)', 
+              backdropFilter: 'blur(10px)', 
+              borderRadius: panelBorderRadius,
+              border: '1px solid rgba(239, 68, 68, 0.3)',
+              color: '#f87171',
+              maxWidth: '220px'
+            }}
+          >
+            <div className="flex items-center gap-2 mb-1">
+              <AlertTriangle size={14} />
+              <span className="text-[10px] font-bold uppercase tracking-wider">Alignment Required</span>
+            </div>
+            <p className="text-[9px] leading-tight opacity-90">
+              Orbit the camera until it snaps to a standard axis view to enable sketching.
+            </p>
+          </div>
+        )}
       </div>
+
+      {/* Plane Indicator Toast - Moved to screen center-top */}
+      {mode === 'sketch' && sketchPlaneOrientation !== 'NONE' && (
+        <div 
+          className="fixed top-8 left-1/2 -translate-x-1/2 z-[100] px-5 py-2.5 rounded-full border border-white/20 flex items-center gap-3 transform transition-all duration-300 animate-in fade-in zoom-in-95 shadow-2xl"
+          style={{ backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(12px)', color: primaryColor }}
+        >
+          <div className="w-2.5 h-2.5 rounded-full bg-current animate-pulse shadow-[0_0_10px_currentColor]" />
+          <span className="text-[12px] font-bold uppercase tracking-[0.2em] leading-none">
+            Sketching on {sketchPlaneOrientation} PLANE
+          </span>
+        </div>
+      )}
 
       {/* 3D Outline Panel */}
       <div className="absolute top-4 right-4" style={{ backgroundColor: panelColor, backdropFilter: 'blur(3px)', padding: panelPadding, borderRadius: panelBorderRadius, color: 'white', zIndex: 50, maxHeight: '100%', overflowY: 'auto' }}>
@@ -570,7 +694,7 @@ export default function CAD3D() {
                   : '',
                 transform: selectedObjectIndex === index ? 'translateY(-1px)' : 'translateY(0)',
                 boxSizing: 'border-box',
-                ...(!isTransformDragging && {
+                ...(!isCameraDragging && {
                   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                 })
               }}
@@ -582,10 +706,10 @@ export default function CAD3D() {
                     className="w-2 h-2 rounded-full border border-white/50"
                     style={{ backgroundColor: obj.color }}
                   />
-                  <span className={`text-xs font-medium ${
+                  <span className={`text-xs font-medium uppercase tracking-tighter ${
                     selectedObjectIndex === index ? 'text-purple-300' : 'text-gray-200'
                   }`} style={{ color: selectedObjectIndex === index ? primaryColor : undefined }}>
-                    {obj.type}
+                    {obj.name || obj.type}
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5">
@@ -622,25 +746,25 @@ export default function CAD3D() {
                   </button>
                 </div>
               </div>
-              <div className="flex gap-4">
-                <div className="flex flex-col gap-2 w-full">
-                  {/* Extrusion Depth Control */}
+      <div className="flex gap-4">
+                <div className="flex flex-col gap-2 w-full mt-2">
                   <div className="flex flex-col">
-                    <span className="text-xs text-gray-400 mb-1">Extrusion Depth</span>
+                    <span className="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-2">Extrusion Distance</span>
                     <DraggableNumberInput
                       value={obj.scale[2]}
-                      onChange={(value) => updateObject(index, { scale: [obj.scale[0], obj.scale[1], value] })}
-                      min={0.01}
-                      max={10}
+                      onChange={(value) => {
+                        // pushToHistory() // Frequent calls handled by DraggableNumberInput internal state or onFinish
+                        updateObject(index, { scale: [obj.scale[0], obj.scale[1], value] })
+                      }}
+                      min={-500}
+                      max={500}
                       step={0.1}
-                      label="Height"
-                      dragSensitivity={0.01}
+                      label="Distance"
+                      dragSensitivity={0.05}
                       decimals={2}
                       className="w-full"
                     />
                   </div>
-                  
-
                 </div>
               </div>
             </div>
@@ -651,7 +775,7 @@ export default function CAD3D() {
       {/* Collision Warning Toast */}
       {collisions.length > 0 && mode === 'sketch' && (
         <div 
-          className="absolute bottom-20 right-4 flex items-center gap-3 px-4 py-3 rounded-lg border shadow-2xl animate-pulse"
+          className="absolute bottom-40 right-4 flex items-center gap-3 px-4 py-3 rounded-lg border shadow-2xl animate-pulse"
           style={{ 
             backgroundColor: 'rgba(255, 171, 0, 0.15)', 
             borderColor: 'rgba(255, 171, 0, 0.5)', 
@@ -698,14 +822,22 @@ export default function CAD3D() {
               Would you like to combine them into single objects or keep them separate?
             </p>
             
-            <div className="flex flex-col gap-3">
+              {sketchPlaneOrientation === 'NONE' && (
+                <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-[11px] text-red-300 leading-tight">
+                  <span className="font-bold uppercase block mb-1">Notice</span>
+                  Orbit the camera to a standard axis view (Front, Top, Right, etc.) to enable sketching.
+                </div>
+              )}
+              
               <div className="flex gap-2">
               <button
                 onClick={() => {
+                  if (sketchPlaneOrientation === 'NONE') return
                   combineOverlappingShapes()
                   setShowCollisionDialog(false)
                 }}
-                className="w-full py-2.5 rounded-lg font-bold transition-all text-sm"
+                disabled={sketchPlaneOrientation === 'NONE'}
+                className="w-full py-2.5 rounded-lg font-bold transition-all text-sm disabled:opacity-30"
                 style={{ 
                   backgroundColor: primaryColor, 
                   color: buttonTextColor,
@@ -732,19 +864,31 @@ export default function CAD3D() {
               >
                 Go Back to Sketch
               </button>
-            </div>
           </div>
         </div>
       )}
 
       {/* 3D Viewport */}
       <Canvas 
+        shadows
         camera={{ position: [5, 5, 5], fov: 50 }}
         style={{ width: '100%', height: '100%' }}
         onClick={handleCanvasClick}
+        gl={{ antialias: true, stencil: true }}
       >
-        <ambientLight intensity={0.6} />
-        <directionalLight position={[10, 10, 5]} intensity={1} />
+        <color attach="background" args={['#0a0a0a']} />
+        <ambientLight intensity={0.2} />
+        <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} intensity={1} castShadow />
+        <pointLight position={[-10, -10, -10]} intensity={0.5} />
+        <Environment preset="night" />
+        
+        <ContactShadows 
+          position={[0, -0.01, 0]} 
+          opacity={0.4} 
+          scale={20} 
+          blur={2.4} 
+          far={4.5} 
+        />
         <OrbitControls 
           ref={orbitControlsRef}
           makeDefault
@@ -789,16 +933,7 @@ export default function CAD3D() {
           />
         ))}
         
-        {/* Transform Controls - Only show when object is selected AND not in edit mode */}
-        {selectedObjectIndex !== null && (
-          <SceneControls 
-            selectedObjectName={`object-${selectedObjectIndex}`}
-            controlMode={controlMode}
-            setIsTransformDragging={setIsTransformDragging}
-            updateObject={updateObject}
-            selectedIndex={selectedObjectIndex}
-          />
-        )}
+        {/* Transform controls removed per user request */}
         
         {/* Camera Controls Component with Ref */}
         <CameraControls 
@@ -838,8 +973,11 @@ export default function CAD3D() {
               }
             }}
             primaryColor={primaryColor}
+            orientation={sketchPlaneOrientation}
           />
         )}
+
+        <CameraWatcher setOrientation={setSketchPlaneOrientation} />
         
         {/* Camera Gizmo - Bottom Right Corner */}
         <GizmoHelper
@@ -1021,54 +1159,36 @@ export default function CAD3D() {
   )
 }
 
-function SceneControls({ 
-  selectedObjectName, 
-  controlMode, 
-  setIsTransformDragging, 
-  updateObject, 
-  selectedIndex 
-}: { 
-  selectedObjectName: string | null
-  controlMode: 'move' | 'rotate' | 'scale' | 'edit'
-  setIsTransformDragging: (val: boolean) => void
-  updateObject: (index: number, updates: any) => void
-  selectedIndex: number | null
-}) {
-  const { scene } = useThree()
-  const targetObject = selectedObjectName ? scene.getObjectByName(selectedObjectName) : undefined
-
-  if (!targetObject || controlMode === 'edit') return null
-
-  return (
-    <TransformControls
-      object={targetObject}
-      mode={controlMode === 'move' ? 'translate' : controlMode === 'rotate' ? 'rotate' : 'scale'}
-      space="local"
-      showX={true}
-      showY={true}
-      showZ={true}
-      enabled={true}
-      onMouseDown={() => setIsTransformDragging(true)}
-      onMouseUp={() => setIsTransformDragging(false)}
-      onObjectChange={(e) => {
-        if (e && selectedIndex !== null) {
-          // e.target is the TransformControls instance
-          // e.target.object is the object being transformed
-          const controls = e.target as any // casting to any to avoid strict type checks on internal properties if types are missing
-          const obj = controls.object
-          
-          if (obj) {
-            updateObject(selectedIndex, {
-              position: [obj.position.x, obj.position.y, obj.position.z],
-              rotation: [obj.rotation.x, obj.rotation.y, obj.rotation.z],
-              scale: [obj.scale.x, obj.scale.y, obj.scale.z]
-            })
-          }
-        }
-      }}
-    />
-  )
+function CameraWatcher({ setOrientation }: { setOrientation: (o: 'TOP' | 'BOTTOM' | 'FRONT' | 'BACK' | 'RIGHT' | 'LEFT' | 'NONE') => void }) {
+  const { camera } = useThree()
+  
+  useFrame(() => {
+    const dir = new THREE.Vector3()
+    camera.getWorldDirection(dir)
+    
+    // Check alignment with axes
+    const threshold = 0.9995
+    
+    const up = new THREE.Vector3(0, 1, 0)
+    const down = new THREE.Vector3(0, -1, 0)
+    const right = new THREE.Vector3(1, 0, 0)
+    const left = new THREE.Vector3(-1, 0, 0)
+    const front = new THREE.Vector3(0, 0, 1)
+    const back = new THREE.Vector3(0, 0, -1)
+    
+    if (dir.dot(down) > threshold) setOrientation('TOP')
+    else if (dir.dot(up) > threshold) setOrientation('BOTTOM')
+    else if (dir.dot(back) > threshold) setOrientation('FRONT')
+    else if (dir.dot(front) > threshold) setOrientation('BACK')
+    else if (dir.dot(left) > threshold) setOrientation('RIGHT')
+    else if (dir.dot(right) > threshold) setOrientation('LEFT')
+    else setOrientation('NONE')
+  })
+  
+  return null
 }
+
+
 
 function Object3D({ 
   name, 
@@ -1081,7 +1201,8 @@ function Object3D({
   isSelected, 
   onClick, 
   mode,
-  visible 
+  visible,
+  orientation 
 }: {
   name: string, 
   type: string, 
@@ -1093,7 +1214,8 @@ function Object3D({
   isSelected?: boolean, 
   onClick?: () => void, 
   mode?: '3d' | 'sketch',
-  visible?: boolean
+  visible?: boolean,
+  orientation?: 'TOP' | 'FRONT' | 'RIGHT' | 'BOTTOM' | 'BACK' | 'LEFT'
 }) {
   const meshRef = useRef<THREE.Mesh>(null)
   
@@ -1125,7 +1247,7 @@ function Object3D({
     }
     return null
   }, [type, shapePoints])
-
+  
   // Determine if we're in sketch mode for transparency
   const isSketchMode = mode === 'sketch'
   
@@ -1133,7 +1255,9 @@ function Object3D({
   const materialProps = {
     color: color,
     transparent: isSketchMode,
-    opacity: isSketchMode ? 0.1 : 1.0
+    opacity: isSketchMode ? 0.3 : 1.0, // Increased visibility in sketch mode
+    roughness: 0.3,
+    metalness: 0.2
   }
 
   if (visible === false) return null
@@ -1146,26 +1270,29 @@ function Object3D({
           <mesh 
             ref={meshRef}
             name={name}
-            position={position} 
+            position={(() => {
+                // Adjust position based on orientation to keep extrusion centered on the plane
+                switch (orientation) {
+                    case 'FRONT':
+                    case 'BACK':
+                        return [position[0], position[1], -scale[2]/2]
+                    case 'RIGHT':
+                    case 'LEFT':
+                        return [-scale[2]/2, position[1], position[2]]
+                    default: // TOP/BOTTOM
+                        return [position[0], -scale[2] / 2, position[2]]
+                }
+            })()} 
             rotation={rotation} 
             scale={scale}
             onClick={onClick}
             geometry={extrusionGeometry}
+            castShadow
+            receiveShadow
           >
             <meshStandardMaterial {...materialProps} />
+            {shouldShowOutline && <Edges color="white" threshold={15} />}
           </mesh>
-          {shouldShowOutline && (
-            <mesh 
-              position={position} 
-              rotation={rotation} 
-              scale={[scale[0] * 1.02, scale[1] * 1.02, scale[2] * 1.02]} // Slight scale up for outline
-              geometry={extrusionGeometry}
-            >
-               <meshBasicMaterial color="white" side={THREE.BackSide} /> 
-            </mesh>
-            // Note: BackSide outline trick works moderately well for convex shapes.
-            // Alternatively use EdgesGeometry line segments.
-          )}
         </group>
       )
     case 'box':
@@ -1178,27 +1305,13 @@ function Object3D({
             rotation={rotation} 
             scale={scale}
             onClick={onClick}
+            castShadow
+            receiveShadow
           >
             <boxGeometry args={[1, 1, 1]} />
             <meshStandardMaterial {...materialProps} />
+            {shouldShowOutline && <Edges color="white" threshold={15} />}
           </mesh>
-          {shouldShowOutline && (
-            <mesh 
-              position={position} 
-              rotation={rotation} 
-              scale={scale}
-            >
-              <boxGeometry args={[1, 1, 1]} />
-              <meshBasicMaterial 
-                color={0xffffff} 
-                wireframe={true} 
-                transparent={true} 
-                opacity={0.5}
-                depthTest={false}
-                depthWrite={false}
-              />
-            </mesh>
-          )}
         </group>
       )
     case 'sphere':
@@ -1211,27 +1324,13 @@ function Object3D({
             rotation={rotation} 
             scale={scale}
             onClick={onClick}
+            castShadow
+            receiveShadow
           >
             <sphereGeometry args={[0.5, 32, 32]} />
             <meshStandardMaterial {...materialProps} />
+            {shouldShowOutline && <Edges color="white" threshold={15} />}
           </mesh>
-          {shouldShowOutline && (
-            <mesh 
-              position={position} 
-              rotation={rotation} 
-              scale={scale}
-            >
-              <sphereGeometry args={[0.5, 32, 32]} />
-              <meshBasicMaterial 
-                color={0xffffff} 
-                wireframe={true} 
-                transparent={true} 
-                opacity={0.5}
-                depthTest={false}
-                depthWrite={false}
-              />
-            </mesh>
-          )}
         </group>
       )
     case 'cylinder':
@@ -1244,27 +1343,13 @@ function Object3D({
             rotation={rotation} 
             scale={scale}
             onClick={onClick}
+            castShadow
+            receiveShadow
           >
             <cylinderGeometry args={[0.5, 0.5, 1, 32]} />
             <meshStandardMaterial {...materialProps} />
+            {shouldShowOutline && <Edges color="white" threshold={15} />}
           </mesh>
-          {shouldShowOutline && (
-            <mesh 
-              position={position} 
-              rotation={rotation} 
-              scale={scale}
-            >
-              <cylinderGeometry args={[0.5, 0.5, 1, 32]} />
-              <meshBasicMaterial 
-                color={0xffffff} 
-                wireframe={true} 
-                transparent={true} 
-                opacity={0.5}
-                depthTest={false}
-                depthWrite={false}
-              />
-            </mesh>
-          )}
         </group>
       )
     default:
@@ -1516,21 +1601,23 @@ function SketchPlane({
   selectedVertex,
   setSelectedVertex,
   handleDeleteVertex,
-  primaryColor
+  primaryColor,
+  orientation
 }: { 
   sketchTool: 'draw' | 'rectangle' | 'circle' | 'select' | 'edit'
   isDrawing: boolean
   setIsDrawing: (val: boolean) => void
   currentSketchPoints: Array<[number, number]>
   setCurrentSketchPoints: (points: Array<[number, number]>) => void
-  sketchShapes: Array<{id: string, type: string, points: Array<[number, number]>, color: string, extruded: boolean}>
-  setSketchShapes: React.Dispatch<React.SetStateAction<Array<{id: string, type: string, points: Array<[number, number]>, color: string, extruded: boolean}>>>
+  sketchShapes: Array<{id: string, type: string, points: Array<[number, number]>, color: string, extruded: boolean, orientation: 'TOP' | 'FRONT' | 'RIGHT' | 'BOTTOM' | 'BACK' | 'LEFT'}>
+  setSketchShapes: React.Dispatch<React.SetStateAction<Array<{id: string, type: string, points: Array<[number, number]>, color: string, extruded: boolean, orientation: 'TOP' | 'FRONT' | 'RIGHT' | 'BOTTOM' | 'BACK' | 'LEFT'}>>>
   objects: Array<{type: string, position: [number, number, number], rotation: [number, number, number], scale: [number, number, number], color: string, sketchId?: string}>
   setObjects: React.Dispatch<React.SetStateAction<Array<{type: string, position: [number, number, number], rotation: [number, number, number], scale: [number, number, number], color: string, sketchId?: string}>>>
   selectedVertex: {shapeIndex: number, vertexIndex: number} | null
   setSelectedVertex: React.Dispatch<React.SetStateAction<{shapeIndex: number, vertexIndex: number} | null>>
   handleDeleteVertex: () => void
   primaryColor: string
+  orientation: 'TOP' | 'BOTTOM' | 'FRONT' | 'BACK' | 'RIGHT' | 'LEFT' | 'NONE'
 }) {
   const { camera, gl, raycaster, mouse, scene } = useThree()
   const planeRef = useRef<THREE.Mesh>(null)
@@ -1584,10 +1671,11 @@ function SketchPlane({
         type: shapeType,
         points: finalPoints,
         color: '#c0f052',
-        extruded: false
+        extruded: false,
+        orientation: orientation === 'NONE' ? 'TOP' : orientation
       }
       
-      setSketchShapes((prev) => [...prev, newShape])
+      setSketchShapes((prev: any) => [...prev, newShape])
       setCurrentSketchPoints([])
       setIsDrawing(false)
       setDragStartPoint(null)
@@ -1655,13 +1743,39 @@ function SketchPlane({
     mouse.set(x, y)
     raycaster.setFromCamera(mouse, camera)
 
-    // Create a plane at Y=0 (the sketch plane)
-    const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0)
+    // Raycast onto dynamic plane based on orientation
+    let planeNormal = new THREE.Vector3(0, 1, 0)
+    switch (orientation) {
+        case 'FRONT': planeNormal.set(0, 0, 1); break
+        case 'BACK':  planeNormal.set(0, 0, -1); break
+        case 'RIGHT': planeNormal.set(1, 0, 0); break
+        case 'LEFT':  planeNormal.set(-1, 0, 0); break
+        case 'TOP':    planeNormal.set(0, 1, 0); break
+        case 'BOTTOM': planeNormal.set(0, -1, 0); break
+    }
+
+    const plane = new THREE.Plane(planeNormal, 0)
     const intersection = new THREE.Vector3()
     
     if (raycaster.ray.intersectPlane(plane, intersection)) {
-      // Return snapped coordinates
-      return getSnappingPoint([intersection.x, intersection.z])
+      // Map 3D intersection back to 2D sketch points based on orientation
+      let u = 0, v = 0
+      switch (orientation) {
+          case 'TOP':
+          case 'BOTTOM':
+              u = intersection.x
+              v = intersection.z
+              break
+          case 'FRONT':
+          case 'BACK':
+              u = intersection.x
+              v = intersection.y
+              break
+          case 'RIGHT':
+              v = intersection.y
+              break
+      }
+      return getSnappingPoint([u, v])
     }
     
     return null
@@ -1879,7 +1993,7 @@ function SketchPlane({
            handleDeleteVertex()
         } else if (selectedShapeIndex !== null) {
           // Delete entire shape
-          setSketchShapes((prev: Array<{id: string, type: string, points: Array<[number, number]>, color: string, extruded: boolean}>) => prev.filter((_, i) => i !== selectedShapeIndex))
+          setSketchShapes((prev: any) => prev.filter((_item: any, i: number) => i !== selectedShapeIndex))
           setSelectedShapeIndex(null)
         }
       }
@@ -1901,7 +2015,16 @@ function SketchPlane({
     <>
       {/* Sketch Plane */}
       <mesh 
-        rotation={[-Math.PI / 2, 0, 0]} 
+        rotation={(() => {
+            switch (orientation) {
+                case 'FRONT': return [0, 0, 0]
+                case 'BACK': return [0, Math.PI, 0]
+                case 'RIGHT': return [0, -Math.PI/2, 0]
+                case 'LEFT': return [0, Math.PI/2, 0]
+                case 'BOTTOM': return [Math.PI/2, 0, 0]
+                default: return [-Math.PI / 2, 0, 0] // TOP
+            }
+        })()}
         position={[0, 0, 0]} 
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
@@ -1922,7 +2045,16 @@ function SketchPlane({
         cellColor="#222" 
         fadeDistance={50}
         infiniteGrid
-        rotation={[-Math.PI / 2, 0, 0]} 
+        rotation={(() => {
+            switch (orientation) {
+                case 'FRONT': return [Math.PI/2, 0, 0]
+                case 'BACK': return [Math.PI/2, 0, 0]
+                case 'RIGHT': return [Math.PI/2, 0, Math.PI/2]
+                case 'LEFT': return [Math.PI/2, 0, Math.PI/2]
+                case 'BOTTOM': return [0, 0, 0]
+                default: return [0, 0, 0] // TOP
+            }
+        })()} 
       />
 
       {/* Existing Shapes */}
@@ -1936,7 +2068,18 @@ function SketchPlane({
                    args={[
                      new Float32Array(
                        (shape.type === 'polygon' ? [...shape.points, shape.points[0]] : shape.points)
-                         .flatMap(p => [p[0], 0.01, p[1]])
+                         .flatMap(p => {
+                            switch (shape.orientation) {
+                                case 'FRONT':
+                                case 'BACK':
+                                    return [p[0], p[1], 0.01]
+                                case 'RIGHT':
+                                case 'LEFT':
+                                    return [0.01, p[1], p[0]]
+                                default: // TOP/BOTTOM
+                                    return [p[0], 0.01, p[1]]
+                            }
+                         })
                      ),
                      3
                    ]}
@@ -1952,7 +2095,18 @@ function SketchPlane({
                    args={[
                      new Float32Array([
                        ...shape.points, shape.points[0]
-                     ].flatMap(p => [p[0], 0.01, p[1]])),
+                     ].flatMap(p => {
+                        switch (shape.orientation) {
+                            case 'FRONT':
+                            case 'BACK':
+                                return [p[0], p[1], 0.01]
+                            case 'RIGHT':
+                            case 'LEFT':
+                                return [0.01, p[1], p[0]]
+                            default: // TOP/BOTTOM
+                                return [p[0], 0.01, p[1]]
+                        }
+                     })),
                      3
                    ]}
                  />
@@ -1960,7 +2114,32 @@ function SketchPlane({
                <lineBasicMaterial attach="material" color={selectedShapeIndex === index ? primaryColor : shape.color} linewidth={2} />
              </line>
           ) : shape.type === 'circle' ? (
-             <mesh position={[shape.points[0][0], 0.01, shape.points[0][1]]} rotation={[-Math.PI / 2, 0, 0]}>
+             <mesh 
+                position={(() => {
+                    switch (shape.orientation) {
+                        case 'FRONT':
+                        case 'BACK':
+                            return [shape.points[0][0], shape.points[0][1], 0.01]
+                        case 'RIGHT':
+                        case 'LEFT':
+                            return [0.01, shape.points[0][1], shape.points[0][0]]
+                        default: // TOP/BOTTOM
+                            return [shape.points[0][0], 0.01, shape.points[0][1]]
+                    }
+                })()} 
+                rotation={(() => {
+                    switch (shape.orientation) {
+                        case 'FRONT':
+                        case 'BACK':
+                            return [0, 0, 0]
+                        case 'RIGHT':
+                        case 'LEFT':
+                            return [0, -Math.PI/2, 0]
+                        default: // TOP/BOTTOM
+                            return [-Math.PI / 2, 0, 0]
+                    }
+                })()}
+             >
                <ringGeometry args={[shape.points[1][0] - 0.05, shape.points[1][0], 64]} />
                <meshBasicMaterial color={selectedShapeIndex === index ? primaryColor : shape.color} side={THREE.DoubleSide} />
              </mesh>
@@ -1989,13 +2168,24 @@ function SketchPlane({
           {sketchTool === 'edit' && shape.points.map((p, vIdx) => (
              <mesh 
                key={vIdx} 
-               position={[p[0], 0.02, p[1]]}
+               position={(() => {
+                    switch (shape.orientation) {
+                        case 'FRONT':
+                        case 'BACK':
+                            return [p[0], p[1], 0.02]
+                        case 'RIGHT':
+                        case 'LEFT':
+                            return [0.02, p[1], p[0]]
+                        default: // TOP/BOTTOM
+                            return [p[0], 0.02, p[1]]
+                    }
+               })()}
                onClick={(e) => {
                  e.stopPropagation()
                  setSelectedVertex({ shapeIndex: index, vertexIndex: vIdx })
                }}
              >
-               <sphereGeometry args={[selectedVertex?.shapeIndex === index && selectedVertex?.vertexIndex === vIdx ? 0.2 : 0.12]} />
+               <sphereGeometry args={[selectedVertex?.shapeIndex === index && selectedVertex?.vertexIndex === vIdx ? 0.12 : 0.08]} />
                <meshBasicMaterial color={selectedVertex?.shapeIndex === index && selectedVertex?.vertexIndex === vIdx ? '#ffab00' : 'white'} />
              </mesh>
           ))}
@@ -2010,7 +2200,18 @@ function SketchPlane({
                <bufferAttribute 
                 attach="attributes-position"
                 args={[
-                  new Float32Array(currentSketchPoints.flatMap(p => [p[0], 0.01, p[1]])),
+                  new Float32Array(currentSketchPoints.flatMap(p => {
+                    switch (orientation) {
+                        case 'FRONT':
+                        case 'BACK':
+                            return [p[0], p[1], 0.01]
+                        case 'RIGHT':
+                        case 'LEFT':
+                            return [0.01, p[1], p[0]]
+                        default: // TOP/BOTTOM
+                            return [p[0], 0.01, p[1]]
+                    }
+                  })),
                   3
                 ]}
               />
@@ -2019,8 +2220,19 @@ function SketchPlane({
           </line>
           {/* Snap feedback */}
           {activeSnapPoint && (
-             <mesh position={[activeSnapPoint[0], 0.02, activeSnapPoint[1]]}>
-               <sphereGeometry args={[0.15]} />
+             <mesh position={(() => {
+                switch (orientation) {
+                    case 'FRONT':
+                    case 'BACK':
+                        return [activeSnapPoint[0], activeSnapPoint[1], 0.02]
+                    case 'RIGHT':
+                    case 'LEFT':
+                        return [0.02, activeSnapPoint[1], activeSnapPoint[0]]
+                    default: // TOP/BOTTOM
+                        return [activeSnapPoint[0], 0.02, activeSnapPoint[1]]
+                }
+             })()}>
+               <sphereGeometry args={[0.1]} />
                <meshBasicMaterial color={primaryColor} />
              </mesh>
           )}
