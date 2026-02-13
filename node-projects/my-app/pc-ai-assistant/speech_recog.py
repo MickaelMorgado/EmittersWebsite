@@ -19,9 +19,13 @@ def recognize_speech():
     with sr.Microphone(device_index=device_index) as source:
         print("DEBUG: Adjusting for ambient noise...", file=sys.stderr)
         r.adjust_for_ambient_noise(source, duration=1)
+        # Increase the pause threshold (default 0.8) to allow more time between words
+        r.pause_threshold = 2.0 
         print("DEBUG: Starting to listen for sound...", file=sys.stderr)
         try:
-            audio = r.listen(source, timeout=10, phrase_time_limit=20)
+            # timeout: Wait up to 30s for speech to START
+            # phrase_time_limit: Allow up to 60s of continuous speech
+            audio = r.listen(source, timeout=30, phrase_time_limit=60)
             print("DEBUG: Audio captured, now interpreting...", file=sys.stderr)
             text = r.recognize_google(audio)
             print(f"DEBUG: Interpreted text: '{text}'", file=sys.stderr)
