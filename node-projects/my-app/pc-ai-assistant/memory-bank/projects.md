@@ -4,23 +4,24 @@
 A sophisticated voice-activated AI assistant with real-time 3D galaxy visualization.
 
 ### Features
-- Terminal-based AI conversations using Ollama models
-- Real-time galaxy particle system with 3000+ particles
-- Speech-reactive color animations and bloom effects
-- Socket.io communication between voice server and React frontend
-- Cross-platform TTS support (macOS, Windows, Linux)
+- Real-time TikTok Live Feed integration with auto-scroll
+- AI-powered voice conversations with Ollama (Llama-2)
+- AI Transcript Correction (STT cleanup pass)
+- Real-time 3D galaxy visualization (FE) reactive to voice and events
+- Proactive audience engagement during chat silence
+- Cross-platform TTS via Piper & Python bridge
 
 ### Technical Stack
-- **Backend**: Node.js, Express, Socket.io, Ollama AI
-- **Frontend**: React, Next.js, Three.js, React Three Fiber
-- **AI Models**: Phi-3 Mini, Llama 2 7B, Gemma 2 9B
-- **3D Effects**: Bloom post-processing, emissive materials, instanced meshes
+- **Backend**: Node.js, Socket.io, Ollama (AI Engine), Piper (TTS)
+- **Frontend**: Next.js, Three.js (3D Galaxy), Tailwind CSS
+- **TikTok**: TikTok-Live-Connector (WS relay server)
 
 ### Current Status
-- ✅ Fully functional with terminal input and visual feedback
-- ✅ Multiple AI model support
-- ✅ Real-time galaxy animations synchronized with conversation
-- ✅ Professional UI with status indicators and controls
+- ✅ TikTok Live Feed synchronization
+- ✅ AI-powered voice/text response loop
+- ✅ Visual state-to-color mapping (Red: Listening, Green: Speaking, Blue: Thinking, Cyan: TikTok/STT)
+- ✅ Auto-scrolling live chat history
+- ✅ Persistent memory bank via Markdown files
 
 ## Development Philosophy
 - Innovation through experimentation
