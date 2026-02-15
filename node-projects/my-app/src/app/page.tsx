@@ -204,8 +204,21 @@ export default function Home() {
               </CardContent>
             </Card>
           </Link>
+          <Link href="/tiktok-tts" className="h-full">
+            <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
+              <CardHeader>
+                <CardTitle>TikTok + AI Assistant</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground text-sm">
+                  Integrated TikTok live events with AI voice response and reactive galaxy visualization
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
         </div>
       </section>
     </div>
   );
 }
+
