@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Floating 3D Objects</title>
+    <style>
+      body { margin: 0; overflow: hidden; background: black; }
+      canvas { display: block; }
+    </style>
+  </head>
+  <body>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://threejs.org/build/three.module.js",
+                "three/addons/": "./jsm/"
+            }
+        }
+    </script>
+    <script type="module">
+        import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+        import { STLLoader } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/STLLoader.js';
+        import { FontLoader } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/FontLoader.js';
+        import { TextGeometry } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/geometries/TextGeometry.js';
+        import { EffectComposer } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/EffectComposer.js';
+        import { RenderPass } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/RenderPass.js';
+        import { ShaderPass } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/ShaderPass.js';
+        import { UnrealBloomPass } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/UnrealBloomPass.js';
+        import { RGBShiftShader } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/shaders/RGBShiftShader.js';
+        import { Refractor } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/objects/Refractor.js';
+        import { WaterRefractionShader } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/shaders/WaterRefractionShader.js';
+        import { FilmPass } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/FilmPass.js';
+        import { RGBELoader } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/RGBELoader.js';
+
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+      camera.position.z = 30;
+
+      const renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.appendChild(renderer.domElement);
+
+      // Add fog to the scene
+      scene.fog = new THREE.Fog(0x020202, 10, 150); // Black fog, near at 10, far at 100
+
+      // Alternatively, for exponential fog (denser effect):
+      // scene.fog = new THREE.FogExp2(0x000000, 0.02); // Black fog with density 0.02
+
+      // Update the renderer to match the fog color
+      renderer.setClearColor(scene.fog.color, 1);
+
+      // Increase the intensity of the point light
+      const light = new THREE.PointLight(0xffffff, 2); // Increased intensity from 1 to 2
+      light.position.set(20, 20, 20);
+      scene.add(light);
+
+      // Increase the intensity of the ambient light
+      const ambient = new THREE.AmbientLight(0xffffff, 1); // Increased intensity from 1 to 1.5
+      scene.add(ambient);
+
+      // Optionally, add a directional light for more focused lighting
+      const directionalLight = new THREE.DirectionalLight(0xffffff, 1); // Directional light with intensity 1
+      directionalLight.position.set(-30, 50, 30); // Position the light
+      scene.add(directionalLight);
+
+      // Add a neon light in front of the text or model
+      const neonLight = new THREE.PointLight(0xffffff, 2, 50); // Cyan neon light with high intensity
+      neonLight.position.set(0, -4, 25); // Position the light in front of the text or model
+      scene.add(neonLight);
+
+      // Optionally, add a glowing sphere to represent the neon light source
+      //const neonSphereGeometry = new THREE.SphereGeometry(1, 16, 16);
+      //const neonSphereMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+      //const neonSphere = new THREE.Mesh(neonSphereGeometry, neonSphereMaterial);
+      //neonSphere.position.copy(neonLight.position);
+      //scene.add(neonSphere);
+
+      const objects = [];
+      const rotationSpeeds = []; // Array to store rotation speeds for each object
+
+      function loadSTLObject(path, color = 0xffffff, position = { x: 0, y: 0, z: 0 }) {
+        const loader = new STLLoader();
+        loader.load(path, (geometry) => {
+          geometry.computeBoundingBox();
+          const bbox = geometry.boundingBox;
+
+          const material = new THREE.MeshPhongMaterial({
+            color: 0xffffff, // Pure white color
+            emissive: 0xaaaaaa, // Slight emissive glow
+            emissiveIntensity: 1, // Adjust emissive intensity
+          });
+          const mesh = new THREE.Mesh(geometry, material);
+
+          // Center the object based on its bounding box
+          const centerX = (bbox.max.x + bbox.min.x) / 2;
+          const centerY = (bbox.max.y + bbox.min.y) / 2;
+          const centerZ = (bbox.max.z + bbox.min.z) / 2;
+          mesh.position.set(-centerX + position.x, -centerY + position.y, -centerZ + position.z - 40); // Move objects behind the text
+
+          // Scale the object to fit within the scene
+          const size = Math.max(bbox.max.x - bbox.min.x, bbox.max.y - bbox.min.y, bbox.max.z - bbox.min.z);
+          mesh.scale.setScalar(40 / size); // Adjust scale factor as needed
+
+          scene.add(mesh);
+          objects.push(mesh);
+
+          // Assign slower random rotation speeds for this object
+          rotationSpeeds.push({
+            x: Math.random() * 0.005 + 0.001, // Random speed between 0.001 and 0.006
+            y: Math.random() * 0.005 + 0.001,
+            z: Math.random() * 0.005 + 0.001,
+          });
+        });
+      }
+
+      const modelPaths = [
+        '../assets/3dmodels/AquariumCleaner.stl',
+        '../assets/3dmodels/ManualRotatingShowcaseBase.stl',
+        '../assets/3dmodels/PrinterMultiCableHolder.stl',
+        '../assets/3dmodels/ps3.stl',
+        '../assets/3dmodels/WheelChairExtension.stl',
+        '../assets/3dmodels/aqholder.stl',
+      ];
+
+      // Load multiple STL objects with randomized positions and allow repeated models
+      const totalObjects = 20; // Increase the total number of objects to load
+      for (let i = 0; i < totalObjects; i++) {
+        const randomModelIndex = Math.floor(Math.random() * modelPaths.length); // Randomly pick a model from the list
+        const randomX = Math.random() * 400 - 200; // Random position between -200 and 200
+        const randomY = Math.random() * 400 - 200; // Random position between -200 and 200
+        const randomZ = Math.random() * 100 - 50; // Random position between -100 and 100
+        loadSTLObject(modelPaths[randomModelIndex], 0xffffff, { x: randomX, y: randomY, z: randomZ - 50 }); // Move objects further back
+      }
+
+    // Load an HDR environment map with increased brightness
+    const rgbeLoader = new RGBELoader();
+    rgbeLoader.load('../assets/images/studio_small_08_4k.hdr', (texture) => {
+      texture.mapping = THREE.EquirectangularReflectionMapping; // Use reflection mapping for realistic reflections
+      texture.encoding = THREE.sRGBEncoding; // Ensure proper color encoding
+      texture.exposure = 1.5; // Increase exposure to enhance brightness
+      scene.environment = texture; // Apply the HDR as the environment map
+      scene.background = null; // Disable the HDR as the visible background
+    });
+
+      // Load a 3D model with enhanced readability
+      const modelLoader = new STLLoader();
+      modelLoader.load('../assets/3dmodels/Default.stl', (geometry) => {
+        const modelMat = new THREE.MeshPhysicalMaterial({
+          color: 0xffffff, // Pure white color
+          transmission: 1, // Increased transparency for a clearer glass effect
+          opacity: 0, // Lower opacity for more transparency
+          transparent: false, // Enable transparency
+          roughness: 0, // Reduced roughness for sharper reflections
+          metalness: .2, // Increased metalness for better reflections
+          ior: 1.5, // Adjusted index of refraction for realistic glass
+          clearcoat: 1, // Adds a clear coat layer
+          clearcoatRoughness: 0, // Smooth clear coat
+        });
+
+        const modelMesh = new THREE.Mesh(geometry, modelMat);
+
+        // Center the model based on its bounding box
+        geometry.computeBoundingBox();
+        const bbox = geometry.boundingBox;
+        const centerX = (bbox.max.x + bbox.min.x) / 2;
+        const centerY = (bbox.max.y + bbox.min.y) / 2;
+        const centerZ = (bbox.max.z + bbox.min.z) / 2;
+        modelMesh.position.set(-centerX, -centerY, -centerZ);
+
+        // Scale the model to fit within the scene
+        const size = Math.max(bbox.max.x - bbox.min.x, bbox.max.y - bbox.min.y, bbox.max.z - bbox.min.z);
+        modelMesh.scale.setScalar(50 / size); // Adjust scale factor as needed
+
+        scene.add(modelMesh);
+      });
+
+      // Add post-processing
+      const composer = new EffectComposer(renderer);
+      const renderPass = new RenderPass(scene, camera);
+      composer.addPass(renderPass);
+
+      // Adjust post-processing effects
+      const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1, 0, .8); // Reduced intensity
+      composer.addPass(bloomPass);
+
+      const rgbShiftPass = new ShaderPass(RGBShiftShader);
+      rgbShiftPass.uniforms['amount'].value = 0.0007; // Subtle chromatic aberration
+      rgbShiftPass.uniforms['angle'].value = 10; // Horizontal-only shift
+      composer.addPass(rgbShiftPass);
+
+      const filmPass = new FilmPass(.2, 0, 648, false); // Reduced noise and scanlines
+      composer.addPass(filmPass);
+
+      let mouseX = 0;
+      let mouseY = 0;
+      const rotationFactor = 0.03; // Increased sensitivity for faster rotation
+
+      // Add event listener for mouse movement
+      window.addEventListener('mousemove', (event) => {
+        mouseX = (event.clientX / window.innerWidth) * 2 - 1; // Normalize to range [-1, 1]
+        mouseY = (event.clientY / window.innerHeight) * 2 - 1; // Normalize to range [-1, 1]
+      });
+
+      // Update the animate function to use the composer
+      function animate() {
+        requestAnimationFrame(animate);
+
+        // Float and rotate objects with slower speeds
+        objects.forEach((obj, index) => {
+          const speed = rotationSpeeds[index];
+          obj.rotation.x += speed.x;
+          obj.rotation.y += speed.y;
+          obj.rotation.z += speed.z;
+          obj.position.y += Math.sin(Date.now() * 0.001 + obj.position.x) * 0.005; // Reduced floating speed
+        });
+
+        // Slightly rotate the camera based on mouse position
+        camera.rotation.x += (mouseY * rotationFactor - camera.rotation.x) * 0.1; // Faster response
+        camera.rotation.y += (mouseX * rotationFactor - camera.rotation.y) * 0.1;
+
+        // Render with post-processing
+        composer.render();
+      }
+      animate();
+
+      window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+    </script>
+  </body>
+</html>
