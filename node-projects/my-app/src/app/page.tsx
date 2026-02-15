@@ -8,6 +8,10 @@ function TypographyH1({ children }: { children: React.ReactNode }) {
   return <h1 className="text-4xl font-bold tracking-tight mb-4">{children}</h1>;
 }
 
+function TypographyH3({ children }: { children: React.ReactNode }) {
+  return <h2 className="text-3xl font-bold tracking-tight mb-4">{children}</h2>;
+}
+
 export default function Home() {
   return (
     <div className="container mx-auto px-4 py-8">
@@ -74,6 +78,7 @@ export default function Home() {
       </section>
       <section className="mt-12">
         <TypographyH1>Tests</TypographyH1>
+        <TypographyH3>Node Projects</TypographyH3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-6">
           <Link href="" className="h-full opacity-10">
             <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
@@ -212,6 +217,23 @@ export default function Home() {
               <CardContent>
                 <p className="text-muted-foreground text-sm">
                   Integrated TikTok live events with AI voice response and reactive galaxy visualization
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
+        </div>
+      </section>
+      <section className="mt-12">
+        <TypographyH3>Standalone Projects</TypographyH3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-6">
+          <Link href="https://emittersgame.com/tools/index6.html" className="h-full">
+            <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
+              <CardHeader>
+                <CardTitle>Trading Tools</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground text-sm">
+                  Trading tools for analyzing and visualizing market data
                 </p>
               </CardContent>
             </Card>
