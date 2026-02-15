@@ -174,7 +174,7 @@ export default function MikaPage() {
       <nav className="fixed top-0 w-full bg-gradient-to-r from-black via-transparent to-black z-50">
         <div className="container mx-auto px-6 py-4">
           <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold uppercase">Mickael</h1>
+            <h1 className="text-2xl font-bold uppercase heading-shine">Mickael</h1>
             <div className="xs:hidden md:flex space-x-8">
               <a href="#about" className="hover:text-primary transition-colors">ABOUT</a>
               <a href="#skills" className="hover:text-primary transition-colors">SKILLS</a>
@@ -241,7 +241,7 @@ export default function MikaPage() {
           {/* Hero Section */}
           <section id="hero" className="min-h-screen flex items-center justify-center">
             <div className="container mx-auto px-6 z-10 text-center w-3/6">
-              <h1 className="text-5xl font-bold mb-6">Full-Stack Creator, Dreamer, and Performance Seeker</h1>
+              <h1 className="text-5xl font-bold mb-6 heading-shine">Full-Stack Creator, Dreamer, and Performance Seeker</h1>
               <p className="mb-8">Hi, I'm Mickael—a web developer and hands-on innovator. Obsessed with building smarter processes, unique products, and finding better ways to solve real problems.</p>
               <a
                 href="#"
@@ -261,14 +261,14 @@ export default function MikaPage() {
             <div className="container mx-auto px-6">
               <div className="flex flex-col md:flex-row gap-12">
                 <div className="md:w-3/4 passion-content">
-                  <h2 className="text-3xl font-bold mb-6">About Me</h2>
+                  <h2 className="text-3xl font-bold mb-6 heading-shine uppercase">About Me</h2>
                   <p className="mb-4 mr-12">
                     I thrive at the intersection of technology and creativity. Whether building web apps, tracking markets, or designing tools for sim racing, I combine precision with a drive to improve and automate.
                   </p>
                   <p className="mb-8 mr-12">
                     I'm a lifelong learner—curious about everything from tropical aquariums to the latest AI workbench. My toolkit is as varied as my interests, and I love bringing new ideas to life.
                   </p>
-                  <h3 className="text-2xl font-bold mb-6">For Recruiters, Clients, and Collaborators</h3>
+                  <h3 className="text-2xl font-bold mb-6 heading-shine">For Recruiters, Clients, and Collaborators</h3>
                   <p className="mb-4 mr-12">
                     Expert in React/Next.js, TypeScript, Supabase, Vercel, and DevOps <br/>
                     10+ years experience developing web apps as MVPs, Flutter mobile apps, and hybrid solutions with DevOps <br/>
@@ -296,13 +296,13 @@ export default function MikaPage() {
           {/* Passions Section */}
           <section id="passions" className="py-20">
             <div className="container mx-auto px-6">
-              <h2 className="text-5xl font-bold text-center mb-12">MY PASSIONS</h2>
+              <h2 className="text-5xl font-bold text-center mb-12 heading-shine uppercase">MY PASSIONS</h2>
               {/* 3D Printing */}
               <div className="passion-item">
                 <div className="flex flex-col md:flex-row gap-12">
                   <div className="md:w-1/2">
                     <div className="passion-content">
-                      <h3 className="text-2xl font-bold mb-4">3D PRINTING</h3>
+                      <h3 className="text-2xl font-bold mb-4 heading-shine">3D PRINTING</h3>
                       <p className="mb-4">Creating and designing custom 3D models for various projects and prototypes.</p>
                       <p className="text-gray-400">Expertise in FDM and SLA printing technologies, material selection, and post-processing techniques.</p>
                     </div>
@@ -322,7 +322,7 @@ export default function MikaPage() {
                 <div className="flex flex-col md:flex-row-reverse gap-12">
                   <div className="md:w-1/2">
                     <div className="passion-content">
-                      <h3 className="text-2xl font-bold mb-4">DRONES</h3>
+                      <h3 className="text-2xl font-bold mb-4 heading-shine">DRONES</h3>
                       <p className="mb-4">Building and flying drones for aerial photography and videography.</p>
                       <p className="text-gray-400">DIY drone builds, custom modifications, and professional aerial photography services.</p>
                     </div>
@@ -350,7 +350,7 @@ export default function MikaPage() {
                   </div>
                   <div className="md:w-1/2">
                     <div className="passion-content">
-                      <h3 className="text-2xl font-bold mb-4">BMW</h3>
+                      <h3 className="text-2xl font-bold mb-4 heading-shine">BMW</h3>
                       <p className="mb-4">Fan of BMW brand and proud owner of a F20 twin turbo model. Next car on my wishlist is an M3 or M5.</p>
                       <p className="text-gray-400">Always open to discuss about cars, specially motorsport LMDh and GTs.</p>
                     </div>
@@ -370,7 +370,7 @@ export default function MikaPage() {
                   </div>
                   <div className="md:w-1/2">
                     <div className="passion-content">
-                      <h3 className="text-2xl font-bold mb-4">CRYPTO</h3>
+                      <h3 className="text-2xl font-bold mb-4 heading-shine">CRYPTO</h3>
                       <p className="mb-4">Investing and developing blockchain solutions since early 2017.</p>
                       <p className="text-gray-400">Experience with Bitcoin, Ethereum, and other major cryptocurrencies. Active in DeFi and NFT spaces.</p>
                     </div>
@@ -382,7 +382,7 @@ export default function MikaPage() {
                 <div className="flex flex-col md:flex-row gap-12">
                   <div className="md:w-1/2">
                     <div className="passion-content">
-                      <h3 className="text-2xl font-bold mb-4">SIM RACING</h3>
+                      <h3 className="text-2xl font-bold mb-4 heading-shine">SIM RACING</h3>
                       <p className="mb-4">I'm someone who craves precision, performance, and authenticity—whether it's driving a BMW M series or racing in VR.</p>
                       <p className="text-gray-400">I’m always refining my sim rig for better feedback and immersion, down to customizing pedals and exploring 3D-printed upgrades. I care about the feel of everything I use, and I don’t settle for “good enough.” If there’s a way to make something more real, more responsive, more right, I’ll find it.</p>
                     </div>
@@ -410,7 +410,7 @@ export default function MikaPage() {
                   </div>
                   <div className="md:w-1/3">
                     <div className="passion-content">
-                      <h3 className="text-2xl font-bold mb-4">AQUARIUM</h3>
+                      <h3 className="text-2xl font-bold mb-4 heading-shine">AQUARIUM</h3>
                       <p className="mb-4">Maintaining and designing freshwater and marine aquariums.</p>
                       <p className="text-gray-400">Expert in reef tanks, planted tanks, and aquatic plant propagation.</p>
                     </div>
@@ -422,7 +422,7 @@ export default function MikaPage() {
                 <div className="flex flex-col md:flex-row gap-12">
                   <div className="md:w-1/2">
                     <div className="passion-content">
-                      <h3 className="text-2xl font-bold mb-4">CODE</h3>
+                      <h3 className="text-2xl font-bold mb-4 heading-shine">CODE</h3>
                       <p className="mb-4">I'm someone who craves precision, performance, and authenticity—whether it's driving a BMW M series or racing in VR.</p>
                       <p className="text-gray-400">I’m always refining my sim rig for better feedback and immersion, down to customizing pedals and exploring 3D-printed upgrades. I care about the feel of everything I use, and I don’t settle for “good enough.” If there’s a way to make something more real, more responsive, more right, I’ll find it.</p>
                     </div>
@@ -443,7 +443,7 @@ export default function MikaPage() {
           {/* Skills Section */}
           <section id="skills" className="py-20">
             <div className="container mx-auto px-6">
-              <h2 className="text-5xl font-bold text-center mb-12 uppercase">PROGRAMMING SKILLS</h2>
+              <h2 className="text-5xl font-bold text-center mb-12 uppercase heading-shine">PROGRAMMING SKILLS</h2>
               <div className="flex flex-col items-center md:flex-row gap-40">
                 <div className="md:w-1/2">
                   <p>
@@ -473,7 +473,7 @@ export default function MikaPage() {
           {/* Other Skills */}
           <section id="otherSkills" className="py-20">
             <div className="container mx-auto px-6">
-              <h2 className="text-5xl font-bold text-center mb-12 uppercase">OTHER SKILLS</h2>
+              <h2 className="text-5xl font-bold text-center mb-12 uppercase heading-shine">OTHER SKILLS</h2>
               <div className="flex flex-col items-center md:flex-row gap-40">
                 <div className="md:w-1/2">
                   <p>
@@ -503,7 +503,7 @@ export default function MikaPage() {
           {/* Tools Section */}
           <section id="atp" className="py-20">
             <div className="container mx-auto px-6">
-              <h2 className="text-5xl font-bold text-center mb-12">Highlight Achievements & Case Studies</h2>
+              <h2 className="text-5xl font-bold text-center mb-12 heading-shine uppercase">Highlight Achievements & Case Studies</h2>
               <div className="mb-12 text-center">
                 <div className="flex flex-wrap justify-center">
                   {["All", "Racing", "Game Development", "Apps", "Scripting", "3D Tools"].map((filter) => (
@@ -658,7 +658,7 @@ export default function MikaPage() {
                   <i className="fas fa-mobile-alt phone text-grey opacity-50"></i>
                 </div>
                 <div className="md:w-1/2">
-                  <h2 className="text-5xl font-bold mb-6">LET'S WIRE</h2>
+                  <h2 className="text-5xl font-bold mb-6 heading-shine uppercase">LET'S WIRE</h2>
                   <form className="space-y-6">
                     <div>
                       <input type="text" placeholder="Name" className="w-full card rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary" />

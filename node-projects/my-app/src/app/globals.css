@@ -147,3 +147,32 @@
   padding: 8px;
   text-align: left;
 }
+
+/* Heading Shine Effect */
+.heading-shine {
+  position: relative;
+  display: block;
+  background: linear-gradient(
+    120deg,
+    rgba(255,255,255,0.4) 0%,
+    rgba(255,255,255,1) 40%,
+    rgba(255,255,255,0.4) 80%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shine 5s infinite ease-in-out;
+}
+
+@keyframes shine {
+  0% {
+    background-position: -100% 0;
+  }
+  50% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
