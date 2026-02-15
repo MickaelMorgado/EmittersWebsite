@@ -168,7 +168,7 @@ export default function MikaPage() {
   }, []);
 
   return (
-    <main className="font-saira text-white bg-dark h-full">
+    <main className="mika-portfolio font-saira text-white bg-dark h-full">
       {/* MIGRATED FROM tools/index11.html */}
       {/* Navigation */}
       <nav className="fixed top-0 w-full bg-gradient-to-r from-black via-transparent to-black z-50">

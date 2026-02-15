@@ -4,13 +4,13 @@
     --grey: #aaa;
 }
 
-body {
+.mika-portfolio {
     background-color: black;
     letter-spacing: 0.5px;
     text-transform: uppercase;
 }
 
-h1, h2, h3 {
+.mika-portfolio h1, .mika-portfolio h2, .mika-portfolio h3 {
   position: relative;
   display: block;
   color: #fff; /* base text color */
@@ -39,12 +39,12 @@ h1, h2, h3 {
   }
 }
 
-p {
+.mika-portfolio p {
     font-size: 14px;
     color: var(--grey);
 }
 
-li {
+.mika-portfolio li {
     color: var(--portfolio-primary);
     opacity: .5;
     list-style: none;
@@ -61,7 +61,7 @@ li:hover {
 }
 
 /* Smooth scrolling for anchor links */
-a[href*="#"] {
+.mika-portfolio a[href*="#"] {
     scroll-behavior: smooth;
     text-decoration: none;
     transition: color 0.3s ease, border-color 0.3s ease;
@@ -81,7 +81,7 @@ a[href*="#"] {
     animation: fadeInUp 1s ease forwards;
 }
 
-::selection {
+.mika-portfolio ::selection {
     background: none;
     color: var(--portfolio-primary);
 }
@@ -401,7 +401,7 @@ a {
 }
 
 /* Icons */
-i {
+.mika-portfolio i {
     transition: transform 0.3s ease;
 }
 
@@ -410,14 +410,14 @@ i:hover {
 }
 
 /* Navigation */
-nav a {
+.mika-portfolio nav a {
     color: rgba(255, 255, 255, 0.7);
     padding: 0.5rem 1rem;
     border-radius: 0.25rem;
     transition: all 0.3s ease;
 }
 
-nav a:hover {
+.mika-portfolio nav a:hover {
     color: rgba(255, 255, 255, 1);
     background: rgba(255, 255, 255, 0.05);
 }
@@ -435,12 +435,12 @@ nav a:hover {
 }
 
 /* Form inputs */
-input, textarea {
+.mika-portfolio input, .mika-portfolio textarea {
     background-color: rgba(0, 0, 0, 0.98);
     border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-input:focus, textarea:focus {
+.mika-portfolio input:focus, .mika-portfolio textarea:focus {
     border-color: var(--primary);
     box-shadow: 0 0 0 3px rgba(255, 57, 74, 0.2);
 }
@@ -452,16 +452,16 @@ footer {
 }
 
 /* Custom scrollbar */
-::-webkit-scrollbar-track {
+.mika-portfolio ::-webkit-scrollbar-track {
     background: rgba(0, 0, 0, 0.98);
 }
 
-::-webkit-scrollbar-thumb {
+.mika-portfolio ::-webkit-scrollbar-thumb {
     background: var(--primary);
     border-radius: 4px;
 }
 
-::-webkit-scrollbar-thumb:hover {
+.mika-portfolio ::-webkit-scrollbar-thumb:hover {
     background: #ff2333;
 }
 
@@ -475,12 +475,12 @@ footer {
 }
 
 /* Form input focus ring */
-input:focus, textarea:focus {
+.mika-portfolio input:focus, .mika-portfolio textarea:focus {
     box-shadow: 0 0 0 3px rgba(255, 57, 74, 0.2);
 }
 
 /* Image hover effects */
-img {
+.mika-portfolio img {
     transition: transform 0.3s ease-in-out;
 }
 
@@ -500,20 +500,20 @@ img {
 }
 
 /* Custom scrollbar */
-::-webkit-scrollbar {
+.mika-portfolio ::-webkit-scrollbar {
     width: 8px;
 }
 
-::-webkit-scrollbar-track {
+.mika-portfolio ::-webkit-scrollbar-track {
     background: #1a1a1a;
 }
 
-::-webkit-scrollbar-thumb {
+.mika-portfolio ::-webkit-scrollbar-thumb {
     background: #ff394a;
     border-radius: 4px;
 }
 
-::-webkit-scrollbar-thumb:hover {
+.mika-portfolio ::-webkit-scrollbar-thumb:hover {
     background: #ff2333;
 }
 
