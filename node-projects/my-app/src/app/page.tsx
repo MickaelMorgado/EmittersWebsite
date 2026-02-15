@@ -172,7 +172,35 @@ export default function Home() {
                 <CardTitle>PC AI Assistant</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">Voice-activated AI assistant with real-time galaxy visualization and speech-reactive animations</p>
+                <p className="text-muted-foreground text-sm">
+                  Voice-activated AI assistant with real-time galaxy visualization and speech-reactive animations
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
+
+          <Link href="/cad3d" className="h-full">
+            <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
+              <CardHeader>
+                <CardTitle>3D CAD App</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground text-sm">
+                  Simple 3D CAD software for creating and manipulating 3D objects
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
+          
+          <Link href="/camera-effects" className="h-full">
+            <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
+              <CardHeader>
+                <CardTitle>Camera Effects</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground text-sm">
+                  Real-time camera filters and visual effects
+                </p>
               </CardContent>
             </Card>
           </Link>
