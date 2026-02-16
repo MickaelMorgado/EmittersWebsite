@@ -1,0 +1,30 @@
+#!/bin/bash
+
+# pre-push hook logic
+while read local_ref local_sha remote_ref remote_sha
+do
+    # Check if we are pushing to the master branch
+    if [[ "$remote_ref" == "refs/heads/master" ]]; then
+        echo -e "\n\033[0;33m[RECOMMENDATION]\033[0m You are pushing to master. It is recommended to build first."
+        
+        # Redirect stdin from the terminal to allow interactive input
+        exec < /dev/tty
+        read -p "Would you like to run a build now? (y/n): " -n 1 -r
+        echo # move to a new line
+        
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            echo "Initiating build (npm run build)..."
+            npm run build
+            if [ $? -eq 0 ]; then
+                echo -e "\033[0;32m[SUCCESS]\033[0m Build completed successfully."
+            else
+                echo -e "\033[0;31m[WARNING]\033[0m Build failed, but the push will continue as it is not mandatory."
+            fi
+        else
+            echo "Skipping optional build."
+        fi
+    fi
+done
+
+# Always exit 0 to ensure the push is NEVER blocked by this hook
+exit 0
