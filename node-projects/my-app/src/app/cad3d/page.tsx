@@ -2,21 +2,16 @@
 import DraggableNumberInput from '@/components/DraggableNumberInput'
 import { ContactShadows, Edges, Environment, GizmoHelper, GizmoViewcube, Grid, OrbitControls } from '@react-three/drei'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { AlertTriangle, ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Camera, Download, Edit3, Eye, EyeOff, Move, RotateCcw, RotateCw, Trash2 } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { AlertTriangle, Download, Edit3, Eye, EyeOff, Move, RotateCcw, RotateCw, Trash2 } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { OBJExporter } from 'three/examples/jsm/exporters/OBJExporter.js'
 import { STLExporter } from 'three/examples/jsm/exporters/STLExporter.js'
 
 export default function CAD3D() {
   const [objects, setObjects] = useState<Array<{type: string, name?: string, position: [number, number, number], rotation: [number, number, number], scale: [number, number, number], color: string, shapePoints?: number[][], sketchId?: string, visible?: boolean}>>([])
-  const [selectedTool, setSelectedTool] = useState('box')
-  const [isDragging, setIsDragging] = useState(false)
-  const [dragStart, setDragStart] = useState<[number, number] | null>(null)
-  const [dragEnd, setDragEnd] = useState<[number, number] | null>(null)
   const [selectedObjectIndex, setSelectedObjectIndex] = useState<number | null>(null)
-  const [isSelectionMode, setIsSelectionMode] = useState<boolean>(true)
-  const [isCameraDragging, setIsCameraDragging] = useState<boolean>(false)
+
   
   // CAD Mode State
   const [mode, setMode] = useState<'3d' | 'sketch'>('3d')
@@ -47,17 +42,13 @@ export default function CAD3D() {
   const orbitControlsRef = useRef<any>(null)
   
   // Primary neon-lime color variable for consistent theming (RGBA format)
-  const primaryColorHex = '#d4ff00'
   const primaryColor = 'rgba(212, 255, 0, 1)'
   const buttonTextColor = '#000000'
   const buttonColor = 'rgba(255, 255, 255, 0.05)'
-  const primaryButtonTextColor = '#000000'
   const panelColor = 'rgba(15, 15, 15, 0.7)'
   const panelPadding = '12px'
   const panelBorderRadius = '12px'
-  const inputBackgroundColor = 'rgba(0, 0, 0, 0.3)'
-  const inputBorderColor = 'rgba(255, 255, 255, 0.1)'
-  const defaultMeshColor = '#aaaaaa'
+
   
   // Persistence: Load from localStorage
   useEffect(() => {
@@ -81,13 +72,12 @@ export default function CAD3D() {
     localStorage.setItem('cad3d_scene', JSON.stringify({ objects, sketchShapes }))
   }, [objects, sketchShapes])
 
-  const pushToHistory = (newObjects = objects, newShapes = sketchShapes) => {
-    if (isInternalUpdate.current) return
+  const pushToHistory = useCallback((_newObjects = objects, _newShapes = sketchShapes) => {
     setHistory(prev => [...prev.slice(-49), { objects: JSON.parse(JSON.stringify(objects)), sketchShapes: JSON.parse(JSON.stringify(sketchShapes)) }])
     setRedoStack([])
-  }
+  }, [objects, sketchShapes])
 
-  const undo = () => {
+  const undo = useCallback(() => {
     if (history.length === 0) return
     const prevState = history[history.length - 1]
     
@@ -98,9 +88,9 @@ export default function CAD3D() {
     setSketchShapes(prevState.sketchShapes)
     setHistory(prev => prev.slice(0, -1))
     setTimeout(() => { isInternalUpdate.current = false }, 100)
-  }
+  }, [history, objects, sketchShapes])
 
-  const redo = () => {
+  const redo = useCallback(() => {
     if (redoStack.length === 0) return
     const nextState = redoStack[redoStack.length - 1]
     
@@ -111,12 +101,12 @@ export default function CAD3D() {
     setSketchShapes(nextState.sketchShapes)
     setRedoStack(prev => prev.slice(0, -1))
     setTimeout(() => { isInternalUpdate.current = false }, 100)
-  }
+  }, [redoStack, objects, sketchShapes])
 
-  const removeObject = (index: number) => {
+  const removeObject = useCallback((index: number) => {
     pushToHistory()
     setObjects(prev => prev.filter((_, i) => i !== index))
-  }
+  }, [pushToHistory])
 
   const updateObject = (index: number, updates: Partial<typeof objects[0]>) => {
     setObjects(prev => prev.map((obj, i) => i === index ? { ...obj, ...updates } : obj))
@@ -152,7 +142,7 @@ export default function CAD3D() {
   }
 
   // Detect collisions between shapes (shared vertices)
-  const detectShapeCollisions = (shapes: typeof sketchShapes) => {
+  const detectShapeCollisions = useCallback((shapes: typeof sketchShapes) => {
     const collisionPairs: Array<{shape1: number, shape2: number}> = []
     const threshold = 0.3 // Distance threshold for considering points as "touching"
     
@@ -181,66 +171,10 @@ export default function CAD3D() {
     }
     
     return collisionPairs
-  }
+  }, [])
 
 
-  // Sync sketches to 3D objects and switch to 3D mode
-  const handleFinishSketch = () => {
-    // Check for collisions before proceeding
-    if (collisions.length > 0) {
-      setShowCollisionDialog(true)
-      return
-    }
-    
-    pushToHistory()
-    proceedWithFinish()
-  }
-
-  // Combine overlapping shapes into a single shape
-  const combineOverlappingShapes = () => {
-    if (collisions.length === 0) return
-    
-    let nextShapes = [...sketchShapes]
-    const processedIndices = new Set<number>()
-    const mergedShapes: typeof sketchShapes = []
-    
-    for (let i = 0; i < nextShapes.length; i++) {
-      if (processedIndices.has(i)) continue
-      
-      let currentShape = { ...nextShapes[i] }
-      processedIndices.add(i)
-      
-      let foundNewCollision = true
-      while (foundNewCollision) {
-        foundNewCollision = false
-        for (let j = 0; j < nextShapes.length; j++) {
-          if (processedIndices.has(j)) continue
-          
-          const collisionPairs = detectShapeCollisions([currentShape, nextShapes[j]])
-          if (collisionPairs.length > 0) {
-            currentShape.points = [...currentShape.points, ...nextShapes[j].points]
-            processedIndices.add(j)
-            foundNewCollision = true
-          }
-        }
-      }
-      
-      const uniquePoints: Array<[number, number]> = []
-      currentShape.points.forEach(p1 => {
-        if (!uniquePoints.some(p2 => Math.sqrt(Math.pow(p1[0]-p2[0], 2) + Math.pow(p1[1]-p2[1], 2)) < 0.1)) {
-          uniquePoints.push(p1)
-        }
-      })
-      currentShape.points = uniquePoints
-      mergedShapes.push(currentShape)
-    }
-    
-    pushToHistory(objects, mergedShapes)
-    setSketchShapes(mergedShapes)
-    proceedWithFinish(mergedShapes)
-  }
-  
-  const proceedWithFinish = (shapesToUse = sketchShapes) => {
+  const proceedWithFinish = useCallback((shapesToUse = sketchShapes) => {
     // Note: We don't check for length === 0 because we might need to remove orphaned objects if user deleted all sketches
     // if (sketchShapes.length === 0) { setMode('3d'); return; }
 
@@ -249,7 +183,7 @@ export default function CAD3D() {
         const activeSketchIds = new Set(shapesToUse.map(s => s.id))
         
         // 2. Remove objects that were linked to sketches that no longer exist
-        let nextObjects = prev.filter(obj => !obj.sketchId || activeSketchIds.has(obj.sketchId))
+        const nextObjects = prev.filter(obj => !obj.sketchId || activeSketchIds.has(obj.sketchId))
 
         const DEFAULT_EXTRUSION = 0.5
 
@@ -270,7 +204,7 @@ export default function CAD3D() {
                  // Map 2D sketch space to 3D based on orientation
                  let position: [number, number, number] = [0, 0, 0]
                  let rotation: [number, number, number] = [0, 0, 0]
-                 let scale: [number, number, number] = [1, 1, DEFAULT_EXTRUSION]
+                 const scale: [number, number, number] = [1, 1, DEFAULT_EXTRUSION]
 
                  switch (shape.orientation) {
                     case 'TOP':
@@ -326,7 +260,65 @@ export default function CAD3D() {
     })
 
     setMode('3d')
-  }
+  }, [sketchShapes])
+
+  // Sync sketches to 3D objects and switch to 3D mode
+  const handleFinishSketch = useCallback(() => {
+    // Check for collisions before proceeding
+    if (collisions.length > 0) {
+      setShowCollisionDialog(true)
+      return
+    }
+    
+    pushToHistory()
+    proceedWithFinish()
+  }, [collisions, pushToHistory, proceedWithFinish])
+
+  // Combine overlapping shapes into a single shape
+  const combineOverlappingShapes = useCallback(() => {
+    if (collisions.length === 0) return
+    
+    const nextShapes = [...sketchShapes]
+    const processedIndices = new Set<number>()
+    const mergedShapes: typeof sketchShapes = []
+    
+    for (let i = 0; i < nextShapes.length; i++) {
+      if (processedIndices.has(i)) continue
+      
+      const currentShape = { ...nextShapes[i] }
+      processedIndices.add(i)
+      
+      let foundNewCollision = true
+      while (foundNewCollision) {
+        foundNewCollision = false
+        for (let j = 0; j < nextShapes.length; j++) {
+          if (processedIndices.has(j)) continue
+          
+          const collisionPairs = detectShapeCollisions([currentShape, nextShapes[j]])
+          if (collisionPairs.length > 0) {
+            currentShape.points = [...currentShape.points, ...nextShapes[j].points]
+            processedIndices.add(j)
+            foundNewCollision = true
+          }
+        }
+      }
+      
+      const uniquePoints: Array<[number, number]> = []
+      currentShape.points.forEach(p1 => {
+        if (!uniquePoints.some(p2 => Math.sqrt(Math.pow(p1[0]-p2[0], 2) + Math.pow(p1[1]-p2[1], 2)) < 0.1)) {
+          uniquePoints.push(p1)
+        }
+      })
+      currentShape.points = uniquePoints
+      mergedShapes.push(currentShape)
+    }
+    
+    pushToHistory(objects, mergedShapes)
+    setSketchShapes(mergedShapes)
+    proceedWithFinish(mergedShapes)
+  }, [collisions, sketchShapes, detectShapeCollisions, pushToHistory, objects, proceedWithFinish])
+  
+
 
   // Keyboard Shortcuts
   useEffect(() => {
@@ -401,7 +393,7 @@ export default function CAD3D() {
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [selectedObjectIndex, removeObject, mode])
+  }, [selectedObjectIndex, removeObject, mode, handleFinishSketch, redo, undo])
 
   useEffect(() => {
     if (mode === 'sketch') {
@@ -410,7 +402,7 @@ export default function CAD3D() {
     } else {
       setCollisions([])
     }
-  }, [sketchShapes, mode])
+  }, [sketchShapes, mode, detectShapeCollisions])
   const setCameraView = (view: 'front' | 'back' | 'right' | 'left' | 'top' | 'bottom' | 'camera') => {
     // Call the function from the ref if it exists
     if (cameraControlsRef.current) {
@@ -428,13 +420,7 @@ export default function CAD3D() {
   }
 
   // Camera control implementation for external use
-  const handleCameraView = (view: 'front' | 'back' | 'right' | 'left' | 'top' | 'bottom' | 'camera') => {
-    // This will be passed to CameraGizmo as a prop
-  }
 
-  const handleToggleCameraMode = () => {
-    // This will be passed to CameraGizmo as a prop
-  }
 
   const exportSTL = () => {
     // Create a scene to hold all objects for export
@@ -693,10 +679,7 @@ export default function CAD3D() {
                   ? '0 0 20px rgba(192, 240, 82, 0.4), 0 0 40px rgba(192, 240, 82, 0.25), inset 0 0 15px rgba(192, 240, 82, 0.1)' 
                   : '',
                 transform: selectedObjectIndex === index ? 'translateY(-1px)' : 'translateY(0)',
-                boxSizing: 'border-box',
-                ...(!isCameraDragging && {
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-                })
+                boxSizing: 'border-box'
               }}
               onClick={() => setSelectedObjectIndex(index)}
             >
@@ -951,8 +934,6 @@ export default function CAD3D() {
             setCurrentSketchPoints={setCurrentSketchPoints}
             sketchShapes={sketchShapes}
             setSketchShapes={setSketchShapes}
-            objects={objects}
-            setObjects={setObjects}
             selectedVertex={selectedVertex}
             setSelectedVertex={setSelectedVertex}
             handleDeleteVertex={() => {
@@ -1357,125 +1338,7 @@ function Object3D({
   }
 }
 
-// Camera Gizmo Component
-function CameraGizmo({ 
-  setCameraView, 
-  toggleCameraMode, 
-  isCameraDragging, 
-  setIsCameraDragging 
-}: { 
-  setCameraView: (view: 'front' | 'back' | 'right' | 'left' | 'top' | 'bottom' | 'camera') => void
-  toggleCameraMode: () => void
-  isCameraDragging: boolean
-  setIsCameraDragging: (val: boolean) => void
-}) {
-  // Camera Gizmo UI only - camera controls are handled by the version inside Canvas
-  return (
-    <div className="absolute bottom-4 right-4" style={{ zIndex: 60 }}>
-      <div 
-        className="bg-black bg-opacity-80 backdrop-blur-md rounded-lg p-3 border border-gray-600"
-        style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(3, 1fr)', 
-          gap: '6px',
-          minWidth: '120px'
-        }}
-      >
-        {/* Top Row: Top, Camera, Bottom */}
-        <button
-          onClick={() => setCameraView('top')}
-          className="w-8 h-8 rounded flex items-center justify-center transition-all hover:bg-gray-600"
-          style={{
-            backgroundColor: '#333',
-            color: '#fff',
-            border: '1px solid #555'
-          }}
-          title="Top View (7)"
-        >
-          <ArrowUp size={16} />
-        </button>
-        <button
-          onClick={toggleCameraMode}
-          className="w-8 h-8 rounded flex items-center justify-center transition-all hover:bg-gray-600"
-          style={{
-            backgroundColor: '#333',
-            color: '#fff',
-            border: '1px solid #555'
-          }}
-          title="Toggle Camera Mode (5)"
-        >
-          <Camera size={16} />
-        </button>
-        <button
-          onClick={() => setCameraView('bottom')}
-          className="w-8 h-8 rounded flex items-center justify-center transition-all hover:bg-gray-600"
-          style={{
-            backgroundColor: '#333',
-            color: '#fff',
-            border: '1px solid #555'
-          }}
-          title="Bottom View (Ctrl+7)"
-        >
-          <ArrowDown size={16} />
-        </button>
 
-        {/* Middle Row: Left, Front, Right */}
-        <button
-          onClick={() => setCameraView('left')}
-          className="w-8 h-8 rounded flex items-center justify-center transition-all hover:bg-gray-600"
-          style={{
-            backgroundColor: '#333',
-            color: '#fff',
-            border: '1px solid #555'
-          }}
-          title="Left View (Ctrl+3)"
-        >
-          <ArrowLeft size={16} />
-        </button>
-        <button
-          onClick={() => setCameraView('front')}
-          className="w-8 h-8 rounded flex items-center justify-center transition-all hover:bg-gray-600"
-          style={{
-            backgroundColor: '#333',
-            color: '#fff',
-            border: '1px solid #555'
-          }}
-          title="Front View (1)"
-        >
-          <Eye size={16} />
-        </button>
-        <button
-          onClick={() => setCameraView('right')}
-          className="w-8 h-8 rounded flex items-center justify-center transition-all hover:bg-gray-600"
-          style={{
-            backgroundColor: '#333',
-            color: '#fff',
-            border: '1px solid #555'
-          }}
-          title="Right View (3)"
-        >
-          <ArrowRight size={16} />
-        </button>
-
-        {/* Bottom Row: Back, Empty, Empty */}
-        <button
-          onClick={() => setCameraView('back')}
-          className="w-8 h-8 rounded flex items-center justify-center transition-all hover:bg-gray-600"
-          style={{
-            backgroundColor: '#333',
-            color: '#fff',
-            border: '1px solid #555'
-          }}
-          title="Back View (Ctrl+1)"
-        >
-          <EyeOff size={16} />
-        </button>
-        <div className="w-8 h-8"></div>
-        <div className="w-8 h-8"></div>
-      </div>
-    </div>
-  )
-}
 
 // Camera Controls Component - handles actual camera functionality inside Canvas
 function CameraControls({ 
@@ -1491,7 +1354,7 @@ function CameraControls({
 }) {
   const { camera, gl, set, scene } = useThree()
   
-  const switchToPerspective = () => {
+  const switchToPerspective = useCallback(() => {
     if (camera instanceof THREE.PerspectiveCamera) return // Already perspective
 
     const perspectiveCamera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000)
@@ -1500,9 +1363,9 @@ function CameraControls({
     perspectiveCamera.updateProjectionMatrix()
     
     set({ camera: perspectiveCamera })
-  }
+  }, [camera, set])
 
-  const switchToOrtho = () => {
+  const switchToOrtho = useCallback(() => {
     if (camera instanceof THREE.OrthographicCamera) return // Already ortho
 
     const aspect = window.innerWidth / window.innerHeight
@@ -1523,10 +1386,10 @@ function CameraControls({
     orthoCamera.updateProjectionMatrix()
 
     set({ camera: orthoCamera })
-  }
+  }, [camera, set])
 
   // Override the setCameraView function to actually implement camera control
-  const handleSetCameraView = (view: 'front' | 'back' | 'right' | 'left' | 'top' | 'bottom' | 'camera') => {
+  const handleSetCameraView = useCallback((view: 'front' | 'back' | 'right' | 'left' | 'top' | 'bottom' | 'camera') => {
     // Define camera positions for each view
     const viewPositions = {
       front: { position: [0, 0, 10], target: [0, 0, 0] },
@@ -1562,16 +1425,16 @@ function CameraControls({
       // Trigger a render
       gl.render(scene, camera)
     }
-  }
+  }, [camera, gl, scene, orbitControlsRef])
 
   // Manual toggle for camera mode
-  const handleToggleCameraMode = () => {
+  const handleToggleCameraMode = useCallback(() => {
     if (camera instanceof THREE.PerspectiveCamera) {
       switchToOrtho()
     } else {
       switchToPerspective()
     }
-  }
+  }, [camera, switchToOrtho, switchToPerspective])
 
   // Update the parent component's functions
   useEffect(() => {
@@ -1582,7 +1445,7 @@ function CameraControls({
         switchToPerspective: () => switchToPerspective()
       }
     }
-  }, [camera, gl, set, handleSetCameraView, handleToggleCameraMode, switchToPerspective])
+  }, [controlsRef, handleSetCameraView, handleToggleCameraMode, switchToPerspective])
 
   return null
 }
@@ -1596,8 +1459,6 @@ function SketchPlane({
   setCurrentSketchPoints, 
   sketchShapes, 
   setSketchShapes, 
-  objects, 
-  setObjects,
   selectedVertex,
   setSelectedVertex,
   handleDeleteVertex,
@@ -1611,26 +1472,28 @@ function SketchPlane({
   setCurrentSketchPoints: (points: Array<[number, number]>) => void
   sketchShapes: Array<{id: string, type: string, points: Array<[number, number]>, color: string, extruded: boolean, orientation: 'TOP' | 'FRONT' | 'RIGHT' | 'BOTTOM' | 'BACK' | 'LEFT'}>
   setSketchShapes: React.Dispatch<React.SetStateAction<Array<{id: string, type: string, points: Array<[number, number]>, color: string, extruded: boolean, orientation: 'TOP' | 'FRONT' | 'RIGHT' | 'BOTTOM' | 'BACK' | 'LEFT'}>>>
-  objects: Array<{type: string, position: [number, number, number], rotation: [number, number, number], scale: [number, number, number], color: string, sketchId?: string}>
-  setObjects: React.Dispatch<React.SetStateAction<Array<{type: string, position: [number, number, number], rotation: [number, number, number], scale: [number, number, number], color: string, sketchId?: string}>>>
   selectedVertex: {shapeIndex: number, vertexIndex: number} | null
   setSelectedVertex: React.Dispatch<React.SetStateAction<{shapeIndex: number, vertexIndex: number} | null>>
   handleDeleteVertex: () => void
   primaryColor: string
   orientation: 'TOP' | 'BOTTOM' | 'FRONT' | 'BACK' | 'RIGHT' | 'LEFT' | 'NONE'
 }) {
-  const { camera, gl, raycaster, mouse, scene } = useThree()
-  const planeRef = useRef<THREE.Mesh>(null)
-  const [isMouseDown, setIsMouseDown] = useState(false)
-  const [dragStartPoint, setDragStartPoint] = useState<[number, number] | null>(null)
+  const { camera, gl, raycaster, mouse } = useThree()
+  // const [isMouseDown, setIsMouseDown] = useState(false)
+  // const [dragStartPoint, setDragStartPoint] = useState<[number, number] | null>(null)
   const [selectedShapeIndex, setSelectedShapeIndex] = useState<number | null>(null)
 
   // Handle mouse events for drawing
 
   
-  const finishShape = () => {
+  const cancelShape = useCallback(() => {
+    setCurrentSketchPoints([])
+    setIsDrawing(false)
+  }, [setCurrentSketchPoints, setIsDrawing])
+
+  const finishShape: () => void = useCallback(() => {
     if (currentSketchPoints.length > 0) {
-      let finalPoints = [...currentSketchPoints]
+      const finalPoints = [...currentSketchPoints]
       
       let shapeType: string = sketchTool
       
@@ -1678,23 +1541,16 @@ function SketchPlane({
       setSketchShapes((prev: any) => [...prev, newShape])
       setCurrentSketchPoints([])
       setIsDrawing(false)
-      setDragStartPoint(null)
     }
-  }
-  
-  const cancelShape = () => {
-    setCurrentSketchPoints([])
-    setIsDrawing(false)
-    setDragStartPoint(null)
-  }
+  }, [currentSketchPoints, sketchTool, orientation, setSketchShapes, setCurrentSketchPoints, setIsDrawing, cancelShape])
 
   // Helper for grid snapping
-  const snapToGrid = (val: number, step: number = 0.5) => {
+  const snapToGrid = useCallback((val: number, step: number = 0.5) => {
     return Math.round(val / step) * step
-  }
+  }, [])
 
   // Helper for vertex snapping
-  const getSnappingPoint = (point: [number, number]): { point: [number, number], snapped: boolean } => {
+  const getSnappingPoint = useCallback((point: [number, number]): { point: [number, number], snapped: boolean } => {
     // Check for snapping to existing vertices
     const snapThreshold = 0.5
     let closestDist = Infinity
@@ -1730,10 +1586,10 @@ function SketchPlane({
       point: [snapToGrid(point[0]), snapToGrid(point[1])],
       snapped: false
     }
-  }
+  }, [sketchShapes, sketchTool, isDrawing, currentSketchPoints, snapToGrid])
 
   // Get mouse position on the sketch plane
-  const getMousePointOnPlane = (e: any): { point: [number, number], snapped: boolean } | null => {
+  const getMousePointOnPlane = useCallback((e: any): { point: [number, number], snapped: boolean } | null => {
     // Get mouse position in normalized device coordinates (-1 to +1)
     const rect = gl.domElement.getBoundingClientRect()
     const x = ((e.clientX - rect.left) / rect.width) * 2 - 1
@@ -1744,7 +1600,7 @@ function SketchPlane({
     raycaster.setFromCamera(mouse, camera)
 
     // Raycast onto dynamic plane based on orientation
-    let planeNormal = new THREE.Vector3(0, 1, 0)
+    const planeNormal = new THREE.Vector3(0, 1, 0)
     switch (orientation) {
         case 'FRONT': planeNormal.set(0, 0, 1); break
         case 'BACK':  planeNormal.set(0, 0, -1); break
@@ -1774,21 +1630,23 @@ function SketchPlane({
           case 'RIGHT':
               v = intersection.y
               break
+          case 'LEFT':
+              v = intersection.y
+              break
       }
       return getSnappingPoint([u, v])
     }
     
     return null
-  }
+  }, [camera, gl, mouse, raycaster, orientation, getSnappingPoint])
   
   
   // State for visual feedback of snapping
   const [activeSnapPoint, setActiveSnapPoint] = useState<[number, number] | null>(null)
-  // const [selectedVertex, setSelectedVertex] = useState<{shapeIndex: number, vertexIndex: number} | null>(null) // Lifted
   const [isDraggingVertex, setIsDraggingVertex] = useState(false)
 
   // Handle mouse events for drawing
-  const handlePointerDown = (e: any) => {
+  const handlePointerDown = useCallback((e: any) => {
     // Right-click to cancel drawing
     if (e.button === 2 && isDrawing && sketchTool === 'draw') {
       cancelShape()
@@ -1826,10 +1684,9 @@ function SketchPlane({
 
         if (hitVertex) {
            const vertex = hitVertex as { shapeIndex: number, vertexIndex: number }
-           setSelectedVertex(vertex)
-           setSelectedShapeIndex(vertex.shapeIndex) // Auto-select shape
-           setIsDraggingVertex(true)
-           setIsMouseDown(true)
+            setSelectedVertex(vertex)
+            setSelectedShapeIndex(vertex.shapeIndex) // Auto-select shape
+            setIsDraggingVertex(true)
            e.stopPropagation() // Prevent other handlers
            return
         } else {
@@ -1855,8 +1712,7 @@ function SketchPlane({
 
     if (!isDrawing) {
        // Start Drawing (Click 1)
-       setIsMouseDown(true)
-       setDragStartPoint(point)
+       // setIsMouseDown(true)
        // Initialize with two points: start and current (same)
        setCurrentSketchPoints([point, point]) 
        setIsDrawing(true)
@@ -1883,9 +1739,9 @@ function SketchPlane({
          finishShape()
        }
     }
-  }
+  }, [isDrawing, sketchTool, cancelShape, getMousePointOnPlane, sketchShapes, setSelectedVertex, setSelectedShapeIndex, setIsDraggingVertex, setCurrentSketchPoints, setIsDrawing, currentSketchPoints, finishShape])
 
-  const handlePointerMove = (e: any) => {
+  const handlePointerMove = useCallback((e: any) => {
     const result = getMousePointOnPlane(e)
     
     // Update snap visual
@@ -1912,22 +1768,21 @@ function SketchPlane({
        // If I drag a circle point? Circle is defined by [Center, RadiusPoint].
        // Moving center -> Moves circle. Moving radius point -> Resizes.
        // Let's support that.
-       
-       if (shape.type === 'rectangle') {
-           // Convert to polygon if a point is dragged
-           const updatedShape = { ...shape, type: 'polygon', points: newPoints }
-           updatedShape.points[selectedVertex.vertexIndex] = point
-           newShapes[selectedVertex.shapeIndex] = updatedShape
-       } else if (shape.type === 'circle') {
-           const [center, radiusPoint] = newPoints
-           if (selectedVertex.vertexIndex === 0) { // Dragging center
-               newPoints[0] = point
-           } else if (selectedVertex.vertexIndex === 1) { // Dragging radius point
-               const radius = Math.sqrt(Math.pow(point[0] - center[0], 2) + Math.pow(point[1] - center[1], 2))
-               newPoints[1] = [radius, 0] // Store radius as [radius, 0]
-           }
-           newShapes[selectedVertex.shapeIndex] = { ...shape, points: newPoints }
-       } else {
+              if (shape.type === 'rectangle') {
+            // Convert to polygon if a point is dragged
+            const updatedShape = { ...shape, type: 'polygon', points: newPoints }
+            updatedShape.points[selectedVertex.vertexIndex] = point
+            newShapes[selectedVertex.shapeIndex] = updatedShape
+        } else if (shape.type === 'circle') {
+            const [center] = newPoints
+            if (selectedVertex.vertexIndex === 0) { // Dragging center
+                newPoints[0] = point
+            } else if (selectedVertex.vertexIndex === 1) { // Dragging radius point
+                const radius = Math.sqrt(Math.pow(point[0] - center[0], 2) + Math.pow(point[1] - center[1], 2))
+                newPoints[1] = [radius, 0] // Store radius as [radius, 0]
+            }
+            newShapes[selectedVertex.shapeIndex] = { ...shape, points: newPoints }
+        } else {
            // For line and polygon, just update the point
            newPoints[selectedVertex.vertexIndex] = point
            newShapes[selectedVertex.shapeIndex] = { ...shape, points: newPoints }
@@ -1961,18 +1816,17 @@ function SketchPlane({
        
        setCurrentSketchPoints(updatedPoints)
     }
-  }
+  }, [getMousePointOnPlane, isDrawing, isDraggingVertex, selectedVertex, sketchShapes, setSketchShapes, currentSketchPoints, sketchTool, setCurrentSketchPoints])
 
-  const handlePointerUp = (e: any) => {
+  const handlePointerUp = (_e: any) => {
     if (sketchTool === 'edit' && isDraggingVertex) {
         setIsDraggingVertex(false)
-        setIsMouseDown(false)
         return
     }
     
     // No-op for Click-Click workflow
     // We only track mouse down/up for general state if needed, but drawing logic is in Down
-    setIsMouseDown(false)
+    // setIsMouseDown(false)
   }
 
   // Handle keyboard events for deletion
@@ -2003,12 +1857,7 @@ function SketchPlane({
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [selectedShapeIndex, selectedVertex, sketchTool, sketchShapes, setSketchShapes, handleDeleteVertex, isDrawing, cancelShape])
 
-  // Handle shape selection
-  const handleShapeClick = (shapeIndex: number) => {
-    if (sketchTool === 'select') {
-      setSelectedShapeIndex(shapeIndex === selectedShapeIndex ? null : shapeIndex)
-    }
-  }
+
 
 
   return (
