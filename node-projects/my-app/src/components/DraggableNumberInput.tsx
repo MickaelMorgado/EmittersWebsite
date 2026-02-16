@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 
 interface DraggableNumberInputProps {
   value: number
@@ -47,7 +47,7 @@ export default function DraggableNumberInput({
   }
 
   // Handle mouse move for dragging
-  const handleMouseMove = (e: MouseEvent) => {
+  const handleMouseMove = useCallback((e: MouseEvent) => {
     if (!isDragging) return
     
     const deltaX = e.clientX - dragStartX
@@ -64,14 +64,14 @@ export default function DraggableNumberInput({
     newValue = Math.max(min, Math.min(max, newValue))
     
     onChange(newValue)
-  }
+  }, [isDragging, dragStartX, dragSensitivity, dragStartValue, step, min, max, onChange])
 
   // Handle mouse up to end dragging
-  const handleMouseUp = () => {
+  const handleMouseUp = useCallback(() => {
     setIsDragging(false)
     setDragStartValue(0)
     setDragStartX(0)
-  }
+  }, [])
 
   // Handle wheel events for fine-tuning - DISABLED to prevent accidental changes
   const handleWheel = (e: React.WheelEvent) => {
@@ -115,7 +115,7 @@ export default function DraggableNumberInput({
         document.removeEventListener('mouseup', handleMouseUp)
       }
     }
-  }, [isDragging, dragStartValue, dragStartX, dragSensitivity, min, max, step, onChange])
+  }, [isDragging, handleMouseMove, handleMouseUp])
 
   // Format display value with more precision
   const displayValue = isNaN(value) ? placeholder : value.toFixed(Math.max(decimals, 3))

@@ -34,7 +34,7 @@ export function Galaxy({ count, spacing, color, animationState }: GalaxyProps) {
     }
   }
 
-  const { speed, multiplier, rotationSpeed } = getAnimationParams()
+  const { multiplier, rotationSpeed } = getAnimationParams()
 
   useEffect(() => {
     if (meshRef.current) {

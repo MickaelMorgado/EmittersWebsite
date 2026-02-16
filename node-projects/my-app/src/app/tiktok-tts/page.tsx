@@ -12,9 +12,6 @@ export default function TikTokTTS() {
   // TikTok State
   const [tiktokConnected, setTiktokConnected] = useState(false);
   const [tiktokMessages, setTiktokMessages] = useState<string[]>([]);
-  const [lastTikTokComment, setLastTikTokComment] = useState('');
-  const [isTikTokSpeaking, setIsTikTokSpeaking] = useState(false);
-  const [tiktokWs, setTiktokWs] = useState<WebSocket | null>(null);
 
   // AI Assistant State
   const [aiSocket, setAiSocket] = useState<Socket | null>(null);
@@ -97,8 +94,6 @@ export default function TikTokTTS() {
       setTiktokConnected(false);
       console.log('Integrated App: Disconnected from TikTok backend');
     };
-
-    setTiktokWs(ws);
   };
 
   // Connect to AI Assistant Socket.io
@@ -180,7 +175,6 @@ export default function TikTokTTS() {
     console.log('AI Auto-Reply State:', { aiAutoReply, aiStatus, hasSocket: !!aiSocket });
 
     setTiktokMessages(prev => [...prev, fullMessage]);
-    setLastTikTokComment(fullMessage);
     
     // Auto-reply logic: Speak the comment THEN ask the AI for a reply
     const canReply = aiAnimationState === 'idle' || aiAnimationState === 'listening' || aiAnimationState === 'event';
@@ -217,15 +211,6 @@ export default function TikTokTTS() {
     }
   };
 
-  // Browser Text-to-Speech for TikTok
-  const speakText = async (text: string) => {
-    if (!('speechSynthesis' in window)) return;
-    setIsTikTokSpeaking(true);
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 1.1;
-    utterance.onend = () => setIsTikTokSpeaking(false);
-    speechSynthesis.speak(utterance);
-  };
 
   const handleSendAiMessage = () => {
     if (aiSocket && aiInputMessage.trim()) {
