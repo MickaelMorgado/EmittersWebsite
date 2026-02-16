@@ -4,7 +4,7 @@ import { useGLTF } from '@react-three/drei';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Bloom, EffectComposer } from '@react-three/postprocessing';
 import { GUI } from 'lil-gui';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import Sidebar from '../../components/sidebar';
 
@@ -30,46 +30,13 @@ interface Results {
 
 // Robot Head GLTF Component with Fallback
 function RobotHead() {
-  const [hasError, setHasError] = useState(false);
+  const { scene } = useGLTF('/assets/models/robot-head.glb');
 
-  try {
-    const { scene } = useGLTF('/assets/models/robot-head.glb');
-
-    // If no scene after loading, use fallback
-    if (!scene) {
-      if (!hasError) {
-        console.warn('Robot head GLTF not found or failed to load, using fallback geometry');
-        setHasError(true);
-      }
-      return (
-        <mesh>
-          <icosahedronGeometry args={[0.32, 0]} />
-          <meshPhysicalMaterial
-            color="#000810"
-            metalness={0.95}
-            roughness={0.05}
-            emissive="#001122"
-            emissiveIntensity={0.5}
-            flatShading={true}
-            clearcoat={1.0}
-            clearcoatRoughness={0.1}
-          />
-        </mesh>
-      );
-    }
-
-    // Reset error state if we successfully loaded
-    if (hasError) {
-      setHasError(false);
-    }
-
-    // Clone the scene to avoid sharing instances
-    const clonedScene = scene.clone();
-
-    // Apply materials to match the cyberpunk aesthetic
-    clonedScene.traverse((child) => {
+  const clonedScene = useMemo(() => {
+    if (!scene) return null;
+    const clone = scene.clone();
+    clone.traverse((child) => {
       if (child instanceof THREE.Mesh) {
-        // Apply obsidian-like material to the robot head
         child.material = new THREE.MeshPhysicalMaterial({
           color: '#000810',
           metalness: 0.95,
@@ -82,14 +49,10 @@ function RobotHead() {
         });
       }
     });
+    return clone;
+  }, [scene]);
 
-    return <primitive object={clonedScene} scale={5} rotation={[0, 0, Math.PI]} />;
-  } catch (loadError) {
-    if (!hasError) {
-      console.warn('Robot head GLTF loading error, using fallback geometry:', loadError);
-      setHasError(true);
-    }
-    // Fallback to the original icosahedron head
+  if (!clonedScene) {
     return (
       <mesh>
         <icosahedronGeometry args={[0.32, 0]} />
@@ -106,6 +69,8 @@ function RobotHead() {
       </mesh>
     );
   }
+
+  return <primitive object={clonedScene} scale={5} rotation={[0, 0, Math.PI]} />;
 }
 
 // Low Poly Origami Human Character - Optimized for "Cyberpunk Obsidian/Chrome" Look
@@ -138,7 +103,7 @@ function OrigamiCharacter({ landmarks }: { landmarks: any[] }) {
     return new THREE.Vector3(-(lm.x - 0.5) * 5, -(lm.y - 0.5) * 5, (lm.z || 0) * 5);
   };
 
-  useFrame((state) => {
+  useFrame(() => {
     if (!groupRef.current || smoothedLandmarks.length === 0) return;
 
     // Position character with liquid lerping on all axes
@@ -177,17 +142,6 @@ function OrigamiCharacter({ landmarks }: { landmarks: any[] }) {
     }
   });
 
-  const obsidianMaterial = new THREE.MeshPhysicalMaterial({ 
-    color: '#000810',
-    metalness: 0.95,
-    roughness: 0.05,
-    emissive: '#001122',
-    emissiveIntensity: 0.5,
-    flatShading: true,
-    clearcoat: 1.0,
-    clearcoatRoughness: 0.1
-  });
-
   const neonMaterial = new THREE.MeshStandardMaterial({
     color: '#00d4ff',
     emissive: '#00d4ff',
@@ -195,15 +149,6 @@ function OrigamiCharacter({ landmarks }: { landmarks: any[] }) {
   });
 
   if (smoothedLandmarks.length === 0) return null;
-
-  // Head geometry parameters - scalable for consistent eye positioning
-  const headRadius = 0.32;
-  const eyeOffsetX = 0.18 * headRadius; // Scale eye position with head size
-  const eyeOffsetY = 0.08 * headRadius;
-  const eyeOffsetZ = -1 * headRadius;
-  const eyeWidth = 0.15 * headRadius;
-  const eyeHeight = 0.015 * headRadius;
-  const eyeDepth = 0.02 * headRadius;
 
   return (
     <group ref={groupRef}>
@@ -214,24 +159,8 @@ function OrigamiCharacter({ landmarks }: { landmarks: any[] }) {
         <mesh position={[0.08, 0.08, 0.25]} material={neonMaterial}>
           <boxGeometry args={[0.05, 0.01, 0.02]} />
         </mesh>
-        {/*         
-        <mesh position={[-0.08, 0.08, 0.25]} material={neonMaterial}>
-          <boxGeometry args={[0.05, 0.01, 0.02]} />
-        </mesh>
-        */}
       </group>
 
-      {/* Torso (Bust) - Low Poly Sculpted */} 
-      {/* 
-      <mesh 
-        position={getPoint(11).add(getPoint(12)).multiplyScalar(0.5).add(new THREE.Vector3(0, -1, 0))} 
-        material={obsidianMaterial}
-        scale={[5, 1.5, 1.0]}
-      >
-        <icosahedronGeometry args={[1, 0]} />
-      </mesh>
-      */}
-      
       {/* Dramatic Rim Light */}
       <pointLight position={[0, 3, -3]} intensity={60} color="#00d4ff" distance={10} />
     </group>

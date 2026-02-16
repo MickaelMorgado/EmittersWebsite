@@ -34,7 +34,8 @@ function Galaxy({ count, spacing, color, animationState }: GalaxyProps) {
     }
   }
 
-  const { speed, multiplier, rotationSpeed } = getAnimationParams()
+  /* Unused: speed */
+  const { multiplier, rotationSpeed } = getAnimationParams()
 
   useEffect(() => {
     console.log(`Galaxy: Initializing ${count} particles with spacing ${spacing}`)
@@ -103,7 +104,6 @@ function Galaxy({ count, spacing, color, animationState }: GalaxyProps) {
         // Use stored original position for restoration
         const originalPos = originalPositions[i]
         if (originalPos) {
-          const originalDistance = originalPos.length()
           const maxRadius = 30
 
           // Hard boundary enforcement - keep particles within spherical bounds
@@ -165,10 +165,7 @@ export default function PCAIAssistant() {
   const [status, setStatus] = useState('Ready 🎨')
   const [animationState, setAnimationState] = useState<'idle' | 'listening' | 'processing' | 'speaking'>('idle')
   const [particleColor, setParticleColor] = useState('#ffffff')
-  const [inputMessage, setInputMessage] = useState('')
   const [conversationLines, setConversationLines] = useState<string[]>([])
-
-  // Audio objects for status change sounds
   const [audioEnabled, setAudioEnabled] = useState(false)
   const statusChangeSound = useRef<HTMLAudioElement | null>(null)
   const processingSound = useRef<HTMLAudioElement | null>(null)
@@ -266,12 +263,12 @@ export default function PCAIAssistant() {
       // Conversation text events
       newSocket.on('user_speech', (text: string) => {
         console.log('PC AI Assistant: User speech received:', text)
-        addConversationText(`You: ${text}`)
+        setConversationLines(prev => [...prev, `You: ${text}`])
       })
 
       newSocket.on('ai_response', (text: string) => {
         console.log('PC AI Assistant: AI response text received:', text)
-        addConversationText(`AI: ${text}`)
+        setConversationLines(prev => [...prev, `AI: ${text}`])
       })
 
     } catch (error) {
@@ -285,27 +282,10 @@ export default function PCAIAssistant() {
         socket.close()
       }
     }
-  }, [])
+  }, [socket])
 
-  const handleSendMessage = () => {
-    if (socket && inputMessage.trim()) {
-      // Emit message to server
-      socket.emit('message', inputMessage.trim())
-      setInputMessage('')
-    }
-  }
-
-  const addConversationText = (text: string) => {
-    // Add full text as single line
-    setConversationLines(prev => [...prev, text])
-  }
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      handleSendMessage()
-    }
-  }
+  // Removed handleSendMessage as per instruction
+  // Removed addConversationText as per instruction
 
   return (
     <div className="relative w-full h-screen bg-black overflow-hidden">

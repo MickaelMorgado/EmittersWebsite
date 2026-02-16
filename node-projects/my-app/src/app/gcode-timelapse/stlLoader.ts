@@ -69,7 +69,7 @@ export interface Offsets {
 }
 
 export function setupSTLModelForVisualization(stlModel: STLModel, gcodePoints: any[], offsets: Offsets = { x: 0, y: 0, z: 0 }): THREE.Mesh {
-  const { mesh, center, dimensions } = stlModel;
+  const { mesh, center } = stlModel;
   
   // Store base position before offsets
   mesh.userData.basePosition = new THREE.Vector3();

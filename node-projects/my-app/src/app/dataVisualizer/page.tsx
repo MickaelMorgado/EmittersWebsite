@@ -10,39 +10,7 @@ import { Button } from "../../components/ui/button"
 import { Input } from "../../components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select"
 
-const chatGPTRequest = async (message: string) => {
-    try {
-      //setIsLoading(true);
 
-      const response = await fetch(
-        'https://api.openai.com/v1/chat/completions',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer `,
-          },
-          body: JSON.stringify({
-            model: 'gpt-3.5-turbo',
-            messages: [{ role: 'user', content: message }],
-          }),
-        }
-      );
-
-      if (!response.ok) throw new Error('Error with the API request.');
-
-      const data = await response.json();
-      const reply = data.choices[0].message.content;
-
-      //appendMessage(reply, 'bot');
-      return reply;
-    } catch (error) {
-      //appendMessage('Error: Unable to fetch response.', 'bot');
-      console.error(error);
-    } finally {
-      //setIsLoading(false);
-    }
-  };
 
 interface GalaxyProps {
   count: number
@@ -81,7 +49,7 @@ function Galaxy({ count, spacing, verticality, color, name, showLabel, onHover, 
     }
 
     return positions
-  }, [count, spacing, verticality, xOffset, zOffset])
+  }, [count, spacing, verticality])
 
   const groupRef = useRef<THREE.Group>(null!)
 

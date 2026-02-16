@@ -15,7 +15,7 @@ import Printing3D from "./Printing3D";
 import RadarChart from "./RadarChart";
 import SimRacing3D from "./SimRacing3D";
 
-const modelBasePath = "@assets/models/";
+/* Unused: modelBasePath */
 
 
 export default function MikaPage() {

@@ -213,10 +213,9 @@ function GCodeVisualizer({ points, isPlaying, speed, progress, onProgressChange 
   );
 }
 
-function STLModelRenderer({ mesh, isVisible, isPlaying }: {
+function STLModelRenderer({ mesh, isVisible }: {
   mesh: THREE.Mesh;
   isVisible: boolean;
-  isPlaying: boolean;
 }) {
   useFrame(() => {
     if (mesh) {
@@ -243,8 +242,8 @@ export default function GCodeTimelapsePage() {
   const [stlModel, setStlModel] = useState<THREE.Mesh | null>(null);
   const [isStlVisible, setIsStlVisible] = useState<boolean>(false);
   const [stlFile, setStlFile] = useState<File | null>(null);
-  const [offsets, setOffsets] = useState({ x: 0, y: 0, z: 0 });
-  const [meshPosition, setMeshPosition] = useState({ x: -100, y: -65, z: 145 });
+  const offsets = useMemo(() => ({ x: 0, y: 0, z: 0 }), []);
+  const meshPosition = useMemo(() => ({ x: -100, y: -65, z: 145 }), []);
 
   // Update mesh position when state changes
   useEffect(() => {
@@ -492,7 +491,6 @@ export default function GCodeTimelapsePage() {
             <STLModelRenderer
               mesh={stlModel}
               isVisible={isStlVisible}
-              isPlaying={isPlaying}
             />
           )}
 

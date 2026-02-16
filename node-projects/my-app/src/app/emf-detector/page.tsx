@@ -1,7 +1,7 @@
 "use client"
 
 import { Wifi } from "lucide-react"
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import DualRangeSlider from "./DualRangeSlider"
 import SevenSegmentDisplay from "./SevenSegmentDisplay"
 import "./sevenSegmentFont.css"
@@ -24,7 +24,7 @@ export default function EMFDetectorPage() {
   const [maxThreshold, setMaxThreshold] = useState(200) // Max ping for intensity mapping
   const audioContextRef = useRef<AudioContext | null>(null)
   const beepIntervalRef = useRef<NodeJS.Timeout | null>(null)
-  const lastSpeedRef = useRef(0)
+  /* Unused: lastSpeedRef */
   const testingRef = useRef(false)
   const [realPing, setRealPing] = useState<number | null>(null)
 
@@ -62,7 +62,7 @@ export default function EMFDetectorPage() {
 
 
 
-  const updateBeepRate = (int: number) => {
+  const updateBeepRate = useCallback((int: number) => {
     if (beepIntervalRef.current) {
       clearInterval(beepIntervalRef.current)
     }
@@ -70,7 +70,7 @@ export default function EMFDetectorPage() {
       const interval = Math.max(0, 600 - int * 600)
       beepIntervalRef.current = setInterval(() => playBeep(int), interval)
     }
-  }
+  }, [])
 
   // Effect to handle Debug Mode updates immediately
   useEffect(() => {
@@ -171,7 +171,7 @@ export default function EMFDetectorPage() {
         audioContextRef.current.close()
       }
     }
-  }, [debugMode, maxSpeed])
+  }, [debugMode, maxSpeed, minThreshold, maxThreshold])
 
   useEffect(() => {
     if (debugMode) {
@@ -181,11 +181,11 @@ export default function EMFDetectorPage() {
       const int = range > 0 ? Math.max(0, Math.min(1, (maxThreshold - fakeSpeed) / range)) : 0
       setIntensity(int)
     }
-  }, [fakeSpeed, debugMode, maxSpeed])
+  }, [fakeSpeed, debugMode, maxSpeed, minThreshold, maxThreshold])
 
   useEffect(() => {
     updateBeepRate(intensity)
-  }, [intensity])
+  }, [intensity, updateBeepRate])
 
   const formatDisplayValue = (value: number | null) => {
     if (value === null) return "000"

@@ -33,8 +33,9 @@ export default function PrinterMonitor() {
   };
 
   useEffect(() => {
+    const currentStreams = streams.current;
     return () => {
-      Object.values(streams.current).forEach(stream => {
+      Object.values(currentStreams).forEach(stream => {
         stream.getTracks().forEach(track => track.stop());
       });
     };
