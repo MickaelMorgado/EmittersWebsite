@@ -19,6 +19,7 @@ This document provides a centralized overview of all interactive applications an
 | **Camera Effects** | Real-time camera filters and visual effects. | [Camera Effects](project-specific/apps/camera-effects.md) |
 | **TikTok + AI Assistant** | TikTok live integration with AI voice and galaxy. | [TikTok AI](project-specific/apps/tiktok-tts.md) |
 | **Trading Tools** | Advanced SciChart-based backtesting tools. | [Trading Tools](project-specific/apps/trading-tools.md) |
+| **Stalker 2 Ammo** | Tactical munitions logistics terminal with AI. | [Stalker 2 Ammo](project-specific/apps/stalker-ammo.md) |
 
 ## Infrastructure & Backend
 

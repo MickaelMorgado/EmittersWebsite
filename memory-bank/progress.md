@@ -7,7 +7,36 @@
 - [x] Wrote techContext.md  
 - [x] Wrote activeContext.md  
 - [x] Wrote functions.md  
-- [x] Wrote progress.md
+- [x] Wrote progress.md## 2026-02-21: Stalker 2 Ammo Tracker - Tactical Overhaul & Logistics Engine
+
+### ✅ Advanced Logistics Implementation
+- **Magazine-Based Transfers**: Integrated `boxSize` logic for all ammo variants, ensuring transfers and stock adjustments respect in-game magazine capacities.
+- **Surplus Detection System**: Implemented KUZNETSOV AI logic to identify inventory surpluses (3x threshold).
+- **Caliber-Safety Protocol**: Added logic to suppress surplus alerts if removing the excess would breach the tactical baseline for the overall caliber group.
+- **Deficit Reporting**: Updated all alerts to explicitly display the exact count of rounds needed to reach tactical baselines ("Shortage" and "Deficit" metrics).
+
+### ✅ UI/UX Overhaul & Premium Aesthetics
+- **Ammo Calibration Modal**: 
+    - Implemented real-time search filtering.
+    - Added premium tactical styling with left-accent bars and custom checkmark indicators.
+    - Integrated hardware identification in the modal header.
+- **Site Header Refinement**: 
+    - Expanded header geometry for improved spacing (`85px` height).
+    - Multi-tone branding ("Zone-Net Munitions") with tactical accent line and top-edge scanner motif.
+    - Improved typography and letter spacing for industrial OS feel.
+- **Tactical Tiering**:
+    - **Purple Grade**: Precision rounds (.308 Match, 7.62x54mm 7N1, 5.56x45mm Mk 262) now feature high-tier purple gradients and glows.
+    - **Green Grade**: 9x19mm +P and AP rounds unified under green-tier visuals.
+- **Interactive Telemetry**: Clicking surplus alerts now automatically toggles the manifest to Graph View for visual verification.
+
+### ✅ Data Integrity & Nomenclature
+- **Accuracy Update**: Renamed "9x19mm Para" to "9x19mm +P" to match in-game data.
+- **Supply Logic**: Updated 9x19mm box sizes to 30 rounds and ensured Match rounds are correctly tiered.
+- **Audio Feedback**: Unified mechanical audio feedback for all logistics interactions.
+
+### 🎯 Key Technical Achievement
+- **Smart Logistics**: Created a non-destructive surplus detection engine that understands cross-variant dependencies within a single caliber group.
+- **Tactical UI Design**: Developed a high-density, low-clutter interface that maintains military-grade aesthetics while adding complex filtering and data visualization features.
 
 ## 2026-01-22: PC AI Assistant App Implementation
 

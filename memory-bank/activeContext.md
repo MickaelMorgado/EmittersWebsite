@@ -5,11 +5,13 @@
 - Maintain detailed documentation for the Backtesting Tool.
 - **Implement Google Sheets Export**: Enable one-click export of backtesting results to a specific Google Sheet.
 - **PC AI Assistant App**: Created new standalone Node.js application with galaxy visualization inside `node-projects/my-app/pc-ai-assistant/`.
+- **Stalker 2 Ammo Tracker enhancements**: Overhauled Ammo Calibration UI, implemented surplus detection logic, and integrated magazine-based transfers.
 
 ## Recent Changes
 - Expanded `projectbrief.md` to cover the Game Website.
 - Updated `productContext.md` and `techContext.md` with Main Website details.
 - Updated `systemPatterns.md` to outline the full project structure.
+- Enhanced `stalker2-ammo` application with premium tactical UI and advanced logistics logic.
 
 ## Backtesting Tool Reference (`tools/index6.js`)
 
@@ -57,6 +59,23 @@
 - **Win Rate (Positive P/L)**: Represents overall strategy effectiveness including partial profit taking, trailing stops, and manual interventions. This is the traditional winrate that most traders expect.
 - **Win Rate (TP Hits)**: Represents pure trend-following accuracy - how often the strategy successfully rides trends to their full profit target. Lower TP winrate but higher average profit per winning trade indicates effective trailing stop management.
 - **Why Both Matter**: The gap between these two winrates reveals how much profit is captured through dynamic exit strategies (trailing stops, partial closes) versus full trend captures.
+
+## Stalker 2 Ammo Tracker Reference (`stalker2-ammo/page.tsx`)
+
+### Key Features & Logic
+- **Ammo Calibration UI**: Search-integrated modal for hardware-specific compatibility overrides and threshold management.
+- **Magazine-Based Transfers**: Uses `boxSize` from `data.ts` to ensure transfers and adjustments align with in-game magazine capacities.
+- **Kuznetsov AI Logistics Scan**: 
+    - **Shortage Alerts**: Real-time detection of backpack and stash deficits.
+    - **Surplus Detection**: Recommends selling/storing inventory exceeding 3x threshold, with caliber-wide safety checks.
+    - **Hardware Mismatch**: Identifies equipped hardware without compatible ammunition.
+- **Tiered Munitions**: 
+    - **Purple Grade**: Precision/Match/Sniper rounds (.308 Match, 7.62x54mm 7N1, 5.56x45mm Mk 262).
+    - **Green Grade**: Mid-tier/AP rounds (9x19mm +P, standard AP variants).
+- **Tactical UI/UX**: 
+    - Industrial-grade header with multi-tone branding and top-edge scanner accents.
+    - Graph View integration for visual verification of supply surpluses.
+    - Tactical audio feedback (zipper, ammo, box sounds) for all manifest interactions.
 
 ## Unused or Commented Code
 - `onData`, `onCandleDrawn` functions are defined but not registered.
