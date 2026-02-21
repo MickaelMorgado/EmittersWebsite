@@ -2,9 +2,47 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { X } from 'lucide-react';
+import { Lock, Unlock, X } from 'lucide-react';
 import Link from 'next/link';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+
+interface Project {
+  title: string;
+  description: string;
+  href: string;
+  accentColor: string;
+  isPublic?: boolean;
+  isExternal?: boolean;
+}
+
+const PROJECTS: { [section: string]: Project[] } = {
+  "Main Section": [
+    { title: "About Me", description: "Mickael Morgado", href: "/mika", accentColor: "0, 162, 255", isPublic: true },
+  ],
+  "My main projects": [
+    { title: "PNL Calendar", description: "PNL Calendar project", href: "/PNLCalendar", accentColor: "0, 255, 127" },
+    { title: "MemoGPT", description: "AI-powered memo and prompt manager", href: "/memogpt", accentColor: "147, 51, 234" },
+    { title: "Blender Vertex Measurements", description: "Blender add-on for real-time distance measurements", href: "https://github.com/MickaelMorgado/BlenderVertexMeasurements", accentColor: "255, 153, 0", isExternal: true, isPublic: true },
+  ],
+  "Node Projects": [
+    { title: "Blockchains visualizer", description: "Interactive 3D blockchains and token visualizer", href: "/blockchain-visualizer", accentColor: "31, 239, 239", isPublic: false },
+    { title: "Data Visualizer Project", description: "Interactive 3D data visualizer", href: "/dataVisualizer", accentColor: "45, 212, 191", isPublic: true },
+    { title: "Sounder Project", description: "A sound design tool for creating randomized music", href: "/sounder", accentColor: "244, 63, 94", isPublic: true },
+    { title: "Daily Todo Tracker", description: "Track your daily habits and see progress over time.", href: "/todo", accentColor: "234, 179, 8" },
+    { title: "Hips Project", description: "Main and finished landing page", href: "/HipsExample", accentColor: "59, 130, 246" },
+    { title: "3D Printer Camera Monitor", description: "Monitor multiple 3D-printer camera feeds", href: "/printer-monitor", accentColor: "255, 50, 50", isPublic: true },
+    { title: "EMF Detector Simulator", description: "Portable radiation scanner with real-time sonar feedback, inspired by Stalker: Heart of Chornobyl specialized artifacts detection gear.", href: "/emf-detector", accentColor: "34, 197, 94", isPublic: true },
+    { title: "G-code Timelapse", description: "Minimalist 3D print timelapse visualization", href: "/gcode-timelapse", accentColor: "168, 85, 247", isPublic: true },
+    { title: "PC AI Assistant", description: "Voice-activated AI assistant with real-time galaxy visualization", href: "/pc-ai-assistant", accentColor: "236, 72, 153" },
+    { title: "3D CAD App", description: "Simple 3D CAD software for creating 3D objects", href: "/cad3d", accentColor: "14, 165, 233", isPublic: true },
+    { title: "Camera Effects", description: "Real-time camera filters and visual effects", href: "/camera-effects", accentColor: "20, 184, 166", isPublic: true },
+    { title: "TikTok + AI Assistant", description: "Integrated TikTok live events with AI voice response", href: "/tiktok-tts", accentColor: "255, 0, 80" },
+    { title: "STALKER 2 Ammo Tracker", description: "Interactive ammo and weight management dashboard", href: "/stalker2-ammo", accentColor: "255, 126, 0", isPublic: true },
+  ],
+  "Standalone Projects": [
+    { title: "Trading Tools", description: "Trading tools for analyzing and visualizing market data", href: "https://emittersgame.com/tools/index6.html", accentColor: "245, 158, 11", isExternal: true },
+  ]
+};
 
 function TypographyH1({ children }: { children: React.ReactNode }) {
   return <h1 className="text-4xl font-bold tracking-tight mb-4 heading-shine uppercase">{children}</h1>;
@@ -92,274 +130,187 @@ function TiltCard({
 
 export default function Home() {
   const [isGlobalHovered, setIsGlobalHovered] = useState(false);
+  const [isUnlocked, setIsUnlocked] = useState(false);
+  const [showUnlockModal, setShowUnlockModal] = useState(false);
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('site_unlocked');
+    if (saved === 'true') setIsUnlocked(true);
+  }, []);
+
+  const handleUnlock = (e: React.FormEvent) => {
+    e.preventDefault();
+    const masterKey = process.env.NEXT_PUBLIC_MASTER_KEY || '1234'; // Default password
+    if (password === masterKey) {
+      setIsUnlocked(true);
+      localStorage.setItem('site_unlocked', 'true');
+      setShowUnlockModal(false);
+      setError(false);
+      setPassword('');
+    } else {
+      setError(true);
+      setTimeout(() => setError(false), 2000);
+    }
+  };
+
+  const toggleLock = () => {
+    if (isUnlocked) {
+      setIsUnlocked(false);
+      localStorage.removeItem('site_unlocked');
+    } else {
+      setShowUnlockModal(true);
+    }
+  };
+
+  const ProjectCard = ({ project }: { project: Project }) => {
+    const isLocked = !project.isPublic && !isUnlocked;
+    
+    const content = (
+      <TiltCard isGlobalHovered={isGlobalHovered} setIsGlobalHovered={setIsGlobalHovered} accentColor={project.accentColor}>
+        <Card className="h-full flex flex-col hover:shadow-md transition-shadow relative overflow-hidden">
+          {isLocked && (
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] z-20 flex flex-col items-center justify-center border border-white/10 rounded-xl transition-all duration-300 group-hover:bg-black/40">
+              <Lock className="w-8 h-8 text-white/40 mb-2 group-hover:scale-110 transition-transform" />
+              <span className="text-[10px] uppercase tracking-widest text-white/30 font-bold">Private Access</span>
+            </div>
+          )}
+          <CardHeader>
+            <CardTitle className="uppercase flex items-center justify-between">
+              {project.title}
+              {project.isPublic && <span className="text-[8px] bg-green-500/20 text-green-500 px-1.5 py-0.5 rounded border border-green-500/30">Public</span>}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground text-sm">{project.description}</p>
+          </CardContent>
+        </Card>
+      </TiltCard>
+    );
+
+    if (isLocked) {
+      return (
+        <div onClick={() => setShowUnlockModal(true)} className="h-full cursor-pointer">
+          {content}
+        </div>
+      );
+    }
+
+    if (project.isExternal) {
+      return (
+        <a href={project.href} target="_blank" rel="noopener noreferrer" className="h-full">
+          {content}
+        </a>
+      );
+    }
+
+    return (
+      <Link href={project.href} target="_blank" className="h-full">
+        {content}
+      </Link>
+    );
+  };
+
   return (
-    <div className="bg-black min-h-screen text-white">
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-between">
+    <div className="bg-black min-h-screen text-white selection:bg-white/20">
+      {/* Background decoration */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none opacity-20">
+        <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-blue-500/20 blur-[120px] rounded-full" />
+        <div className="absolute -bottom-[10%] -right-[10%] w-[40%] h-[40%] bg-red-500/20 blur-[120px] rounded-full" />
+      </div>
+
+      <div className="container mx-auto px-4 py-8 relative z-10">
+        <div className="flex items-center justify-between border-b border-white/10 pb-8 mb-8">
           <div>
             <TypographyH1>Welcome to my Projects Page</TypographyH1>
-            <p className="text-muted-foreground mb-8">Explore my collection of interactive projects and experiments.</p>
+            <p className="text-muted-foreground">Explore my collection of interactive projects and experiments.</p>
           </div>
-          <Link href="/" className="size-8">
-            <Button size="icon" aria-label="Back to homepage" variant="default">
-              <X className="h-4 w-4" />
-            </Button>
-          </Link>
+          <div className="flex items-center gap-3">
+             <Button 
+                onClick={toggleLock} 
+                variant="outline" 
+                size="icon" 
+                className={`transition-all duration-500 ${isUnlocked ? 'border-green-500/50 text-green-400 bg-green-500/5' : 'border-white/10'}`}
+                title={isUnlocked ? "Logout (Admin Mode On)" : "Login to Admin Mode"}
+              >
+                {isUnlocked ? <Unlock className="h-4 w-4" /> : <Lock className="h-4 w-4 opacity-50" />}
+              </Button>
+            <Link href="/" className="size-8">
+              <Button size="icon" aria-label="Back to homepage" variant="default" className="bg-white text-black hover:bg-white/90">
+                <X className="h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
         </div>
 
-        <section className="mt-12">
-          <TypographyH1>Main Section</TypographyH1>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-6">
-            <Link href="/mika" target="_blank" className="h-full">
-              <TiltCard isGlobalHovered={isGlobalHovered} setIsGlobalHovered={setIsGlobalHovered} accentColor="0, 162, 255">
-                <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
-                  <CardHeader>
-                    <CardTitle className="uppercase">About Me</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground">Mickael Morgado</p>
-                  </CardContent>
-                </Card>
-              </TiltCard>
-            </Link>
+        {Object.entries(PROJECTS).map(([section, projects]) => (
+          <section key={section} className="mt-12 first:mt-0">
+            {section === "Main Section" || section === "My main projects" ? (
+               <TypographyH1>{section}</TypographyH1>
+            ) : (
+               <TypographyH3>{section}</TypographyH3>
+            )}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-6">
+              {projects.map((p, i) => (
+                <ProjectCard key={i} project={p} />
+              ))}
+            </div>
+          </section>
+        ))}
+
+        {/* Unlock Modal */}
+        {showUnlockModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <div 
+              className="absolute inset-0 bg-black/80 backdrop-blur-md" 
+              onClick={() => setShowUnlockModal(false)}
+            />
+            <div 
+              className={`relative bg-[#0a0a0a] border ${error ? 'border-red-500/50 shadow-[0_0_20px_rgba(239,68,68,0.2)]' : 'border-white/10'} p-8 rounded-2xl w-full max-w-md transition-all duration-300 transform scale-100 animate-in fade-in zoom-in`}
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="text-center mb-6">
+                <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4 border border-white/10">
+                  <Lock className={`w-8 h-8 ${error ? 'text-red-500' : 'text-white'}`} />
+                </div>
+                <h2 className="text-2xl font-bold uppercase tracking-wider">Private Access</h2>
+                <p className="text-muted-foreground text-sm mt-2">Enter the master key to unlock all projects</p>
+              </div>
+
+              <form onSubmit={handleUnlock} className="space-y-4">
+                <input
+                  type="password"
+                  autoFocus
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-center text-2xl tracking-[0.5em] focus:outline-none focus:border-white/30 transition-colors"
+                />
+                {error && <p className="text-red-500 text-xs text-center animate-bounce">Access Denied. Incorrect Master Key.</p>}
+                <div className="flex gap-3">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    className="flex-1 border-white/10" 
+                    onClick={() => setShowUnlockModal(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    type="submit" 
+                    className="flex-1 bg-white text-black hover:bg-white/90 font-bold"
+                  >
+                    Unlock
+                  </Button>
+                </div>
+              </form>
+              <p className="text-[10px] text-white/20 text-center mt-8 uppercase tracking-widest">
+                Developer Terminal Mode v1.0
+              </p>
+            </div>
           </div>
-        </section>
-
-        <section className="mt-12">
-          <TypographyH1>My main projects</TypographyH1>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-6">
-            <Link href="/PNLCalendar" target="_blank" className="h-full">
-              <TiltCard isGlobalHovered={isGlobalHovered} setIsGlobalHovered={setIsGlobalHovered} accentColor="0, 255, 127">
-                <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
-                  <CardHeader>
-                    <CardTitle className="uppercase">PNL Calendar</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground">PNL Calendar project</p>
-                  </CardContent>
-                </Card>
-              </TiltCard>
-            </Link>
-            <Link href="/memogpt" target="_blank" className="h-full">
-              <TiltCard isGlobalHovered={isGlobalHovered} setIsGlobalHovered={setIsGlobalHovered} accentColor="147, 51, 234">
-                <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
-                  <CardHeader>
-                    <CardTitle className="uppercase">MemoGPT</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground">AI-powered memo and prompt manager</p>
-                  </CardContent>
-                </Card>
-              </TiltCard>
-            </Link>
-            <a href="https://github.com/MickaelMorgado/BlenderVertexMeasurements" target="_blank" rel="noopener noreferrer" className="h-full">
-              <TiltCard isGlobalHovered={isGlobalHovered} setIsGlobalHovered={setIsGlobalHovered} accentColor="255, 153, 0">
-                <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
-                  <CardHeader>
-                    <CardTitle className="uppercase">Blender Vertex Measurements</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground">Blender add-on for real-time distance measurements between selected vertices with GPU-accelerated screen-space text overlays</p>
-                  </CardContent>
-                </Card>
-              </TiltCard>
-            </a>
-          </div>
-        </section>
-
-        <section className="mt-12">
-          <TypographyH1>Tests</TypographyH1>
-          <TypographyH3>Node Projects</TypographyH3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-6">
-            <Link href="" target="_blank" className="h-full opacity-10">
-              <TiltCard isGlobalHovered={isGlobalHovered} setIsGlobalHovered={setIsGlobalHovered} accentColor="31, 239, 239">
-                <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
-                  <CardHeader>
-                    <CardTitle className="uppercase">Blockchains visualizer</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground">Interactive 3D blockchains and token visualizer</p>
-                  </CardContent>
-                </Card>
-              </TiltCard>
-            </Link>
-
-            <Link href="/dataVisualizer" target="_blank" className="h-full">
-              <TiltCard isGlobalHovered={isGlobalHovered} setIsGlobalHovered={setIsGlobalHovered} accentColor="45, 212, 191">
-                <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
-                  <CardHeader>
-                    <CardTitle className="uppercase">Data Visualizer Project</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground">Interactive 3D data visualizer</p>
-                  </CardContent>
-                </Card>
-              </TiltCard>
-            </Link>
-            <Link href="/sounder" target="_blank" className="h-full">
-              <TiltCard isGlobalHovered={isGlobalHovered} setIsGlobalHovered={setIsGlobalHovered} accentColor="244, 63, 94">
-                <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
-                  <CardHeader>
-                    <CardTitle className="uppercase">Sounder Project</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground">A sound design tool for creating randomized music</p>
-                  </CardContent>
-                </Card>
-              </TiltCard>
-            </Link>
-            <Link href="" target="_blank" className="h-full opacity-10">
-              <TiltCard isGlobalHovered={isGlobalHovered} setIsGlobalHovered={setIsGlobalHovered} accentColor="16, 185, 129">
-                <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
-                  <CardHeader>
-                    <CardTitle className="uppercase">Crypto Bot</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground">Getting my hand on crypto development</p>
-                  </CardContent>
-                </Card>
-              </TiltCard>
-            </Link>
-            <Link href="/todo" target="_blank" className="h-full">
-              <TiltCard isGlobalHovered={isGlobalHovered} setIsGlobalHovered={setIsGlobalHovered} accentColor="234, 179, 8">
-                <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
-                  <CardHeader>
-                    <CardTitle className="uppercase">Daily Todo Tracker</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p>Track your daily habits and see progress over time.</p>
-                  </CardContent>
-                </Card>
-              </TiltCard>
-            </Link>
-            <Link href="/HipsExample" target="_blank" className="h-full">
-              <TiltCard isGlobalHovered={isGlobalHovered} setIsGlobalHovered={setIsGlobalHovered} accentColor="59, 130, 246">
-                <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
-                  <CardHeader>
-                    <CardTitle className="uppercase">Hips Project</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground">Main and finished landing page</p>
-                  </CardContent>
-                </Card>
-              </TiltCard>
-            </Link>
-            <Link href="/printer-monitor" target="_blank" className="h-full">
-              <TiltCard isGlobalHovered={isGlobalHovered} setIsGlobalHovered={setIsGlobalHovered} accentColor="255, 50, 50">
-                <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
-                  <CardHeader>
-                    <CardTitle className="uppercase">3D Printer Camera Monitor</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground">Monitor multiple 3D-printer camera feeds from smartphones via Iriun</p>
-                  </CardContent>
-                </Card>
-              </TiltCard>
-            </Link>
-            <Link href="/emf-detector" target="_blank" className="h-full">
-              <TiltCard isGlobalHovered={isGlobalHovered} setIsGlobalHovered={setIsGlobalHovered} accentColor="34, 197, 94">
-                <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
-                  <CardHeader>
-                    <CardTitle className="uppercase">EMF Detector Simulator</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground">Simulate EMF radiation detection based on network connection speed, inspired by Stalker2 ingame scanner device</p>
-                  </CardContent>
-                </Card>
-              </TiltCard>
-            </Link>
-            <Link href="/gcode-timelapse" target="_blank" className="h-full">
-              <TiltCard isGlobalHovered={isGlobalHovered} setIsGlobalHovered={setIsGlobalHovered} accentColor="168, 85, 247">
-                <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
-                  <CardHeader>
-                    <CardTitle className="uppercase">G-code Timelapse</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground">Minimalist 3D print timelapse visualization from G-code files</p>
-                  </CardContent>
-                </Card>
-              </TiltCard>
-            </Link>
-            <Link href="/pc-ai-assistant" target="_blank" className="h-full">
-              <TiltCard isGlobalHovered={isGlobalHovered} setIsGlobalHovered={setIsGlobalHovered} accentColor="236, 72, 153">
-                <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
-                  <CardHeader>
-                    <CardTitle className="uppercase">PC AI Assistant</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground text-sm">
-                      Voice-activated AI assistant with real-time galaxy visualization and speech-reactive animations
-                    </p>
-                  </CardContent>
-                </Card>
-              </TiltCard>
-            </Link>
-
-            <Link href="/cad3d" target="_blank" className="h-full">
-              <TiltCard isGlobalHovered={isGlobalHovered} setIsGlobalHovered={setIsGlobalHovered} accentColor="14, 165, 233">
-                <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
-                  <CardHeader>
-                    <CardTitle className="uppercase">3D CAD App</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground text-sm">
-                      Simple 3D CAD software for creating and manipulating 3D objects
-                    </p>
-                  </CardContent>
-                </Card>
-              </TiltCard>
-            </Link>
-
-            <Link href="/camera-effects" target="_blank" className="h-full">
-              <TiltCard isGlobalHovered={isGlobalHovered} setIsGlobalHovered={setIsGlobalHovered} accentColor="20, 184, 166">
-                <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
-                  <CardHeader>
-                    <CardTitle className="uppercase">Camera Effects</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground text-sm">
-                      Real-time camera filters and visual effects
-                    </p>
-                  </CardContent>
-                </Card>
-              </TiltCard>
-            </Link>
-            <Link href="/tiktok-tts" target="_blank" className="h-full">
-              <TiltCard isGlobalHovered={isGlobalHovered} setIsGlobalHovered={setIsGlobalHovered} accentColor="255, 0, 80">
-                <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
-                  <CardHeader>
-                    <CardTitle className="uppercase">TikTok + AI Assistant</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground text-sm">
-                      Integrated TikTok live events with AI voice response and reactive galaxy visualization
-                    </p>
-                  </CardContent>
-                </Card>
-              </TiltCard>
-            </Link>
-          </div>
-        </section>
-
-        <section className="mt-12">
-          <TypographyH3>Standalone Projects</TypographyH3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-6">
-            <Link href="https://emittersgame.com/tools/index6.html" target="_blank" className="h-full">
-              <TiltCard isGlobalHovered={isGlobalHovered} setIsGlobalHovered={setIsGlobalHovered} accentColor="245, 158, 11">
-                <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
-                  <CardHeader>
-                    <CardTitle className="uppercase">Trading Tools</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground text-sm">
-                      Trading tools for analyzing and visualizing market data
-                    </p>
-                  </CardContent>
-                </Card>
-              </TiltCard>
-            </Link>
-          </div>
-        </section>
+        )}
       </div>
     </div>
   );
