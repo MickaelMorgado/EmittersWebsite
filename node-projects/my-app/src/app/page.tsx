@@ -136,19 +136,22 @@ export default function Home() {
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    const saved = localStorage.getItem('site_unlocked');
-    if (saved === 'true') setIsUnlocked(true);
+    const isCookieUnlocked = document.cookie.split('; ').find(row => row.startsWith('site_unlocked=true'));
+    if (isCookieUnlocked) setIsUnlocked(true);
   }, []);
 
   const handleUnlock = (e: React.FormEvent) => {
     e.preventDefault();
-    const masterKey = process.env.NEXT_PUBLIC_MASTER_KEY || '1234'; // Default password
+    const masterKey = process.env.NEXT_PUBLIC_MASTER_KEY || '1234'; 
     if (password === masterKey) {
       setIsUnlocked(true);
-      localStorage.setItem('site_unlocked', 'true');
+      // Set cookie that expires in 7 days
+      const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toUTCString();
+      document.cookie = `site_unlocked=true; path=/; expires=${expires}; SameSite=Lax`;
       setShowUnlockModal(false);
       setError(false);
       setPassword('');
+      window.location.reload(); // Refresh to ensure middleware/state is in sync
     } else {
       setError(true);
       setTimeout(() => setError(false), 2000);
@@ -158,7 +161,8 @@ export default function Home() {
   const toggleLock = () => {
     if (isUnlocked) {
       setIsUnlocked(false);
-      localStorage.removeItem('site_unlocked');
+      document.cookie = "site_unlocked=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+      window.location.reload();
     } else {
       setShowUnlockModal(true);
     }
