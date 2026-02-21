@@ -1,5 +1,4 @@
-import type { NextRequest } from 'next/request';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 // List of routes that require the site to be unlocked
 const PRIVATE_ROUTES = [
