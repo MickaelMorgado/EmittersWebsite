@@ -142,7 +142,7 @@ export default function Home() {
 
   const handleUnlock = (e: React.FormEvent) => {
     e.preventDefault();
-    const masterKey = process.env.NEXT_PUBLIC_MASTER_KEY || '1234'; 
+    const masterKey = process.env.NEXT_PUBLIC_MASTER_KEY; 
     if (password === masterKey) {
       setIsUnlocked(true);
       // Set cookie that expires in 7 days
