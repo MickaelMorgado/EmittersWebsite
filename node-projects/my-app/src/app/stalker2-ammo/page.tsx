@@ -144,6 +144,11 @@ export default function StalkerAmmoPage() {
   const [weaponSelectedIndex, setWeaponSelectedIndex] = useState(0);
   const [calibratingWeaponId, setCalibratingWeaponId] = useState<string | null>(null);
   const [calibSearch, setCalibSearch] = useState('');
+  const [isShowcase, setIsShowcase] = useState(false);
+  const [showcaseStep, setShowcaseStep] = useState(0);
+  const [showcaseTarget, setShowcaseTarget] = useState<string | null>(null);
+  const [dataBackup, setDataBackup] = useState<{ [key: string]: AmmoState } | null>(null);
+  const [hwBackup, setHwBackup] = useState<CarryingWeapon[] | null>(null);
   const modalSearchRef = useRef<HTMLInputElement>(null);
 
   const ALL_WEAPONS = useMemo(() => {
@@ -304,12 +309,12 @@ export default function StalkerAmmoPage() {
   };
 
   useEffect(() => {
-    if (mounted) {
+    if (mounted && !isShowcase) {
       localStorage.setItem('stalker_ammo_data_v4', JSON.stringify(data));
       localStorage.setItem('stalker_caliber_thresh_v4', JSON.stringify(caliberThresholds));
       localStorage.setItem('stalker_carried_weapons_v2', JSON.stringify(carriedWeapons));
     }
-  }, [data, caliberThresholds, carriedWeapons, mounted]);
+  }, [data, caliberThresholds, carriedWeapons, mounted, isShowcase]);
 
   const addWeapon = (name: string) => {
     if (!name) return;
@@ -433,6 +438,172 @@ export default function StalkerAmmoPage() {
       [caliberId]: { ...prev[caliberId], [field]: Math.max(0, value) }
     }));
     playShellSound();
+  };
+
+  const speak = (text: string) => {
+    if (typeof window === 'undefined') return;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    const voices = window.speechSynthesis.getVoices();
+    // Prefer a deeper voice if available
+    const preferred = voices.find(v => v.name.includes('David') || v.name.includes('Male')) || voices[0];
+    if (preferred) utterance.voice = preferred;
+    utterance.rate = 1.15;
+    utterance.pitch = 0.7;
+    window.speechSynthesis.speak(utterance);
+  };
+
+  const SHOWCASE_STEPS = [
+    {
+      text: "Kuznetsov logic engaged. Loading Zone-Net Tutorial Protocol with training data.",
+      action: null,
+      target: null,
+      setup: () => {
+        setDataBackup({...data});
+        setHwBackup([...carriedWeapons]);
+        setShowcaseTarget(null);
+        setData({
+          '9x19_p': { inventory: 15, stash: 120, inventoryThreshold: 60, stashThreshold: 300 },
+          '545x39_ps': { inventory: 30, stash: 300, inventoryThreshold: 90, stashThreshold: 200 },
+          '545x39_pp': { inventory: 20, stash: 240, inventoryThreshold: 0, stashThreshold: 150 },
+          '762x54_7n1': { inventory: 5, stash: 12, inventoryThreshold: 20, stashThreshold: 100 },
+          '556x45_m885': { inventory: 150, stash: 60, inventoryThreshold: 45, stashThreshold: 0 },
+          '45acp_fmj': { inventory: 0, stash: 400, inventoryThreshold: 0, stashThreshold: 200 },
+          '12x70_buck': { inventory: 0, stash: 50, inventoryThreshold: 0, stashThreshold: 100 },
+          '9x39_sp5': { inventory: 0, stash: 240, inventoryThreshold: 0, stashThreshold: 400 },
+          '762x25_p': { inventory: 0, stash: 100, inventoryThreshold: 0, stashThreshold: 0 },
+        });
+        setCarriedWeapons([
+          { instanceId: 'showcase_ak', name: 'AK-74', minRounds: 90 },
+          { instanceId: 'showcase_fort', name: 'FORT-12', minRounds: 30 },
+          { instanceId: 'showcase_ar', name: 'AR416', minRounds: 45 }
+        ]);
+        setViewMode('grid');
+        setGlobalSearch('');
+      }
+    },
+    {
+      text: "This is your Field Inventory. Red slots mean critical shortage. Inspect one to see live stats.",
+      action: "👆 Click on any red-flagged ammo slot to inspect it.",
+      target: 'inventory',
+      setup: () => {
+        setViewMode('grid');
+        setGlobalSearch('');
+        setWeaponFilterId(null);
+        setShowcaseTarget('inventory');
+      }
+    },
+    {
+      text: "Your Safe House Loot holds your reserves. Find the 9x19 and transfer rounds to your backpack.",
+      action: "👆 In the LOOT panel, click on 9x19mm +P → then click TRANSFER to move rounds to Field Inventory.",
+      target: 'stash',
+      setup: () => {
+        setViewMode('grid');
+        setGlobalSearch('9x19');
+        setWeaponFilterId(null);
+        setShowcaseTarget('stash');
+      }
+    },
+    {
+      text: "Surplus detected. 150 rounds of 5.56mm in backpack — 3x above your tactical baseline of 45. The AI flags this.",
+      action: "👆 Check the AI Logistics Scan panel on the left for the surplus alert. Click it to jump to that ammo.",
+      target: 'sidebar',
+      setup: () => {
+        setGlobalSearch('');
+        setWeaponFilterId(null);
+        setShowcaseTarget('sidebar');
+      }
+    },
+    {
+      text: "Threshold calibration. Hover over a round count badge to see your warning baseline.",
+      action: "👆 Hover over the round number on any ammo slot. The badge will reveal the set threshold. Click it to edit.",
+      target: 'inventory',
+      setup: () => {
+        setGlobalSearch('');
+        setShowcaseTarget('inventory');
+      }
+    },
+    {
+      text: "Hardware ID. Adding unloaded gear triggers an immediate supply mismatch in the AI scan.",
+      action: "👆 Type 'TRs 301' in the Carrying Weapons field and press Enter. Watch the AI Scan react.",
+      target: 'weapons',
+      setup: () => {
+        setGlobalSearch('');
+        setShowcaseTarget('weapons');
+      }
+    },
+    {
+      text: "Caliber-wide monitoring. The AI tracks total rounds per caliber across all variants for your carried hardware.",
+      action: "👆 Check the sidebar for caliber alerts — the AI sums all 5.45mm variants (PS + PP) against your AK-74's needs.",
+      target: 'sidebar',
+      setup: () => {
+        setGlobalSearch('');
+        setShowcaseTarget('sidebar');
+      }
+    },
+    {
+      text: "Tactical Calibration overrides. Use it for modded hardware with non-standard ammo feeds.",
+      action: "👆 Click the gear icon on a weapon card to open Ammo Calibration and manually assign compatible rounds.",
+      target: 'weapons',
+      setup: () => {
+        setShowcaseTarget('weapons');
+      }
+    },
+    {
+      text: "Switch to Graphical Telemetry to see stock versus baselines at a glance.",
+      action: "👆 Click the bar chart icon in the header to switch to Graph View, then click any row to transfer.",
+      target: 'header',
+      setup: () => {
+        setCalibratingWeaponId(null);
+        setGlobalSearch('');
+        setShowcaseTarget('header');
+      }
+    },
+    {
+      text: "Tutorial complete. Cache data will now be restored. Good hunting, Stalker.",
+      action: null,
+      target: null,
+      setup: () => {
+        setShowcaseTarget(null);
+        endShowcase();
+      }
+    }
+  ];
+
+  const startShowcase = () => {
+    setIsShowcase(true);
+    setShowcaseStep(0);
+    const step = SHOWCASE_STEPS[0];
+    if (step) {
+      step.setup();
+      speak(step.text);
+    }
+  };
+
+  const nextShowcaseStep = () => {
+    if (showcaseStep < SHOWCASE_STEPS.length - 1) {
+      const next = showcaseStep + 1;
+      setShowcaseStep(next);
+      const step = SHOWCASE_STEPS[next];
+      if (step) {
+        step.setup();
+        speak(step.text);
+      }
+    } else {
+      endShowcase();
+    }
+  };
+
+  const endShowcase = () => {
+    setIsShowcase(false);
+    if (dataBackup) setData(dataBackup);
+    if (hwBackup) setCarriedWeapons(hwBackup);
+    setDataBackup(null);
+    setHwBackup(null);
+    setGlobalSearch('');
+    setWeaponFilterId(null);
+    setCalibratingWeaponId(null);
+    window.speechSynthesis.cancel();
   };
 
   const renderAiSidebar = () => {
@@ -606,7 +777,7 @@ export default function StalkerAmmoPage() {
     const hasSuggestions = Object.keys(caliberGroups).length > 0 || hardwareWarnings.length > 0;
 
     return (
-      <aside className="ai-sidebar">
+      <aside className={`ai-sidebar ${isShowcase && showcaseTarget === 'sidebar' ? 'tutorial-spotlight' : ''}`}>
         <div className="sidebar-header">
           <div className="ai-pulse" />
           <h3 className="sidebar-title">KUZNETSOV AI</h3>
@@ -988,7 +1159,7 @@ export default function StalkerAmmoPage() {
 
   return (
     <div className="stalker-container" onClick={() => setActiveAmmoId(null)}>
-      <header className="stalker-header">
+      <header className={`stalker-header ${isShowcase && showcaseTarget === 'header' ? 'tutorial-spotlight' : ''}`}>
         <div className="header-top">
             <div className="stalker-branding">
               <h1 className="stalker-title">Zone-Net <span>Munitions</span></h1>
@@ -1023,6 +1194,13 @@ export default function StalkerAmmoPage() {
                 </button>
               )}
             </div>
+            <button 
+              className={`btn-showcase-toggle ${isShowcase ? 'active' : ''}`}
+              onClick={isShowcase ? endShowcase : startShowcase}
+              onMouseEnter={playHoverSound}
+            >
+              {isShowcase ? 'EXIT SHOWCASE' : 'SHOWCASE'}
+            </button>
             <div className="view-toggle-group">
               <button 
                 className={`btn-toggle ${viewMode === 'grid' ? 'active' : ''}`}
@@ -1055,7 +1233,7 @@ export default function StalkerAmmoPage() {
       <div className="main-layout-container">
         <div className="dual-panel-grid">
         {/* STASH PANEL */}
-        <div className="panel stash-panel">
+        <div className={`panel stash-panel ${isShowcase && showcaseTarget === 'stash' ? 'tutorial-spotlight' : ''}`}>
           <div className="panel-header">
             <div className="panel-header-top">
               <h2 className="panel-title">Loot</h2>
@@ -1162,7 +1340,7 @@ export default function StalkerAmmoPage() {
         </div>
 
         {/* INVENTORY PANEL */}
-        <div className="panel inventory-panel">
+        <div className={`panel inventory-panel ${isShowcase && showcaseTarget === 'inventory' ? 'tutorial-spotlight' : ''}`}>
           <div className="panel-header">
             <div className="panel-header-top">
               <h2 className="panel-title">Inventory</h2>
@@ -1267,7 +1445,7 @@ export default function StalkerAmmoPage() {
           </div>
 
           {/* FIXED WEAPONS SECTION */}
-          <div className="weapons-section sticky-footer">
+          <div className={`weapons-section sticky-footer ${isShowcase && showcaseTarget === 'weapons' ? 'tutorial-spotlight' : ''}`}>
             <div className="section-header">
               <h4 className="section-label">Carrying Weapons</h4>
               <div className="weapon-selector-wrap">
@@ -1362,7 +1540,11 @@ export default function StalkerAmmoPage() {
                       <button 
                         className="btn-calib-weapon"
                         onMouseEnter={playHoverSound}
-                        onClick={() => setCalibratingWeaponId(hw.instanceId)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          playBoxSound();
+                          setCalibratingWeaponId(hw.instanceId);
+                        }}
                         title="Calibrate Ammo Compatibility"
                       >
                         <Settings size={10} />
@@ -1371,7 +1553,10 @@ export default function StalkerAmmoPage() {
                         <div className="delete-confirm-wrap">
                           <button 
                             className="btn-confirm-delete" 
-                            onClick={() => removeWeapon(hw.instanceId)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeWeapon(hw.instanceId);
+                            }}
                             onMouseLeave={() => setConfirmingDeleteWeapon(null)}
                           >
                             UN-EQUIP
@@ -1381,7 +1566,10 @@ export default function StalkerAmmoPage() {
                         <button 
                           className="btn-remove-weapon" 
                           onMouseEnter={playHoverSound}
-                          onClick={() => setConfirmingDeleteWeapon(hw.instanceId)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setConfirmingDeleteWeapon(hw.instanceId);
+                          }}
                         >
                           <Trash2 size={10} />
                         </button>
@@ -1596,8 +1784,8 @@ export default function StalkerAmmoPage() {
                                   <div key={caliber.id} className="modal-section">
                                       <div className="modal-caliber-label">{caliber.name}</div>
                                       {caliber.variants.filter(v => fuzzyMatch(v.name, calibSearch) || fuzzyMatch(caliber.name, calibSearch)).map(v => {
-                                          const isRecommended = possibleIds.includes(v.id);
-                                          const isFiltered = filter ? filter.includes(v.id) : true;
+                                           const isRecommended = possibleIds.includes(v.id);
+                                           const isFiltered = filter ? filter.includes(v.id) : isRecommended;
                                           return (
                                                <div key={v.id} className={`modal-ammo-row ${isFiltered ? 'is-active' : ''}`} onClick={() => updateWeaponAmmoFilter(hw.instanceId, v.id)}>
                                                    <div className="modal-ammo-img-container">
@@ -1622,6 +1810,36 @@ export default function StalkerAmmoPage() {
               </div>
           </div>
       )}
+
+      {isShowcase && (() => {
+        const step = SHOWCASE_STEPS[showcaseStep];
+        if (!step) return null;
+        return (
+          <div className="showcase-overlay">
+            <div className="showcase-card">
+              <div className="showcase-header">
+                <span className="showcase-tag">KUZNETSOV AI // TUTORIAL PROTOCOL</span>
+                <button className="btn-showcase-close" onClick={endShowcase}>&times;</button>
+              </div>
+              <div className="showcase-body">
+                <p className="showcase-narration">{step.text}</p>
+                {step.action && (
+                  <div className="showcase-action-prompt">
+                    <span className="action-label">YOUR TURN</span>
+                    <p>{step.action}</p>
+                  </div>
+                )}
+              </div>
+              <div className="showcase-footer-actions">
+                <span className="showcase-progress">STEP {showcaseStep + 1} OF {SHOWCASE_STEPS.length}</span>
+                <button className="btn-showcase-next" onClick={nextShowcaseStep}>
+                  {showcaseStep === SHOWCASE_STEPS.length - 1 ? 'FINISH' : step.action ? 'DONE ✓' : 'NEXT'}
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       <footer>
         &curren; PROPRIETARY ZONE-NET PDA INTERFACE — ENCRYPTED TRANSMISSION

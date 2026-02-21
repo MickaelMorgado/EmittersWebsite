@@ -467,6 +467,62 @@ export const STALKER_AMMO_DATA: AmmoCaliber[] = [
     ]
   },
   {
+    id: '12-7x55',
+    name: '12.7x55mm',
+    variants: [
+      {
+        id: '12_7x55_ps',
+        name: '12.7x55mm PS-12',
+        type: 'Regular',
+        weight: 0.045,
+        damage: 10,
+        penetration: 8,
+        degradation: 6,
+        description: 'Heavy subsonic assault round.',
+        imageUrl: `${BASE_URL}stalker-2-12_7x55mm-ps-12.png`,
+        compatibleWeapons: ['ASh-12'],
+        boxSize: 10
+      }
+    ]
+  },
+  {
+    id: '338_lapua',
+    name: '.338 Lapua',
+    variants: [
+      {
+        id: '338_lapua_m',
+        name: '.338 Lapua Magnum',
+        type: 'Sniper',
+        weight: 0.055,
+        damage: 10,
+        penetration: 10,
+        degradation: 8,
+        description: 'High-precision long-range projectile.',
+        imageUrl: `${BASE_URL}stalker-2-338-lapua-magnum.png`,
+        compatibleWeapons: ['M701'],
+        boxSize: 5
+      }
+    ]
+  },
+  {
+    id: '762x25',
+    name: '7.62x25mm',
+    variants: [
+      {
+        id: '762x25_p',
+        name: '7.62x25mm P',
+        type: 'Regular',
+        weight: 0.010,
+        damage: 4,
+        penetration: 3,
+        degradation: 1,
+        description: 'Standard Tokarev service round.',
+        imageUrl: `${BASE_URL}stalker-2-762x25mm-p.png`,
+        boxSize: 20
+      }
+    ]
+  },
+  {
     id: 'special',
     name: 'Specialist Hardware',
     variants: [

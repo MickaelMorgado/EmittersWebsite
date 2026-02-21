@@ -96,6 +96,10 @@ function GCodeVisualizer({ points, isPlaying, speed, progress, onProgressChange 
   const [nozzleObject] = useState(() => {
     // Create a cone geometry for nozzle effect
     const geometry = new THREE.ConeGeometry(1, 8, 8);
+    // Translate geometry so the tip is at the origin (0,0,0) instead of the center
+    // Height is 8, so we move it down by 4 to bring the tip to 0
+    geometry.translate(0, -4, 0);
+    
     const material = new THREE.MeshStandardMaterial({
       color: 0xff0000, // red
       emissive: 0xff0000,
@@ -107,6 +111,7 @@ function GCodeVisualizer({ points, isPlaying, speed, progress, onProgressChange 
     });
     const cone = new THREE.Mesh(geometry, material);
     // Rotate cone to point downward (negative Y direction)
+    // Since tip is at origin, rotating will keep the tip at the point of contact
     cone.rotation.x = Math.PI;
     // Ensure nozzle renders on top of filament lines
     cone.renderOrder = 1;
@@ -238,12 +243,29 @@ export default function GCodeTimelapsePage() {
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [speed, setSpeed] = useState<number>(1);
+  const [hours, setHours] = useState<number>(0);
+  const [minutes, setMinutes] = useState<number>(0);
+  const [seconds, setSeconds] = useState<number>(0);
+  const [useEstimatedTime, setUseEstimatedTime] = useState<boolean>(false);
   const [progress, setProgress] = useState<number>(0);
   const [stlModel, setStlModel] = useState<THREE.Mesh | null>(null);
   const [isStlVisible, setIsStlVisible] = useState<boolean>(false);
   const [stlFile, setStlFile] = useState<File | null>(null);
   const offsets = useMemo(() => ({ x: 0, y: 0, z: 0 }), []);
   const meshPosition = useMemo(() => ({ x: -100, y: -65, z: 145 }), []);
+
+  const totalSeconds = (hours * 3600) + (minutes * 60) + seconds;
+  const effectiveSpeed = useEstimatedTime && totalSeconds > 0 ? 100 / totalSeconds : speed;
+
+  const formatTime = (totalSeconds: number) => {
+    const h = Math.floor(totalSeconds / 3600);
+    const m = Math.floor((totalSeconds % 3600) / 60);
+    const s = Math.floor(totalSeconds % 60);
+    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
+
+  const elapsedSeconds = progress * totalSeconds;
+  const remainingSeconds = Math.max(0, totalSeconds - elapsedSeconds);
 
   // Update mesh position when state changes
   useEffect(() => {
@@ -427,22 +449,89 @@ export default function GCodeTimelapsePage() {
           </div>
 
           {/* Speed Control */}
-          <div className="flex flex-col gap-1">
-            <label className="text-white text-xs">Speed: {speed.toFixed(1)}x</label>
-            <Input
-              type="range"
-              min="0.1"
-              max="5"
-              step="0.1"
-              value={speed}
-              onChange={(e) => setSpeed(Number(e.target.value))}
-              className="bg-white/10 border-white/20"
-            />
+          <div className="flex flex-col gap-3 p-3 bg-white/5 rounded-lg border border-white/10">
+            <div className="flex items-center justify-between">
+              <label className="text-white text-xs font-medium">Speed Control</label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="use-estimated-time"
+                  checked={useEstimatedTime}
+                  onChange={() => setUseEstimatedTime(!useEstimatedTime)}
+                  className="w-3 h-3 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <label htmlFor="use-estimated-time" className="text-[10px] text-white/70 cursor-pointer">
+                  Match Print Time
+                </label>
+              </div>
+            </div>
+
+            {!useEstimatedTime ? (
+              <div className="flex flex-col gap-1">
+                <div className="flex justify-between text-[10px] text-white/60">
+                  <span>Manual Speed</span>
+                  <span>{speed.toFixed(2)}x</span>
+                </div>
+                <Input
+                  type="range"
+                  min="0.01"
+                  max="10"
+                  step="0.01"
+                  value={speed}
+                  onChange={(e) => setSpeed(Number(e.target.value))}
+                  className="h-6 bg-transparent accent-white"
+                />
+              </div>
+            ) : (
+              <div className="flex flex-col gap-2">
+                <label className="text-[10px] text-white/60">Estimated Print Time (HH:MM:SS)</label>
+                <div className="flex gap-1">
+                  <div className="flex-1">
+                    <Input
+                      type="number"
+                      min="0"
+                      placeholder="HH"
+                      value={hours || ''}
+                      onChange={(e) => setHours(Math.max(0, parseInt(e.target.value) || 0))}
+                      className="h-8 bg-white/10 border-white/20 text-white text-center text-xs px-1"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <Input
+                      type="number"
+                      min="0"
+                      max="59"
+                      placeholder="MM"
+                      value={minutes || ''}
+                      onChange={(e) => setMinutes(Math.max(0, Math.min(59, parseInt(e.target.value) || 0)))}
+                      className="h-8 bg-white/10 border-white/20 text-white text-center text-xs px-1"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <Input
+                      type="number"
+                      min="0"
+                      max="59"
+                      placeholder="SS"
+                      value={seconds || ''}
+                      onChange={(e) => setSeconds(Math.max(0, Math.min(59, parseInt(e.target.value) || 0)))}
+                      className="h-8 bg-white/10 border-white/20 text-white text-center text-xs px-1"
+                    />
+                  </div>
+                </div>
+                <div className="text-[10px] text-white/40 italic">
+                  Effective speed: {effectiveSpeed.toFixed(4)}x
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Progress Control */}
-          <div className="flex flex-col gap-1">
-            <label className="text-white text-xs">Progress: {(progress * 100).toFixed(1)}%</label>
+          <div className="flex flex-col gap-2">
+            <div className="flex justify-between items-end">
+              <label className="text-white text-xs">Progress</label>
+              <span className="text-[10px] text-white/60">{(progress * 100).toFixed(1)}%</span>
+            </div>
             <Input
               type="range"
               min="0"
@@ -450,8 +539,10 @@ export default function GCodeTimelapsePage() {
               step="0.01"
               value={progress}
               onChange={(e) => handleProgressChange(Number(e.target.value))}
-              className="bg-white/10 border-white/20"
+              className="bg-white/10 border-white/20 accent-blue-500"
             />
+            
+            {/* Remaining logic in stats */}
           </div>
 
           {/* Stats */}
@@ -481,7 +572,7 @@ export default function GCodeTimelapsePage() {
           <GCodeVisualizer
             points={gcodePoints}
             isPlaying={isPlaying}
-            speed={speed}
+            speed={effectiveSpeed}
             progress={progress}
             onProgressChange={handleProgressChange}
           />
@@ -507,6 +598,69 @@ export default function GCodeTimelapsePage() {
             />
           </EffectComposer>
         </Canvas>
+
+        {/* Futuristic Chrono Overlay */}
+        {totalSeconds > 0 && (
+          <div className="absolute top-6 right-6 flex flex-col gap-3 pointer-events-none select-none">
+            {/* Main Chrono Container */}
+            <div className="bg-black/40 backdrop-blur-xl border-r-2 border-red-600/50 p-6 rounded-l-2xl flex flex-col gap-4 shadow-[0_0_30px_rgba(220,38,38,0.15)] animate-in fade-in slide-in-from-right duration-700">
+              
+              {/* Elapsed Time Sector */}
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-white/40" />
+                  <span className="text-[10px] text-white/40 uppercase tracking-[0.2em] font-bold">Chronometer_Elapsed</span>
+                </div>
+                <div className="text-4xl font-mono tracking-tighter text-white tabular-nums flex items-baseline gap-1">
+                  {formatTime(elapsedSeconds)}
+                  <span className="text-xs text-red-500 font-bold opacity-80 animate-pulse">REC</span>
+                </div>
+              </div>
+
+              {/* Progress Bar Micro-display */}
+              <div className="w-full h-[2px] bg-white/10 relative overflow-hidden">
+                <div 
+                  className="absolute inset-y-0 left-0 bg-red-600 shadow-[0_0_10px_#dc2626]" 
+                  style={{ width: `${progress * 100}%` }}
+                />
+              </div>
+
+              {/* Remaining Time Sector */}
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_5px_#ef4444]" />
+                  <span className="text-[10px] text-red-500/80 uppercase tracking-[0.2em] font-bold">Estimated_Completion</span>
+                </div>
+                <div className="text-2xl font-mono tracking-tighter text-red-500/90 tabular-nums">
+                  -{formatTime(remainingSeconds)}
+                </div>
+              </div>
+
+              {/* Speed Vector Indicator */}
+              <div className="flex justify-between items-center mt-2 pt-4 border-t border-white/5">
+                <div className="text-[9px] text-white/30 uppercase font-medium">Vec_Velocity</div>
+                <div className="text-[10px] text-red-400 font-mono bg-red-950/30 px-2 py-0.5 rounded border border-red-900/40">
+                  {effectiveSpeed.toFixed(4)}x
+                </div>
+              </div>
+            </div>
+
+            {/* Sub-status badges */}
+            <div className="flex gap-2 justify-end">
+              <div className="px-3 py-1 bg-black/60 backdrop-blur-md border border-white/10 rounded-full flex items-center gap-2">
+                <div className={`w-1.5 h-1.5 rounded-full ${isPlaying ? 'bg-green-500 animate-pulse' : 'bg-yellow-500'}`} />
+                <span className="text-[9px] text-white/60 uppercase font-black tracking-widest">
+                  {isPlaying ? 'System_Active' : 'System_Idle'}
+                </span>
+              </div>
+              <div className="px-3 py-1 bg-black/60 backdrop-blur-md border border-white/10 rounded-full">
+                <span className="text-[9px] text-white/60 font-black tracking-widest uppercase">
+                  {(progress * 100).toFixed(1)}%_PRG
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
