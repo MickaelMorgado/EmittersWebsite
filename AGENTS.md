@@ -2,96 +2,430 @@
 
 ## Operational Mode: PROACTIVE
 
-**I will automatically spawn agents when I detect matching tasks. No need to ask permission.**
+**I will automatically spawn the General agent to coordinate the specialized team. General acts as QA, Fixer, and Reporter.**
+
+---
+
+## Agent Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      MAIN CONTEXT (ME)                       │
+│                                                              │
+│  • Receives reports from General agent                       │
+│  • Makes final decisions                                     │
+│  • Interacts with user                                       │
+│                                                              │
+└─────────────────────┬───────────────────────────────────────┘
+                      │ spawns & receives reports
+                      ▼
+┌─────────────────────────────────────────────────────────────┐
+│                     GENERAL AGENT                            │
+│              (QA + Coordinator + Reporter)                   │
+│                                                              │
+│  • Spawns and coordinates specialized team                   │
+│  • Reviews all agent outputs (QA)                            │
+│  • Minor compatibility fixes & tweaks                        │
+│  • Ensures compatibility between agent outputs               │
+│  • Reports consolidated results to Main Context              │
+│                                                              │
+└─────────────────────┬───────────────────────────────────────┘
+                      │ spawns & coordinates
+                      ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    SPECIALIZED TEAM                          │
+│                                                              │
+│  ┌─────────────────────────────────────────────────────────┐│
+│  │              DEVELOPMENT PAIR (Parallel)                 ││
+│  │  ┌─────────────────┐    ┌─────────────────┐             ││
+│  │  │  Backend Agent  │◄──►│ Frontend Agent  │             ││
+│  │  │ (Logic & Data)  │    │  (UI & Styling) │             ││
+│  │  └─────────────────┘    └─────────────────┘             ││
+│  └─────────────────────────────────────────────────────────┘│
+│                                                              │
+│  ┌──────────┬──────────┬──────────┬──────────┬────────────┐ │
+│  │ Explore  │ Code     │ Git &    │ Process  │ Route      │ │
+│  │ Agent    │ Quality  │ Docs     │ Manager  │ Validator  │ │
+│  │          │ Agent    │ Agent    │ Agent    │ Agent      │ │
+│  └──────────┴──────────┴──────────┴──────────┴────────────┘ │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Agent Roles
+
+### Main Context (ME)
+
+**My responsibilities:**
+
+| Role | Description |
+|------|-------------|
+| **Receiver** | Get consolidated reports from General agent |
+| **Decision Maker** | Final judgment calls, ask user when uncertain |
+| **User Interface** | Present results to user, handle user requests |
+
+**My Workflow:**
+```
+1. User request → Spawn General agent with task
+2. General coordinates team and does QA
+3. General reports back with results
+4. Present consolidated report to user
+```
+
+---
+
+### General Agent (QA + Coordinator + Reporter)
+
+**Spawned as:** `general`
+
+**Responsibilities:**
+
+| Role | Description |
+|------|-------------|
+| **Coordinator** | Detect tasks, spawn appropriate agents, manage workflows |
+| **QA Lead** | Review all agent outputs, verify correctness, ensure quality |
+| **Minor Fixer** | Small compatibility tweaks, adjust agent work for integration |
+| **Reporter** | Consolidate results and report back to Main Context |
+
+**General's Workflow:**
+```
+1. Receive task from Main Context
+2. Analyze and spawn appropriate agent(s)
+3. Monitor agent execution
+4. Review agent output (QA)
+5. IF issues found:
+     - Minor fix: Apply directly (compatibility tweaks)
+     - Major fix: Spawn Backend/Frontend agent to fix
+     - Blocker: Report to Main Context
+6. Verify final result
+7. Report consolidated results to Main Context
+```
+
+**What General Fixes vs Passes to Specialists:**
+
+| Issue Type | Action |
+|------------|--------|
+| Import path corrections | Fix directly |
+| Type mismatches (minor) | Fix directly |
+| Lint auto-fixes | Fix directly |
+| Logic bugs | → Backend Agent |
+| UI bugs | → Frontend Agent |
+| Complex refactors | → Backend + Frontend (parallel) |
+
+---
+
+### Specialized Team (Spawned by General)
+
+| Agent | Spawned As | Workflow File | Purpose |
+|-------|------------|---------------|---------|
+| **Backend Agent** | `general` | `backend-agent.md` | Logic, APIs, data, state |
+| **Frontend Agent** | `general` | `frontend-agent.md` | UI, components, styling |
+| **Explore Agent** | `explore` | Built-in | Search, investigate, debug |
+| **Code Quality Agent** | `general` | `code-quality.md` | Lint, optimize, standards |
+| **Git & Docs Agent** | `general` | `git-docs-manager.md` | Version control, docs |
+| **Process Manager Agent** | `general` | `process-manager.md` | Server lifecycle |
+| **Route Validator Agent** | `general` | `route-validator.md` | Routing, access levels |
+
+---
+
+## Development Pair (Backend + Frontend)
+
+The Backend and Frontend agents work in parallel like a pair programming team.
+
+### Backend Agent (`general` → `backend-agent.md`)
+
+**Purpose:** Logic, APIs, data management
+
+| Responsibility | Examples |
+|----------------|----------|
+| API Routes | REST endpoints, server actions |
+| Business Logic | Algorithms, calculations, validation |
+| State Management | Zustand stores, data flow |
+| Data Fetching | API calls, caching, transformations |
+| Server-Side | Server components, middleware |
+| Integrations | External APIs, databases |
+| Types/Interfaces | Data contracts for Frontend |
+
+**Outputs:** API routes, stores, types, server actions
+
+---
+
+### Frontend Agent (`general` → `frontend-agent.md`)
+
+**Purpose:** UI, components, styling
+
+| Responsibility | Examples |
+|----------------|----------|
+| UI Components | React components, layouts |
+| Pages | Route pages, page structure |
+| Styling | Tailwind, animations, responsive |
+| Forms | Form UI, validation feedback |
+| Interactions | Events, hover states, transitions |
+| Accessibility | ARIA, keyboard, semantics |
+| Client-Side | Browser APIs, client components |
+
+**Outputs:** Components, pages, styles, hooks
+
+---
+
+### Pair Programming Pattern
+
+```
+Task: "Add user management feature"
+
+[General] → Spawn Backend + Frontend in parallel
+
+[Backend Agent]                    [Frontend Agent]
+      │                                  │
+      ├─ Define User types ─────────────►│
+      │    interface User { ... }        │  Use User type
+      │                                  │  Build UserCard component
+      ├─ Create /api/users              │
+      │    GET, POST handlers            │  Build UserList component
+      │                                  │
+      ├─ Set up useUserStore            │  Add loading states
+      │    Zustand store                 │
+      │                                  │  Connect to useUserStore
+      └─ Export types & store ──────────►│
+                                         │
+      ◄─────── Integration ready ────────┘
+                     │
+                     ▼
+              [General] QA Review
+                     │
+                     ▼
+              Report to Main
+```
+
+---
 
 ## Auto-Spawn Triggers
 
-| Keyword/Task Detected | Agent | Workflow |
-|-----------------------|-------|----------|
-| `lint`, `optimize`, `cleanup`, `refactor` | general | code-quality.md |
-| `start`, `restart`, `crash`, `server`, `port` | general | process-manager.md |
-| `commit`, `push`, `version`, `changelog`, `release` | general | git-docs-manager.md (with pre-push quality gate) |
-| `route`, `page.tsx`, `new app`, `access level` | general | route-validator.md |
-| `search`, `find`, `where is`, `how does X work` | explore | - |
-| `debug`, `error`, `not working`, `investigate` | explore (very thorough) | - |
-| `add to all apps`, `bulk update`, `multi-file` | general | - |
-| `merge`, `cleanup branches`, `git cleanup` | general | git-docs-manager.md |
-| `update docs`, `sync memory-bank`, `document this` | general | git-docs-manager.md (docs phase) |
+When I detect these keywords/tasks, I spawn General agent with the appropriate instructions:
 
-## Pre-Push Agent Pipeline
+| Keyword/Task | General Spawns | Workflow |
+|--------------|----------------|----------|
+| `lint`, `optimize`, `cleanup`, `refactor` | Code Quality Agent | `code-quality.md` |
+| `start`, `restart`, `crash`, `server`, `port` | Process Manager Agent | `process-manager.md` |
+| `commit`, `push`, `version`, `changelog`, `release` | Git & Docs Agent | `git-docs-manager.md` |
+| `route`, `page.tsx`, `new app`, `access level` | Route Validator Agent | `route-validator.md` |
+| `search`, `find`, `where is`, `how does X work` | Explore Agent (quick/medium) | Built-in |
+| `debug`, `error`, `not working`, `investigate` | Explore Agent (very thorough) | Built-in |
+| `update docs`, `sync memory-bank`, `document this` | Git & Docs Agent | `git-docs-manager.md` |
+| `create app`, `new feature`, `add feature` | Backend + Frontend (parallel) | Sequential then parallel |
+| `fix logic`, `API issue`, `data problem` | Backend Agent | `backend-agent.md` |
+| `fix UI`, `styling`, `component issue` | Frontend Agent | `frontend-agent.md` |
 
-When `push` is requested, agents spawn in sequence:
+---
 
-| Phase | Agent | Actions |
-|-------|-------|---------|
-| 1. Quality Gate | code-quality | Lint, TypeScript, Build checks |
-| 2. Git Operations | git-docs-manager | Commit, push, branch cleanup |
-| 3. Documentation | git-docs-manager | Memory-bank sync, changelog, history |
+## Remaining Specialized Agents
 
-**Pipeline Flow:**
+### Explore Agent (`explore`)
+
+**Purpose:** Search, investigate, debug codebase
+
+**Thoroughness Levels:**
+| Level | Use Case |
+|-------|----------|
+| `quick` | Single file lookups, simple patterns |
+| `medium` | Multi-file searches, API discovery |
+| `very thorough` | Deep debugging, architecture analysis |
+
+---
+
+### Code Quality Agent (`general` → `code-quality.md`)
+
+**Purpose:** Lint, optimize, enforce standards
+
+**Commands:**
+```bash
+node run-eslint-all.js                          # Lint all
+cd node-projects/my-app && npm run lint         # Lint my-app
+cd node-projects/my-app && npx tsc --noEmit     # Type check
 ```
-push request
+
+---
+
+### Git & Docs Agent (`general` → `git-docs-manager.md`)
+
+**Purpose:** Version control, documentation, SEO
+
+**Commit Format:** `<type>(<scope>): <subject>`
+
+---
+
+### Process Manager Agent (`general` → `process-manager.md`)
+
+**Purpose:** Server lifecycle management
+
+**Managed Processes:**
+| Project | Command | Port |
+|---------|---------|------|
+| my-app | `npm run dev` | 3000 |
+| tiktok-backend | `npm start` | 3001 |
+
+---
+
+### Route Validator Agent (`general` → `route-validator.md`)
+
+**Purpose:** Routing, access levels, registration
+
+---
+
+## Orchestration Patterns
+
+### Feature Development (Parallel Pair)
+
+```
+User: "add user dashboard with stats"
+
+[Main] → Spawn General agent
+         ↓
+         [General] Analyze: needs backend (data) + frontend (UI)
+         ↓
+         [General] → Spawn in parallel:
+                     │
+                     ├─ [Backend Agent]
+                     │    ├─ Define Stats types
+                     │    ├─ Create /api/stats endpoint
+                     │    ├─ Set up useStatsStore
+                     │    └─ Report: "Backend ready"
+                     │
+                     └─ [Frontend Agent]
+                          ├─ Build Dashboard component
+                          ├─ Create StatsCard components
+                          ├─ Connect to useStatsStore
+                          └─ Report: "Frontend ready"
+         ↓
+         [General] QA: Review both outputs
+                   - Check type compatibility
+                   - Verify store connection
+                   - Test integration
+         ↓
+         [General] Minor fixes if needed (import paths, type tweaks)
+         ↓
+         [General] → Spawn Code Quality Agent (verify)
+         ↓
+         [General] Report to Main: "Dashboard complete, verified"
+```
+
+### Bug Fix (Targeted Agent)
+
+```
+User: "fix the login form validation"
+
+[Main] → Spawn General agent
+         ↓
+         [General] Analyze: UI/form issue → Frontend Agent
+         ↓
+         [General] → Spawn Frontend Agent
+                     ↓
+                     Agent fixes form validation
+                     Agent adds error states
+                     Agent reports: "Fixed"
+         ↓
+         [General] QA: Review fix
+         ↓
+         [General] Report to Main: "Login validation fixed"
+```
+
+### Pre-Push Pipeline
+
+```
+User: "push"
+
+[Main] → Spawn General agent
+         ↓
+         [General] → Spawn Code Quality Agent
+                     ↓
+                     Agent: lint + typecheck + build
+                     ↓
+                     [General] QA: Check results
+                     IF fail: Minor fixes or spawn Backend/Frontend
+         ↓
+         [General] → Spawn Git & Docs Agent
+                     ↓
+                     Agent: commit + push + branch cleanup
+         ↓
+         [General] → Spawn Git & Docs Agent (docs phase)
+                     ↓
+                     Agent: memory-bank sync + changelog
+         ↓
+         [General] Report to Main: "Pushed successfully"
+```
+
+---
+
+## General Agent QA Workflow
+
+When an agent returns work, General reviews:
+
+| Agent Output | General's QA Action |
+|--------------|---------------------|
+| Lint errors | Fix auto-fixable, or spawn Code Quality |
+| Type errors | Minor: fix directly. Major: spawn Backend/Frontend |
+| Integration issues | Fix import paths, adjust for compatibility |
+| UI/logic bugs | Spawn appropriate specialist |
+| Route conflicts | Spawn Route Validator |
+| Doc inconsistencies | Spawn Git & Docs |
+
+**Fix Decision Tree:**
+```
+Agent returns work
     ↓
-[Code Quality Agent] → Run lint + typecheck + build
-    ↓ (pass)
-[Git Agent] → git push + branch cleanup
+[General] QA: Is it correct?
+    │
+    ├─YES──→ Accept, proceed
+    │
+    NO
     ↓
-[Documentation Agent] → Update memory-bank files
-                       → Update changelog
-                       → Update history/YYYY-MM.md
-                       → Update sitemap dates
+[General] Is it a minor fix? (imports, small tweaks)
+    │
+    ├─YES──→ Fix directly, verify
+    │
+    NO
+    ↓
+[General] Spawn specialist to fix:
+    │
+    ├─ Logic/data issue ──→ Backend Agent
+    ├─ UI/styling issue ──→ Frontend Agent
+    └─ Complex issue ──→ Report blocker to Main
 ```
 
-## Subagent Dedications
+---
 
-### Explore Agent Tasks
-| Task | Thoroughness | Description |
-|------|--------------|-------------|
-| Find API routes/endpoints | medium | Locate route definitions in Next.js app |
-| Search React components | quick | Find component usage and patterns |
-| Debug complex issues | very thorough | Deep codebase analysis for root cause |
-| Architecture analysis | very thorough | Understand system before new features |
-| Search memory-bank context | medium | Find relevant project documentation |
-| Route discovery | medium | Scan src/app/ for all existing routes |
-| Code quality audit | medium | Find lint issues, unused code, optimization opportunities |
+## Reporting Format
 
-### General Agent Tasks
-| Task | Description |
-|------|-------------|
-| Multi-file refactoring | Complex code reorganization |
-| Feature implementation | Multi-step feature development |
-| Update memory-bank docs | Keep documentation in sync |
-| Code review | Analyze code quality post-implementation |
-| **Route validation** | Validate and update page.tsx routing (see route-validator.md) |
-| Access level audit | Review public/private status of all projects |
-| **Process management** | Run, monitor, and reboot project servers (see process-manager.md) |
-| **Git & documentation** | Version control, changelogs, SEO/AI discoverability, version tracking (see git-docs-manager.md) |
-| **Code quality** | Linting, optimization, best practices, documentation (see code-quality.md) |
+**General reports to Main Context:**
 
-## Parallel Workflow Examples
-
-### Bug Investigation Workflow
 ```
-1. Launch explore agent (very thorough) to find root cause
-2. Main context remains available for implementing fixes
-3. Explore agent returns findings, then apply solution
+## Task Report: [Task Name]
+
+### Status: ✅ Complete / ⚠️ Partial / ❌ Blocked
+
+### Agents Spawned:
+| Agent | Status | Notes |
+|-------|--------|-------|
+| Backend | ✅ Done | API + store created |
+| Frontend | ✅ Done | UI connected |
+| Code Quality | ✅ Pass | No issues |
+
+### Integration Fixes (by General):
+- Fixed import path in UserCard.tsx
+- Adjusted type in useUserStore.ts
+
+### Files Changed:
+- src/app/api/users/route.ts (Backend)
+- src/stores/useUserStore.ts (Backend)
+- src/components/features/UserCard.tsx (Frontend)
+- src/app/users/page.tsx (Frontend)
+
+### Blockers (if any):
+- None
 ```
 
-### Feature Addition Workflow
-```
-1. Launch explore agent (medium) to search existing patterns
-2. Parallel: review memory-bank for architectural context
-3. Implement using found patterns
-4. Optionally: launch general agent to update documentation
-```
-
-### Multi-Project Search Workflow
-```
-1. Launch multiple explore agents in parallel:
-   - Agent 1: Search my-app for component X
-   - Agent 2: Search tiktok-backend for endpoint Y
-2. Consolidate results and proceed with implementation
-```
+---
 
 ## Project Structure
 
@@ -99,15 +433,30 @@ push request
 EmittersWebsite/
 ├── index.html              # Main website entry
 ├── memory-bank/            # Project documentation hub
-├── .agent/workflows/       # Workflow definitions
+├── .agent/workflows/       # Agent workflow definitions
+│   ├── backend-agent.md    # Backend Agent workflow
+│   ├── frontend-agent.md   # Frontend Agent workflow
+│   ├── code-quality.md     # Code Quality Agent workflow
+│   ├── git-docs-manager.md # Git & Docs Agent workflow
+│   ├── process-manager.md  # Process Manager Agent workflow
+│   ├── route-validator.md  # Route Validator Agent workflow
+│   └── new-app.md          # New app creation guide
 ├── node-projects/
 │   ├── my-app/             # Next.js React app (primary)
+│   │   └── src/
+│   │       ├── app/        # Pages & API routes
+│   │       ├── components/ # React components
+│   │       ├── stores/     # Zustand stores
+│   │       ├── lib/        # Utilities
+│   │       └── types/      # TypeScript types
 │   └── tiktok-backend/     # TikTok live connector backend
 ├── discord-bot/            # Discord bot
 ├── rtmp/                   # Streaming server
 ├── tools/                  # Trading and utility tools
 └── assets/                 # Static assets (JS, CSS)
 ```
+
+---
 
 ## Development Commands
 
@@ -131,6 +480,8 @@ npm start        # Run TikTok backend server
 node run-eslint-all.js   # Lint all projects
 ```
 
+---
+
 ## Code Standards
 
 ### ESLint Rules (root)
@@ -149,14 +500,7 @@ node run-eslint-all.js   # Lint all projects
 - Keep functions concise, use expression bodies where possible
 - Follow patterns in `memory-bank/systemPatterns.md`
 
-## Workflows
-
-Refer to `.agent/workflows/` for specific workflows:
-- **new-app.md**: Steps for creating new apps in my-app
-- **route-validator.md**: Validate and update page.tsx routing, access levels
-- **process-manager.md**: Run, monitor, and reboot project servers
-- **git-docs-manager.md**: Version control, changelogs, SEO/AI discoverability
-- **code-quality.md**: Linting, optimization, best practices, documentation
+---
 
 ## Memory Bank Integration
 
@@ -172,11 +516,3 @@ When making changes, update relevant memory-bank files:
 | App-specific docs | `memory-bank/project-specific/apps/` |
 
 **Reference:** `memory-bank/README.md` for full navigation.
-
-## Subagent Thoroughness Guide
-
-| Level | When to Use |
-|-------|-------------|
-| quick | Simple lookups, single file searches, pattern matching |
-| medium | Multi-file searches, API endpoint discovery, component usage |
-| very thorough | Bug investigations, architecture analysis, comprehensive reviews |

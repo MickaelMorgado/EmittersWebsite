@@ -3229,3 +3229,79 @@ letter-spacing: 0.1em;
   background: rgba(255, 157, 0, 0.05);
   border-left: 2px solid var(--accent-amber);
 }
+
+.ai-message.user-text {
+  background: rgba(0, 170, 255, 0.08);
+  border-left: 2px solid var(--accent-blue);
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+}
+
+.ai-message.ai-text {
+  background: rgba(255, 157, 0, 0.08);
+  border-left: 2px solid var(--accent-amber);
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+}
+
+.ai-message.user-text .msg-tag {
+  color: var(--accent-blue);
+}
+
+.ai-message.ai-text .msg-tag {
+  color: var(--accent-amber);
+}
+
+.chat-text-content {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: #e5e7eb;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.chat-messages-container {
+  max-height: 300px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-right: 0.25rem;
+}
+
+.ai-accordion-content.assistant-content {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.assistant-intro {
+  margin-bottom: 0.75rem !important;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.chat-count-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.55rem;
+  background: var(--accent-amber);
+  color: #000;
+  padding: 0.1rem 0.35rem;
+  border-radius: 10px;
+  margin-left: auto;
+  font-weight: 700;
+}
+
+.btn-ai-send:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-ai-send:not(:disabled):hover {
+  color: #fff;
+}
+
+.ai-chat-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

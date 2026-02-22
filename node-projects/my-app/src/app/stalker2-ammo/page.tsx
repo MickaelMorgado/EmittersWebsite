@@ -29,7 +29,7 @@ interface DetectedAmmo {
 
 interface ChatMessage {
   id: string;
-  type: 'user-image' | 'ai-result' | 'ai-error' | 'system';
+  type: 'user-image' | 'ai-result' | 'ai-error' | 'system' | 'user-text' | 'ai-text';
   content: string;
   image?: string;
   items?: DetectedAmmo[];
@@ -175,6 +175,25 @@ Return ONLY valid JSON with this exact structure:
 
 Be accurate with counts. If uncertain about an item name, include your best guess and note it. Return empty items array if no ammo visible.`;
 
+const KUZNETSOV_SYSTEM_PROMPT = `You are Kuznetsov, a veteran Zone trader and logistics expert in the STALKER 2: Heart of Chornobyl universe. You help stalkers manage their ammunition and supplies.
+
+Your personality:
+- Gruff but helpful, like a seasoned trader who's seen it all
+- Practical and direct - you don't waste words
+- You refer to the player as "Stalker" 
+- You occasionally use Zone slang and trader terminology
+- You're knowledgeable about ammo types, trader reputation, regional availability
+
+Your expertise:
+- Ammunition trading strategies and optimal loadouts
+- Zone survival tips and equipment management
+- Trader relationships and reputation systems
+- Regional ammo availability across different Zone areas
+- Weight management and carrying capacity optimization
+- Weapon-ammo compatibility and tactical recommendations
+
+Keep responses concise (2-4 sentences unless explaining something complex). Be helpful but maintain your gruff trader persona. If asked about topics unrelated to the Zone or ammunition, politely redirect to matters you can help with.`;
+
 const matchAmmoName = (rawName: string): string | null => {
   const normalized = rawName.toLowerCase().replace(/[^a-z0-9]/g, '');
   
@@ -243,7 +262,8 @@ export default function StalkerAmmoPage() {
 const [openaiKey, setOpenaiKey] = useState<string>('');
   const [showApiSettings, setShowApiSettings] = useState(false);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
-  const [isProcessing, setIsProcessing] = useState(false);
+const [isProcessing, setIsProcessing] = useState(false);
+  const [isChatLoading, setIsChatLoading] = useState(false);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
   const [expandedImage, setExpandedImage] = useState<string | null>(null);
@@ -392,7 +412,84 @@ const [openaiKey, setOpenaiKey] = useState<string>('');
     const jsonMatch = content.match(/\{[\s\S]*\}/);
     if (!jsonMatch) throw new Error('Could not parse AI response');
 
-    return JSON.parse(jsonMatch[0]);
+return JSON.parse(jsonMatch[0]);
+  };
+
+  const sendKuznetsovMessage = async (userMessage: string): Promise<string> => {
+    if (!openaiKey) throw new Error('OpenAI API key not configured');
+
+    const chatHistory = chatMessages
+      .filter(m => m.type === 'user-text' || m.type === 'ai-text')
+      .slice(-10)
+      .map(m => ({
+        role: m.type === 'user-text' ? 'user' : 'assistant',
+        content: m.content
+      })) as Array<{ role: 'user' | 'assistant'; content: string }>;
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${openaiKey}`
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o',
+        messages: [
+          { role: 'system', content: KUZNETSOV_SYSTEM_PROMPT },
+          ...chatHistory,
+          { role: 'user', content: userMessage }
+        ],
+        max_tokens: 500
+      })
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error?.message || 'API request failed');
+    }
+
+    const data = await response.json();
+    return data.choices?.[0]?.message?.content || 'No response from Kuznetsov.';
+  };
+
+  const handleSendMessage = async () => {
+    if (!aiChatInput.trim() || isChatLoading) return;
+    if (!openaiKey) {
+      setShowApiSettings(true);
+      return;
+    }
+
+    const userText = aiChatInput.trim();
+    setAiChatInput('');
+
+    const userMsgId = `user_${Date.now()}`;
+    setChatMessages(prev => [...prev, {
+      id: userMsgId,
+      type: 'user-text',
+      content: userText,
+      timestamp: Date.now()
+    }]);
+
+    setIsChatLoading(true);
+
+    try {
+      const response = await sendKuznetsovMessage(userText);
+      setChatMessages(prev => [...prev, {
+        id: `ai_${Date.now()}`,
+        type: 'ai-text',
+        content: response,
+        timestamp: Date.now()
+      }]);
+    } catch (error) {
+      setChatMessages(prev => [...prev, {
+        id: `err_${Date.now()}`,
+        type: 'ai-error',
+        content: error instanceof Error ? error.message : 'Failed to get response from Kuznetsov',
+        timestamp: Date.now()
+      }]);
+    } finally {
+      setIsChatLoading(false);
+    }
   };
 
   const processDetectedItems = (result: AIDetectionResult): DetectedAmmo[] => {
@@ -1170,7 +1267,7 @@ return (
                 )}
               </div>
               
-              <div className="ai-accordion assistant">
+<div className="ai-accordion assistant">
                 <div 
                   className="ai-accordion-header"
                   onClick={() => setAccordionAssistant(!accordionAssistant)}
@@ -1180,186 +1277,195 @@ return (
                     className={`ai-accordion-chevron ${accordionAssistant ? 'expanded' : ''}`}
                   />
                   <span className="msg-tag">[AI_ASSISTANT]</span>
+                  {chatMessages.length > 0 && (
+                    <span className="chat-count-badge">{chatMessages.length}</span>
+                  )}
                 </div>
                 {accordionAssistant && (
-                  <div className="ai-accordion-content">
-                    <p>Welcome back, Stalker. I am monitoring your caches in real-time. Upload an inventory screenshot or paste from clipboard to scan your ammunition.</p>
-                  </div>
-                )}
-              </div>
-
-{chatMessages.map(msg => (
-                <div key={msg.id} className={`ai-message ${msg.type}`}>
-                  <span className="msg-tag">[{msg.type === 'user-image' ? 'SCREENSHOT' : msg.type === 'ai-error' ? 'ERROR' : msg.type === 'system' ? 'APPLIED' : 'DETECTION'}]</span>
-                  
-                  {msg.type === 'user-image' && msg.image && (
-                    <div 
-                      className="chat-image-preview"
-                      onClick={() => setExpandedImage(msg.image!)}
-                    >
-                      <img src={msg.image} alt="Uploaded screenshot" />
-                      <div className="image-zoom-overlay">
-                        <Eye size={24} />
-                        <span>Zoom</span>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {msg.type === 'ai-error' && (
-                    <p className="error-text">{msg.content}</p>
-                  )}
-                  
-                  {msg.type === 'system' && (
-                    <p className="success-text">{msg.content}</p>
-                  )}
-                  
-                  {msg.type === 'ai-result' && msg.items && (
-                    <>
-                      <p>{msg.content}</p>
-                      {msg.notes && <p className="detection-notes">{msg.notes}</p>}
-                      <div className="detected-items-list">
-                        {msg.items.map((item, idx) => {
-                          const variant = item.matchedId ? getVariantById(item.matchedId) : null;
-                          const boxSize = variant?.boxSize || 10;
-                          return (
-                            <div key={idx} className={`detected-item-row ${!item.matchedId ? 'unmatched' : ''}`}>
-                              <div className="detected-item-image">
-                                {variant?.imageUrl ? (
-                                  <img src={variant.imageUrl} alt="" />
-                                ) : (
-                                  <div className="detected-item-placeholder">
-                                    <span>?</span>
-                                  </div>
-                                )}
-                              </div>
-                              <div className="detected-item-right">
-                                <div className="detected-item-header">
-                                  <div className="detected-item-name">
-                                    {variant?.name || item.rawName}
-                                    {!item.matchedId && <span className="unmatched-badge">UNMATCHED</span>}
-                                  </div>
-                                  <div className="detected-item-location">
-                                    {item.location === 'inventory' ? 'Backpack' : item.location === 'loot' ? 'Loot' : 'Unknown'}
-                                  </div>
-                                </div>
-                                <div className="detected-item-controls">
-                                  <div className="detected-qty-wrapper">
-                                    <input
-                                      type="number"
-                                      className="detected-qty-input"
-                                      value={item.count}
-                                      onChange={(e) => updateDetectedItemCount(msg.id, idx, parseInt(e.target.value) || 0)}
-                                    />
-                                    <div className="detected-spinner-col">
-                                      <button 
-                                        className="btn-detected-qty"
-                                        onClick={() => updateDetectedItemCount(msg.id, idx, item.count + boxSize)}
-                                        onMouseEnter={playHoverSound}
-                                      >
-                                        <Plus size={10} />
-                                      </button>
-                                      <button 
-                                        className="btn-detected-qty"
-                                        onClick={() => updateDetectedItemCount(msg.id, idx, item.count - boxSize)}
-                                        onMouseEnter={playHoverSound}
-                                      >
-                                        <Minus size={10} />
-                                      </button>
-                                    </div>
-                                  </div>
-                                  <button 
-                                    className="btn-detected-remove"
-                                    onClick={() => removeDetectedItem(msg.id, idx)}
-                                    onMouseEnter={playHoverSound}
-                                    title="Remove item"
-                                  >
-                                    <Trash2 size={14} />
-                                  </button>
-                                </div>
+                  <div className="ai-accordion-content assistant-content">
+                    <p className="assistant-intro">Welcome back, Stalker. I am monitoring your caches in real-time. Upload an inventory screenshot or ask me about ammo strategy.</p>
+                    
+                    <div className="chat-messages-container">
+                      {chatMessages.map(msg => (
+                        <div key={msg.id} className={`ai-message ${msg.type}`}>
+                          <span className="msg-tag">[{msg.type === 'user-image' ? 'SCREENSHOT' : msg.type === 'user-text' ? 'YOU' : msg.type === 'ai-error' ? 'ERROR' : msg.type === 'system' ? 'APPLIED' : msg.type === 'ai-text' ? 'KUZNETSOV' : 'DETECTION'}]</span>
+                          
+                          {(msg.type === 'user-text' || msg.type === 'ai-text') && (
+                            <p className="chat-text-content">{msg.content}</p>
+                          )}
+                          
+                          {msg.type === 'user-image' && msg.image && (
+                            <div 
+                              className="chat-image-preview"
+                              onClick={() => setExpandedImage(msg.image!)}
+                            >
+                              <img src={msg.image} alt="Uploaded screenshot" />
+                              <div className="image-zoom-overlay">
+                                <Eye size={24} />
+                                <span>Zoom</span>
                               </div>
                             </div>
-                          );
-                        })}
-                      </div>
-                      {msg.items.length === 0 && (
-                        <p className="no-items-msg">All items removed. Upload a new screenshot to scan again.</p>
-                      )}
-                      {msg.items.length > 0 && (
-                        <div className="apply-actions">
-                          <button 
-                            className="btn-apply"
-                            onClick={() => {
-                              playAmmoSound();
-                              const appliedCount = msg.items!.length;
-                              const totalCount = msg.items!.reduce((sum, item) => sum + item.count, 0);
-                              applyDetectedItems(msg.items!, 'inventory');
-                              setChatMessages(prev => prev.map(m => 
-                                m.id === msg.id 
-                                  ? { ...m, type: 'system', content: `✓ Applied ${appliedCount} ammo types (${totalCount} rounds) to Backpack`, items: undefined }
-                                  : m
-                              ));
-                            }}
-                            onMouseEnter={playHoverSound}
-                          >
-                            Apply to Backpack
-                          </button>
-                          <button 
-                            className="btn-apply stash"
-                            onClick={() => {
-                              playAmmoSound();
-                              const appliedCount = msg.items!.length;
-                              const totalCount = msg.items!.reduce((sum, item) => sum + item.count, 0);
-                              applyDetectedItems(msg.items!, 'stash');
-                              setChatMessages(prev => prev.map(m => 
-                                m.id === msg.id 
-                                  ? { ...m, type: 'system', content: `✓ Applied ${appliedCount} ammo types (${totalCount} rounds) to Loot`, items: undefined }
-                                  : m
-                              ));
-                            }}
-                            onMouseEnter={playHoverSound}
-                          >
-                            Apply to Loot
-                          </button>
-                          <button 
-                            className="btn-apply both"
-                            onClick={() => {
-                              playAmmoSound();
-                              const appliedCount = msg.items!.length;
-                              const totalCount = msg.items!.reduce((sum, item) => sum + item.count, 0);
-                              const lootItems = msg.items!.filter(i => i.location === 'loot');
-                              const invItems = msg.items!.filter(i => i.location !== 'loot');
-                              if (lootItems.length > 0) applyDetectedItems(lootItems, 'stash');
-                              if (invItems.length > 0) applyDetectedItems(invItems, 'inventory');
-                              setChatMessages(prev => prev.map(m => 
-                                m.id === msg.id 
-                                  ? { ...m, type: 'system', content: `✓ Applied ${appliedCount} ammo types (${totalCount} rounds) auto-detected`, items: undefined }
-                                  : m
-                              ));
-                            }}
-                            onMouseEnter={playHoverSound}
-                          >
-                            Auto-Detect
-                          </button>
+                          )}
+                          
+                          {msg.type === 'ai-error' && (
+                            <p className="error-text">{msg.content}</p>
+                          )}
+                          
+                          {msg.type === 'system' && (
+                            <p className="success-text">{msg.content}</p>
+                          )}
+                          
+                          {msg.type === 'ai-result' && msg.items && (
+                            <>
+                              <p>{msg.content}</p>
+                              {msg.notes && <p className="detection-notes">{msg.notes}</p>}
+                              <div className="detected-items-list">
+                                {msg.items.map((item, idx) => {
+                                  const variant = item.matchedId ? getVariantById(item.matchedId) : null;
+                                  const boxSize = variant?.boxSize || 10;
+                                  return (
+                                    <div key={idx} className={`detected-item-row ${!item.matchedId ? 'unmatched' : ''}`}>
+                                      <div className="detected-item-image">
+                                        {variant?.imageUrl ? (
+                                          <img src={variant.imageUrl} alt="" />
+                                        ) : (
+                                          <div className="detected-item-placeholder">
+                                            <span>?</span>
+                                          </div>
+                                        )}
+                                      </div>
+                                      <div className="detected-item-right">
+                                        <div className="detected-item-header">
+                                          <div className="detected-item-name">
+                                            {variant?.name || item.rawName}
+                                            {!item.matchedId && <span className="unmatched-badge">UNMATCHED</span>}
+                                          </div>
+                                          <div className="detected-item-location">
+                                            {item.location === 'inventory' ? 'Backpack' : item.location === 'loot' ? 'Loot' : 'Unknown'}
+                                          </div>
+                                        </div>
+                                        <div className="detected-item-controls">
+                                          <div className="detected-qty-wrapper">
+                                            <input
+                                              type="number"
+                                              className="detected-qty-input"
+                                              value={item.count}
+                                              onChange={(e) => updateDetectedItemCount(msg.id, idx, parseInt(e.target.value) || 0)}
+                                            />
+                                            <div className="detected-spinner-col">
+                                              <button 
+                                                className="btn-detected-qty"
+                                                onClick={() => updateDetectedItemCount(msg.id, idx, item.count + boxSize)}
+                                                onMouseEnter={playHoverSound}
+                                              >
+                                                <Plus size={10} />
+                                              </button>
+                                              <button 
+                                                className="btn-detected-qty"
+                                                onClick={() => updateDetectedItemCount(msg.id, idx, item.count - boxSize)}
+                                                onMouseEnter={playHoverSound}
+                                              >
+                                                <Minus size={10} />
+                                              </button>
+                                            </div>
+                                          </div>
+                                          <button 
+                                            className="btn-detected-remove"
+                                            onClick={() => removeDetectedItem(msg.id, idx)}
+                                            onMouseEnter={playHoverSound}
+                                            title="Remove item"
+                                          >
+                                            <Trash2 size={14} />
+                                          </button>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                              {msg.items.length === 0 && (
+                                <p className="no-items-msg">All items removed. Upload a new screenshot to scan again.</p>
+                              )}
+                              {msg.items.length > 0 && (
+                                <div className="apply-actions">
+                                  <button 
+                                    className="btn-apply"
+                                    onClick={() => {
+                                      playAmmoSound();
+                                      const appliedCount = msg.items!.length;
+                                      const totalCount = msg.items!.reduce((sum, item) => sum + item.count, 0);
+                                      applyDetectedItems(msg.items!, 'inventory');
+                                      setChatMessages(prev => prev.map(m => 
+                                        m.id === msg.id 
+                                          ? { ...m, type: 'system', content: `✓ Applied ${appliedCount} ammo types (${totalCount} rounds) to Backpack`, items: undefined }
+                                          : m
+                                      ));
+                                    }}
+                                    onMouseEnter={playHoverSound}
+                                  >
+                                    Apply to Backpack
+                                  </button>
+                                  <button 
+                                    className="btn-apply stash"
+                                    onClick={() => {
+                                      playAmmoSound();
+                                      const appliedCount = msg.items!.length;
+                                      const totalCount = msg.items!.reduce((sum, item) => sum + item.count, 0);
+                                      applyDetectedItems(msg.items!, 'stash');
+                                      setChatMessages(prev => prev.map(m => 
+                                        m.id === msg.id 
+                                          ? { ...m, type: 'system', content: `✓ Applied ${appliedCount} ammo types (${totalCount} rounds) to Loot`, items: undefined }
+                                          : m
+                                      ));
+                                    }}
+                                    onMouseEnter={playHoverSound}
+                                  >
+                                    Apply to Loot
+                                  </button>
+                                  <button 
+                                    className="btn-apply both"
+                                    onClick={() => {
+                                      playAmmoSound();
+                                      const appliedCount = msg.items!.length;
+                                      const totalCount = msg.items!.reduce((sum, item) => sum + item.count, 0);
+                                      const lootItems = msg.items!.filter(i => i.location === 'loot');
+                                      const invItems = msg.items!.filter(i => i.location !== 'loot');
+                                      if (lootItems.length > 0) applyDetectedItems(lootItems, 'stash');
+                                      if (invItems.length > 0) applyDetectedItems(invItems, 'inventory');
+                                      setChatMessages(prev => prev.map(m => 
+                                        m.id === msg.id 
+                                          ? { ...m, type: 'system', content: `✓ Applied ${appliedCount} ammo types (${totalCount} rounds) auto-detected`, items: undefined }
+                                          : m
+                                      ));
+                                    }}
+                                    onMouseEnter={playHoverSound}
+                                  >
+                                    Auto-Detect
+                                  </button>
+                                </div>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      ))}
+                      
+                      {(isProcessing || isChatLoading) && (
+                        <div className="ai-message processing">
+                          <span className="msg-tag">[PROCESSING]</span>
+                          <div className="processing-indicator">
+                            <Loader2 className="spin" size={16} />
+                            <span>{isProcessing ? 'Analyzing screenshot...' : 'Kuznetsov is thinking...'}</span>
+                          </div>
                         </div>
                       )}
-                    </>
-                  )}
-               </div>
-             ))}
-
-             {isProcessing && (
-               <div className="ai-message processing">
-                 <span className="msg-tag">[PROCESSING]</span>
-                 <div className="processing-indicator">
-                   <Loader2 className="spin" size={16} />
-                   <span>Analyzing screenshot...</span>
-                 </div>
-               </div>
-             )}
+                    </div>
+                  </div>
+)}
+                </div>
+            </div>
           </div>
-        </div>
 
-        <div className="sidebar-footer">
+          <div className="sidebar-footer">
           <div className="ai-input-wrapper">
             <input 
               type="file"
@@ -1376,7 +1482,7 @@ return (
               className="btn-upload-image"
               onClick={() => fileInputRef.current?.click()}
               onMouseEnter={playHoverSound}
-              disabled={isProcessing}
+              disabled={isProcessing || isChatLoading}
               title="Upload inventory screenshot"
             >
               <ImagePlus size={16} />
@@ -1387,17 +1493,29 @@ return (
               placeholder="Ask Kuznetsov..."
               value={aiChatInput}
               onChange={(e) => setAiChatInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSendMessage();
+                }
+              }}
+              disabled={isChatLoading}
             />
-            <button className="btn-ai-send" disabled>
-              <ArrowRight size={14} />
+            <button 
+              className="btn-ai-send" 
+              onClick={handleSendMessage}
+              disabled={isChatLoading || !aiChatInput.trim()}
+              title="Send message"
+            >
+              {isChatLoading ? <Loader2 className="spin" size={14} /> : <ArrowRight size={14} />}
             </button>
           </div>
           <div className="upload-hint">
-            {openaiKey ? 'Paste or upload screenshot' : 'Configure API key to enable scan'}
+            {openaiKey ? 'Text chat or paste/upload screenshot' : 'Configure API key to enable AI'}
           </div>
         </div>
 
-{isDragOver && (
+        {isDragOver && (
           <div className="drag-overlay">
             <Camera size={48} />
             <span>Drop screenshot to scan</span>
