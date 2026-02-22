@@ -6,6 +6,7 @@ import { Canvas } from '@react-three/fiber';
 import { Bloom, EffectComposer, Noise, Vignette } from '@react-three/postprocessing';
 import { Suspense, useEffect, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
+import { VersionBadge } from "@/components/VersionBadge";
 
 // TikTok TTS + AI Assistant Integrated Component
 export default function TikTokTTS() {
@@ -358,6 +359,7 @@ export default function TikTokTTS() {
           {!audioEnabled && "Click anywhere to enable status sounds"}
         </p>
       </div>
+      <VersionBadge projectName="tiktok-tts" />
     </div>
   );
 }

@@ -1,5 +1,6 @@
 'use client'
 import DraggableNumberInput from '@/components/DraggableNumberInput'
+import { VersionBadge } from '@/components/VersionBadge'
 import { ContactShadows, Edges, Environment, GizmoHelper, GizmoViewcube, Grid, OrbitControls } from '@react-three/drei'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { AlertTriangle, Download, Edit3, Eye, EyeOff, Move, RotateCcw, RotateCw, Trash2 } from 'lucide-react'
@@ -1136,6 +1137,7 @@ export default function CAD3D() {
           </>
         )}
       </div>
+      <VersionBadge projectName="cad3d" />
     </div>
   )
 }

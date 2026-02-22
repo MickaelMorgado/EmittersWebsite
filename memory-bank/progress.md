@@ -7,7 +7,55 @@
 - [x] Wrote techContext.md  
 - [x] Wrote activeContext.md  
 - [x] Wrote functions.md  
-- [x] Wrote progress.md## 2026-02-21: Stalker 2 Ammo Tracker - Tactical Overhaul & Logistics Engine
+- [x] Wrote progress.md
+
+## 2026-02-22: Agent Workflow System & Version Tracking
+
+### ✅ Agent Configuration System
+- **AGENTS.md**: Main AI assistant configuration file
+- **Subagent Dedications**: Explore (quick/medium/very thorough) and General agents
+- **5 Workflow Definitions**: new-app, route-validator, process-manager, git-docs-manager, code-quality
+- **Integration Points**: Workflows reference each other for coordinated execution
+
+### ✅ Version Tracking Implementation
+- **VersionBadge Component**: Reusable React component for all apps
+- **versions.json**: Semantic versioning data for 17 projects
+- **Features**: Collapsed badge, expandable history (5 versions), release dates, change notes
+- **Deployment**: Added to emf-detector as initial implementation
+
+### ✅ SEO & AI Discoverability
+- **robots.txt**: Search engine directives with AI crawler permissions
+- **sitemap.xml**: Public URL structure for crawlers
+- **ai-context.md**: Structured context for AI training systems
+- **changelog.md**: Version history tracking
+
+### ✅ Documentation Updates
+- Updated memory-bank/activeContext.md
+- Updated memory-bank/progress.md
+- Created memory-bank/history/2026-02.md
+- Created .agent/logs/ directory for process management
+
+## 2026-02-22: Stalker 2 Ammo - Collapsible Sidebar Accordions
+
+### ✅ Accordion Implementation
+- **Logistics Scan Accordion:** Converted to collapsible section with severity-based header coloring.
+  - Critical alerts: Red header with pulsing "!" badge
+  - Warnings: Amber header
+  - Info: Blue header
+- **AI Assistant Accordion:** Separate collapsible section with amber header styling.
+- **Independent State:** Both accordions can be expanded/collapsed independently (both default to expanded).
+- **Added ChevronDown icon:** From lucide-react for expand/collapse visual indicator.
+
+### 🔧 Technical Changes
+- Added `accordionLogistics` and `accordionAssistant` state variables.
+- Added `getLogisticsSeverity()` function to determine highest severity across all alerts.
+- New CSS classes: `.ai-accordion`, `.ai-accordion-header`, `.ai-accordion-chevron`, `.severity-badge`.
+- Removed old `.ai-message.system` and `.ai-message.assistant` block structure.
+
+### 📋 Next Steps
+- **Chat Messages in Accordion:** Move chat messages (screenshot uploads, AI detections, processing state) inside the AI Assistant accordion for better organization.
+
+## 2026-02-21: Stalker 2 Ammo Tracker - Tactical Overhaul & Logistics Engine
 
 ### ✅ Advanced Logistics Implementation
 - **Magazine-Based Transfers**: Integrated `boxSize` logic for all ammo variants, ensuring transfers and stock adjustments respect in-game magazine capacities.

@@ -1,5 +1,6 @@
 'use client';
-import { AlertTriangle, ArrowLeft, ArrowRight, BarChart3, Check, LayoutGrid, Minus, Plus, Settings, Trash2 } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, ArrowRight, BarChart3, Camera, Check, ChevronDown, Eye, ImagePlus, LayoutGrid, Loader2, Minus, Plus, Settings, Trash2, X } from 'lucide-react';
+import { VersionBadge } from "@/components/VersionBadge";
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { AmmoVariant, STALKER_AMMO_DATA } from './data';
 import './styles.css';
@@ -14,8 +15,37 @@ interface AmmoState {
 interface CarryingWeapon {
   instanceId: string;
   name: string;
-  ammoFilter?: string[]; // If present, only these are compatible
+  ammoFilter?: string[];
   minRounds?: number;
+}
+
+interface DetectedAmmo {
+  matchedId: string | null;
+  rawName: string;
+  count: number;
+  location: 'inventory' | 'loot' | 'unknown';
+  confidence: 'high' | 'medium' | 'low';
+}
+
+interface ChatMessage {
+  id: string;
+  type: 'user-image' | 'ai-result' | 'ai-error' | 'system';
+  content: string;
+  image?: string;
+  items?: DetectedAmmo[];
+  notes?: string;
+  timestamp: number;
+}
+
+interface AIDetectionResult {
+  detectedScreen: 'inventory' | 'loot' | 'both' | 'unknown';
+  items: Array<{
+    name: string;
+    count: number;
+    location: 'inventory' | 'loot' | 'unknown';
+  }>;
+  confidence: 'high' | 'medium' | 'low';
+  notes?: string;
 }
 
 
@@ -113,12 +143,70 @@ const fuzzyMatch = (target: string, query: string) => {
   const cleanQuery = query.toLowerCase().replace(/[^a-z0-9]/g, '');
 
   // Support OR terms with |
-  if (query.includes('|')) {
+if (query.includes('|')) {
     const parts = query.split('|').map(p => p.trim().toLowerCase().replace(/[^a-z0-9]/g, ''));
     return parts.some(p => p && cleanTarget.includes(p));
   }
 
   return cleanTarget.includes(cleanQuery);
+};
+
+const AI_DETECTION_PROMPT = `You are analyzing a STALKER 2: Heart of Chornobyl game screenshot showing ammunition inventory.
+
+Extract all ammunition items visible. For each item, provide:
+- name: The ammo name as shown (e.g., "9x18mm Pst", "5.45x39mm PS", "12x70 Buckshot")
+- count: The quantity/rounds shown (just the number)
+- location: "inventory" if in Backpack section, "loot" if in Loot section, or "unknown"
+
+The game UI shows:
+- "Backpack" for items you're carrying
+- "Loot" for storage/stash items
+
+Return ONLY valid JSON with this exact structure:
+{
+  "detectedScreen": "inventory" | "loot" | "both" | "unknown",
+  "items": [
+    { "name": "9x18mm Pst", "count": 120, "location": "inventory" },
+    { "name": "5.45x39mm PS", "count": 300, "location": "loot" }
+  ],
+  "confidence": "high" | "medium" | "low",
+  "notes": "Brief notes about any unclear items"
+}
+
+Be accurate with counts. If uncertain about an item name, include your best guess and note it. Return empty items array if no ammo visible.`;
+
+const matchAmmoName = (rawName: string): string | null => {
+  const normalized = rawName.toLowerCase().replace(/[^a-z0-9]/g, '');
+  
+  for (const caliber of STALKER_AMMO_DATA) {
+    for (const variant of caliber.variants) {
+      const vNorm = variant.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+      if (vNorm === normalized) return variant.id;
+    }
+  }
+  
+  for (const caliber of STALKER_AMMO_DATA) {
+    for (const variant of caliber.variants) {
+      const vNorm = variant.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+      if (normalized.includes(vNorm) || vNorm.includes(normalized)) return variant.id;
+    }
+    
+    const cNorm = caliber.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (normalized.includes(cNorm)) {
+      const firstVariant = caliber.variants[0];
+      if (firstVariant) return firstVariant.id;
+    }
+  }
+  
+  return null;
+};
+
+const getVariantById = (id: string): AmmoVariant | null => {
+  for (const caliber of STALKER_AMMO_DATA) {
+    const variant = caliber.variants.find(v => v.id === id);
+    if (variant) return variant;
+  }
+  return null;
 };
 
 export default function StalkerAmmoPage() {
@@ -150,6 +238,17 @@ export default function StalkerAmmoPage() {
   const [dataBackup, setDataBackup] = useState<{ [key: string]: AmmoState } | null>(null);
   const [hwBackup, setHwBackup] = useState<CarryingWeapon[] | null>(null);
   const modalSearchRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+const [openaiKey, setOpenaiKey] = useState<string>('');
+  const [showApiSettings, setShowApiSettings] = useState(false);
+  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [expandedImage, setExpandedImage] = useState<string | null>(null);
+  const [accordionLogistics, setAccordionLogistics] = useState(true);
+  const [accordionAssistant, setAccordionAssistant] = useState(true);
 
   const ALL_WEAPONS = useMemo(() => {
     const ws = new Set<string>();
@@ -245,7 +344,7 @@ export default function StalkerAmmoPage() {
       playBoxSound();
       prevQuickAdd.current = quickAddTarget;
     }
-  }, [quickAddTarget, mounted]);
+}, [quickAddTarget, mounted]);
 
   useEffect(() => {
     if (mounted && editingThreshold !== prevEditingThresh.current) {
@@ -253,6 +352,186 @@ export default function StalkerAmmoPage() {
       prevEditingThresh.current = editingThreshold;
     }
   }, [editingThreshold, mounted]);
+
+  useEffect(() => {
+    const savedKey = localStorage.getItem('stalker_openai_key_v1');
+    if (savedKey) setOpenaiKey(savedKey);
+  }, []);
+
+  const analyzeScreenshot = async (imageBase64: string): Promise<AIDetectionResult> => {
+    if (!openaiKey) throw new Error('OpenAI API key not configured');
+    
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${openaiKey}`
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o',
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'text', text: AI_DETECTION_PROMPT },
+            { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${imageBase64}` }}
+          ]
+        }],
+        max_tokens: 1500
+      })
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error?.message || 'API request failed');
+    }
+
+    const data = await response.json();
+    const content = data.choices?.[0]?.message?.content;
+    if (!content) throw new Error('No response from AI');
+
+    const jsonMatch = content.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error('Could not parse AI response');
+
+    return JSON.parse(jsonMatch[0]);
+  };
+
+  const processDetectedItems = (result: AIDetectionResult): DetectedAmmo[] => {
+    return result.items.map(item => ({
+      matchedId: matchAmmoName(item.name),
+      rawName: item.name,
+      count: item.count,
+      location: item.location,
+      confidence: result.confidence
+    }));
+  };
+
+  const applyDetectedItems = (items: DetectedAmmo[], target?: 'inventory' | 'stash') => {
+    setData(prev => {
+      const updated = { ...prev };
+      items.forEach(item => {
+        if (!item.matchedId) return;
+        const loc = target || (item.location === 'loot' ? 'stash' : 'inventory');
+        if (!updated[item.matchedId]) {
+          updated[item.matchedId] = { inventory: 0, stash: 0, inventoryThreshold: 0, stashThreshold: 0 };
+        }
+        updated[item.matchedId] = {
+          ...updated[item.matchedId],
+          [loc]: item.count
+        };
+      });
+      return updated;
+    });
+    playAmmoSound();
+  };
+
+  const handleImageUpload = (file: File) => {
+    if (!openaiKey) {
+      setShowApiSettings(true);
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const result = e.target?.result as string;
+      const base64 = result.split(',')[1];
+      setUploadedImage(result);
+      processImage(base64);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const processImage = async (base64: string) => {
+    setIsProcessing(true);
+    const userMsgId = `user_${Date.now()}`;
+    
+    setChatMessages(prev => [...prev, {
+      id: userMsgId,
+      type: 'user-image',
+      content: 'Scanning inventory screenshot...',
+      image: `data:image/jpeg;base64,${base64}`,
+      timestamp: Date.now()
+    }]);
+
+    try {
+      const result = await analyzeScreenshot(base64);
+      const processed = processDetectedItems(result);
+      
+      setChatMessages(prev => [...prev, {
+        id: `ai_${Date.now()}`,
+        type: 'ai-result',
+        content: `Detected ${processed.length} ammunition types`,
+        items: processed,
+        notes: result.notes,
+        timestamp: Date.now()
+      }]);
+    } catch (error) {
+      setChatMessages(prev => [...prev, {
+        id: `err_${Date.now()}`,
+        type: 'ai-error',
+        content: error instanceof Error ? error.message : 'Failed to analyze screenshot',
+        timestamp: Date.now()
+      }]);
+} finally {
+      setIsProcessing(false);
+      setUploadedImage(null);
+    }
+  };
+
+  const updateDetectedItemCount = (msgId: string, itemIdx: number, newCount: number) => {
+    setChatMessages(prev => prev.map(msg => {
+      if (msg.id !== msgId || !msg.items) return msg;
+      const updated = [...msg.items];
+      updated[itemIdx] = { ...updated[itemIdx], count: Math.max(0, newCount) };
+      return { ...msg, items: updated };
+    }));
+    playShellSound();
+  };
+
+  const removeDetectedItem = (msgId: string, itemIdx: number) => {
+    setChatMessages(prev => prev.map(msg => {
+      if (msg.id !== msgId || !msg.items) return msg;
+      return { ...msg, items: msg.items.filter((_, i) => i !== itemIdx) };
+    }));
+    playZipperSound();
+  };
+
+  const handlePaste = (e: ClipboardEvent) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    
+    for (const item of items) {
+      if (item.type.startsWith('image/')) {
+        const file = item.getAsFile();
+        if (file) handleImageUpload(file);
+        break;
+      }
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener('paste', handlePaste);
+    return () => window.removeEventListener('paste', handlePaste);
+  }, [openaiKey]);
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) {
+      handleImageUpload(file);
+    }
+  };
 
 
 
@@ -775,92 +1054,333 @@ export default function StalkerAmmoPage() {
       }
     });
     const hasSuggestions = Object.keys(caliberGroups).length > 0 || hardwareWarnings.length > 0;
+    
+    const getLogisticsSeverity = (): 'critical' | 'warning' | 'info' | null => {
+      if (hardwareWarnings.some(w => w.type === 'critical')) return 'critical';
+      if (Object.values(caliberGroups).some(g => Object.values(g.variants).some(v => v.mainMessage.type === 'critical'))) return 'critical';
+      if (hardwareWarnings.some(w => w.type === 'warning')) return 'warning';
+      if (Object.values(caliberGroups).some(g => Object.values(g.variants).some(v => v.mainMessage.type === 'warning'))) return 'warning';
+      if (hasSuggestions) return 'info';
+      return null;
+    };
+    
+    const logisticsSeverity = getLogisticsSeverity();
 
-    return (
-      <aside className={`ai-sidebar ${isShowcase && showcaseTarget === 'sidebar' ? 'tutorial-spotlight' : ''}`}>
+return (
+      <aside 
+        className={`ai-sidebar ${isShowcase && showcaseTarget === 'sidebar' ? 'tutorial-spotlight' : ''} ${isDragOver ? 'is-drag-over' : ''} ${expandedImage ? 'has-expanded' : ''}`}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+      >
         <div className="sidebar-header">
           <div className="ai-pulse" />
           <h3 className="sidebar-title">KUZNETSOV AI</h3>
           <span className="sidebar-status">ONLINE</span>
+          <button 
+            className={`sidebar-settings-btn ${openaiKey ? 'configured' : ''}`}
+            onClick={() => setShowApiSettings(true)}
+            onMouseEnter={playHoverSound}
+            title={openaiKey ? 'API Key Configured' : 'Configure OpenAI API Key'}
+          >
+            <Settings size={14} />
+          </button>
         </div>
         
         <div className="sidebar-content">
           <div className="ai-chat-window">
-              <div className="ai-message system">
-                <span className="msg-tag">[LOGISTICS_SCAN]</span>
-                {hasSuggestions ? (
-                  <div className="suggestion-tree">
-                    {hardwareWarnings.length > 0 && (
-                      <div className="suggestion-caliber-block" style={{ borderColor: 'var(--accent-red)' }}>
-                        <div className="suggestion-caliber-title" style={{ color: 'var(--accent-red)' }}>Hardware Alert</div>
-                        <ul className="suggestion-list">
-                          {hardwareWarnings.map((war, hi) => (
-                            <li 
-                              key={hi} 
-                              className={war.type}
-                              onClick={() => {
-                                if (war.instanceId) {
-                                  setWeaponFilterId(weaponFilterId === war.instanceId ? null : war.instanceId);
-                                  playZipperSound();
-                                }
-                              }}
-                              style={{ cursor: 'pointer' }}
-                            >
-                              <div className="suggestion-main-line">{war.text}</div>
-                              {war.subMessages.length > 0 && (
-                                <ul className="suggestion-sub-list">
-                                  {war.subMessages.map((sub, si) => (
-                                    <li key={si}>{sub}</li>
-                                  ))}
-                                </ul>
-                              )}
-                            </li>
-                          ))}
-                        </ul>
+              <div className={`ai-accordion ${logisticsSeverity || 'info'}`}>
+                <div 
+                  className="ai-accordion-header"
+                  onClick={() => setAccordionLogistics(!accordionLogistics)}
+                >
+                  <ChevronDown 
+                    size={14} 
+                    className={`ai-accordion-chevron ${accordionLogistics ? 'expanded' : ''}`}
+                  />
+                  <span className="msg-tag">[LOGISTICS_SCAN]</span>
+                  {logisticsSeverity === 'critical' && <span className="severity-badge critical">!</span>}
+                  {logisticsSeverity === 'warning' && <span className="severity-badge warning">!</span>}
+                </div>
+                {accordionLogistics && (
+                  <div className="ai-accordion-content">
+                    {hasSuggestions ? (
+                      <div className="suggestion-tree">
+                        {hardwareWarnings.length > 0 && (
+                          <div className="suggestion-caliber-block" style={{ borderColor: 'var(--accent-red)' }}>
+                            <div className="suggestion-caliber-title" style={{ color: 'var(--accent-red)' }}>Hardware Alert</div>
+                            <ul className="suggestion-list">
+                              {hardwareWarnings.map((war, hi) => (
+                                <li 
+                                  key={hi} 
+                                  className={war.type}
+                                  onClick={() => {
+                                    if (war.instanceId) {
+                                      setWeaponFilterId(weaponFilterId === war.instanceId ? null : war.instanceId);
+                                      playZipperSound();
+                                    }
+                                  }}
+                                  style={{ cursor: 'pointer' }}
+                                >
+                                  <div className="suggestion-main-line">{war.text}</div>
+                                  {war.subMessages.length > 0 && (
+                                    <ul className="suggestion-sub-list">
+                                      {war.subMessages.map((sub, si) => (
+                                        <li key={si}>{sub}</li>
+                                      ))}
+                                    </ul>
+                                  )}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        {Object.entries(caliberGroups).map(([calId, calGroup]) => (
+                          <div key={calId} className="suggestion-caliber-block">
+                            <div className="suggestion-caliber-title" onClick={() => setGlobalSearch(calGroup.name)}>{calGroup.name}</div>
+                            <ul className="suggestion-list">
+                              {Object.entries(calGroup.variants).map(([vId, vGroup]) => (
+                                <li 
+                                  key={vId} 
+                                  className={vGroup.mainMessage.type}
+                                  onClick={() => {
+                                    setGlobalSearch(vGroup.name);
+                                    if (vGroup.mainMessage.type === 'info') setViewMode('graph');
+                                    playZipperSound();
+                                  }}
+                                >
+                                  <div className="suggestion-main-line">{vGroup.mainMessage.text}</div>
+                                  {vGroup.subMessages.length > 0 && (
+                                    <ul className="suggestion-sub-list">
+                                      {vGroup.subMessages.map((sub, si) => (
+                                        <li key={si}>{sub}</li>
+                                      ))}
+                                    </ul>
+                                  )}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        ))}
                       </div>
+                    ) : (
+                      <p>All supply lines reported within tactical parameters. No critical shortages detected in the Zone.</p>
                     )}
-                    {Object.entries(caliberGroups).map(([calId, calGroup]) => (
-                      <div key={calId} className="suggestion-caliber-block">
-                        <div className="suggestion-caliber-title" onClick={() => setGlobalSearch(calGroup.name)}>{calGroup.name}</div>
-                        <ul className="suggestion-list">
-                          {Object.entries(calGroup.variants).map(([vId, vGroup]) => (
-                            <li 
-                              key={vId} 
-                              className={vGroup.mainMessage.type}
-                              onClick={() => {
-                                setGlobalSearch(vGroup.name);
-                                if (vGroup.mainMessage.type === 'info') setViewMode('graph');
-                                playZipperSound();
-                              }}
-                            >
-                              <div className="suggestion-main-line">{vGroup.mainMessage.text}</div>
-                              {vGroup.subMessages.length > 0 && (
-                                <ul className="suggestion-sub-list">
-                                  {vGroup.subMessages.map((sub, si) => (
-                                    <li key={si}>{sub}</li>
-                                  ))}
-                                </ul>
-                              )}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    ))}
                   </div>
-                ) : (
-                  <p>All supply lines reported within tactical parameters. No critical shortages detected in the Zone.</p>
                 )}
               </div>
-             
-             <div className="ai-message assistant">
-               <span className="msg-tag">[AI_ASSISTANT]</span>
-               <p>Welcome back, Stalker. I am monitoring your caches in real-time. Input tactical queries below for advanced supply-chain analysis.</p>
-             </div>
+              
+              <div className="ai-accordion assistant">
+                <div 
+                  className="ai-accordion-header"
+                  onClick={() => setAccordionAssistant(!accordionAssistant)}
+                >
+                  <ChevronDown 
+                    size={14} 
+                    className={`ai-accordion-chevron ${accordionAssistant ? 'expanded' : ''}`}
+                  />
+                  <span className="msg-tag">[AI_ASSISTANT]</span>
+                </div>
+                {accordionAssistant && (
+                  <div className="ai-accordion-content">
+                    <p>Welcome back, Stalker. I am monitoring your caches in real-time. Upload an inventory screenshot or paste from clipboard to scan your ammunition.</p>
+                  </div>
+                )}
+              </div>
+
+{chatMessages.map(msg => (
+                <div key={msg.id} className={`ai-message ${msg.type}`}>
+                  <span className="msg-tag">[{msg.type === 'user-image' ? 'SCREENSHOT' : msg.type === 'ai-error' ? 'ERROR' : msg.type === 'system' ? 'APPLIED' : 'DETECTION'}]</span>
+                  
+                  {msg.type === 'user-image' && msg.image && (
+                    <div 
+                      className="chat-image-preview"
+                      onClick={() => setExpandedImage(msg.image!)}
+                    >
+                      <img src={msg.image} alt="Uploaded screenshot" />
+                      <div className="image-zoom-overlay">
+                        <Eye size={24} />
+                        <span>Zoom</span>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {msg.type === 'ai-error' && (
+                    <p className="error-text">{msg.content}</p>
+                  )}
+                  
+                  {msg.type === 'system' && (
+                    <p className="success-text">{msg.content}</p>
+                  )}
+                  
+                  {msg.type === 'ai-result' && msg.items && (
+                    <>
+                      <p>{msg.content}</p>
+                      {msg.notes && <p className="detection-notes">{msg.notes}</p>}
+                      <div className="detected-items-list">
+                        {msg.items.map((item, idx) => {
+                          const variant = item.matchedId ? getVariantById(item.matchedId) : null;
+                          const boxSize = variant?.boxSize || 10;
+                          return (
+                            <div key={idx} className={`detected-item-row ${!item.matchedId ? 'unmatched' : ''}`}>
+                              <div className="detected-item-image">
+                                {variant?.imageUrl ? (
+                                  <img src={variant.imageUrl} alt="" />
+                                ) : (
+                                  <div className="detected-item-placeholder">
+                                    <span>?</span>
+                                  </div>
+                                )}
+                              </div>
+                              <div className="detected-item-right">
+                                <div className="detected-item-header">
+                                  <div className="detected-item-name">
+                                    {variant?.name || item.rawName}
+                                    {!item.matchedId && <span className="unmatched-badge">UNMATCHED</span>}
+                                  </div>
+                                  <div className="detected-item-location">
+                                    {item.location === 'inventory' ? 'Backpack' : item.location === 'loot' ? 'Loot' : 'Unknown'}
+                                  </div>
+                                </div>
+                                <div className="detected-item-controls">
+                                  <div className="detected-qty-wrapper">
+                                    <input
+                                      type="number"
+                                      className="detected-qty-input"
+                                      value={item.count}
+                                      onChange={(e) => updateDetectedItemCount(msg.id, idx, parseInt(e.target.value) || 0)}
+                                    />
+                                    <div className="detected-spinner-col">
+                                      <button 
+                                        className="btn-detected-qty"
+                                        onClick={() => updateDetectedItemCount(msg.id, idx, item.count + boxSize)}
+                                        onMouseEnter={playHoverSound}
+                                      >
+                                        <Plus size={10} />
+                                      </button>
+                                      <button 
+                                        className="btn-detected-qty"
+                                        onClick={() => updateDetectedItemCount(msg.id, idx, item.count - boxSize)}
+                                        onMouseEnter={playHoverSound}
+                                      >
+                                        <Minus size={10} />
+                                      </button>
+                                    </div>
+                                  </div>
+                                  <button 
+                                    className="btn-detected-remove"
+                                    onClick={() => removeDetectedItem(msg.id, idx)}
+                                    onMouseEnter={playHoverSound}
+                                    title="Remove item"
+                                  >
+                                    <Trash2 size={14} />
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      {msg.items.length === 0 && (
+                        <p className="no-items-msg">All items removed. Upload a new screenshot to scan again.</p>
+                      )}
+                      {msg.items.length > 0 && (
+                        <div className="apply-actions">
+                          <button 
+                            className="btn-apply"
+                            onClick={() => {
+                              playAmmoSound();
+                              const appliedCount = msg.items!.length;
+                              const totalCount = msg.items!.reduce((sum, item) => sum + item.count, 0);
+                              applyDetectedItems(msg.items!, 'inventory');
+                              setChatMessages(prev => prev.map(m => 
+                                m.id === msg.id 
+                                  ? { ...m, type: 'system', content: `✓ Applied ${appliedCount} ammo types (${totalCount} rounds) to Backpack`, items: undefined }
+                                  : m
+                              ));
+                            }}
+                            onMouseEnter={playHoverSound}
+                          >
+                            Apply to Backpack
+                          </button>
+                          <button 
+                            className="btn-apply stash"
+                            onClick={() => {
+                              playAmmoSound();
+                              const appliedCount = msg.items!.length;
+                              const totalCount = msg.items!.reduce((sum, item) => sum + item.count, 0);
+                              applyDetectedItems(msg.items!, 'stash');
+                              setChatMessages(prev => prev.map(m => 
+                                m.id === msg.id 
+                                  ? { ...m, type: 'system', content: `✓ Applied ${appliedCount} ammo types (${totalCount} rounds) to Loot`, items: undefined }
+                                  : m
+                              ));
+                            }}
+                            onMouseEnter={playHoverSound}
+                          >
+                            Apply to Loot
+                          </button>
+                          <button 
+                            className="btn-apply both"
+                            onClick={() => {
+                              playAmmoSound();
+                              const appliedCount = msg.items!.length;
+                              const totalCount = msg.items!.reduce((sum, item) => sum + item.count, 0);
+                              const lootItems = msg.items!.filter(i => i.location === 'loot');
+                              const invItems = msg.items!.filter(i => i.location !== 'loot');
+                              if (lootItems.length > 0) applyDetectedItems(lootItems, 'stash');
+                              if (invItems.length > 0) applyDetectedItems(invItems, 'inventory');
+                              setChatMessages(prev => prev.map(m => 
+                                m.id === msg.id 
+                                  ? { ...m, type: 'system', content: `✓ Applied ${appliedCount} ammo types (${totalCount} rounds) auto-detected`, items: undefined }
+                                  : m
+                              ));
+                            }}
+                            onMouseEnter={playHoverSound}
+                          >
+                            Auto-Detect
+                          </button>
+                        </div>
+                      )}
+                    </>
+                  )}
+               </div>
+             ))}
+
+             {isProcessing && (
+               <div className="ai-message processing">
+                 <span className="msg-tag">[PROCESSING]</span>
+                 <div className="processing-indicator">
+                   <Loader2 className="spin" size={16} />
+                   <span>Analyzing screenshot...</span>
+                 </div>
+               </div>
+             )}
           </div>
         </div>
 
         <div className="sidebar-footer">
           <div className="ai-input-wrapper">
+            <input 
+              type="file"
+              ref={fileInputRef}
+              accept="image/*"
+              style={{ display: 'none' }}
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) handleImageUpload(file);
+                e.target.value = '';
+              }}
+            />
+            <button 
+              className="btn-upload-image"
+              onClick={() => fileInputRef.current?.click()}
+              onMouseEnter={playHoverSound}
+              disabled={isProcessing}
+              title="Upload inventory screenshot"
+            >
+              <ImagePlus size={16} />
+            </button>
             <input 
               type="text" 
               className="ai-chat-input" 
@@ -868,12 +1388,41 @@ export default function StalkerAmmoPage() {
               value={aiChatInput}
               onChange={(e) => setAiChatInput(e.target.value)}
             />
-            <button className="btn-ai-send">
+            <button className="btn-ai-send" disabled>
               <ArrowRight size={14} />
             </button>
           </div>
+          <div className="upload-hint">
+            {openaiKey ? 'Paste or upload screenshot' : 'Configure API key to enable scan'}
+          </div>
         </div>
+
+{isDragOver && (
+          <div className="drag-overlay">
+            <Camera size={48} />
+            <span>Drop screenshot to scan</span>
+          </div>
+        )}
       </aside>
+    );
+  };
+
+  const renderExpandedImage = () => {
+    if (!expandedImage) return null;
+    return (
+      <div className="expanded-image-overlay" onClick={() => setExpandedImage(null)}>
+        <div className="expanded-backdrop" />
+        <div className="expanded-image-panel" onClick={(e) => e.stopPropagation()}>
+          <button 
+            className="btn-close-expanded"
+            onClick={() => setExpandedImage(null)}
+            onMouseEnter={playHoverSound}
+          >
+            <X size={18} />
+          </button>
+          <img src={expandedImage} alt="Expanded screenshot" />
+        </div>
+      </div>
     );
   };
 
@@ -927,103 +1476,144 @@ export default function StalkerAmmoPage() {
           {hoveringWarningId === variant.id ? `> ${state[thresholdField]}` : count}
         </div>
         
-        {/* CLICK-TO-TOGGLE OVERLAY */}
+{/* CLICK-TO-TOGGLE OVERLAY */}
         <div className="ammo-slot-tooltip" onClick={(e) => e.stopPropagation()}>
           {isActive && (
             <>
-              <div className="tooltip-name">{variant.name}</div>
-              
-              <div className="tooltip-control-group">
-                {editingThreshold === variant.id ? (
-                  <>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                      <button 
-                        className="btn-qty-adj" 
-                        onMouseEnter={playHoverSound}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setEditingThreshold(null);
-                        }}
-                        title="Back to Quantity"
-                      >
-                        <ArrowLeft size={10} />
-                      </button>
-                      <div className="tooltip-row-label danger">WARN THRESHOLD</div>
-                    </div>
-                    <div className="tooltip-quantity-controls">
-                      <button className="btn-qty-adj" onMouseEnter={playHoverSound} onClick={(e) => {
-                        e.stopPropagation();
-                        updateField(variant.id, thresholdField, (state[thresholdField] || 0) - variant.boxSize);
-                      }}>
-                        <Minus size={10} />
-                      </button>
-                      <div className="tooltip-input-wrapper threshold">
-                        <FocusedInput 
-                          type="number" 
-                          className="tooltip-input red"
-                          forceFocus={true}
-                          value={state[thresholdField]} 
-                          onChange={(e) => updateField(variant.id, thresholdField, parseInt(e.target.value) || 0)}
-                          onKeyDown={(e) => e.key === 'Enter' && setEditingThreshold(null)}
-                        />
-                      </div>
-                      <button className="btn-qty-adj" onMouseEnter={playHoverSound} onClick={(e) => {
-                        e.stopPropagation();
-                        updateField(variant.id, thresholdField, (state[thresholdField] || 0) + variant.boxSize);
-                      }}>
-                        <Plus size={10} />
-                      </button>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="tooltip-quantity-controls">
-                      <button className="btn-qty-adj" onMouseEnter={playHoverSound} onClick={(e) => {
-                        e.stopPropagation();
-                        updateField(variant.id, section, count - variant.boxSize);
-                      }}>
-                        <Minus size={10} />
-                      </button>
-                      <div className="tooltip-input-wrapper">
-                        <FocusedInput 
-                          type="number" 
-                          className="tooltip-input"
-                          forceFocus={true}
-                          value={count} 
-                          onChange={(e) => updateField(variant.id, section, parseInt(e.target.value) || 0)}
-                          onKeyDown={(e) => e.key === 'Enter' && setActiveAmmoId(null)}
-                        />
-                      </div>
-                      <button className="btn-qty-adj" onMouseEnter={playHoverSound} onClick={(e) => {
-                        e.stopPropagation();
-                        updateField(variant.id, section, count + variant.boxSize);
-                      }}>
-                        <Plus size={10} />
-                      </button>
-                    </div>
-                    
-                    <div className="tooltip-actions">
-                      <button className="btn-tooltip" onMouseEnter={playHoverSound} onClick={(e) => {
-                        e.stopPropagation();
-                        moveAmmo(variant.id, section, isInventory ? 'stash' : 'inventory', variant.boxSize);
-                      }}>
-                        {isInventory ? <ArrowLeft size={13} /> : <ArrowRight size={13} />}
-                        TRANSFER {variant.boxSize}
-                      </button>
-                      <button 
-                        className="btn-tooltip settings"
-                        onMouseEnter={playHoverSound}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setEditingThreshold(variant.id);
-                        }}
-                      >
-                        <Settings size={11} />
-                      </button>
-                    </div>
-                  </>
-                )}
+              <div className="tooltip-header">
+                <div className="tooltip-name">{variant.name}</div>
+                <button 
+                  className={`btn-tooltip settings ${editingThreshold === variant.id ? 'active' : ''}`}
+                  onMouseEnter={playHoverSound}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setEditingThreshold(editingThreshold === variant.id ? null : variant.id);
+                  }}
+                  title={editingThreshold === variant.id ? 'Back to Quantity' : 'Set Warning Threshold'}
+                >
+                  {editingThreshold === variant.id ? <ArrowLeft size={11} /> : <Settings size={11} />}
+                </button>
               </div>
+              
+              {editingThreshold === variant.id ? (
+                <div className="tooltip-threshold-edit">
+                  <div className="tooltip-row-label danger">WARN THRESHOLD</div>
+                  <div className="qty-input-wrapper threshold">
+                    <input
+                      type="number"
+                      className="qty-input-main red"
+                      value={state[thresholdField]}
+                      onChange={(e) => updateField(variant.id, thresholdField, parseInt(e.target.value) || 0)}
+                      onKeyDown={(e) => e.key === 'Enter' && setEditingThreshold(null)}
+                      autoFocus
+                    />
+                    <div className="qty-spinner-col">
+                      <button className="btn-qty-adj up" onMouseEnter={playHoverSound} onClick={(e) => {
+                        e.stopPropagation();
+                        updateField(variant.id, thresholdField, (state[thresholdField] || 1) + variant.boxSize);
+                      }}>
+                        <Plus size={10} />
+                      </button>
+                      <button className="btn-qty-adj down" onMouseEnter={playHoverSound} onClick={(e) => {
+                        e.stopPropagation();
+                        updateField(variant.id, thresholdField, (state[thresholdField] || 1) - variant.boxSize);
+                      }}>
+                        <Minus size={10} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="tooltip-body">
+                  {isInventory ? (
+                    <>
+                      <div className="tooltip-column left">
+                        <button className="btn-tooltip transfer" onMouseEnter={playHoverSound} onClick={(e) => {
+                          e.stopPropagation();
+                          moveAmmo(variant.id, 'inventory', 'stash', 1);
+                        }} title="Transfer 1 to Loot">
+                          <span className="transfer-dot">.</span>
+                        </button>
+                        <button className="btn-tooltip transfer" onMouseEnter={playHoverSound} onClick={(e) => {
+                          e.stopPropagation();
+                          moveAmmo(variant.id, 'inventory', 'stash', variant.boxSize);
+                        }} title={`Transfer ${variant.boxSize} to Loot`}>
+                          <span className="transfer-dots">...</span>
+                        </button>
+                      </div>
+                      <div className="tooltip-divider"></div>
+                      <div className="tooltip-column right">
+                        <div className="qty-input-wrapper">
+                          <input
+                            type="number"
+                            className="qty-input-main"
+                            value={count}
+                            onChange={(e) => updateField(variant.id, section, parseInt(e.target.value) || 0)}
+                            onKeyDown={(e) => e.key === 'Enter' && setActiveAmmoId(null)}
+                          />
+                          <div className="qty-spinner-col">
+                            <button className="btn-qty-adj up" onMouseEnter={playHoverSound} onClick={(e) => {
+                              e.stopPropagation();
+                              updateField(variant.id, section, count + variant.boxSize);
+                            }}>
+                              <Plus size={10} />
+                            </button>
+                            <button className="btn-qty-adj down" onMouseEnter={playHoverSound} onClick={(e) => {
+                              e.stopPropagation();
+                              updateField(variant.id, section, count - variant.boxSize);
+                            }}>
+                              <Minus size={10} />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="tooltip-column left">
+                        <div className="qty-input-wrapper">
+                          <input
+                            type="number"
+                            className="qty-input-main"
+                            value={count}
+                            onChange={(e) => updateField(variant.id, section, parseInt(e.target.value) || 0)}
+                            onKeyDown={(e) => e.key === 'Enter' && setActiveAmmoId(null)}
+                          />
+                          <div className="qty-spinner-col">
+                            <button className="btn-qty-adj up" onMouseEnter={playHoverSound} onClick={(e) => {
+                              e.stopPropagation();
+                              updateField(variant.id, section, count + variant.boxSize);
+                            }}>
+                              <Plus size={10} />
+                            </button>
+                            <button className="btn-qty-adj down" onMouseEnter={playHoverSound} onClick={(e) => {
+                              e.stopPropagation();
+                              updateField(variant.id, section, count - variant.boxSize);
+                            }}>
+                              <Minus size={10} />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="tooltip-divider"></div>
+                      <div className="tooltip-column right">
+                        <button className="btn-tooltip transfer" onMouseEnter={playHoverSound} onClick={(e) => {
+                          e.stopPropagation();
+                          moveAmmo(variant.id, 'stash', 'inventory', 1);
+                        }} title="Transfer 1 to Backpack">
+                          <span className="transfer-dot">.</span>
+                        </button>
+                        <button className="btn-tooltip transfer" onMouseEnter={playHoverSound} onClick={(e) => {
+                          e.stopPropagation();
+                          moveAmmo(variant.id, 'stash', 'inventory', variant.boxSize);
+                        }} title={`Transfer ${variant.boxSize} to Backpack`}>
+                          <span className="transfer-dots">...</span>
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
             </>
           )}
         </div>
@@ -1801,14 +2391,75 @@ export default function StalkerAmmoPage() {
                                                        </div>
                                                    </div>
                                                </div>
-                                          );
-                                      })}
-                                  </div>
-                              ));
-                      })()}
-                  </div>
+);
+                                       })}
+                                   </div>
+                               ));
+                       })()}
+                   </div>
+               </div>
+           </div>
+       )}
+
+      {/* API SETTINGS MODAL */}
+      {showApiSettings && (
+        <div className="quick-add-overlay" onClick={() => setShowApiSettings(false)}>
+          <div className="api-settings-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="modal-title">
+                <Settings size={16} style={{ marginRight: '8px' }} />
+                OpenAI Configuration
+              </h2>
+              <button className="btn-close-modal" onClick={() => setShowApiSettings(false)}>&times;</button>
+            </div>
+            <div className="api-settings-content">
+              <p className="api-settings-info">
+                Enter your OpenAI API key to enable screenshot scanning. 
+                Your key is stored locally and never sent to our servers.
+              </p>
+              <div className="api-key-input-group">
+                <label>API Key</label>
+                <input
+                  type="password"
+                  className="api-key-input"
+                  placeholder="sk-..."
+                  value={openaiKey}
+                  onChange={(e) => setOpenaiKey(e.target.value)}
+                />
               </div>
+              <div className="api-settings-note">
+                <strong>Note:</strong> Requires a valid OpenAI API key with GPT-4o access.
+                Usage costs approximately $0.01-0.03 per screenshot.
+              </div>
+              <div className="api-settings-actions">
+                <button 
+                  className="btn-api-save"
+                  onClick={() => {
+                    localStorage.setItem('stalker_openai_key_v1', openaiKey);
+                    setShowApiSettings(false);
+                    playBoxSound();
+                  }}
+                  onMouseEnter={playHoverSound}
+                >
+                  Save Key
+                </button>
+                {openaiKey && (
+                  <button 
+                    className="btn-api-clear"
+                    onClick={() => {
+                      setOpenaiKey('');
+                      localStorage.removeItem('stalker_openai_key_v1');
+                      playZipperSound();
+                    }}
+                    onMouseEnter={playHoverSound}
+                  >
+                    Clear Key
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
+        </div>
       )}
 
       {isShowcase && (() => {
@@ -1841,9 +2492,12 @@ export default function StalkerAmmoPage() {
         );
       })()}
 
+      {renderExpandedImage()}
+
       <footer>
         &curren; PROPRIETARY ZONE-NET PDA INTERFACE — ENCRYPTED TRANSMISSION
       </footer>
+      <VersionBadge projectName="stalker2-ammo" />
     </div>
   );
 }

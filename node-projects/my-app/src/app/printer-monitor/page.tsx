@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Sidebar from '../../components/sidebar';
+import { VersionBadge } from "@/components/VersionBadge";
 
 interface Device {
   deviceId: string;
@@ -212,6 +213,7 @@ export default function PrinterMonitor() {
           )}
         </div>
       </Sidebar>
+      <VersionBadge projectName="printer-monitor" />
     </div>
   );
 }
