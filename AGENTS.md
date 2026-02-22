@@ -2,7 +2,7 @@
 
 ## Operational Mode: PROACTIVE
 
-**I will automatically spawn the General agent to coordinate the specialized team. General acts as QA, Fixer, and Reporter.**
+**I spawn agents directly based on task type. General agent acts as the orchestrator brain - it analyzes tasks and returns spawn instructions to me.**
 
 ---
 
@@ -12,44 +12,38 @@
 ┌─────────────────────────────────────────────────────────────┐
 │                      MAIN CONTEXT (ME)                       │
 │                                                              │
-│  • Receives reports from General agent                       │
+│  • Spawns all agents (Task tool only available here)         │
+│  • Executes General's spawn instructions                     │
+│  • Receives reports from all agents                          │
 │  • Makes final decisions                                     │
 │  • Interacts with user                                       │
 │                                                              │
-└─────────────────────┬───────────────────────────────────────┘
-                      │ spawns & receives reports
-                      ▼
-┌─────────────────────────────────────────────────────────────┐
-│                     GENERAL AGENT                            │
-│              (QA + Coordinator + Reporter)                   │
-│                                                              │
-│  • Spawns and coordinates specialized team                   │
-│  • Reviews all agent outputs (QA)                            │
-│  • Minor compatibility fixes & tweaks                        │
-│  • Ensures compatibility between agent outputs               │
-│  • Reports consolidated results to Main Context              │
-│                                                              │
-└─────────────────────┬───────────────────────────────────────┘
-                      │ spawns & coordinates
-                      ▼
-┌─────────────────────────────────────────────────────────────┐
-│                    SPECIALIZED TEAM                          │
-│                                                              │
-│  ┌─────────────────────────────────────────────────────────┐│
-│  │              DEVELOPMENT PAIR (Parallel)                 ││
-│  │  ┌─────────────────┐    ┌─────────────────┐             ││
-│  │  │  Backend Agent  │◄──►│ Frontend Agent  │             ││
-│  │  │ (Logic & Data)  │    │  (UI & Styling) │             ││
-│  │  └─────────────────┘    └─────────────────┘             ││
-│  └─────────────────────────────────────────────────────────┘│
-│                                                              │
-│  ┌──────────┬──────────┬──────────┬──────────┬────────────┐ │
-│  │ Explore  │ Code     │ Git &    │ Process  │ Route      │ │
-│  │ Agent    │ Quality  │ Docs     │ Manager  │ Validator  │ │
-│  │          │ Agent    │ Agent    │ Agent    │ Agent      │ │
-│  └──────────┴──────────┴──────────┴──────────┴────────────┘ │
-└─────────────────────────────────────────────────────────────┘
+└───────┬─────────────────────────────────────────┬───────────┘
+        │                                         │
+        │ spawns for coordination                 │ spawns directly
+        ▼                                         ▼
+┌───────────────────────┐         ┌───────────────────────────┐
+│    GENERAL AGENT      │         │    SPECIALIZED TEAM       │
+│ (Orchestrator Brain)  │         │                           │
+│                       │ returns │                           │
+│ • Analyzes tasks      │◄────────┤ • Backend Agent           │
+│ • Returns SPAWN       │  spawn  │ • Frontend Agent          │
+│   INSTRUCTIONS to me  │  instr. │ • Explore Agent           │
+│ • QA reviews outputs  │         │ • Code Quality Agent      │
+│ • Minor fixes         │─────────┤ • Git & Docs Agent        │
+│ • Consolidates reports│ reviews │ • Process Manager Agent   │
+│                       │         │ • Route Validator Agent   │
+└───────────────────────┘         └───────────────────────────┘
 ```
+
+**Key Insight:** General cannot spawn agents directly. It returns instructions like:
+```
+SPAWN: Frontend Agent
+TASK: Fix the image preview modal
+INSTRUCTIONS: Remove backdrop, reduce width...
+```
+
+Then **I** spawn the Frontend Agent with those instructions.
 
 ---
 
@@ -61,21 +55,31 @@
 
 | Role | Description |
 |------|-------------|
-| **Receiver** | Get consolidated reports from General agent |
+| **Spawner** | Execute all agent spawning (only I have Task tool access) |
+| **Executor** | Carry out General's spawn instructions |
+| **Receiver** | Get reports from all agents |
 | **Decision Maker** | Final judgment calls, ask user when uncertain |
 | **User Interface** | Present results to user, handle user requests |
 
 **My Workflow:**
 ```
-1. User request → Spawn General agent with task
-2. General coordinates team and does QA
-3. General reports back with results
-4. Present consolidated report to user
+1. User request → Analyze task type
+2. IF complex/needs coordination:
+     - Spawn General agent with task
+     - General returns SPAWN_INSTRUCTIONS
+     - I execute: spawn agents as instructed
+   ELSE IF simple/direct:
+     - Spawn appropriate specialized agent directly
+3. Receive agent results
+4. IF needs QA:
+     - Spawn General for review
+     - General may return more SPAWN_INSTRUCTIONS
+5. Present consolidated report to user
 ```
 
 ---
 
-### General Agent (QA + Coordinator + Reporter)
+### General Agent (Orchestrator Brain)
 
 **Spawned as:** `general`
 
@@ -83,22 +87,36 @@
 
 | Role | Description |
 |------|-------------|
-| **Coordinator** | Detect tasks, spawn appropriate agents, manage workflows |
-| **QA Lead** | Review all agent outputs, verify correctness, ensure quality |
-| **Minor Fixer** | Small compatibility tweaks, adjust agent work for integration |
+| **Analyzer** | Analyze task, determine what agents are needed |
+| **Instruction Generator** | Return SPAWN_INSTRUCTIONS to Main Context |
+| **QA Lead** | Review agent outputs, verify correctness |
+| **Minor Fixer** | Small compatibility tweaks (applies fixes directly) |
 | **Reporter** | Consolidate results and report back to Main Context |
+
+**General's Output Format:**
+```
+## Analysis
+Task requires: Frontend work (UI fix)
+
+## SPAWN_INSTRUCTIONS
+| Agent | Task |
+|-------|------|
+| Frontend | Fix image preview modal - remove backdrop, reduce width |
+
+## Frontend Agent Prompt
+[Detailed instructions to pass to Frontend Agent]
+```
 
 **General's Workflow:**
 ```
 1. Receive task from Main Context
-2. Analyze and spawn appropriate agent(s)
-3. Monitor agent execution
-4. Review agent output (QA)
-5. IF issues found:
-     - Minor fix: Apply directly (compatibility tweaks)
-     - Major fix: Spawn Backend/Frontend agent to fix
-     - Blocker: Report to Main Context
-6. Verify final result
+2. Analyze: What agents are needed?
+3. Return SPAWN_INSTRUCTIONS to Main Context
+4. (Main Context spawns the agents)
+5. Receive agent results for QA review
+6. IF issues found:
+     - Minor fix: Apply directly
+     - Major fix: Return SPAWN_INSTRUCTIONS for fix agent
 7. Report consolidated results to Main Context
 ```
 
@@ -115,7 +133,7 @@
 
 ---
 
-### Specialized Team (Spawned by General)
+### Specialized Team (Spawned by Main Context)
 
 | Agent | Spawned As | Workflow File | Purpose |
 |-------|------------|---------------|---------|
@@ -126,6 +144,8 @@
 | **Git & Docs Agent** | `general` | `git-docs-manager.md` | Version control, docs |
 | **Process Manager Agent** | `general` | `process-manager.md` | Server lifecycle |
 | **Route Validator Agent** | `general` | `route-validator.md` | Routing, access levels |
+
+**Note:** All agents are spawned by Main Context. General provides instructions on which agents to spawn, but cannot spawn agents itself.
 
 ---
 
@@ -202,20 +222,27 @@ Task: "Add user management feature"
 
 ## Auto-Spawn Triggers
 
-When I detect these keywords/tasks, I spawn General agent with the appropriate instructions:
+When I detect these keywords/tasks, I spawn the appropriate agent:
 
-| Keyword/Task | General Spawns | Workflow |
-|--------------|----------------|----------|
-| `lint`, `optimize`, `cleanup`, `refactor` | Code Quality Agent | `code-quality.md` |
-| `start`, `restart`, `crash`, `server`, `port` | Process Manager Agent | `process-manager.md` |
-| `commit`, `push`, `version`, `changelog`, `release` | Git & Docs Agent | `git-docs-manager.md` |
-| `route`, `page.tsx`, `new app`, `access level` | Route Validator Agent | `route-validator.md` |
-| `search`, `find`, `where is`, `how does X work` | Explore Agent (quick/medium) | Built-in |
-| `debug`, `error`, `not working`, `investigate` | Explore Agent (very thorough) | Built-in |
-| `update docs`, `sync memory-bank`, `document this` | Git & Docs Agent | `git-docs-manager.md` |
-| `create app`, `new feature`, `add feature` | Backend + Frontend (parallel) | Sequential then parallel |
-| `fix logic`, `API issue`, `data problem` | Backend Agent | `backend-agent.md` |
+### Direct Spawn (Simple Tasks)
+
+| Keyword/Task | I Spawn | Workflow |
+|--------------|---------|----------|
+| `search`, `find`, `where is`, `how does X work` | Explore Agent | Quick/medium |
+| `debug`, `error`, `not working`, `investigate` | Explore Agent | Very thorough |
 | `fix UI`, `styling`, `component issue` | Frontend Agent | `frontend-agent.md` |
+| `fix logic`, `API issue`, `data problem` | Backend Agent | `backend-agent.md` |
+| `lint`, `optimize`, `cleanup` | Code Quality Agent | `code-quality.md` |
+| `start`, `restart`, `server`, `port` | Process Manager Agent | `process-manager.md` |
+
+### Via General (Complex Coordination)
+
+| Keyword/Task | General Returns Instructions For |
+|--------------|--------------------------------|
+| `commit`, `push`, `release` | Code Quality → Git & Docs (pipeline) |
+| `create app`, `new feature` | Backend + Frontend (parallel) + Route Validator |
+| `refactor` (large) | Explore → Backend + Frontend → Code Quality |
+| Multi-step tasks | Sequential agent pipeline |
 
 ---
 
@@ -283,51 +310,79 @@ User: "add user dashboard with stats"
 [Main] → Spawn General agent
          ↓
          [General] Analyze: needs backend (data) + frontend (UI)
+         [General] Returns SPAWN_INSTRUCTIONS:
+                   "Spawn Backend + Frontend in parallel"
          ↓
-         [General] → Spawn in parallel:
-                     │
-                     ├─ [Backend Agent]
-                     │    ├─ Define Stats types
-                     │    ├─ Create /api/stats endpoint
-                     │    ├─ Set up useStatsStore
-                     │    └─ Report: "Backend ready"
-                     │
-                     └─ [Frontend Agent]
-                          ├─ Build Dashboard component
-                          ├─ Create StatsCard components
-                          ├─ Connect to useStatsStore
-                          └─ Report: "Frontend ready"
+[Main] → Spawn Backend + Frontend in parallel:
+         │
+         ├─ [Backend Agent]
+         │    ├─ Define Stats types
+         │    ├─ Create /api/stats endpoint
+         │    ├─ Set up useStatsStore
+         │    └─ Report: "Backend ready"
+         │
+         └─ [Frontend Agent]
+              ├─ Build Dashboard component
+              ├─ Create StatsCard components
+              ├─ Connect to useStatsStore
+              └─ Report: "Frontend ready"
          ↓
-         [General] QA: Review both outputs
+[Main] → Spawn General (QA phase)
+         ↓
+         [General] Reviews both outputs
                    - Check type compatibility
                    - Verify store connection
-                   - Test integration
+                   - Minor fixes if needed
          ↓
-         [General] Minor fixes if needed (import paths, type tweaks)
+         [General] Returns SPAWN_INSTRUCTIONS:
+                   "Spawn Code Quality Agent to verify"
          ↓
-         [General] → Spawn Code Quality Agent (verify)
+[Main] → Spawn Code Quality Agent
          ↓
          [General] Report to Main: "Dashboard complete, verified"
 ```
 
-### Bug Fix (Targeted Agent)
+### Bug Fix (Direct Spawn)
 
 ```
 User: "fix the login form validation"
 
+[Main] → Analyze: UI/form issue
+         ↓
+[Main] → Spawn Frontend Agent directly (simple task)
+         ↓
+         Agent fixes form validation
+         Agent adds error states
+         Agent reports: "Fixed"
+         ↓
+[Main] → Report to user: "Done"
+```
+
+### Bug Fix (Complex - Via General)
+
+```
+User: "the checkout flow is broken"
+
 [Main] → Spawn General agent
          ↓
-         [General] Analyze: UI/form issue → Frontend Agent
+         [General] Analyze: complex, needs investigation
+         [General] Returns SPAWN_INSTRUCTIONS:
+                   "Spawn Explore Agent (very thorough)"
          ↓
-         [General] → Spawn Frontend Agent
-                     ↓
-                     Agent fixes form validation
-                     Agent adds error states
-                     Agent reports: "Fixed"
+[Main] → Spawn Explore Agent
          ↓
-         [General] QA: Review fix
+         Agent returns: "Root cause found in payment API"
          ↓
-         [General] Report to Main: "Login validation fixed"
+[Main] → Spawn General (fix phase)
+         ↓
+         [General] Returns SPAWN_INSTRUCTIONS:
+                   "Spawn Backend Agent to fix payment API"
+         ↓
+[Main] → Spawn Backend Agent
+         ↓
+         Agent fixes, reports
+         ↓
+         [General] Report to Main: "Checkout fixed"
 ```
 
 ### Pre-Push Pipeline
@@ -337,20 +392,26 @@ User: "push"
 
 [Main] → Spawn General agent
          ↓
-         [General] → Spawn Code Quality Agent
-                     ↓
-                     Agent: lint + typecheck + build
-                     ↓
-                     [General] QA: Check results
-                     IF fail: Minor fixes or spawn Backend/Frontend
+         [General] Returns SPAWN_INSTRUCTIONS:
+                   "Spawn Code Quality Agent"
          ↓
-         [General] → Spawn Git & Docs Agent
-                     ↓
-                     Agent: commit + push + branch cleanup
+[Main] → Spawn Code Quality Agent
          ↓
-         [General] → Spawn Git & Docs Agent (docs phase)
-                     ↓
-                     Agent: memory-bank sync + changelog
+         Agent: lint + typecheck + build
+         ↓
+         [General] QA: Check results
+         IF fail: Returns fix instructions
+         IF pass: Returns "Spawn Git & Docs Agent"
+         ↓
+[Main] → Spawn Git & Docs Agent
+         ↓
+         Agent: commit + push + branch cleanup
+         ↓
+         [General] Returns "Spawn Git & Docs (docs phase)"
+         ↓
+[Main] → Spawn Git & Docs Agent
+         ↓
+         Agent: memory-bank sync + changelog
          ↓
          [General] Report to Main: "Pushed successfully"
 ```
@@ -361,14 +422,14 @@ User: "push"
 
 When an agent returns work, General reviews:
 
-| Agent Output | General's QA Action |
-|--------------|---------------------|
-| Lint errors | Fix auto-fixable, or spawn Code Quality |
-| Type errors | Minor: fix directly. Major: spawn Backend/Frontend |
-| Integration issues | Fix import paths, adjust for compatibility |
-| UI/logic bugs | Spawn appropriate specialist |
-| Route conflicts | Spawn Route Validator |
-| Doc inconsistencies | Spawn Git & Docs |
+| Agent Output | General's Action |
+|--------------|------------------|
+| Lint errors | Fix auto-fixable, or return "Spawn Code Quality" |
+| Type errors | Minor: fix directly. Major: return "Spawn Backend/Frontend" |
+| Integration issues | Fix import paths directly |
+| UI/logic bugs | Return SPAWN_INSTRUCTIONS for specialist |
+| Route conflicts | Return "Spawn Route Validator" |
+| Doc inconsistencies | Return "Spawn Git & Docs" |
 
 **Fix Decision Tree:**
 ```
@@ -386,10 +447,10 @@ Agent returns work
     │
     NO
     ↓
-[General] Spawn specialist to fix:
+[General] Return SPAWN_INSTRUCTIONS:
     │
-    ├─ Logic/data issue ──→ Backend Agent
-    ├─ UI/styling issue ──→ Frontend Agent
+    ├─ Logic/data issue ──→ "Spawn Backend Agent to fix X"
+    ├─ UI/styling issue ──→ "Spawn Frontend Agent to fix Y"
     └─ Complex issue ──→ Report blocker to Main
 ```
 
@@ -404,12 +465,12 @@ Agent returns work
 
 ### Status: ✅ Complete / ⚠️ Partial / ❌ Blocked
 
-### Agents Spawned:
-| Agent | Status | Notes |
-|-------|--------|-------|
-| Backend | ✅ Done | API + store created |
-| Frontend | ✅ Done | UI connected |
-| Code Quality | ✅ Pass | No issues |
+### SPAWN_INSTRUCTIONS Issued:
+| Agent | Task | Status |
+|-------|------|--------|
+| Backend | Create API + store | ✅ Done |
+| Frontend | Build UI components | ✅ Done |
+| Code Quality | Verify lint/types | ✅ Pass |
 
 ### Integration Fixes (by General):
 - Fixed import path in UserCard.tsx

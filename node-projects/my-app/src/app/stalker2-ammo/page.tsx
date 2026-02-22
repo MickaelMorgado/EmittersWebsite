@@ -1528,18 +1528,15 @@ return (
   const renderExpandedImage = () => {
     if (!expandedImage) return null;
     return (
-      <div className="expanded-image-overlay" onClick={() => setExpandedImage(null)}>
-        <div className="expanded-backdrop" />
-        <div className="expanded-image-panel" onClick={(e) => e.stopPropagation()}>
-          <button 
-            className="btn-close-expanded"
-            onClick={() => setExpandedImage(null)}
-            onMouseEnter={playHoverSound}
-          >
-            <X size={18} />
-          </button>
-          <img src={expandedImage} alt="Expanded screenshot" />
-        </div>
+      <div className="expanded-image-panel" onClick={(e) => e.stopPropagation()}>
+        <button 
+          className="btn-close-expanded"
+          onClick={() => setExpandedImage(null)}
+          onMouseEnter={playHoverSound}
+        >
+          <X size={18} />
+        </button>
+        <img src={expandedImage} alt="Expanded screenshot" />
       </div>
     );
   };

@@ -2670,33 +2670,6 @@ letter-spacing: 0.1em;
   letter-spacing: 0.1em;
 }
 
-/* Expanded Image Overlay */
-.expanded-image-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 6000;
-  pointer-events: none;
-}
-
-.expanded-backdrop {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 340px;
-  bottom: 0;
-  background: rgba(5, 6, 7, 0.5);
-  pointer-events: auto;
-  animation: backdrop-fade-in 0.3s ease;
-}
-
-@keyframes backdrop-fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
 .expanded-image-panel {
   position: fixed;
   right: auto;
@@ -2704,7 +2677,7 @@ letter-spacing: 0.1em;
   top: 50%;
   transform: translateY(-50%);
   width: auto;
-  max-width: calc(100vw - 400px);
+  max-width: calc(100vw - 720px);
   max-height: 80vh;
   background: var(--card-bg);
   border: 1px solid var(--border-color);
@@ -2734,7 +2707,7 @@ letter-spacing: 0.1em;
 }
 
 .expanded-image-panel img {
-  max-width: calc(100vw - 420px);
+  max-width: calc(100vw - 740px);
   max-height: calc(80vh - 24px);
   width: auto;
   height: auto;
