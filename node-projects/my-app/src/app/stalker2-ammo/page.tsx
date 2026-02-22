@@ -1,5 +1,6 @@
 'use client';
 import { AlertTriangle, ArrowLeft, ArrowRight, BarChart3, Camera, Check, ChevronDown, Eye, ImagePlus, LayoutGrid, Loader2, Minus, Plus, Settings, Trash2, X } from 'lucide-react';
+import { VersionBadge } from "@/components/VersionBadge";
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { AmmoVariant, STALKER_AMMO_DATA } from './data';
 import './styles.css';
@@ -2496,6 +2497,7 @@ return (
       <footer>
         &curren; PROPRIETARY ZONE-NET PDA INTERFACE — ENCRYPTED TRANSMISSION
       </footer>
+      <VersionBadge projectName="stalker2-ammo" />
     </div>
   );
 }

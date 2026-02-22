@@ -1,0 +1,104 @@
+{
+  "my-app": {
+    "current": {
+      "version": "1.2.0",
+      "releasedAt": "2026-02-22",
+      "changes": ["Agent workflow system", "SEO optimization", "Version tracking"]
+    },
+    "history": [
+      { "version": "1.2.0", "releasedAt": "2026-02-22", "changes": ["Agent workflow system", "SEO optimization", "Version tracking"] },
+      { "version": "1.1.0", "releasedAt": "2026-02-15", "changes": ["React 19 migration", "New UI components"] },
+      { "version": "1.0.0", "releasedAt": "2026-01-20", "changes": ["Initial release", "15+ interactive projects"] }
+    ]
+  },
+  "blockchain-visualizer": {
+    "current": { "version": "1.0.0", "releasedAt": "2026-01-15", "changes": ["3D blockchain visualization"] },
+    "history": [
+      { "version": "1.0.0", "releasedAt": "2026-01-15", "changes": ["Initial release"] }
+    ]
+  },
+  "dataVisualizer": {
+    "current": { "version": "1.0.0", "releasedAt": "2026-01-10", "changes": ["3D data visualization"] },
+    "history": [
+      { "version": "1.0.0", "releasedAt": "2026-01-10", "changes": ["Initial release"] }
+    ]
+  },
+  "sounder": {
+    "current": { "version": "1.0.0", "releasedAt": "2026-01-08", "changes": ["Sound design tool"] },
+    "history": [
+      { "version": "1.0.0", "releasedAt": "2026-01-08", "changes": ["Initial release"] }
+    ]
+  },
+  "todo": {
+    "current": { "version": "1.0.0", "releasedAt": "2026-01-05", "changes": ["Daily habit tracker"] },
+    "history": [
+      { "version": "1.0.0", "releasedAt": "2026-01-05", "changes": ["Initial release"] }
+    ]
+  },
+  "printer-monitor": {
+    "current": { "version": "1.0.0", "releasedAt": "2026-02-01", "changes": ["3D printer camera monitor"] },
+    "history": [
+      { "version": "1.0.0", "releasedAt": "2026-02-01", "changes": ["Initial release"] }
+    ]
+  },
+  "emf-detector": {
+    "current": { "version": "1.0.0", "releasedAt": "2026-02-05", "changes": ["EMF detector simulator"] },
+    "history": [
+      { "version": "1.0.0", "releasedAt": "2026-02-05", "changes": ["Initial release"] }
+    ]
+  },
+  "gcode-timelapse": {
+    "current": { "version": "1.0.0", "releasedAt": "2026-02-08", "changes": ["G-code timelapse visualizer"] },
+    "history": [
+      { "version": "1.0.0", "releasedAt": "2026-02-08", "changes": ["Initial release"] }
+    ]
+  },
+  "pc-ai-assistant": {
+    "current": { "version": "1.0.0", "releasedAt": "2026-02-10", "changes": ["Voice AI assistant"] },
+    "history": [
+      { "version": "1.0.0", "releasedAt": "2026-02-10", "changes": ["Initial release"] }
+    ]
+  },
+  "cad3d": {
+    "current": { "version": "1.0.0", "releasedAt": "2026-02-12", "changes": ["3D CAD application"] },
+    "history": [
+      { "version": "1.0.0", "releasedAt": "2026-02-12", "changes": ["Initial release"] }
+    ]
+  },
+  "camera-effects": {
+    "current": { "version": "1.0.0", "releasedAt": "2026-02-14", "changes": ["Real-time camera effects"] },
+    "history": [
+      { "version": "1.0.0", "releasedAt": "2026-02-14", "changes": ["Initial release"] }
+    ]
+  },
+  "tiktok-tts": {
+    "current": { "version": "1.0.0", "releasedAt": "2026-02-16", "changes": ["TikTok + AI integration"] },
+    "history": [
+      { "version": "1.0.0", "releasedAt": "2026-02-16", "changes": ["Initial release"] }
+    ]
+  },
+  "stalker2-ammo": {
+    "current": { "version": "1.0.0", "releasedAt": "2026-02-18", "changes": ["STALKER 2 ammo tracker"] },
+    "history": [
+      { "version": "1.0.0", "releasedAt": "2026-02-18", "changes": ["Initial release"] }
+    ]
+  },
+  "PNLCalendar": {
+    "current": { "version": "1.0.0", "releasedAt": "2026-01-20", "changes": ["PNL calendar tracking"] },
+    "history": [
+      { "version": "1.0.0", "releasedAt": "2026-01-20", "changes": ["Initial release"] }
+    ]
+  },
+  "memogpt": {
+    "current": { "version": "1.0.0", "releasedAt": "2026-02-20", "changes": ["AI memo manager"] },
+    "history": [
+      { "version": "1.0.0", "releasedAt": "2026-02-20", "changes": ["Initial release"] }
+    ]
+  },
+  "mika": {
+    "current": { "version": "1.0.0", "releasedAt": "2026-01-01", "changes": ["Personal portfolio"] },
+    "history": [
+      { "version": "1.0.0", "releasedAt": "2026-01-01", "changes": ["Initial release"] }
+    ]
+  }
+}

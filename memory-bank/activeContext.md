@@ -1,17 +1,28 @@
 # Active Context
 
 ## Current Focus
-- Initialize Project Memory Bank to cover the full repository scope.
-- Maintain detailed documentation for the Backtesting Tool.
-- **Implement Google Sheets Export**: Enable one-click export of backtesting results to a specific Google Sheet.
-- **PC AI Assistant App**: Created new standalone Node.js application with galaxy visualization inside `node-projects/my-app/pc-ai-assistant/`.
-- **Stalker 2 Ammo Tracker enhancements**: Overhauled Ammo Calibration UI, implemented surplus detection logic, and integrated magazine-based transfers.
+- **Agent Workflow System**: Comprehensive AI assistant configuration with 5 dedicated workflows
+- **Version Tracking**: VersionBadge component deployed across all subprojects
+- **SEO Optimization**: robots.txt, sitemap.xml, ai-context.md for discoverability
 
-## Recent Changes
-- Expanded `projectbrief.md` to cover the Game Website.
-- Updated `productContext.md` and `techContext.md` with Main Website details.
-- Updated `systemPatterns.md` to outline the full project structure.
-- Enhanced `stalker2-ammo` application with premium tactical UI and advanced logistics logic.
+## Recent Changes (2026-02-22)
+- Created AGENTS.md with subagent dedications and project workflows
+- Implemented 5 agent workflows:
+  1. new-app.md - New application creation
+  2. route-validator.md - Routing and access level management
+  3. process-manager.md - Server monitoring and reboot
+  4. git-docs-manager.md - Version control and SEO
+  5. code-quality.md - Linting, optimization, documentation
+- Added VersionBadge component for version tracking across all apps
+- Created versions.json data file for semantic versioning
+- Added SEO files: robots.txt, sitemap.xml, ai-context.md
+- Updated git-docs-manager workflow with version management
+
+## Version Tracking System
+- **Component**: `src/components/VersionBadge.tsx`
+- **Data**: `src/data/versions.json`
+- **Features**: Collapsed badge (v1.2.0), expanded history (up to 5 versions), release dates, change notes
+- **Deployment**: Added to emf-detector, rolling out to all apps
 
 ## Backtesting Tool Reference (`tools/index6.js`)
 

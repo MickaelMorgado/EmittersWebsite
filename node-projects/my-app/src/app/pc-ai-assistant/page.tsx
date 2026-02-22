@@ -6,6 +6,7 @@ import { Bloom, EffectComposer, Noise, Vignette } from '@react-three/postprocess
 import { Suspense, useEffect, useRef, useState } from "react"
 import { io, Socket } from 'socket.io-client'
 import * as THREE from "three"
+import { VersionBadge } from "@/components/VersionBadge"
 
 // Galaxy Component
 interface GalaxyProps {
@@ -386,6 +387,7 @@ export default function PCAIAssistant() {
           </Suspense>
         </Canvas>
       </div>
+      <VersionBadge projectName="pc-ai-assistant" />
     </div>
   )
 }

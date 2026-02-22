@@ -6,6 +6,7 @@ import { Bloom, EffectComposer } from '@react-three/postprocessing';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import Sidebar from '../../components/sidebar';
+import { VersionBadge } from "@/components/VersionBadge";
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { GCodePoint, parseGCode } from './gcodeParser';
@@ -662,6 +663,7 @@ export default function GCodeTimelapsePage() {
           </div>
         )}
       </div>
+      <VersionBadge projectName="gcode-timelapse" />
     </>
   );
 }
