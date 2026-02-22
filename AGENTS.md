@@ -10,7 +10,7 @@
 |-----------------------|-------|----------|
 | `lint`, `optimize`, `cleanup`, `refactor` | general | code-quality.md |
 | `start`, `restart`, `crash`, `server`, `port` | general | process-manager.md |
-| `commit`, `push`, `version`, `changelog`, `release` | general | git-docs-manager.md |
+| `commit`, `push`, `version`, `changelog`, `release` | general | git-docs-manager.md (with pre-push quality gate) |
 | `route`, `page.tsx`, `new app`, `access level` | general | route-validator.md |
 | `search`, `find`, `where is`, `how does X work` | explore | - |
 | `debug`, `error`, `not working`, `investigate` | explore (very thorough) | - |

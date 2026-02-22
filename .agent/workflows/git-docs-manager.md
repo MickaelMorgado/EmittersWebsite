@@ -113,6 +113,46 @@ git branch --merged master | grep -v "^\*\|master\|main"
 - Merging to main
 - Publishing/deploying
 
+### Pre-Push Quality Gate
+
+**Before every push, automatically run:**
+
+```bash
+# 1. Lint check
+node run-eslint-all.js
+
+# 2. TypeScript check (my-app)
+cd node-projects/my-app && npx tsc --noEmit
+
+# 3. Build verification (my-app)
+cd node-projects/my-app && npm run build
+```
+
+**Quality Gate Rules:**
+| Check | Failure Action |
+|-------|----------------|
+| Lint errors | Block push, show errors |
+| TypeScript errors | Block push, show errors |
+| Build fails | Block push, show errors |
+| Lint warnings | Warn but allow push |
+
+**Auto-Trigger Code Quality Agent:**
+When push is requested, spawn code-quality agent to:
+1. Run lint checks
+2. Fix auto-fixable issues
+3. Report remaining issues
+4. Proceed with push if all checks pass
+
+**Workflow:**
+```
+1. User requests push
+2. Spawn code-quality agent
+3. Agent runs quality gate
+4. If pass: proceed with push
+5. If fail: report issues, wait for fixes
+6. After push: run branch cleanup
+```
+
 ## Documentation Structure
 
 ### Root Level (SEO Optimized)
