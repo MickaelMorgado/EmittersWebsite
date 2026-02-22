@@ -2,10 +2,14 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Lock, Unlock, X } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Lock, Unlock, X, Search } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { VersionBadge } from '@/components/VersionBadge';
+
+type VisibilityFilter = 'all' | 'public' | 'private';
 
 interface Project {
   title: string;
@@ -135,11 +139,39 @@ export default function Home() {
   const [showUnlockModal, setShowUnlockModal] = useState(false);
   const [password, setPassword] = useState('');
   const [error, setError] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [visibilityFilter, setVisibilityFilter] = useState<VisibilityFilter>('all');
 
   useEffect(() => {
     const isCookieUnlocked = document.cookie.split('; ').find(row => row.startsWith('site_unlocked=true'));
     if (isCookieUnlocked) setIsUnlocked(true);
   }, []);
+
+  const filteredProjects = useMemo(() => {
+    const lowerQuery = searchQuery.toLowerCase();
+    const filtered: { [section: string]: Project[] } = {};
+    
+    Object.entries(PROJECTS).forEach(([section, projects]) => {
+      const sectionProjects = projects.filter(project => {
+        const matchesSearch = !searchQuery || 
+          project.title.toLowerCase().includes(lowerQuery) ||
+          project.description.toLowerCase().includes(lowerQuery);
+        
+        const matchesVisibility = 
+          visibilityFilter === 'all' ||
+          (visibilityFilter === 'public' && project.isPublic) ||
+          (visibilityFilter === 'private' && !project.isPublic);
+        
+        return matchesSearch && matchesVisibility;
+      });
+      
+      if (sectionProjects.length > 0) {
+        filtered[section] = sectionProjects;
+      }
+    });
+    
+    return filtered;
+  }, [searchQuery, visibilityFilter]);
 
   const handleUnlock = (e: React.FormEvent) => {
     e.preventDefault();
@@ -249,7 +281,44 @@ export default function Home() {
           </div>
         </div>
 
-        {Object.entries(PROJECTS).map(([section, projects]) => (
+        {/* Search and Filter Controls */}
+        <div className="flex flex-col sm:flex-row gap-4 mb-8 sticky top-4 z-20 bg-black/80 backdrop-blur-md p-4 rounded-xl border border-white/10">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+            <Input
+              type="text"
+              placeholder="Search projects..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 bg-white/5 border-white/10 focus:border-white/30"
+            />
+          </div>
+          <div className="flex gap-2">
+            <Badge
+              variant={visibilityFilter === 'all' ? 'default' : 'outline'}
+              className={`cursor-pointer px-4 py-2 text-sm transition-all ${visibilityFilter === 'all' ? 'bg-white text-black hover:bg-white/90' : 'hover:bg-white/10'}`}
+              onClick={() => setVisibilityFilter('all')}
+            >
+              All
+            </Badge>
+            <Badge
+              variant={visibilityFilter === 'public' ? 'default' : 'outline'}
+              className={`cursor-pointer px-4 py-2 text-sm transition-all ${visibilityFilter === 'public' ? 'bg-green-500 text-black hover:bg-green-500/90' : 'hover:bg-white/10'}`}
+              onClick={() => setVisibilityFilter('public')}
+            >
+              Public
+            </Badge>
+            <Badge
+              variant={visibilityFilter === 'private' ? 'default' : 'outline'}
+              className={`cursor-pointer px-4 py-2 text-sm transition-all ${visibilityFilter === 'private' ? 'bg-red-500 text-white hover:bg-red-500/90' : 'hover:bg-white/10'}`}
+              onClick={() => setVisibilityFilter('private')}
+            >
+              Private
+            </Badge>
+          </div>
+        </div>
+
+        {Object.entries(filteredProjects).map(([section, projects]) => (
           <section key={section} className="mt-12 first:mt-0">
             {section === "Main Section" || section === "My main projects" ? (
                <TypographyH1>{section}</TypographyH1>
