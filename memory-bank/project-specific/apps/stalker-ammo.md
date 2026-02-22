@@ -24,6 +24,12 @@ A tactical logistics terminal for managing munitions in the Zone, featuring adva
 - **Surplus Detection:** AI identifies excess stock (3x threshold) while ensuring caliber-wide safety.
 - **Deficit Reporting:** Quantitative reporting of exact shortages needed to reach tactical baselines.
 
+### 🎛️ Collapsible Sidebar Accordions
+- **Logistics Scan Accordion:** Collapsible section with severity-based header coloring (red=critical, amber=warning, blue=info).
+- **AI Assistant Accordion:** Separate collapsible section for AI chat and screenshot scanning.
+- **Severity Indicators:** Pulsing badge on Logistics header when critical alerts exist.
+- **Independent Expansion:** Both sections can be expanded/collapsed independently.
+
 ## Technical Details
 - **Path**: `/stalker2-ammo`
 - **Component**: `StalkerAmmoPage`
@@ -32,3 +38,4 @@ A tactical logistics terminal for managing munitions in the Zone, featuring adva
 ## 🚀 Future Roadmap (Next Steps)
 - **Trade-Offsetting Logic:** Calculate optimal trade routes based on surplus ammunition to maximize faction currency.
 - **Zone-Net Regional Intelligence**: Implement regional ammo availability checks. Kuznetsov AI will cross-reference your current location with known regional loot tables (Requires LLM Model Integration).
+- **Chat Messages in Accordion:** Move chat messages (screenshot uploads, AI detections) inside the AI Assistant accordion for better organization.
