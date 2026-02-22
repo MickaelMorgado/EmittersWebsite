@@ -16,6 +16,31 @@
 | `debug`, `error`, `not working`, `investigate` | explore (very thorough) | - |
 | `add to all apps`, `bulk update`, `multi-file` | general | - |
 | `merge`, `cleanup branches`, `git cleanup` | general | git-docs-manager.md |
+| `update docs`, `sync memory-bank`, `document this` | general | git-docs-manager.md (docs phase) |
+
+## Pre-Push Agent Pipeline
+
+When `push` is requested, agents spawn in sequence:
+
+| Phase | Agent | Actions |
+|-------|-------|---------|
+| 1. Quality Gate | code-quality | Lint, TypeScript, Build checks |
+| 2. Git Operations | git-docs-manager | Commit, push, branch cleanup |
+| 3. Documentation | git-docs-manager | Memory-bank sync, changelog, history |
+
+**Pipeline Flow:**
+```
+push request
+    ↓
+[Code Quality Agent] → Run lint + typecheck + build
+    ↓ (pass)
+[Git Agent] → git push + branch cleanup
+    ↓
+[Documentation Agent] → Update memory-bank files
+                       → Update changelog
+                       → Update history/YYYY-MM.md
+                       → Update sitemap dates
+```
 
 ## Subagent Dedications
 

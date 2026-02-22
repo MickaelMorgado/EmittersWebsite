@@ -151,7 +151,42 @@ When push is requested, spawn code-quality agent to:
 4. If pass: proceed with push
 5. If fail: report issues, wait for fixes
 6. After push: run branch cleanup
+7. After cleanup: spawn documentation agent
 ```
+
+### Post-Push Documentation Phase
+
+**After successful push, automatically update:**
+
+| File | Updates |
+|------|---------|
+| `memory-bank/activeContext.md` | Current focus, recent changes |
+| `memory-bank/progress.md` | Completed items, new entries |
+| `memory-bank/history/YYYY-MM.md` | Monthly changelog |
+| `memory-bank/changelog.md` | Version history |
+| `sitemap.xml` | Update lastmod dates |
+
+**Documentation Agent Tasks:**
+```
+1. Analyze commit message and diff
+2. Extract meaningful changes
+3. Update activeContext.md with current focus
+4. Add progress entry for completed work
+5. Update history/YYYY-MM.md with summary
+6. Update changelog if version bump
+7. Update sitemap.xml lastmod dates
+8. Commit documentation updates
+```
+
+**Auto-detect Change Type:**
+| Commit Prefix | Memory Bank Updates |
+|---------------|---------------------|
+| `feat:` | activeContext, progress, history, apps-overview |
+| `fix:` | activeContext, progress |
+| `docs:` | activeContext (if significant) |
+| `refactor:` | progress, systemPatterns (if architectural) |
+| `perf:` | progress |
+| `chore:` | (usually skip) |
 
 ## Documentation Structure
 
