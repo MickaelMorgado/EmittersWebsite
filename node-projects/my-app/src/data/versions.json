@@ -78,8 +78,9 @@
     ]
   },
   "stalker2-ammo": {
-    "current": { "version": "1.0.0", "releasedAt": "2026-02-18", "changes": ["STALKER 2 ammo tracker"] },
+    "current": { "version": "1.0.1", "releasedAt": "2026-02-22", "changes": ["Remove image preview backdrop, reduce width to show chat"] },
     "history": [
+      { "version": "1.0.1", "releasedAt": "2026-02-22", "changes": ["Remove image preview backdrop, reduce width to show chat"] },
       { "version": "1.0.0", "releasedAt": "2026-02-18", "changes": ["Initial release"] }
     ]
   },
