@@ -14,6 +14,7 @@
   4. git-docs-manager.md - Version control, SEO, post-push docs
   5. code-quality.md - Linting, optimization, documentation
 - Added VersionBadge component for version tracking across all apps
+- Added VersionBadge to main my-app projects page
 - Created versions.json data file with semantic versioning for 17 projects
 - Added SEO files: robots.txt, sitemap.xml, ai-context.md
 - Implemented pre-push quality gate (lint + TypeScript + build)
