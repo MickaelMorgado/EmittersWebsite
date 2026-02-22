@@ -57,6 +57,48 @@ seo(root): add structured data for AI discoverability
 | fix/<name> | Bug fixes |
 | docs/<name> | Documentation updates |
 
+### Branch Cleanup
+
+**After merging to master/main, clean up merged branches:**
+
+```bash
+# List all branches that have been merged into master
+git branch --merged master
+
+# Delete local merged branches (excluding master/main)
+git branch --merged master | grep -v "^\*\|master\|main" | xargs git branch -d
+
+# Delete remote merged branches
+git branch -r --merged origin/master | grep -v "master\|main" | sed 's/origin\//:/' | xargs git push origin
+```
+
+**Cleanup Rules:**
+| Branch Type | Action |
+|-------------|--------|
+| `feat/*` (merged) | Delete both local and remote |
+| `fix/*` (merged) | Delete both local and remote |
+| `docs/*` (merged) | Delete both local and remote |
+| `test*` (merged) | Delete both local and remote |
+| `master`/`main` | NEVER delete |
+| Active feature branches | Keep until merged |
+
+**Automatic Cleanup Triggers:**
+- After successful merge to master
+- On weekly maintenance (if requested)
+- When user asks to "clean up git"
+
+**Pre-cleanup Check:**
+```bash
+# Always show what will be deleted first
+echo "Branches to be deleted:"
+git branch --merged master | grep -v "^\*\|master\|main"
+```
+
+**Safety:**
+- Never delete branches with uncommitted changes
+- Always confirm with user before bulk deletion
+- Keep branches listed in `.gitkeep-branches` if it exists
+
 ### Commit Triggers
 
 **Auto-commit when:**
@@ -492,3 +534,7 @@ export default function MyApp() {
 | Update changelog | Add entry with date |
 | Create ADR | New file in history/decisions/ |
 | Sync memory-bank | Run through update triggers |
+| List merged branches | `git branch --merged master` |
+| Delete local merged | `git branch --merged master \| grep -v "master\|main" \| xargs git branch -d` |
+| Delete remote merged | `git branch -r --merged origin/master \| grep -v "master\|main" \| sed 's/origin\//:/' \| xargs git push origin` |
+| Clean all merged | Run full cleanup sequence (see Branch Cleanup section) |

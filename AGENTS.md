@@ -1,5 +1,22 @@
 # AGENTS.md - AI Assistant Configuration
 
+## Operational Mode: PROACTIVE
+
+**I will automatically spawn agents when I detect matching tasks. No need to ask permission.**
+
+## Auto-Spawn Triggers
+
+| Keyword/Task Detected | Agent | Workflow |
+|-----------------------|-------|----------|
+| `lint`, `optimize`, `cleanup`, `refactor` | general | code-quality.md |
+| `start`, `restart`, `crash`, `server`, `port` | general | process-manager.md |
+| `commit`, `push`, `version`, `changelog`, `release` | general | git-docs-manager.md |
+| `route`, `page.tsx`, `new app`, `access level` | general | route-validator.md |
+| `search`, `find`, `where is`, `how does X work` | explore | - |
+| `debug`, `error`, `not working`, `investigate` | explore (very thorough) | - |
+| `add to all apps`, `bulk update`, `multi-file` | general | - |
+| `merge`, `cleanup branches`, `git cleanup` | general | git-docs-manager.md |
+
 ## Subagent Dedications
 
 ### Explore Agent Tasks
