@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Lock, Unlock, X } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
+import { VersionBadge } from '@/components/VersionBadge';
 
 interface Project {
   title: string;
@@ -316,6 +317,7 @@ export default function Home() {
           </div>
         )}
       </div>
+      <VersionBadge projectName="my-app" />
     </div>
   );
 }
