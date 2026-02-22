@@ -1,28 +1,29 @@
 # Active Context
 
 ## Current Focus
-- **Agent Workflow System**: Comprehensive AI assistant configuration with 5 dedicated workflows
-- **Version Tracking**: VersionBadge component deployed across all subprojects
-- **SEO Optimization**: robots.txt, sitemap.xml, ai-context.md for discoverability
+- **Proactive Agent System**: Auto-spawn agents on trigger keywords
+- **Pre-Push Quality Pipeline**: Automated lint, TypeScript, build checks before push
+- **Post-Push Documentation**: Automatic memory-bank updates after push
 
 ## Recent Changes (2026-02-22)
-- Created AGENTS.md with subagent dedications and project workflows
+- Created AGENTS.md with proactive agent mode and auto-spawn triggers
 - Implemented 5 agent workflows:
   1. new-app.md - New application creation
   2. route-validator.md - Routing and access level management
   3. process-manager.md - Server monitoring and reboot
-  4. git-docs-manager.md - Version control and SEO
+  4. git-docs-manager.md - Version control, SEO, post-push docs
   5. code-quality.md - Linting, optimization, documentation
 - Added VersionBadge component for version tracking across all apps
-- Created versions.json data file for semantic versioning
+- Created versions.json data file with semantic versioning for 17 projects
 - Added SEO files: robots.txt, sitemap.xml, ai-context.md
-- Updated git-docs-manager workflow with version management
+- Implemented pre-push quality gate (lint + TypeScript + build)
+- Added post-push documentation agent phase
+- Cleaned up 26 merged branches (15 local, 11 remote)
 
-## Version Tracking System
-- **Component**: `src/components/VersionBadge.tsx`
-- **Data**: `src/data/versions.json`
-- **Features**: Collapsed badge (v1.2.0), expanded history (up to 5 versions), release dates, change notes
-- **Deployment**: Added to emf-detector, rolling out to all apps
+## Agent Pipeline on Push
+```
+push → [Code Quality] → [Git Operations] → [Documentation]
+```
 
 ## Backtesting Tool Reference (`tools/index6.js`)
 
