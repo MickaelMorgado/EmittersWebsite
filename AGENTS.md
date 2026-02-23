@@ -280,6 +280,8 @@ cd node-projects/my-app && npx tsc --noEmit     # Type check
 
 **Commit Format:** `<type>(<scope>): <subject>`
 
+**⚠️ MANDATORY:** Always bump version in `versions.json` when committing app changes. See `git-docs-manager.md` for details.
+
 ---
 
 ### Process Manager Agent (`general` → `process-manager.md`)

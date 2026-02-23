@@ -113,6 +113,86 @@ git branch --merged master | grep -v "^\*\|master\|main"
 - Merging to main
 - Publishing/deploying
 
+### ⚠️ MANDATORY: Pre-Commit Version Check
+
+**BEFORE every commit, ALWAYS check if version needs updating:**
+
+**Step 1: Detect App Changes**
+```bash
+# Check which files are staged/modified
+git status
+git diff --name-only
+```
+
+**Step 2: Map Files to Apps**
+| Files Changed | App | versions.json Key |
+|---------------|-----|-------------------|
+| `src/app/stalker2-ammo/**` | STALKER 2 Ammo | `stalker2-ammo` |
+| `src/app/emf-detector/**` | EMF Detector | `emf-detector` |
+| `src/app/sounder/**` | Sounder | `sounder` |
+| `src/app/data-visualizer/**` | Data Visualizer | `data-visualizer` |
+| `src/app/camera-effects/**` | Camera Effects | `camera-effects` |
+| `src/app/gcode-timelapse/**` | G-code Timelapse | `gcode-timelapse` |
+| `src/app/cad/**` | 3D CAD | `cad` |
+| `src/components/**` | my-app (core) | `my-app` |
+| `src/stores/**` | my-app (core) | `my-app` |
+
+**Step 3: Determine Version Bump**
+| Commit Type | Version Bump | Example |
+|-------------|--------------|---------|
+| `fix:` | PATCH (x.x.+1) | 1.0.0 → 1.0.1 |
+| `feat:` | MINOR (x.+1.0) | 1.0.0 → 1.1.0 |
+| `feat!:` or breaking | MAJOR (+1.0.0) | 1.0.0 → 2.0.0 |
+| `docs:`, `chore:`, `style:` | NO BUMP | - |
+
+**Step 4: Update versions.json**
+```json
+{
+  "app-name": {
+    "current": {
+      "version": "1.0.1",  // BUMPED
+      "releasedAt": "2026-02-22",
+      "changes": ["Fixed image preview modal", "Reduced width"]
+    },
+    "history": [
+      // Move old current here (max 5 entries)
+    ]
+  }
+}
+```
+
+**Step 5: Commit with Version Bump**
+```bash
+# Include version bump in SAME commit as changes
+git add src/data/versions.json
+git commit -m "fix(stalker2): remove image preview backdrop, reduce width"
+# Version bump is included, not separate commit
+```
+
+**⚠️ CRITICAL RULES:**
+1. **NEVER commit app changes without version bump**
+2. Version bump must be in the SAME commit (not separate)
+3. Always update `releasedAt` date
+4. Always add meaningful `changes` array
+5. Keep only 5 historical versions
+
+**Version Check Flow:**
+```
+Files modified
+    ↓
+Check if app files changed → NO → Proceed with commit
+    ↓ YES
+Determine bump type from commit message
+    ↓
+Update versions.json
+    ↓
+Stage versions.json WITH other changes
+    ↓
+Single commit (changes + version bump)
+    ↓
+Push
+```
+
 ### Pre-Push Quality Gate
 
 **Before every push, automatically run:**
