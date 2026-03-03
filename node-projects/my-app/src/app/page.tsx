@@ -1,13 +1,13 @@
 "use client";
 
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Lock, Unlock, X, Search } from 'lucide-react';
+import { VersionBadge } from '@/components/VersionBadge';
+import { Lock, Search, Unlock, X } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { VersionBadge } from '@/components/VersionBadge';
 
 type VisibilityFilter = 'all' | 'public' | 'private';
 
@@ -260,7 +260,8 @@ export default function Home() {
 
       <div className="container mx-auto px-4 py-8 relative z-10">
         <div className="flex items-center justify-between border-b border-white/10 pb-8 mb-8">
-          <div>
+          <Link href='/remotion-videos' className='text-blue-400 hover:underline mr-4'>Remotion Videos</Link>
+          <div className='text-center'>
             <TypographyH1>Welcome to my Projects Page</TypographyH1>
             <p className="text-muted-foreground">Explore my collection of interactive projects and experiments.</p>
           </div>
