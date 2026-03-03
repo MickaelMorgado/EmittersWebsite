@@ -1,3 +1,11 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Contact - Get in Touch",
+  description: "Have a question or want to work together? Contact us for web development services, collaborations, or general inquiries.",
+  keywords: ["contact", "web development", "hire developer", "collaboration"],
+};
+
 export default function ContactPage() {
   return (
     <main className="min-h-screen p-8">
