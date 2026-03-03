@@ -42,7 +42,8 @@ const PROJECTS: { [section: string]: Project[] } = {
     { title: "3D CAD App", description: "Simple 3D CAD software for creating 3D objects", href: "/cad3d", accentColor: "14, 165, 233", isPublic: true },
     { title: "Camera Effects", description: "Real-time camera filters and visual effects", href: "/camera-effects", accentColor: "20, 184, 166", isPublic: true },
     { title: "TikTok + AI Assistant", description: "Integrated TikTok live events with AI voice response", href: "/tiktok-tts", accentColor: "255, 0, 80" },
-    { title: "STALKER 2 Ammo Tracker", description: "Interactive ammo and weight management dashboard", href: "/stalker2-ammo", accentColor: "255, 126, 0", isPublic: true },
+{ title: "STALKER 2 Ammo Tracker", description: "Interactive ammo and weight management dashboard", href: "/stalker2-ammo", accentColor: "255, 126, 0", isPublic: true },
+    { title: "Image Compressor", description: "Bulk compress images to target file size and download as ZIP", href: "/image-compressor", accentColor: "139, 92, 246", isPublic: true },
   ],
   "Standalone Projects": [
     { title: "Trading Tools", description: "Trading tools for analyzing and visualizing market data", href: "https://emittersgame.com/tools/index6.html", accentColor: "245, 158, 11", isExternal: true },
