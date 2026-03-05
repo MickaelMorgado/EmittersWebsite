@@ -9,14 +9,9 @@ const fftSize = 4096; // Must be a power of two
 const barsCount = 20; // Number of bars for visualization
 
 /**
- * Helper function to get a random float within a range.
- */
-const getRandomFloat = (min: number, max: number) => Math.random() * (max - min) + min;
-
-/**
  * Effects component that reacts to spectrum values.
  */
-function Effects({ spectrumValues, normalizedLow, normalizedMid, normalizedHigh }: { spectrumValues: number[], normalizedLow: number, normalizedMid: number, normalizedHigh: number }) {
+function Effects({ normalizedLow, normalizedHigh }: { normalizedLow: number, normalizedHigh: number }) {
   const glitchDensity = 0.0002 * normalizedHigh / 2;
   const vignetteDarkness = 1 * (normalizedHigh / 150);
 
@@ -33,7 +28,7 @@ function Effects({ spectrumValues, normalizedLow, normalizedMid, normalizedHigh 
 /**
  * Main component handling microphone access and 3D visualization logic with super random effects.
  */
-function AudioVisualizer({ onSpectrumUpdate, spectrumValues, onNormalizedLowUpdate, onNormalizedMidUpdate, onNormalizedHighUpdate, normalizedLow, normalizedMid, normalizedHigh }: { onSpectrumUpdate: (data: number[]) => void, spectrumValues: number[], onNormalizedLowUpdate: (value: number) => void, onNormalizedMidUpdate: (value: number) => void, onNormalizedHighUpdate: (value: number) => void, normalizedLow: number, normalizedMid: number, normalizedHigh: number }) {
+function AudioVisualizer({ onSpectrumUpdate, spectrumValues, onNormalizedLowUpdate, onNormalizedMidUpdate, onNormalizedHighUpdate, normalizedHigh }: { onSpectrumUpdate: (data: number[]) => void, spectrumValues: number[], onNormalizedLowUpdate: (value: number) => void, onNormalizedMidUpdate: (value: number) => void, onNormalizedHighUpdate: (value: number) => void, normalizedLow: number, normalizedMid: number, normalizedHigh: number }) {
   const barsRef = useRef<THREE.Mesh[]>([]);
   const audioDataRef = useRef(new Uint8Array(barsCount));
   const [isAudioReady, setIsAudioReady] = useState(false);
@@ -59,7 +54,7 @@ function AudioVisualizer({ onSpectrumUpdate, spectrumValues, onNormalizedLowUpda
     }
 
     let audioContext: AudioContext;
-    const updateAnimationFrame: number | undefined = undefined;
+    /* Unused: updateAnimationFrame */
     try {
       audioContext = new AudioContext();
       const analyserNode = audioContext.createAnalyser();
@@ -80,10 +75,9 @@ function AudioVisualizer({ onSpectrumUpdate, spectrumValues, onNormalizedLowUpda
     }
 
     return () => {
-      if (updateAnimationFrame) cancelAnimationFrame(updateAnimationFrame);
       if (audioContext) audioContext.close().catch(e => console.error("Error closing audio context:", e));
     };
-  }, [barsCount]);
+  }, []);
 
   // Update loop for analyser data and logging
   useEffect(() => {
@@ -135,7 +129,7 @@ function AudioVisualizer({ onSpectrumUpdate, spectrumValues, onNormalizedLowUpda
       if (updateAnimationFrame !== null) cancelAnimationFrame(updateAnimationFrame);
       updateAnimationFrame = null;
     };
-  }, [analyser, barsCount, onSpectrumUpdate]);
+  }, [analyser, onSpectrumUpdate, onNormalizedLowUpdate, onNormalizedMidUpdate, onNormalizedHighUpdate])
 
   /**
    * Animation loop for super random effects.
@@ -144,6 +138,7 @@ function AudioVisualizer({ onSpectrumUpdate, spectrumValues, onNormalizedLowUpda
     if (!isAudioReady || barsRef.current.length === 0) return;
 
     const elapsedTime = clock.getElapsedTime();
+    /* Unused: multiplier, rotationSpeed */
     
     // Camera movement for added disorientation
     const cameraAproximationDistance = 50;
@@ -173,6 +168,7 @@ function AudioVisualizer({ onSpectrumUpdate, spectrumValues, onNormalizedLowUpda
         bar.rotation.x += elapsedTime * 0.5 + normalizedScale * Math.PI;
         bar.rotation.y += elapsedTime * 0.8 + normalizedScale * Math.PI * 2;
         */
+        /* Unused: rotationSpeed */
 
         const scalePower = 5;
         const size = 0.1 + normalizedScale * scalePower;
@@ -228,7 +224,7 @@ export default function ThreeAudioVisualizer() {
         }}
       >
         <AudioVisualizer onSpectrumUpdate={setSpectrumValues} spectrumValues={spectrumValues} onNormalizedLowUpdate={setNormalizedLow} onNormalizedMidUpdate={setNormalizedMid} onNormalizedHighUpdate={setNormalizedHigh} normalizedLow={normalizedLow} normalizedMid={normalizedMid} normalizedHigh={normalizedHigh} />
-        <Effects spectrumValues={spectrumValues} normalizedLow={normalizedLow} normalizedMid={normalizedMid} normalizedHigh={normalizedHigh} />
+        <Effects normalizedLow={normalizedLow} normalizedHigh={normalizedHigh} />
       </Canvas>
     </div>
   );

@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { VersionBadge } from '@/components/VersionBadge';
 import { Bot, Edit, Plus, Send, Trash2, User, Volume2, VolumeX, X } from 'lucide-react';
 import Script from 'next/script';
 import { useEffect, useState } from 'react';
@@ -599,6 +600,7 @@ export default function Component() {
           </div>
         </div>
       </div>
+      <VersionBadge projectName="memogpt" />
     </>
   );
 }

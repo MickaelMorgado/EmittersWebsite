@@ -18,7 +18,7 @@ function PrintingModel(props: any) {
   scene.traverse((child) => {
     if ((child as Mesh).isMesh) {
       const mesh = child as Mesh;
-      if (mesh.name.includes("nozzle")) {
+      if (mesh.name.includes("head")) {
         mesh.material = new THREE.MeshStandardMaterial({...redMaterialParams});
         mesh.userData.bloom = true;
         mesh.layers.enable(1);

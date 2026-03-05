@@ -12,18 +12,13 @@ export function parseGCode(content: string): GCodePoint[] {
   const lines = content.split('\n');
   const points: GCodePoint[] = [];
   let currentPos = { x: 0, y: 0, z: 0, e: 0 };
-  let isInOuterWallSection = false;
+  /* Unused: isInOuterWallSection */
 
   for (const line of lines) {
     const trimmed = line.trim();
 
     // Check for section comments to determine feature type
     if (trimmed.startsWith(';')) {
-      if (trimmed.includes('outer wall')) {
-        isInOuterWallSection = true;
-      } else if (trimmed.includes('wall') || trimmed.includes('infill') || trimmed.includes('support') || trimmed.includes('skirt') || trimmed.includes('brim')) {
-        isInOuterWallSection = false;
-      }
       continue; // Skip comment lines
     }
 

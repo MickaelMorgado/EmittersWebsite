@@ -265,6 +265,14 @@ const MAX_BUFFER_SIZE = 10;
 let chartCandleIndex = 0;
 let candleTimes = [];
 let timeToIndex = new Map();
+const MA_PERIOD = 6;
+const ACCEL_THRESHOLD = 0.00003; // threshold for MA acceleration signal
+
+function computeMAAccel(maArray) {
+  const len = maArray.length;
+  if (len < 3) return 0;
+  return maArray[len - 1] - 2 * maArray[len - 2] + maArray[len - 3];
+}
 let slSize = () => parseFloat($SLPointsInput.value);
 let tpSize = () => parseFloat($TPPointsInput.value);
 let lotSize = () => parseFloat($LotSizeInput.value);
@@ -824,6 +832,19 @@ const initSciChart = (data) => {
         const activeOrders = ordersHistory.filter(order => !order.closed);
         activeOrders.forEach((order) => {
 
+          // break-even at SL distance (1R)
+          if (!order.breakEvenMoved) {
+            const closePrice = d[EnumMT5OHLC.CLOSE];
+            const slDistance = slSize();
+            if (
+              (order.direction === EnumDirection.BULL && closePrice >= order.price + slDistance) ||
+              (order.direction === EnumDirection.BEAR && closePrice <= order.price - slDistance)
+            ) {
+              order.sl = order.price;
+              order.breakEvenMoved = true;
+            }
+          }
+
           const isBull = order.direction === EnumDirection.BULL;
           const isBear = order.direction === EnumDirection.BEAR;
           const high = d[EnumMT5OHLC.HIGH];
@@ -1078,11 +1099,12 @@ const initSciChart = (data) => {
             };
 
             // Add order to history:
-            ordersHistory.push({
-              id: ordersHistory.length + 1,
-              time: `${candle[EnumMT5OHLC.DATE]} ${candle[EnumMT5OHLC.TIME]}`,
-              price: candle[definedCandleMoment],
-              closedOrderType: EnumclosedOrderType.PENDING,
+ordersHistory.push({
+          id: ordersHistory.length + 1,
+          breakEvenMoved: false,
+          time: `${candle[EnumMT5OHLC.DATE]} ${candle[EnumMT5OHLC.TIME]}`,
+          price: candle[definedCandleMoment],
+          closedOrderType: EnumclosedOrderType.PENDING,
               ...orderOptionsBasedDirection(tradeDirection),
             });
             window.ordersHistory = ordersHistory;
@@ -1853,8 +1875,11 @@ const initSciChart = (data) => {
         const maCandlesLookbackValues = maCandlesLookback.map((candle) => candle[EnumMT5OHLC.CLOSE]); // TODO we might match the MA line (not sure if i use close, open or calculate middle of candle for MALine)
         const maCandlesLookbackDiff = maCandlesLookbackValues[maCandlesLookbackValues.length - lookbackPeriod] - maCandlesLookbackValues[maCandlesLookbackValues.length - 1];
         const maTrending = maLookBackAccelToEnumDirection(maCandlesLookbackDiff)
-        arrayOfSignals[EnumArrayOfSignalsIndex.MADirection] = !!maTrending; // TODO: there is no correlation with planed direction trade, it simply get value from lookback to current candle even if MA made a pyramidal move or pivot which wont tell us an trending directional acceleration, ohh and MA is set to CLOSE i think
-        //console.table([d[EnumMT5OHLC.DATE] + ' ' + d[EnumMT5OHLC.TIME], maTrending, maCandlesLookbackDiff, 0.003, arrayOfSignals[EnumArrayOfSignalsIndex.MADirection]]);
+        
+        // Compute MA acceleration and set signal flag:
+        const maArray = simpleMA(CSIDLookbackCandleSerie, MA_PERIOD);
+        const accel = computeMAAccel(maArray);
+        arrayOfSignals[EnumArrayOfSignalsIndex.MADirection] = Math.abs(accel) > ACCEL_THRESHOLD;
 
         // CSID Graph Related Annotations: ========================================
         // Add a new CSID Data for our line annotations:

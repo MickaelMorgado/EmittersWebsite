@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 interface DualRangeSliderProps {
   min: number
@@ -25,15 +25,15 @@ export default function DualRangeSlider({
     return ((value - min) / (max - min)) * 100
   }
 
-  const getValueFromPosition = (clientX: number) => {
+  const getValueFromPosition = useCallback((clientX: number) => {
     if (!trackRef.current) return null
     
     const rect = trackRef.current.getBoundingClientRect()
     const percentage = Math.max(0, Math.min(100, ((clientX - rect.left) / rect.width) * 100))
     return Math.round(min + (percentage / 100) * (max - min))
-  }
+  }, [min, max])
 
-  const handleMove = (clientX: number) => {
+  const handleMove = useCallback((clientX: number) => {
     const value = getValueFromPosition(clientX)
     if (value === null) return
 
@@ -44,23 +44,23 @@ export default function DualRangeSlider({
       const newMax = Math.max(value, minValue + 1)
       onChange(minValue, newMax)
     }
-  }
+  }, [isDraggingMin, isDraggingMax, minValue, maxValue, onChange, getValueFromPosition])
 
-  const handleMouseMove = (e: MouseEvent) => {
+  const handleMouseMove = useCallback((e: MouseEvent) => {
     handleMove(e.clientX)
-  }
+  }, [handleMove])
 
-  const handleTouchMove = (e: TouchEvent) => {
+  const handleTouchMove = useCallback((e: TouchEvent) => {
     if (e.touches.length > 0) {
       e.preventDefault() // Prevent scrolling while dragging
       handleMove(e.touches[0].clientX)
     }
-  }
+  }, [handleMove])
 
-  const handleEnd = () => {
+  const handleEnd = useCallback(() => {
     setIsDraggingMin(false)
     setIsDraggingMax(false)
-  }
+  }, [])
 
   useEffect(() => {
     if (isDraggingMin || isDraggingMax) {
@@ -76,7 +76,7 @@ export default function DualRangeSlider({
         window.removeEventListener('touchend', handleEnd)
       }
     }
-  }, [isDraggingMin, isDraggingMax, minValue, maxValue])
+  }, [isDraggingMin, isDraggingMax, handleMouseMove, handleTouchMove, handleEnd])
 
   const minPercent = getPercentage(minValue)
   const maxPercent = getPercentage(maxValue)

@@ -1,3 +1,11 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "About - Emitters Developer Tools",
+  description: "Learn about Emitters - a collection of free developer tools and web applications created by passionate developers.",
+  keywords: ["about", "developer", "web apps", "tools"],
+};
+
 export default function AboutPage() {
   return (
     <main className="min-h-screen p-8">

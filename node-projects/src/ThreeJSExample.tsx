@@ -149,6 +149,35 @@ const MyGLTFScene = () => {
     return <primitive object={gltf.scene} ref={modelRef} />;
 };
 
+const createAnimation = (mixer, action, clip, animationSpeed=1) => {
+    let proxy = {
+        get time() {
+            return mixer.time;
+        },
+        set time(value) {
+            action.paused = false;
+            mixer.setTime(value);
+            action.paused = true;
+        }
+    };
+
+    let scrollingTL = gsap.timeline({
+        scrollTrigger: {
+            trigger: document.getElementById("website-content"),
+            start: "top",
+            end: "bottom",
+            pin: false,
+            scrub: true,
+            // markers: true,
+            onUpdate: function ({ progress }) {
+                scrollProgress = progress;
+            }
+        },
+    });
+
+    return <primitive object={gltf.scene} ref={modelRef} />;
+};
+
 
 const ThreeJSExample = () => {
     return (
