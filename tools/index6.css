@@ -597,3 +597,70 @@ table {
 .bokeh-toggle.active::before {
   content: '🔍';
 }
+
+/* Comparison Results Table */
+.comparison-results-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.comparison-results-table thead {
+  position: sticky;
+  top: 0;
+  background: var(--dark);
+  z-index: 1;
+}
+
+.comparison-table-header th {
+  padding: 10px 8px;
+  text-align: left;
+  background: var(--dark2);
+  color: var(--light);
+  font-weight: 600;
+  border-bottom: 2px solid var(--accent);
+}
+
+.comparison-results-table tbody tr {
+  display: table-row;
+  padding: 8px;
+  border-bottom: 1px solid var(--dark3);
+}
+
+.comparison-results-table tbody tr:hover {
+  background: var(--dark3);
+}
+
+.comparison-results-table td {
+  padding: 8px;
+  border: none;
+}
+
+.comparison-row.best-result {
+  background: rgba(0, 255, 0, 0.1);
+}
+
+.comparison-row.best-result td {
+  color: #0f0;
+  font-weight: 600;
+}
+
+.comparison-row.worst-result {
+  background: rgba(255, 0, 0, 0.1);
+}
+
+.comparison-row.worst-result td {
+  color: #f88;
+}
+
+.text-profit {
+  color: #0f0 !important;
+}
+
+.text-loss {
+  color: #f00 !important;
+}
+
+.text-drawdown {
+  color: #fa0;
+}

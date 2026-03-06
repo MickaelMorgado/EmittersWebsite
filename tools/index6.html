@@ -432,6 +432,41 @@
               <i class="fas fa-stop"></i>
             </button>
           </div>
+          <div class="h-flex" style="margin-top: 10px;">
+            <label style="display: flex; align-items: center; gap: 5px;">
+              <input type="checkbox" id="fastBacktestMode">
+              <span>Fast Mode (No Chart)</span>
+            </label>
+          </div>
+          <hr class="h-hr" />
+          <div class="h-flex">
+            <button id="runOptimizedBacktest" class="mybutton h-input-effects" title="Run fast backtest with current parameters">
+              <i class="fas fa-bolt"></i> Run Optimized
+            </button>
+            <button id="saveParamSet" class="mybutton h-input-effects" title="Save current parameters for comparison">
+              <i class="fas fa-save"></i> Save Params
+            </button>
+            <button id="runAllSavedParams" class="mybutton h-input-effects" title="Run backtest on all saved parameter sets">
+              <i class="fas fa-play-circle"></i> Run All Saved
+            </button>
+          </div>
+          <div style="margin-top: 10px;">
+            <label for="paramSetName">Param Set Name:</label>
+            <input type="text" id="paramSetName" placeholder="e.g., Conservative, Aggressive..." style="width: 100%;">
+          </div>
+          <hr class="h-hr" />
+          <div class="h-flex">
+            <button id="runGridSearch" class="mybutton h-input-effects" title="Run parameter optimization (grid search)">
+              <i class="fas fa-cogs"></i> Grid Search
+            </button>
+            <button id="exportParams" class="mybutton h-input-effects" title="Export saved params to JSON">
+              <i class="fas fa-download"></i> Export
+            </button>
+            <button id="importParams" class="mybutton h-input-effects" title="Import params from JSON">
+              <i class="fas fa-upload"></i> Import
+            </button>
+            <input type="file" id="importParamsInput" accept=".json" style="display: none;">
+          </div>
           <hr class="h-hr" />
           <label title="Current progression of the current backtesting file reading. (Starting Time - Current Time - Ending Time)">File Reading Progression</label>
           <div class="flex">
@@ -506,6 +541,12 @@
             class="mybutton h-input-effects result-panel-toolbar-toggler"
           >
             Backtesting results (Manual)
+          </button>
+          <button
+            id="result-panel-toolbar-content-toggler-comparison"
+            class="mybutton h-input-effects result-panel-toolbar-toggler"
+          >
+            Parameter Comparison
           </button>
           <div class="spacer"></div>
           <button
@@ -766,6 +807,50 @@ CTrade trade;
             <div id="backtestingResultOrderHistory" class="h-field"></div>
           </div>
         </div>
+        <div class="result-panel-content h-flex h-flex--column">
+          <h3>Parameter Comparison Results</h3>
+          <div class="h-flex" style="gap: 10px; margin-bottom: 15px;">
+            <button id="runOptimizedBacktest" class="mybutton h-input-effects" title="Run fast backtest with current parameters">
+              <i class="fas fa-bolt"></i> Run Optimized
+            </button>
+            <button id="saveParamSet" class="mybutton h-input-effects" title="Save current parameters for comparison">
+              <i class="fas fa-save"></i> Save Params
+            </button>
+            <button id="runAllSavedParams" class="mybutton h-input-effects" title="Run backtest on all saved parameter sets">
+              <i class="fas fa-play-circle"></i> Run All Saved
+            </button>
+            <button id="runGridSearch" class="mybutton h-input-effects" title="Run parameter optimization (grid search)">
+              <i class="fas fa-cogs"></i> Grid Search
+            </button>
+          </div>
+          <div style="margin-bottom: 15px;">
+            <label for="paramSetName">Param Set Name:</label>
+            <input type="text" id="paramSetName" placeholder="e.g., Conservative, Aggressive..." style="width: 100%;">
+          </div>
+          <div class="h-flex" style="gap: 10px; margin-bottom: 15px;">
+            <button id="exportParams" class="mybutton h-input-effects" title="Export saved params to JSON">
+              <i class="fas fa-download"></i> Export
+            </button>
+            <button id="importParams" class="mybutton h-input-effects" title="Import params from JSON">
+              <i class="fas fa-upload"></i> Import
+            </button>
+            <input type="file" id="importParamsInput" accept=".json" style="display: none;">
+            <button id="clearSavedResults" class="mybutton h-input-effects" title="Clear all saved results">
+              <i class="fas fa-trash"></i> Clear All
+            </button>
+          </div>
+          <div class="h-flex" style="margin-bottom: 10px;">
+            <label style="display: flex; align-items: center; gap: 5px;">
+              <input type="checkbox" id="fastBacktestMode">
+              <span>Fast Mode (No Chart)</span>
+            </label>
+          </div>
+          <hr class="h-hr" />
+          <h5>Results Comparison</h5>
+          <div id="savedResultsComparison" class="h-field" style="max-height: 400px; overflow-y: auto;">
+            <p style="color: #666; font-style: italic;">No saved results yet. Run a backtest and save parameters to compare.</p>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -789,12 +874,24 @@ CTrade trade;
       resultPanel.classList.add('active');
       document.querySelectorAll('.result-panel-content')[0].classList.remove('h-hide');
       document.querySelectorAll('.result-panel-content')[1].classList.add('h-hide');
+      document.querySelectorAll('.result-panel-content')[2].classList.add('h-hide');
+      document.querySelectorAll('.result-panel-content')[3].classList.add('h-hide');
     });
 
     document.getElementById('result-panel-toolbar-content-toggler-algo-editor').addEventListener('click', () => {
       resultPanel.classList.add('active');
       document.querySelectorAll('.result-panel-content')[0].classList.add('h-hide');
       document.querySelectorAll('.result-panel-content')[1].classList.remove('h-hide');
+      document.querySelectorAll('.result-panel-content')[2].classList.add('h-hide');
+      document.querySelectorAll('.result-panel-content')[3].classList.add('h-hide');
+    });
+
+    document.getElementById('result-panel-toolbar-content-toggler-comparison').addEventListener('click', () => {
+      resultPanel.classList.add('active');
+      document.querySelectorAll('.result-panel-content')[0].classList.add('h-hide');
+      document.querySelectorAll('.result-panel-content')[1].classList.add('h-hide');
+      document.querySelectorAll('.result-panel-content')[2].classList.add('h-hide');
+      document.querySelectorAll('.result-panel-content')[3].classList.remove('h-hide');
     });
 
     csvRefresh.addEventListener('click', () => {
@@ -816,24 +913,7 @@ CTrade trade;
 
     /* ---- */
 
-    const decimals = 5;
-    let slSize = () => parseFloat(document.getElementById('SLPoints').value);
-    let tpSize = () => parseFloat(document.getElementById('TPPoints').value);
-    let lotSize = () => parseFloat(document.getElementById('LotSize').value);
-    const EnumDirection = {
-      BULL: 'BULL',
-      BEAR: 'BEAR',
-    };
-    const EnumOrderStatus = {
-      PENDING: 'PENDING',
-      CLOSED_BY_TP: 'CLOSED_BY_TP',
-      CLOSED_BY_SL: 'CLOSED_BY_SL',
-    };
-    const EnumActionType = {
-      VERTICAL_LINE: 'VERTICAL_LINE',
-      DRAW_A_CIRCLE: 'DRAW_A_CIRCLE',
-      TAKE_A_TRADE: 'TAKE_A_TRADE',
-    };
+    // Note: Variables like decimals, slSize, tpSize, lotSize, enums are now defined in index6.js
 
     const getCandleDirection = (candle) => {
       return candle.close > candle.open ? EnumDirection.BULL : EnumDirection.BEAR;
