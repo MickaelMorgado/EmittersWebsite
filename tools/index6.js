@@ -2817,7 +2817,7 @@ const clearSavedResults = () => {
   }
 };
 
-// Run grid search optimization
+// Intelligent parameter optimization using random search + hill climbing
 const runGridSearch = async () => {
   if (cachedCSVData.length === 0) {
     alert('Please load a CSV file first!');
@@ -2826,63 +2826,127 @@ const runGridSearch = async () => {
   
   const baseParams = getCurrentParams();
   
-  // Define parameter ranges to test
-  const slOptions = [0.00005, 0.0001, 0.00015, 0.0002];
-  const tpOptions = [0.0001, 0.0002, 0.0003, 0.0004, 0.0005];
-  const tsOptions = [0.00005, 0.0001, 0.00015];
-  
-  const totalCombinations = slOptions.length * tpOptions.length * tsOptions.length;
-  
-  if (!confirm(`Run grid search with ${totalCombinations} parameter combinations?`)) {
+  if (!confirm('Run automatic parameter optimization? This will find the most profitable parameters.')) {
     return;
   }
   
   document.getElementById('loading-element').classList.add('visible');
-  document.getElementById('loading-element').querySelector('span').textContent = `Running grid search: 0/${totalCombinations}`;
+  document.getElementById('loading-element').querySelector('span').textContent = 'Optimizing parameters...';
   
   backtestResults = [];
-  let completed = 0;
   
-  // Use setTimeout to allow UI updates
-  await new Promise(resolve => setTimeout(resolve, 50));
+  // Define search ranges
+  const ranges = {
+    slSize: { min: 0.00005, max: 0.0003, step: 0.00005 },
+    tpSize: { min: 0.0001, max: 0.0008, step: 0.0001 },
+    tsSize: { min: 0.00002, max: 0.0002, step: 0.00002 },
+  };
   
-  for (const sl of slOptions) {
-    for (const tp of tpOptions) {
-      for (const ts of tsOptions) {
-        const params = {
-          ...baseParams,
-          slSize: sl,
-          tpSize: tp,
-          tsSize: ts,
-          name: `SL${sl}_TP${tp}_TS${ts}`,
-        };
-        
-        const result = runOptimizedBacktest(params, cachedCSVData);
-        result.params.name = params.name;
-        backtestResults.push(result);
-        
-        completed++;
-        document.getElementById('loading-element').querySelector('span').textContent = 
-          `Running grid search: ${completed}/${totalCombinations}`;
-        
-        // Allow UI to update every 10 iterations
-        if (completed % 10 === 0) {
-          await new Promise(resolve => setTimeout(resolve, 1));
-        }
+  // Helper: generate random parameter set
+  const randomParams = () => ({
+    slSize: Math.round((ranges.slSize.min + Math.random() * (ranges.slSize.max - ranges.slSize.min)) / ranges.slSize.step) * ranges.slSize.step,
+    tpSize: Math.round((ranges.tpSize.min + Math.random() * (ranges.tpSize.max - ranges.tpSize.min)) / ranges.tpSize.step) * ranges.tpSize.step,
+    tsSize: Math.round((ranges.tsSize.min + Math.random() * (ranges.tsSize.max - ranges.tsSize.min)) / ranges.tsSize.step) * ranges.tsSize.step,
+  });
+  
+  // Phase 1: Random Search (broad exploration)
+  const randomIterations = 50;
+  let bestResult = null;
+  let bestProfit = -Infinity;
+  
+  for (let i = 0; i < randomIterations; i++) {
+    const params = { ...baseParams, ...randomParams(), name: `Random_${i+1}` };
+    const result = runOptimizedBacktest(params, cachedCSVData);
+    backtestResults.push(result);
+    
+    const profit = parseFloat(result.moneyEquivalent);
+    if (profit > bestProfit) {
+      bestProfit = profit;
+      bestResult = result;
+    }
+    
+    document.getElementById('loading-element').querySelector('span').textContent = 
+      `Phase 1: Random search ${i+1}/${randomIterations} - Best: ${bestProfit.toFixed(2)}$`;
+    
+    if (i % 5 === 0) await new Promise(resolve => setTimeout(resolve, 1));
+  }
+  
+  if (!bestResult) {
+    alert('No valid results found.');
+    document.getElementById('loading-element').classList.remove('visible');
+    return;
+  }
+  
+  // Phase 2: Hill Climbing from best found
+  document.getElementById('loading-element').querySelector('span').textContent = 'Phase 2: Fine-tuning...';
+  
+  let currentBest = { ...bestResult.params };
+  let currentProfit = bestProfit;
+  let neighborsTested = 0;
+  const maxNeighbors = 30;
+  const improvementThreshold = 0.001;
+  
+  for (let iter = 0; iter < maxNeighbors; iter++) {
+    let foundBetter = false;
+    
+    // Test neighbors around current best
+    const neighborTests = [
+      { param: 'slSize', delta: ranges.slSize.step },
+      { param: 'slSize', delta: -ranges.slSize.step },
+      { param: 'tpSize', delta: ranges.tpSize.step },
+      { param: 'tpSize', delta: -ranges.tpSize.step },
+      { param: 'tsSize', delta: ranges.tsSize.step },
+      { param: 'tsSize', delta: -ranges.tsSize.step },
+    ];
+    
+    for (const test of neighborTests) {
+      const newParams = { 
+        ...baseParams, 
+        ...currentBest,
+        [test.param]: Math.max(ranges[test.param].min, Math.min(ranges[test.param].max, currentBest[test.param] + test.delta)),
+        name: `Hill_${iter}_${test.param}_${test.delta > 0 ? 'up' : 'down'}`
+      };
+      
+      const result = runOptimizedBacktest(newParams, cachedCSVData);
+      backtestResults.push(result);
+      
+      const profit = parseFloat(result.moneyEquivalent);
+      neighborsTested++;
+      
+      if (profit > currentProfit + improvementThreshold) {
+        currentBest = { ...newParams };
+        currentProfit = profit;
+        foundBetter = true;
+        break;
       }
     }
+    
+    document.getElementById('loading-element').querySelector('span').textContent = 
+      `Phase 2: Fine-tuning ${iter+1}/${maxNeighbors} - Best: ${currentProfit.toFixed(2)}$`;
+    
+    if (!foundBetter) break;
+    if (iter % 3 === 0) await new Promise(resolve => setTimeout(resolve, 1));
   }
+  
+  // Phase 3: Verify best params
+  document.getElementById('loading-element').querySelector('span').textContent = 'Phase 3: Verifying best parameters...';
+  
+  const finalParams = { ...baseParams, ...currentBest, name: 'OPTIMIZED_BEST' };
+  const finalResult = runOptimizedBacktest(finalParams, cachedCSVData);
+  backtestResults.push(finalResult);
   
   updateSavedResultsComparison();
   
   // Show best result
-  const best = [...backtestResults].sort((a, b) => parseFloat(b.moneyEquivalent) - parseFloat(a.moneyEquivalent))[0];
-  displayBacktestResult(best);
+  const sortedResults = [...backtestResults].sort((a, b) => parseFloat(b.moneyEquivalent) - parseFloat(a.moneyEquivalent));
+  displayBacktestResult(sortedResults[0]);
   
   document.getElementById('loading-element').classList.remove('visible');
   
   audioSuccess.play();
-  alert(`Grid search complete! Best result: ${best.moneyEquivalent}$ with ${best.params.name}`);
+  
+  const best = sortedResults[0];
+  alert(`Optimization complete!\n\nBest Profit: ${best.moneyEquivalent}$\nWin Rate: ${best.winRate}%\nTrades: ${best.totalTrades}\n\nParameters:\nSL: ${best.params.slSize}\nTP: ${best.params.tpSize}\nTS: ${best.params.tsSize}`);
 };
 
 // Export parameters
