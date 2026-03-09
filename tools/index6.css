@@ -118,6 +118,12 @@ table tr {
 
 .historical-order-table-header th {
   text-align: left;
+  width: 100%;
+}
+
+table {
+  width: 100%;
+  table-layout: fixed;
 }
 
 .historical-order-line:hover {
@@ -602,23 +608,51 @@ table {
 .comparison-results-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13px;
+  font-size: 11px;
+  table-layout: fixed;
 }
 
 .comparison-results-table thead {
   position: sticky;
   top: 0;
   background: var(--dark);
-  z-index: 1;
+  z-index: 10;
+  width: 100%;
+  display: revert;
+}
+
+.comparison-results-table thead tr {
+  display: revert;
 }
 
 .comparison-table-header th {
-  padding: 10px 8px;
+  padding: 8px 4px;
   text-align: left;
   background: var(--dark2);
   color: var(--light);
   font-weight: 600;
   border-bottom: 2px solid var(--accent);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.comparison-table-header th:first-child {
+  width: 30px;
+  text-align: center;
+}
+
+.comparison-table-header th:nth-child(2) {
+  width: 100px;
+}
+
+.comparison-table-header th:last-child {
+  width: 50px;
+  text-align: center;
+}
+
+.comparison-results-table tbody {
+  display: table-row-group;
 }
 
 .comparison-results-table tbody tr {
@@ -632,8 +666,29 @@ table {
 }
 
 .comparison-results-table td {
-  padding: 8px;
+  padding: 6px 4px;
   border: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.btn-load-params {
+  background: var(--accent);
+  border: none;
+  border-radius: 4px;
+  color: white;
+  cursor: pointer;
+  padding: 4px 8px;
+  font-size: 10px;
+}
+
+.btn-load-params:hover {
+  background: var(--green);
+}
+
+.comparison-results-table td:first-child {
+  text-align: center;
 }
 
 .comparison-row.best-result {
@@ -663,4 +718,24 @@ table {
 
 .text-drawdown {
   color: #fa0;
+}
+
+/* Monte Carlo Section */
+#monteCarloContainer {
+  background: var(--dark2);
+  padding: 15px;
+  border-radius: var(--radius);
+  margin-top: 10px;
+}
+
+#monteCarloContainer h5 {
+  margin: 0 0 10px 0;
+  color: var(--light);
+}
+
+#monteCarloStats {
+  margin-top: 10px;
+  padding: 10px;
+  background: var(--dark1);
+  border-radius: var(--radius);
 }

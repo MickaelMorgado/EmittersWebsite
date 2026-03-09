@@ -818,8 +818,12 @@ CTrade trade;
           </div>
           <hr class="h-hr" />
           <h5>Results Comparison</h5>
-          <div id="savedResultsComparison" class="h-field" style="max-height: 400px; overflow-y: auto;">
+          <div id="savedResultsComparison" class="h-field" style="max-height: 400px; overflow: auto; width: 100%; box-sizing: border-box;">
             <p style="color: #666; font-style: italic;">No saved results yet. Run a backtest and save parameters to compare.</p>
+          </div>
+          <div id="monteCarloContainer" style="margin-top: 20px; background: transparent; padding: 0;">
+            <canvas id="monteCarloChart" width="700px" height="350px"></canvas>
+            <div id="monteCarloStats" style="font-size: 11px; margin-top: 10px;"></div>
           </div>
         </div>
       </div>
@@ -842,14 +846,7 @@ CTrade trade;
     toolbarToggler.addEventListener('click', toggleHeight);
 
     document.getElementById('result-panel-toolbar-content-toggler-algo').addEventListener('click', () => {
-      resultPanel.classList.add('active');
-      document.querySelectorAll('.result-panel-content')[0].classList.remove('h-hide');
-      document.querySelectorAll('.result-panel-content')[1].classList.add('h-hide');
-      document.querySelectorAll('.result-panel-content')[2].classList.add('h-hide');
-      document.querySelectorAll('.result-panel-content')[3].classList.add('h-hide');
-    });
-
-    document.getElementById('result-panel-toolbar-content-toggler-comparison').addEventListener('click', () => {
+      // Panel 1 = Backtesting results (Algo)
       resultPanel.classList.add('active');
       document.querySelectorAll('.result-panel-content')[0].classList.add('h-hide');
       document.querySelectorAll('.result-panel-content')[1].classList.remove('h-hide');
@@ -857,11 +854,21 @@ CTrade trade;
       document.querySelectorAll('.result-panel-content')[3].classList.add('h-hide');
     });
 
-    document.getElementById('result-panel-toolbar-content-toggler-algo-editor').addEventListener('click', () => {
+    document.getElementById('result-panel-toolbar-content-toggler-comparison').addEventListener('click', () => {
+      // Panel 3 = Parameter Comparison
       resultPanel.classList.add('active');
       document.querySelectorAll('.result-panel-content')[0].classList.add('h-hide');
       document.querySelectorAll('.result-panel-content')[1].classList.add('h-hide');
-      document.querySelectorAll('.result-panel-content')[2].classList.remove('h-hide');
+      document.querySelectorAll('.result-panel-content')[2].classList.add('h-hide');
+      document.querySelectorAll('.result-panel-content')[3].classList.remove('h-hide');
+    });
+
+    document.getElementById('result-panel-toolbar-content-toggler-algo-editor').addEventListener('click', () => {
+      // Panel 0 = MQL5 Generator
+      resultPanel.classList.add('active');
+      document.querySelectorAll('.result-panel-content')[0].classList.remove('h-hide');
+      document.querySelectorAll('.result-panel-content')[1].classList.add('h-hide');
+      document.querySelectorAll('.result-panel-content')[2].classList.add('h-hide');
       document.querySelectorAll('.result-panel-content')[3].classList.add('h-hide');
     });
 

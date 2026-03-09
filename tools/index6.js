@@ -429,7 +429,29 @@ const loadConfigs = () => {
   window.location.search = configuration;
 }
 
+// Panel order in HTML: [0]=MQL5, [1]=Backtesting Algo, [2]=Review, [3]=Comparison
+
 const revealAlgoEditor = () => {
+  // MQL5 Generator is panel 0
+  $resultPanel.classList.add('active');
+  document.querySelectorAll('.result-panel-content')[0].classList.remove('h-hide');
+  document.querySelectorAll('.result-panel-content')[1].classList.add('h-hide');
+  document.querySelectorAll('.result-panel-content')[2].classList.add('h-hide');
+  document.querySelectorAll('.result-panel-content')[3].classList.add('h-hide');
+};
+
+const revealAlgo = () => {
+  // Backtesting results (Algo) is panel 1
+  $resultPanel.classList.add('active');
+  document.querySelectorAll('.result-panel-content')[0].classList.add('h-hide');
+  document.querySelectorAll('.result-panel-content')[1].classList.remove('h-hide');
+  document.querySelectorAll('.result-panel-content')[2].classList.add('h-hide');
+  document.querySelectorAll('.result-panel-content')[3].classList.add('h-hide');
+};
+revealAlgo();
+
+const revealReview = () => {
+  // Review Historical is panel 2
   $resultPanel.classList.add('active');
   document.querySelectorAll('.result-panel-content')[0].classList.add('h-hide');
   document.querySelectorAll('.result-panel-content')[1].classList.add('h-hide');
@@ -437,30 +459,13 @@ const revealAlgoEditor = () => {
   document.querySelectorAll('.result-panel-content')[3].classList.add('h-hide');
 };
 
-const revealAlgo = () => {
-  $resultPanel.classList.add('active');
-  document.querySelectorAll('.result-panel-content')[0].classList.remove('h-hide');
-  document.querySelectorAll('.result-panel-content')[1].classList.add('h-hide');
-  document.querySelectorAll('.result-panel-content')[2].classList.add('h-hide');
-  document.querySelectorAll('.result-panel-content')[3].classList.add('h-hide');
-};
-revealAlgo();
-
-const revealReview = () => {
+const revealComparison = () => {
+  // Parameter Comparison is panel 3
   $resultPanel.classList.add('active');
   document.querySelectorAll('.result-panel-content')[0].classList.add('h-hide');
   document.querySelectorAll('.result-panel-content')[1].classList.add('h-hide');
   document.querySelectorAll('.result-panel-content')[2].classList.add('h-hide');
   document.querySelectorAll('.result-panel-content')[3].classList.remove('h-hide');
-};
-
-const revealComparison = () => {
-  console.log('Opening comparison panel...');
-  $resultPanel.classList.add('active');
-  document.querySelectorAll('.result-panel-content')[0].classList.add('h-hide');
-  document.querySelectorAll('.result-panel-content')[1].classList.remove('h-hide');
-  document.querySelectorAll('.result-panel-content')[2].classList.add('h-hide');
-  document.querySelectorAll('.result-panel-content')[3].classList.add('h-hide');
 };
 
 const toggleHeight = () => {
@@ -936,6 +941,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Initially disable Google Sheets button since there's no data yet
   updateGoogleSheetsButtonState();
+  
+  // Load and display saved results from localStorage
+  loadResultsFromStorage();
+  if (backtestResults.length > 0) {
+    updateSavedResultsComparison();
+    renderComparisonChart();
+  }
 
   // Extract URL parameters
   const urlParams = new URLSearchParams(window.location.search);
@@ -2551,6 +2563,24 @@ const getCurrentParams = () => ({
   maThreshold: parseFloat($MAThresholdInput?.value) || 0.00003,
 });
 
+// Load parameters and run backtest
+const loadParamsAndRun = (params) => {
+  // Set values to inputs
+  if ($strategyInput) $strategyInput.value = params.strategy;
+  if ($sessionStartInput) $sessionStartInput.value = params.sessionStart;
+  if ($sessionEndInput) $sessionEndInput.value = params.sessionEnd;
+  if ($SLPointsInput) $SLPointsInput.value = params.slSize;
+  if ($TPPointsInput) $TPPointsInput.value = params.tpSize;
+  if ($LotSizeInput) $LotSizeInput.value = params.lotSize;
+  if ($CommissionSizeInput) $CommissionSizeInput.value = params.commissionSize;
+  if ($TSIncrementInput) $TSIncrementInput.value = params.tsSize;
+  if ($MAPeriodInput) $MAPeriodInput.value = params.maPeriod;
+  if ($MAThresholdInput) $MAThresholdInput.value = params.maThreshold;
+  
+  // Run optimized backtest
+  runOptimizedBacktestUI();
+};
+
 // Load CSV and cache it
 const loadAndCacheCSV = (file) => {
   return new Promise((resolve, reject) => {
@@ -2631,6 +2661,144 @@ const runOptimizedBacktestUI = async () => {
   }, 50);
 };
 
+// Monte Carlo simulation for equity curves
+const runMonteCarloSimulation = (orders, params, numSimulations = 50) => {
+  const closedTrades = orders.filter(o => o.closed && o.pnlPoints !== undefined);
+  if (closedTrades.length < 5) return null;
+  
+  const tradeReturns = closedTrades.map(t => (t.pnlPoints - params.commissionSize) * 100000 * params.lotSize);
+  const simulations = [];
+  
+  for (let sim = 0; sim < numSimulations; sim++) {
+    const equityCurve = [0];
+    let equity = 0;
+    
+    // Randomly resample trades with replacement
+    for (let i = 0; i < closedTrades.length; i++) {
+      const randomTrade = tradeReturns[Math.floor(Math.random() * tradeReturns.length)];
+      equity += randomTrade;
+      equityCurve.push(equity);
+    }
+    simulations.push(equityCurve);
+  }
+  
+  // Calculate statistics
+  const finalEquities = simulations.map(s => s[s.length - 1]);
+  finalEquities.sort((a, b) => a - b);
+  
+  const median = finalEquities[Math.floor(finalEquities.length / 2)];
+  const p10 = finalEquities[Math.floor(finalEquities.length * 0.1)];
+  const p90 = finalEquities[Math.floor(finalEquities.length * 0.9)];
+  const best = finalEquities[finalEquities.length - 1];
+  const worst = finalEquities[0];
+  
+  return {
+    simulations,
+    median,
+    p10,
+    p90,
+    best,
+    worst,
+    finalEquities,
+  };
+};
+
+// Render comparison results chart (equity curves for all saved results)
+const renderComparisonChart = () => {
+  const canvas = document.getElementById('monteCarloChart');
+  if (!canvas) return;
+  
+  if (backtestResults.length === 0) {
+    document.getElementById('monteCarloStats').innerHTML = '<p style="color: #666;">Run some backtests to see comparison.</p>';
+    return;
+  }
+  
+  // Destroy existing chart if any
+  if (window.monteCarloChartInstance) {
+    window.monteCarloChartInstance.destroy();
+  }
+  
+  const ctx = canvas.getContext('2d');
+  
+  // Get equity curves from each result
+  const resultsWithEquity = backtestResults.map((r, idx) => {
+    const equityCurve = [0];
+    let equity = 0;
+    const commission = r.params.commissionSize || 0.00005;
+    
+    r.orders.filter(o => o.closed).forEach(order => {
+      const tradeMoney = (order.pnlPoints - commission) * 100000 * r.params.lotSize;
+      equity += tradeMoney;
+      equityCurve.push(equity);
+    });
+    
+    return {
+      name: r.params.name || `Run ${idx + 1}`,
+      equity: equityCurve,
+      money: parseFloat(r.moneyEquivalent),
+      winRate: parseFloat(r.winRate),
+    };
+  }).filter(r => r.equity.length > 1);
+  
+  // Sort by final profit
+  resultsWithEquity.sort((a, b) => b.money - a.money);
+  
+  const maxLength = Math.max(...resultsWithEquity.map(r => r.equity.length));
+  const labels = Array.from({ length: maxLength }, (_, i) => i);
+  
+  // Color gradient from best (green) to worst (red)
+  const colors = resultsWithEquity.map((r, i, arr) => {
+    const ratio = i / Math.max(arr.length - 1, 1);
+    const rVal = Math.round(255 * ratio);
+    const gVal = Math.round(255 * (1 - ratio));
+    return `rgba(${rVal}, ${gVal}, 0, 0.7)`;
+  });
+  
+  const datasets = resultsWithEquity.map((r, idx) => ({
+    label: r.name,
+    data: r.equity,
+    borderColor: colors[idx],
+    borderWidth: idx === 0 ? 2 : 1,
+    fill: false,
+    pointRadius: 0,
+    tension: 0.1,
+  }));
+  
+  window.monteCarloChartInstance = new Chart(ctx, {
+    type: 'line',
+    data: { labels, datasets },
+    options: {
+      responsive: false,
+      animation: false,
+      plugins: {
+        legend: { 
+          display: true,
+          position: 'top',
+          labels: { color: '#888', font: { size: 9 }, boxWidth: 10 }
+        },
+      },
+      scales: {
+        x: { display: false },
+        y: {
+          ticks: { color: '#888', font: { size: 10 } },
+          grid: { color: '#333' },
+        },
+      },
+    },
+  });
+  
+  // Update stats
+  const best = resultsWithEquity[0];
+  const worst = resultsWithEquity[resultsWithEquity.length - 1];
+  document.getElementById('monteCarloStats').innerHTML = `
+    <div style="display: flex; gap: 15px; flex-wrap: wrap; font-size: 11px;">
+      <span style="color: #5f5;">Best: ${best.name} (${best.money}$)</span>
+      <span style="color: #f55;">Worst: ${worst.name} (${worst.money}$)</span>
+      <span style="color: #fff;">Runs: ${resultsWithEquity.length}</span>
+    </div>
+  `;
+};
+
 // Display backtest result
 const displayBacktestResult = (result) => {
   ordersHistory = result.orders;
@@ -2694,12 +2862,37 @@ const displayBacktestResult = (result) => {
   
   $exportableCSVField.value = resultToCSV;
   updateGoogleSheetsButtonState();
+  
+  // Render comparison chart with all saved results
+  renderComparisonChart();
 };
 
-// Save result for comparison
+// Save results to localStorage
+const saveResultsToStorage = () => {
+  try {
+    localStorage.setItem('backtestResults', JSON.stringify(backtestResults));
+  } catch (e) { console.warn('Could not save to localStorage:', e); }
+};
+
+// Load results from localStorage
+const loadResultsFromStorage = () => {
+  try {
+    const saved = localStorage.getItem('backtestResults');
+    if (saved) {
+      backtestResults = JSON.parse(saved);
+      window.backtestResults = backtestResults;
+    }
+  } catch (e) { console.warn('Could not load from localStorage:', e); }
+};
+
+// Load on startup
+loadResultsFromStorage();
+
+// Save results to localStorage whenever they change
 const saveResultForComparison = (result) => {
   backtestResults.push(result);
   window.backtestResults = backtestResults;
+  saveResultsToStorage();
   updateSavedResultsComparison();
 };
 
@@ -2730,6 +2923,7 @@ const updateSavedResultsComparison = () => {
           <th>P/F</th>
           <th>P/L ($)</th>
           <th>DD ($)</th>
+          <th>Action</th>
         </tr>
       </thead>
       <tbody>
@@ -2746,11 +2940,23 @@ const updateSavedResultsComparison = () => {
             <td>${r.profitFactor}</td>
             <td class="${parseFloat(r.moneyEquivalent) >= 0 ? 'text-profit' : 'text-loss'}">${r.moneyEquivalent}$</td>
             <td class="text-drawdown">${r.maxDrawdown}$</td>
+            <td><button class="btn-load-params" data-params='${JSON.stringify(r.params)}' title="Load params & run backtest">▶</button></td>
           </tr>
         `).join('')}
       </tbody>
     </table>
   `;
+  
+  // Add event listeners to load buttons
+  container.querySelectorAll('.btn-load-params').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const params = JSON.parse(e.target.dataset.params);
+      loadParamsAndRun(params);
+    });
+  });
+  
+  // Render comparison chart
+  renderComparisonChart();
 };
 
 // Save current parameters
@@ -2813,7 +3019,9 @@ const clearSavedResults = () => {
     savedParamSets = [];
     window.backtestResults = backtestResults;
     window.savedParamSets = savedParamSets;
+    localStorage.removeItem('backtestResults');
     updateSavedResultsComparison();
+    renderComparisonChart();
   }
 };
 
@@ -2837,9 +3045,9 @@ const runGridSearch = async () => {
   
   // Define search ranges
   const ranges = {
-    slSize: { min: 0.00005, max: 0.0003, step: 0.00005 },
-    tpSize: { min: 0.0001, max: 0.0008, step: 0.0001 },
-    tsSize: { min: 0.00002, max: 0.0002, step: 0.00002 },
+    slSize: { min: 0.0005, max: 0.003, step: 0.0005 },
+    tpSize: { min: 0.001, max: 0.01, step: 0.001 },
+    tsSize: { min: 0.00001, max: 0.00002, step: 0.00001 },
   };
   
   // Helper: generate random parameter set
