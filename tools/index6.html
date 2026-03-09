@@ -439,35 +439,6 @@
             </label>
           </div>
           <hr class="h-hr" />
-          <div class="h-flex">
-            <button id="runOptimizedBacktest" class="mybutton h-input-effects" title="Run fast backtest with current parameters">
-              <i class="fas fa-bolt"></i> Run Optimized
-            </button>
-            <button id="saveParamSet" class="mybutton h-input-effects" title="Save current parameters for comparison">
-              <i class="fas fa-save"></i> Save Params
-            </button>
-            <button id="runAllSavedParams" class="mybutton h-input-effects" title="Run backtest on all saved parameter sets">
-              <i class="fas fa-play-circle"></i> Run All Saved
-            </button>
-          </div>
-          <div style="margin-top: 10px;">
-            <label for="paramSetName">Param Set Name:</label>
-            <input type="text" id="paramSetName" placeholder="e.g., Conservative, Aggressive..." style="width: 100%;">
-          </div>
-          <hr class="h-hr" />
-          <div class="h-flex">
-            <button id="runGridSearch" class="mybutton h-input-effects" title="Run parameter optimization (grid search)">
-              <i class="fas fa-cogs"></i> Grid Search
-            </button>
-            <button id="exportParams" class="mybutton h-input-effects" title="Export saved params to JSON">
-              <i class="fas fa-download"></i> Export
-            </button>
-            <button id="importParams" class="mybutton h-input-effects" title="Import params from JSON">
-              <i class="fas fa-upload"></i> Import
-            </button>
-            <input type="file" id="importParamsInput" accept=".json" style="display: none;">
-          </div>
-          <hr class="h-hr" />
           <label title="Current progression of the current backtesting file reading. (Starting Time - Current Time - Ending Time)">File Reading Progression</label>
           <div class="flex">
             <span id="firstDate"></span>
