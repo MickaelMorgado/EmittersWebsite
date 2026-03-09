@@ -494,6 +494,12 @@
             Backtesting results (Algo)
           </button>
           <button
+            id="result-panel-toolbar-content-toggler-comparison"
+            class="mybutton h-input-effects result-panel-toolbar-toggler"
+          >
+            Parameter Comparison
+          </button>
+          <button
             id="result-panel-toolbar-content-toggler-algo-editor"
             class="mybutton h-input-effects result-panel-toolbar-toggler"
           >
@@ -512,12 +518,6 @@
             class="mybutton h-input-effects result-panel-toolbar-toggler"
           >
             Backtesting results (Manual)
-          </button>
-          <button
-            id="result-panel-toolbar-content-toggler-comparison"
-            class="mybutton h-input-effects result-panel-toolbar-toggler"
-          >
-            Parameter Comparison
           </button>
           <div class="spacer"></div>
           <button
@@ -849,7 +849,7 @@ CTrade trade;
       document.querySelectorAll('.result-panel-content')[3].classList.add('h-hide');
     });
 
-    document.getElementById('result-panel-toolbar-content-toggler-algo-editor').addEventListener('click', () => {
+    document.getElementById('result-panel-toolbar-content-toggler-comparison').addEventListener('click', () => {
       resultPanel.classList.add('active');
       document.querySelectorAll('.result-panel-content')[0].classList.add('h-hide');
       document.querySelectorAll('.result-panel-content')[1].classList.remove('h-hide');
@@ -857,12 +857,12 @@ CTrade trade;
       document.querySelectorAll('.result-panel-content')[3].classList.add('h-hide');
     });
 
-    document.getElementById('result-panel-toolbar-content-toggler-comparison').addEventListener('click', () => {
+    document.getElementById('result-panel-toolbar-content-toggler-algo-editor').addEventListener('click', () => {
       resultPanel.classList.add('active');
       document.querySelectorAll('.result-panel-content')[0].classList.add('h-hide');
       document.querySelectorAll('.result-panel-content')[1].classList.add('h-hide');
-      document.querySelectorAll('.result-panel-content')[2].classList.add('h-hide');
-      document.querySelectorAll('.result-panel-content')[3].classList.remove('h-hide');
+      document.querySelectorAll('.result-panel-content')[2].classList.remove('h-hide');
+      document.querySelectorAll('.result-panel-content')[3].classList.add('h-hide');
     });
 
     csvRefresh.addEventListener('click', () => {

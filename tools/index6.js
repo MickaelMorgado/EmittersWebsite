@@ -431,16 +431,16 @@ const loadConfigs = () => {
 
 const revealAlgoEditor = () => {
   $resultPanel.classList.add('active');
-  document.querySelectorAll('.result-panel-content')[0].classList.remove('h-hide');
+  document.querySelectorAll('.result-panel-content')[0].classList.add('h-hide');
   document.querySelectorAll('.result-panel-content')[1].classList.add('h-hide');
-  document.querySelectorAll('.result-panel-content')[2].classList.add('h-hide');
+  document.querySelectorAll('.result-panel-content')[2].classList.remove('h-hide');
   document.querySelectorAll('.result-panel-content')[3].classList.add('h-hide');
 };
 
 const revealAlgo = () => {
   $resultPanel.classList.add('active');
-  document.querySelectorAll('.result-panel-content')[0].classList.add('h-hide');
-  document.querySelectorAll('.result-panel-content')[1].classList.remove('h-hide');
+  document.querySelectorAll('.result-panel-content')[0].classList.remove('h-hide');
+  document.querySelectorAll('.result-panel-content')[1].classList.add('h-hide');
   document.querySelectorAll('.result-panel-content')[2].classList.add('h-hide');
   document.querySelectorAll('.result-panel-content')[3].classList.add('h-hide');
 };
@@ -450,17 +450,17 @@ const revealReview = () => {
   $resultPanel.classList.add('active');
   document.querySelectorAll('.result-panel-content')[0].classList.add('h-hide');
   document.querySelectorAll('.result-panel-content')[1].classList.add('h-hide');
-  document.querySelectorAll('.result-panel-content')[2].classList.remove('h-hide');
-  document.querySelectorAll('.result-panel-content')[3].classList.add('h-hide');
+  document.querySelectorAll('.result-panel-content')[2].classList.add('h-hide');
+  document.querySelectorAll('.result-panel-content')[3].classList.remove('h-hide');
 };
 
 const revealComparison = () => {
   console.log('Opening comparison panel...');
   $resultPanel.classList.add('active');
   document.querySelectorAll('.result-panel-content')[0].classList.add('h-hide');
-  document.querySelectorAll('.result-panel-content')[1].classList.add('h-hide');
+  document.querySelectorAll('.result-panel-content')[1].classList.remove('h-hide');
   document.querySelectorAll('.result-panel-content')[2].classList.add('h-hide');
-  document.querySelectorAll('.result-panel-content')[3].classList.remove('h-hide');
+  document.querySelectorAll('.result-panel-content')[3].classList.add('h-hide');
 };
 
 const toggleHeight = () => {
