@@ -5,6 +5,7 @@ const express = require('express');
 const { exec } = require('child_process');
 const { createServer } = require('http');
 const { Server } = require('socket.io');
+const WebSocket = require('ws');
 const fs = require('fs');
 const path = require('path');
 
@@ -21,6 +22,61 @@ const PORT = 3001;
 const MEMORY_BANK_DIR = path.join(__dirname, 'memory-bank');
 
 let isProcessing = false;
+let micEnabled = true;
+
+// AI Context Categories
+const AI_CATEGORIES = {
+    default: {
+        name: 'Default',
+        description: 'Developer AI assistant for TikTok stream',
+        systemPrompt: `CURRENT MODE: {CATEGORY}
+You are a pragmatic developer AI for a TikTok live stream. 
+Personality context: {PERSONALITY}
+Recent conversation: {HISTORY}
+Rules: 
+- Respond with MAX 1 short sentence (12 words).
+- Address the user by name when known.
+- NEVER repeat the user's message.
+- Provide a unique, helpful reaction or answer.
+- NO emojis. Plain text only.`
+    },
+    racing: {
+        name: 'Racing Gaming',
+        description: 'Focus on racing games, F1, sim racing',
+        systemPrompt: `CURRENT MODE: {CATEGORY}
+You are a passionate racing and gaming AI for a TikTok live stream. 
+You love discussing racing games, F1, sim racing, car mods, track times, and gaming setup.
+Personality context: {PERSONALITY}
+Recent conversation: {HISTORY}
+Rules: 
+- Respond with MAX 1 short sentence (12 words).
+- Address the user by name when known.
+- NEVER repeat the user's message.
+- Provide engaging racing/gaming reactions, tips, or enthusiasm.
+- NO emojis. Plain text only.`
+    },
+    stalker: {
+        name: 'Stalker Gaming',
+        description: 'Focus on S.T.A.L.K.E.R. game series',
+        systemPrompt: `CURRENT MODE: {CATEGORY}
+You are a STALKER gaming AI for a TikTok live stream. 
+You are passionate about the S.T.A.L.K.E.R. series, zone exploration, anomalies, artifacts, mutants, and the atmospheric world of the Zone.
+Personality context: {PERSONALITY}
+Recent conversation: {HISTORY}
+Rules: 
+- Respond with MAX 1 short sentence (12 words).
+- Address the user by name when known.
+- NEVER repeat the user's message.
+- Reference STALKER lore, give zone tips, discuss artifacts and anomalies.
+- Use occasional STALKER-style grim humor.
+- NO emojis. Plain text only.`
+    }
+};
+
+let currentCategory = 'default';
+
+// Track TikTok viewers who join the stream
+const joinedViewers = new Set();
 
 // Memory Bank Functions
 function loadMemoryFiles() {
@@ -181,16 +237,11 @@ async function askOllama(userText) {
             ? `\nRECENT CONVERSATION:\n${conversationHistory.map(h => `${h.role}: ${h.text}`).join('\n')}\n`
             : '';
 
-        // Standard Llama-2 Chat Format for better instruction following
-        const sysPrompt = `You are a pragmatic developer AI for a TikTok stream. 
-Personality context: ${memoryFiles.personality || ''}
-${historyContext}
-Rules: 
-- Respond with MAX 1 short sentence (12 words).
-- Address the user.
-- NEVER repeat the user's message.
-- Provide a unique, helpful reaction or answer.
-- NO emojis. Plain text only.`;
+        // Get category system prompt
+        const category = AI_CATEGORIES[currentCategory] || AI_CATEGORIES.default;
+        let sysPrompt = category.systemPrompt
+            .replace('{PERSONALITY}', memoryFiles.personality || '')
+            .replace('{RULES}', historyContext);
 
         const prompt = `[INST] <<SYS>>\n${sysPrompt}\n<</SYS>>\n\n${userText} [/INST]`;
 
@@ -262,8 +313,81 @@ async function main() {
         console.log(`Voice server running at http://localhost:${PORT}`);
     });
 
-    io.on('connection', (socket) => {
+    // Connect to TikTok backend to receive comments
+    const tiktokWs = new WebSocket('ws://localhost:8080');
+    
+    tiktokWs.on('open', () => {
+        console.log('[TikTok] Connected to TikTok backend');
+    });
+    
+    tiktokWs.on('message', async (data) => {
+        try {
+            const message = JSON.parse(data);
+            if (message.type === 'comment') {
+                const username = message.user;
+                const comment = message.message;
+                
+                console.log(`[TikTok] ${username}: ${comment}`);
+                io.emit('tiktok_comment', { user: username, message: comment });
+                
+                // Welcome new viewers
+                if (!joinedViewers.has(username)) {
+                    joinedViewers.add(username);
+                    const welcomeMsg = `Hey ${username}, welcome to the stream!`;
+                    io.emit('ai_response', welcomeMsg);
+                    io.emit('ai_response_start');
+                    await speak(welcomeMsg);
+                    io.emit('ai_response_end');
+                    io.emit('idle');
+                }
+                
+                // Process other comments through AI if not already processing
+                if (!isProcessing && !comment.toLowerCase().includes('!')) {
+                    // Check if it mentions the bot or is a question
+                    await processAIRequest(`${username}: ${comment}`, 'tiktok');
+                }
+            }
+        } catch (e) {
+            // Ignore non-JSON messages
+        }
+    });
+    
+    tiktokWs.on('error', (err) => {
+        console.error('[TikTok] WebSocket error:', err);
+    });
+
+io.on('connection', (socket) => {
         console.log('Browser connected to visual interface');
+        
+        // Send initial mic status to newly connected client
+        socket.emit('mic_status', micEnabled);
+        socket.emit('category_change', currentCategory);
+        
+        socket.on('set_category', (category) => {
+            if (AI_CATEGORIES[category]) {
+                currentCategory = category;
+                conversationHistory = []; // Clear history on category switch for clean context
+                console.log(`[CATEGORY] Switched to: ${AI_CATEGORIES[category].name}`);
+                io.emit('category_change', currentCategory);
+                
+                // Announce category change
+                const announceMsg = `Switched to ${AI_CATEGORIES[category].name} mode.`;
+                io.emit('ai_response', announceMsg);
+                io.emit('ai_response_start');
+                speak(announceMsg).then(() => {
+                    io.emit('ai_response_end');
+                    io.emit('idle');
+                });
+            }
+        });
+        
+        socket.on('get_categories', () => {
+            socket.emit('categories', Object.entries(AI_CATEGORIES).map(([key, val]) => ({
+                id: key,
+                name: val.name,
+                description: val.description
+            })));
+        });
         
         socket.on('message', async (text) => {
             console.log(`[SOCKET] Received "message": "${text}" | isProcessing: ${isProcessing}`);
@@ -279,11 +403,20 @@ async function main() {
             await speak(text);
             resetInactivityTimer(); // Reset only after speaking is finished
         });
+
+        socket.on('mic_toggle', (enabled) => {
+            console.log(`[SOCKET] Microphone toggle: ${enabled}`);
+            micEnabled = enabled;
+            io.emit('mic_status', micEnabled);
+            if (!micEnabled) {
+                io.emit('idle');
+            }
+        });
     });
 
-    // Voice conversation loop
+// Voice conversation loop
     while (true) {
-        if (isProcessing) {
+        if (isProcessing || !micEnabled) {
             await new Promise(resolve => setTimeout(resolve, 1000));
             continue;
         }
@@ -291,7 +424,7 @@ async function main() {
         const now = Date.now();
         if (now - lastInteractionTime > nextProactiveDelay) {
             console.log('--- Proactive Engagement Triggered ---');
-            await processAIRequest("SYSTEM: The chat has been quiet for a while. Provide a short, direct tech fact, a question for the audience, or a quick greeting/check-in with Mickael.", "proactive");
+            await processAIRequest("SYSTEM: The stream has been quiet. Provide a short, direct tech fact, a question for the chat, or a quick check-in with Mickael.", "proactive");
             continue;
         }
 

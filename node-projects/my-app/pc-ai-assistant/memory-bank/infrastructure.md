@@ -14,8 +14,8 @@ This document describes how the TikTok AI Assistant ecosystem works, including t
     - **Text-to-Speech (TTS)**: Calls `tts_piper.py` (Python bridge to Piper TTS) for high-quality offline voice synthesis.
     - **Socket.io**: Broadcasts status updates (listening, thinking, speaking, events) to the Frontend.
 
-### 2. TikTok Live Backend (Node.js/WS)
-- **Path**: `node-projects/tiktok-backend/server.js`
+### 2. TikTok Live Connector (Node.js/WS)
+- **Path**: `node-projects/my-app/pc-ai-assistant/tiktok-server.js`
 - **Port**: `8080`
 - **Core Logic**:
     - Uses `tiktok-live-connector` to hook into a live stream.
@@ -49,16 +49,18 @@ To run the full system, open three terminals and run the following in order:
    ```
    *Available at http://localhost:3000/tiktok-tts*
 
-2. **TikTok Connector**:
-   ```pwsh
-   cd node-projects/tiktok-backend
-   node server.js
-   ```
-
-3. **AI Assistant**:
+2. **AI Assistant + TikTok Connector**:
    ```pwsh
    cd node-projects/my-app/pc-ai-assistant
-   npm start
+   npm run dev
+   ```
+   *Runs both AI Server (3001) and TikTok Connector (8080)*
+
+Or run them separately:
+   ```pwsh
+   cd node-projects/my-app/pc-ai-assistant
+   npm start          # AI Assistant only (port 3001)
+   npm run tiktok     # TikTok Connector only (port 8080)
    ```
 
 ## Development & Maintenance

@@ -382,21 +382,6 @@ export default function TikTokAnalyticsPage() {
                   </div>
                 </div>
               )}
-                    <p className="text-sm font-medium mb-1">Paste Authorization Code</p>
-                    <div className="flex gap-2 mt-1">
-                      <Input
-                        id="authCode"
-                        placeholder="code from redirect URL"
-                        className="flex-1"
-                      />
-                      <Button onClick={() => {
-                        const code = (document.getElementById("authCode") as HTMLInputElement).value;
-                        handleCodeSubmit(code);
-                      }} disabled={isLoadingApi}>
-                        {isLoadingApi ? <Loader2 className="w-4 h-4 animate-spin" /> : "Submit"}
-                      </Button>
-                </div>
-              )}
               {error && (
                 <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
                   {error}
