@@ -278,7 +278,7 @@ table {
 
 .result-panel {
   position: relative;
-  max-height: 60px;
+  height: 60px;
   background: black;
   color: white;
   overflow-y: auto;
@@ -315,12 +315,12 @@ table {
 
 /* When the result panel is active: */
 .result-panel.active {
-  max-height: 500px;
+  height: 500px;
 }
 
 /* When chart is collapsed and panel should take full height: */
 .result-panel.active.full-height {
-  max-height: 100vh;
+  height: 100vh;
 }
 
 .active .result-panel-toolbar-toggler {

@@ -469,7 +469,30 @@ const revealComparison = () => {
 };
 
 const toggleHeight = () => {
+  const chartSection = document.querySelector('.chart-section');
+  
+  // Toggle panel active
   $resultPanel.classList.toggle('active');
+  
+  if ($resultPanel.classList.contains('active')) {
+    if (chartSection.classList.contains('chart-collapsed')) {
+      // Details only: full height panel
+      $resultPanel.classList.add('full-height');
+      chartSection.style.height = '0px';
+    } else {
+      // Split layout: half height each
+      $resultPanel.classList.remove('full-height');
+      const fullHeight = window.innerHeight;
+      const halfHeight = Math.max(500, fullHeight / 2);
+      $resultPanel.style.height = `${halfHeight}px`;
+      chartSection.style.height = `${halfHeight}px`;
+    }
+  } else {
+    // Panel hidden or minimal height
+    $resultPanel.classList.remove('full-height');
+    $resultPanel.style.height = '';
+    chartSection.style.height = '';
+  }
 };
 $toolbarToggler?.addEventListener('click', toggleHeight);
 
