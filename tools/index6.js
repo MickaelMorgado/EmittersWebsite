@@ -2796,8 +2796,8 @@ const renderComparisonChart = () => {
       plugins: {
         legend: { 
           display: true,
-          position: 'top',
-          labels: { color: '#888', font: { size: 9 }, boxWidth: 10 }
+          position: 'right',
+          labels: { color: '#888', font: { size: 9 }, boxWidth: 1 }
         },
       },
       scales: {
