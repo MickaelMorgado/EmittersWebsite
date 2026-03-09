@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Upload, X, Download, Image as ImageIcon, Zap, CheckCircle, Loader2 } from "lucide-react";
+import { Upload, X, Download, Image as ImageIcon, Zap, CheckCircle, Loader2, Crop } from "lucide-react";
 import Image from "next/image";
 import { VersionBadge } from "@/components/VersionBadge";
 import JSZip from "jszip";
@@ -20,6 +20,8 @@ interface ImageFile {
   compressedUrl?: string;
   status: "pending" | "compressing" | "done" | "error";
   progress: number;
+  originalWidth?: number;
+  originalHeight?: number;
 }
 
 export default function ImageCompressorPage() {
@@ -27,6 +29,9 @@ export default function ImageCompressorPage() {
   const [targetMB, setTargetMB] = useState(1);
   const [isCompressing, setIsCompressing] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [enableCrop, setEnableCrop] = useState(false);
+  const [cropWidth, setCropWidth] = useState(1920);
+  const [cropHeight, setCropHeight] = useState(1080);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const formatFileSize = (bytes: number): string => {
@@ -84,7 +89,10 @@ export default function ImageCompressorPage() {
 
   const compressImage = async (
     file: File,
-    targetMB: number
+    targetMB: number,
+    cropEnabled: boolean = false,
+    targetWidth: number = 0,
+    targetHeight: number = 0
   ): Promise<{ blob: Blob; size: number }> => {
     return new Promise((resolve, reject) => {
       const img = new (window.Image || (globalThis as any).Image)();
@@ -92,6 +100,11 @@ export default function ImageCompressorPage() {
         const canvas = document.createElement("canvas");
         let width = img.width;
         let height = img.height;
+
+        if (cropEnabled && targetWidth > 0 && targetHeight > 0) {
+          width = targetWidth;
+          height = targetHeight;
+        }
 
         canvas.width = width;
         canvas.height = height;
@@ -171,7 +184,7 @@ export default function ImageCompressorPage() {
           setImages([...updatedImages]);
         }
 
-        const result = await compressImage(updatedImages[i].file, targetMB);
+        const result = await compressImage(updatedImages[i].file, targetMB, enableCrop, cropWidth, cropHeight);
 
         if (updatedImages[i].preview) {
           URL.revokeObjectURL(updatedImages[i].preview);
@@ -456,6 +469,68 @@ export default function ImageCompressorPage() {
                     <span>0.1 MB</span>
                     <span>10 MB</span>
                   </div>
+                </div>
+
+                <div className="pt-4 border-t border-white/10">
+                  <label className="flex items-center gap-2 text-sm text-white/60 mb-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={enableCrop}
+                      onChange={(e) => setEnableCrop(e.target.checked)}
+                      className="w-4 h-4 rounded bg-white/10 border-white/20 accent-blue-500"
+                    />
+                    <Crop className="w-4 h-4" />
+                    Resize to specific resolution
+                  </label>
+
+                  {enableCrop && (
+                    <div className="grid grid-cols-2 gap-3 mt-3">
+                      <div>
+                        <label className="text-xs text-white/40 mb-1 block">Width</label>
+                        <Input
+                          type="number"
+                          min="1"
+                          max="8192"
+                          value={cropWidth}
+                          onChange={(e) => setCropWidth(Math.max(1, parseInt(e.target.value) || 1920))}
+                          className="bg-white/5 border-white/10"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs text-white/40 mb-1 block">Height</label>
+                        <Input
+                          type="number"
+                          min="1"
+                          max="8192"
+                          value={cropHeight}
+                          onChange={(e) => setCropHeight(Math.max(1, parseInt(e.target.value) || 1080))}
+                          className="bg-white/5 border-white/10"
+                        />
+                      </div>
+                    </div>
+                  )}
+                  {enableCrop && (
+                    <div className="flex flex-wrap gap-2 mt-3">
+                      {[
+                        { w: 1920, h: 1080, label: "1080p" },
+                        { w: 1280, h: 720, label: "720p" },
+                        { w: 1080, h: 1080, label: "Square" },
+                        { w: 1080, h: 1920, label: "Story" },
+                        { w: 1200, h: 628, label: "OG Image" },
+                      ].map((preset) => (
+                        <button
+                          key={preset.label}
+                          onClick={() => {
+                            setCropWidth(preset.w);
+                            setCropHeight(preset.h);
+                          }}
+                          className="text-xs px-2 py-1 rounded bg-white/10 hover:bg-white/20 transition-colors"
+                        >
+                          {preset.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {images.length > 0 && (
