@@ -45,6 +45,7 @@ const PROJECTS: { [section: string]: Project[] } = {
     { title: "TikTok Analytics", description: "Connect your TikTok account to load and analyze your video metrics", href: "/tiktok-analytics", accentColor: "0, 200, 255", isPublic: true },
     { title: "STALKER 2 Ammo Tracker", description: "Interactive ammo and weight management dashboard", href: "/stalker2-ammo", accentColor: "255, 126, 0", isPublic: true },
     { title: "Image Compressor", description: "Bulk compress images to target file size and download as ZIP", href: "/image-compressor", accentColor: "139, 92, 246", isPublic: true },
+    { title: "Strudel Live Code", description: "Create music with code - live coding electronic music", href: "/strudel", accentColor: "236, 185, 11", isPublic: true },
   ],
   "Standalone Projects": [
     { title: "Trading Tools", description: "Trading tools for analyzing and visualizing market data", href: "https://emittersgame.com/tools/index6.html", accentColor: "245, 158, 11", isExternal: true },
