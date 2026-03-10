@@ -15,7 +15,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { ArrowDown, ArrowUp, Upload, ExternalLink, Eye, Heart, MessageCircle, Share2, Play, Link2, Loader2, BarChart3 } from "lucide-react";
+import { ArrowDown, ArrowUp, Upload, ExternalLink, Eye, Heart, MessageCircle, Share2, Play, Link2, Loader2, BarChart3, RefreshCw } from "lucide-react";
 
 function parseCSV(content: string): TikTokVideo[] {
   const lines = content.trim().split("\n");
