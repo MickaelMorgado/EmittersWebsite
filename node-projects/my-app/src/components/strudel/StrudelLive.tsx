@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, DragEvent, useRef, useEffect, useCallback } from "react";
+import { useState, DragEvent, useRef, useEffect, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Play, Square, RotateCcw, Music2, Shuffle, Trash2, GripVertical, Loader2, Volume2, VolumeX } from "lucide-react";
+import { Play, Square, RotateCcw, Music2, Shuffle, Trash2, GripVertical, Loader2, Volume2, VolumeX, Sparkles, Zap, Waves, Code2 } from "lucide-react";
 
 interface CategoryPattern {
   name: string;
@@ -80,6 +79,102 @@ const CATEGORIES: Category[] = [
   },
 ];
 
+const EXAMPLE_PATTERNS = [
+  { id: "techno", name: "Techno", code: `bd: "bd*4"
+sd: "~ sd ~ sd"
+hh: "hh*8"`, genre: "Electronic" },
+  { id: "house", name: "House", code: `bd: "bd*4"
+cp: "~ cp ~ cp"
+hh: "~ hh*7"`, genre: "Electronic" },
+  { id: "breakbeat", name: "Breakbeat", code: `bd: "bd*2 ~ bd*2"
+sd: "~ sd*2 ~ sd*3"
+hh: "hh*16"`, genre: "Electronic" },
+  { id: "trap", name: "Trap", code: `bd: "bd*4"
+sd: "~ sd ~ sd*3"
+hh: "~ hh*4 ~ hh*2 ~ hh"`, genre: "Hip Hop" },
+  { id: "ambient", name: "Ambient Pad", code: `bass: "c2 f2 g2 a2 c2 f2 g2 a2"
+lead: "c4 e4 g4 c5 e4 g4 c5 e4"`, genre: "Ambient" },
+  { id: "acid", name: "Acid Bass", code: `bass: "c2 d2 e2 f2 c2 d2 e2 f2"
+hh: "hh*8"`, genre: "Electronic" },
+  { id: "arpeggio", name: "Arpeggio", code: `lead: "c4 e4 g4 c5 e4 g4 c5 e4"
+bass: "c2 ~ c2 ~ f2 ~"`, genre: "Electronic" },
+  { id: "drumfill", name: "Drum Fill", code: `bd: "bd*2 ~ bd ~ bd*3"
+sd: "~ sd*2 ~ sd ~ sd*3"
+hh: "hh ~ hh ~ hh*3"`, genre: "Drums" },
+  { id: "reese", name: "Reese Bass", code: `bass: "c2 f2 c2 f2"
+hh: "hh*8"`, genre: "Dubstep" },
+  { id: "chords", name: "Chord Stab", code: `lead: "c3 f3 g3 a3 c3 f3 g3 a3"
+bass: "c2 ~ f2 ~ c2 ~"`, genre: "House" },
+  { id: "offbeat", name: "Offbeat Hat", code: `bd: "bd*4"
+sd: "~ sd ~ sd"
+hh: "~ hh*7"`, genre: "Reggae" },
+  { id: "rolling", name: "Rolling Bass", code: `bass: "c2 c2 d2 e2 f2 g2 a2 b2"
+hh: "hh*16"`, genre: "Drum & Bass" },
+];
+
+const AUTOCOMPLETE_ITEMS = [
+  { label: "bd", category: "sound", description: "Kick drum" },
+  { label: "sd", category: "sound", description: "Snare drum" },
+  { label: "hh", category: "sound", description: "Hi-hat" },
+  { label: "cp", category: "sound", description: "Clap" },
+  { label: "sid", category: "sound", description: "Rimshot" },
+  { label: "oh", category: "sound", description: "Open hi-hat" },
+  { label: "lt", category: "sound", description: "Low tom" },
+  { label: "mt", category: "sound", description: "Mid tom" },
+  { label: "ht", category: "sound", description: "High tom" },
+  { label: "c2", category: "note", description: "Note C2 (65.41Hz)" },
+  { label: "d2", category: "note", description: "Note D2 (73.42Hz)" },
+  { label: "e2", category: "note", description: "Note E2 (82.41Hz)" },
+  { label: "f2", category: "note", description: "Note F2 (87.31Hz)" },
+  { label: "g2", category: "note", description: "Note G2 (98.00Hz)" },
+  { label: "a2", category: "note", description: "Note A2 (110.00Hz)" },
+  { label: "b2", category: "note", description: "Note B2 (123.47Hz)" },
+  { label: "c3", category: "note", description: "Note C3 (130.81Hz)" },
+  { label: "d3", category: "note", description: "Note D3 (146.83Hz)" },
+  { label: "e3", category: "note", description: "Note E3 (164.81Hz)" },
+  { label: "f3", category: "note", description: "Note F3 (174.61Hz)" },
+  { label: "g3", category: "note", description: "Note G3 (196.00Hz)" },
+  { label: "a3", category: "note", description: "Note A3 (220.00Hz)" },
+  { label: "b3", category: "note", description: "Note B3 (246.94Hz)" },
+  { label: "c4", category: "note", description: "Note C4 (261.63Hz)" },
+  { label: "d4", category: "note", description: "Note D4 (293.66Hz)" },
+  { label: "e4", category: "note", description: "Note E4 (329.63Hz)" },
+  { label: "f4", category: "note", description: "Note F4 (349.23Hz)" },
+  { label: "g4", category: "note", description: "Note G4 (392.00Hz)" },
+  { label: "a4", category: "note", description: "Note A4 (440.00Hz)" },
+  { label: "b4", category: "note", description: "Note B4 (493.88Hz)" },
+  { label: "c5", category: "note", description: "Note C5 (523.25Hz)" },
+  { label: "~", category: "symbol", description: "Rest/silence" },
+  { label: "*", category: "operator", description: "Repeat pattern (e.g. bd*4)" },
+  { label: ":", category: "operator", description: "Layer separator (sound: \"pattern\")" },
+  { label: "\"", category: "operator", description: "Pattern string delimiters" },
+  { label: "slow", category: "effect", description: "Slow down pattern (slow 2)" },
+  { label: "fast", category: "effect", description: "Speed up pattern (fast 2)" },
+  { label: "rev", category: "effect", description: "Reverse pattern" },
+  { label: "room", category: "effect", description: "Add room reverb" },
+  { label: "delay", category: "effect", description: "Add delay effect" },
+  { label: "crush", category: "effect", description: "Bitcrush effect" },
+  { label: "gain", category: "effect", description: "Adjust gain (gain 0.5)" },
+  { label: "pan", category: "effect", description: "Panning (pan 0.5)" },
+  { label: "vowel", category: "effect", description: "Vowel filter (vowel \"a e\")" },
+  { label: "lpf", category: "effect", description: "Low-pass filter" },
+  { label: "hpf", category: "effect", description: "High-pass filter" },
+  { label: "bp", category: "effect", description: "Band-pass filter" },
+  { label: "echo", category: "effect", description: "Echo effect" },
+  { label: "coarse", category: "effect", description: "Coarse pitch shift" },
+  { label: "chop", category: "effect", description: "Chop samples" },
+  { label: "stut", category: "effect", description: "Stutter effect" },
+  { label: "cloud", category: "effect", description: "Granular cloud" },
+  { label: "slice", category: "effect", description: "Slice samples" },
+  { label: "jux", category: "effect", description: "Juxtapose patterns" },
+  { label: "ply", category: "effect", description: "Ply - layer with original" },
+  { label: "gap", category: "effect", description: "Add gap of silence" },
+  { label: "legato", category: "effect", description: "Legato notes" },
+  { label: "metronome", category: "pattern", description: "Metronome click" },
+  { label: "sound", category: "pattern", description: "Select sound" },
+  { label: "s", category: "pattern", description: "Sound shorthand" },
+];
+
 const NOTE_TO_FREQ: Record<string, string> = {
   c2: "65.41", d2: "73.42", e2: "82.41", f2: "87.31", g2: "98.00", a2: "110.00", b2: "123.47",
   c3: "130.81", d3: "146.83", e3: "164.81", f3: "174.61", g3: "196.00", a3: "220.00", b3: "246.94",
@@ -93,6 +188,14 @@ interface DroppedItem {
   patternIndex: number;
 }
 
+interface KeyEffect {
+  id: number;
+  x: number;
+  y: number;
+  color: string;
+  timestamp: number;
+}
+
 function getRandomPattern(category: Category): number {
   return Math.floor(Math.random() * category.patterns.length);
 }
@@ -104,39 +207,108 @@ function StrudelLive() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState("");
-  const [volume, setVolume] = useState(0.7);
+  const [volume, setVolume] = useState(0.85);
+  const [showAutocomplete, setShowAutocomplete] = useState(false);
+  const [autocompletePosition, setAutocompletePosition] = useState({ top: 0, left: 0 });
+  const [autocompleteFilter, setAutocompleteFilter] = useState("");
+  const [selectedAutocompleteIndex, setSelectedAutocompleteIndex] = useState(0);
+  const [keyEffects, setKeyEffects] = useState<KeyEffect[]>([]);
+  const [isEditorFocused, setIsEditorFocused] = useState(false);
+  const [editorGlow, setEditorGlow] = useState(0);
   
   const synthsRef = useRef<any[]>([]);
-  const samplesRef = useRef<Record<string, any>>({});
   const sequenceRef = useRef<any>(null);
   const isInitializedRef = useRef(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const editorContainerRef = useRef<HTMLDivElement>(null);
+  const autoPlayTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const generateCode = () => {
-    return droppedItems.map((item) => {
-      const pattern = item.category.patterns[item.patternIndex];
-      return `${item.category.id}: "${pattern.code}"`;
-    }).join("\n");
+  const filteredAutocomplete = useMemo(() => {
+    if (!autocompleteFilter) return AUTOCOMPLETE_ITEMS.slice(0, 15);
+    const filter = autocompleteFilter.toLowerCase();
+    return AUTOCOMPLETE_ITEMS.filter(item => 
+      item.label.toLowerCase().includes(filter) ||
+      item.description.toLowerCase().includes(filter)
+    ).slice(0, 15);
+  }, [autocompleteFilter]);
+
+  useEffect(() => {
+    setSelectedAutocompleteIndex(0);
+  }, [filteredAutocomplete]);
+
+  const parseCodeFromTextarea = (codeText: string): { id: string; pattern: string }[] => {
+    const lines = codeText.trim().split("\n").filter(line => line.trim() && !line.trim().startsWith("#"));
+    const parsed: { id: string; pattern: string }[] = [];
+    
+    for (const line of lines) {
+      const match = line.match(/^(\w+):\s*["'](.*)["']/);
+      if (match) {
+        parsed.push({ id: match[1], pattern: match[2] });
+      }
+    }
+    
+    return parsed;
+  };
+
+  const SOUND_MAP: Record<string, string> = {
+    bd: "kick",
+    sd: "snare",
+    hh: "hihat",
+    cp: "snare",
+    ht: "snare",
+    lt: "snare",
+    mt: "snare",
+    oh: "hihat",
+    sn: "snare",
+    k: "kick",
+    s: "snare",
+    h: "hihat",
+  };
+
+  const mapSoundToLayer = (soundId: string): string => {
+    return SOUND_MAP[soundId] || soundId;
+  };
+
+  const isValidCode = (codeText: string): boolean => {
+    return parseCodeFromTextarea(codeText).length > 0;
   };
 
   const initializeTone = useCallback(async () => {
-    if (isInitializedRef.current) return;
+    console.log("Initializing Tone.js...");
+    
+    if ((window.Tone as any)?.started) {
+      console.log("Tone already started");
+      isInitializedRef.current = true;
+      return;
+    }
+    
+    if (isInitializedRef.current && (window.Tone as any)?.Transport) {
+      console.log("Tone already initialized");
+      return;
+    }
     
     setIsLoading(true);
     setStatus("Loading Tone.js...");
     
     try {
-      const script = document.createElement("script");
-      script.src = "https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js";
-      document.head.appendChild(script);
-      
-      await new Promise<void>((resolve, reject) => {
-        script.onload = () => resolve();
-        script.onerror = () => reject(new Error("Failed to load Tone.js"));
-      });
+      if (!(window.Tone as any)) {
+        console.log("Loading Tone.js from CDN...");
+        const script = document.createElement("script");
+        script.src = "https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js";
+        document.head.appendChild(script);
+        
+        await new Promise<void>((resolve, reject) => {
+          script.onload = () => resolve();
+          script.onerror = () => reject(new Error("Failed to load Tone.js"));
+        });
+      }
 
-      await (window.Tone as any).start();
+      if (!(window.Tone as any).started) {
+        await (window.Tone as any).start();
+      }
       await (window.Tone as any).getContext().resume();
       
+      console.log("Tone.js started successfully");
       isInitializedRef.current = true;
       setStatus("");
     } catch (err) {
@@ -173,10 +345,32 @@ function StrudelLive() {
     return result;
   };
 
-  const startPlayback = async () => {
-    if (droppedItems.length === 0) return;
+  const startPlayback = async (_codeToPlay?: string) => {
+    const parsedFromCode = parseCodeFromTextarea(code || "");
+    const useCodeInput = code.trim().length > 0 && parsedFromCode.length > 0;
+    
+    console.log("Code:", code);
+    console.log("Parsed:", parsedFromCode);
+    console.log("UseCodeInput:", useCodeInput);
+    console.log("DroppedItems:", droppedItems.length);
+    
+    if (!useCodeInput && droppedItems.length === 0) {
+      console.log("No valid input to play");
+      return;
+    }
     
     await initializeTone();
+    
+    if (!(window.Tone as any)?.Transport) {
+      console.error("Tone.Transport not available");
+      setStatus("Audio not ready");
+      return;
+    }
+    
+    const ctx = (window.Tone as any).getContext();
+    if (ctx.state !== "running") {
+      await ctx.resume();
+    }
     
     try {
       (window.Tone as any).Transport.stop();
@@ -236,14 +430,25 @@ function StrudelLive() {
       
       const sequence: { time: string; note: string | null; sound: string; layer: string }[][] = [];
       
-      for (const item of droppedItems) {
-        const pattern = item.category.patterns[item.patternIndex];
-        const tokens = parsePattern(pattern.code);
+      let layers: { id: string; pattern: string }[] = [];
+      
+      if (useCodeInput) {
+        layers = parsedFromCode;
+      } else {
+        layers = droppedItems.map(item => ({
+          id: item.category.id,
+          pattern: item.category.patterns[item.patternIndex].code,
+        }));
+      }
+      
+      for (const layer of layers) {
+        const tokens = parsePattern(layer.pattern);
+        const mappedLayerId = mapSoundToLayer(layer.id);
         
         const layerSequence = tokens.map((sound, step) => {
           let note: string | null = null;
           
-          if (["bass", "lead"].includes(item.category.id)) {
+          if (["bass", "lead", "c2", "d2", "e2", "f2", "g2", "a2", "b2", "c3", "d3", "e3", "f3", "g3", "a3", "b3", "c4", "d4", "e4", "f4", "g4", "a4", "b4", "c5"].includes(sound)) {
             note = NOTE_TO_FREQ[sound] || sound;
           }
           
@@ -251,7 +456,7 @@ function StrudelLive() {
             time: `${step * (4 / tokens.length)}i`,
             note,
             sound,
-            layer: item.category.id,
+            layer: mappedLayerId,
           };
         });
         
@@ -263,23 +468,33 @@ function StrudelLive() {
       let stepIndex = 0;
       const maxSteps = Math.max(...sequence.map(s => s.length));
       
+      console.log("Sequence built:", sequence.length, "layers");
+      console.log("Layers:", JSON.stringify(sequence));
+      
       const loop = new (window.Tone as any).Loop((time) => {
         for (let layerIdx = 0; layerIdx < sequence.length; layerIdx++) {
           const layer = sequence[layerIdx];
           if (stepIndex < layer.length) {
             const { sound, layer: layerId, note } = layer[stepIndex];
-            if (sound === "~") continue;
+            if (sound === "~" || sound === "") continue;
             
-            if (layerId === "kick") {
+            const mappedId = mapSoundToLayer(layerId);
+            const isNote = NOTE_TO_FREQ[sound] !== undefined;
+            
+            console.log("Trigger:", sound, "layer:", mappedId, "note:", note);
+            
+            if (mappedId === "kick" || sound === "bd" || sound === "k") {
               kick.triggerAttackRelease("C1", "8n", time);
-            } else if (layerId === "snare") {
+            } else if (mappedId === "snare" || sound === "sd" || sound === "s" || sound === "cp") {
               snare.triggerAttackRelease("8n", time);
-            } else if (layerId === "hihat") {
+            } else if (mappedId === "hihat" || sound === "hh" || sound === "h" || sound === "oh") {
               hihat.triggerAttackRelease("32n", time, 0.5);
-            } else if (layerId === "bass" && note) {
-              bass.triggerAttackRelease(note, "16n", time);
-            } else if (layerId === "lead" && note) {
-              lead.triggerAttackRelease(note, "16n", time);
+            } else if (isNote && note) {
+              if (parseInt(sound.replace(/\D/g, "")) <= 3) {
+                bass.triggerAttackRelease(note, "16n", time);
+              } else {
+                lead.triggerAttackRelease(note, "16n", time);
+              }
             }
           }
         }
@@ -301,7 +516,9 @@ function StrudelLive() {
 
   const handlePlay = async () => {
     if (!isPlaying) {
-      await startPlayback();
+      await startPlayback(code);
+    } else {
+      await startPlayback(code);
     }
   };
 
@@ -386,17 +603,187 @@ function StrudelLive() {
     setDroppedItems(newItems);
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    const colors = ["#ff6b6b", "#4ecdc4", "#ffe66d", "#95e1d3", "#f38181", "#aa96da", "#fcbad3", "#a8d8ea"];
+    const randomColor = colors[Math.floor(Math.random() * colors.length)];
+    
+    const newEffect: KeyEffect = {
+      id: Date.now(),
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      color: randomColor,
+      timestamp: Date.now(),
+    };
+    
+    setKeyEffects(prev => [...prev, newEffect]);
+    setEditorGlow(prev => Math.min(prev + 15, 100));
+    
+    setTimeout(() => {
+      setKeyEffects(prev => prev.filter(e => e.timestamp !== newEffect.timestamp));
+    }, 600);
+    
+    setTimeout(() => {
+      setEditorGlow(prev => Math.max(prev - 20, 0));
+    }, 150);
+    
+    if (showAutocomplete) {
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        setSelectedAutocompleteIndex(prev => 
+          prev < filteredAutocomplete.length - 1 ? prev + 1 : 0
+        );
+        return;
+      }
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        setSelectedAutocompleteIndex(prev => 
+          prev > 0 ? prev - 1 : filteredAutocomplete.length - 1
+        );
+        return;
+      }
+      if (e.key === "Tab" || e.key === "Enter") {
+        e.preventDefault();
+        if (filteredAutocomplete[selectedAutocompleteIndex]) {
+          insertAutocomplete(filteredAutocomplete[selectedAutocompleteIndex].label);
+        }
+        return;
+      }
+      if (e.key === "Escape") {
+        setShowAutocomplete(false);
+        return;
+      }
+    }
+    
+    if (e.key === "Tab" && !showAutocomplete) {
+      e.preventDefault();
+      showAutocompleteAtCursor();
+    }
+  };
+
+  const showAutocompleteAtCursor = () => {
+    if (!textareaRef.current) return;
+    
+    const textarea = textareaRef.current;
+    const text = textarea.value;
+    const pos = textarea.selectionStart;
+    
+    const textBeforeCursor = text.slice(0, pos);
+    const lastWordMatch = textBeforeCursor.match(/[\w~*:."]+$/);
+    const filter = lastWordMatch ? lastWordMatch[0] : "";
+    
+    setAutocompleteFilter(filter);
+    
+    const rect = textarea.getBoundingClientRect();
+    const lineHeight = 24;
+    const lines = textBeforeCursor.split("\n");
+    const currentLine = lines.length;
+    const currentChar = lines[lines.length - 1].length;
+    
+    const charWidth = 8.4;
+    const top = rect.top + window.scrollY + (currentLine * lineHeight) - textarea.scrollTop + 30;
+    const left = rect.left + window.scrollX + (currentChar * charWidth);
+    
+    setAutocompletePosition({ top, left });
+    setShowAutocomplete(true);
+    setSelectedAutocompleteIndex(0);
+  };
+
+  const insertAutocomplete = (label: string) => {
+    if (!textareaRef.current) return;
+    
+    const textarea = textareaRef.current;
+    const text = textarea.value;
+    const pos = textarea.selectionStart;
+    
+    const textBeforeCursor = text.slice(0, pos);
+    const textAfterCursor = text.slice(pos);
+    
+    const lastWordMatch = textBeforeCursor.match(/[\w~*:."]+$/);
+    const beforeWord = lastWordMatch ? textBeforeCursor.slice(0, -lastWordMatch[0].length) : textBeforeCursor;
+    
+    const newText = beforeWord + label + textAfterCursor;
+    setCode(newText);
+    
+    setTimeout(() => {
+      const newPos = beforeWord.length + label.length;
+      textarea.selectionStart = textarea.selectionEnd = newPos;
+      textarea.focus();
+    }, 0);
+    
+    setShowAutocomplete(false);
+  };
+
+  const handleCodeChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newCode = e.target.value;
+    setCode(newCode);
+    
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    
+    const pos = textarea.selectionStart;
+    const textBeforeCursor = newCode.slice(0, pos);
+    const lastWordMatch = textBeforeCursor.match(/[\w~*:."]+$/);
+    const filter = lastWordMatch ? lastWordMatch[0] : "";
+    
+    if (filter.length >= 1) {
+      setAutocompleteFilter(filter);
+      const rect = textarea.getBoundingClientRect();
+      const lineHeight = 24;
+      const lines = textBeforeCursor.split("\n");
+      const currentLine = lines.length;
+      const currentChar = lines[lines.length - 1].length;
+      const charWidth = 8.4;
+      
+      const top = rect.top + window.scrollY + (currentLine * lineHeight) - textarea.scrollTop + 30;
+      const left = rect.left + window.scrollX + (currentChar * charWidth);
+      
+      setAutocompletePosition({ top, left });
+      
+      if (!showAutocomplete) {
+        setShowAutocomplete(true);
+      }
+    } else {
+      setShowAutocomplete(false);
+    }
+  };
+
   useEffect(() => {
     return () => {
       handleStop();
     };
   }, []);
 
-  const currentCode = code || generateCode();
+  useEffect(() => {
+    if (isPlaying && isValidCode(code)) {
+      if (autoPlayTimeoutRef.current) {
+        clearTimeout(autoPlayTimeoutRef.current);
+      }
+      autoPlayTimeoutRef.current = setTimeout(() => {
+        startPlayback(code);
+      }, 300);
+    }
+    return () => {
+      if (autoPlayTimeoutRef.current) {
+        clearTimeout(autoPlayTimeoutRef.current);
+      }
+    };
+  }, [code]);
+
+  const getCategoryColor = (category: string) => {
+    const colors: Record<string, string> = {
+      note: "text-green-400",
+      sound: "text-red-400",
+      effect: "text-purple-400",
+      pattern: "text-blue-400",
+      symbol: "text-yellow-400",
+      operator: "text-cyan-400",
+    };
+    return colors[category] || "text-white";
+  };
 
   return (
     <div className="min-h-screen bg-black text-white p-6">
-      <div className="max-w-6xl mx-auto space-y-6">
+      <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl">
@@ -404,7 +791,7 @@ function StrudelLive() {
             </div>
             <div>
               <h1 className="text-2xl font-bold">Live Code Music</h1>
-              <p className="text-sm text-white/50">Drag & drop pattern generator</p>
+              <p className="text-sm text-white/50">Type code or drag & drop patterns</p>
             </div>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
@@ -446,11 +833,11 @@ function StrudelLive() {
             </Button>
             <Button
               onClick={handlePlay}
-              disabled={isLoading || droppedItems.length === 0}
+              disabled={isLoading || (droppedItems.length === 0 && !isValidCode(code))}
               className="bg-green-600 hover:bg-green-700 text-white gap-2"
             >
               <Play className="w-4 h-4" />
-              Play
+              {isPlaying ? "Update" : "Play"}
             </Button>
             <Button
               onClick={handleStop}
@@ -471,10 +858,11 @@ function StrudelLive() {
           </div>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-2">
-          <div className="space-y-4">
+        <div className="grid gap-6 lg:grid-cols-12">
+          <div className="lg:col-span-4 space-y-4">
             <div>
-              <h3 className="text-sm font-medium text-white/70 mb-3">
+              <h3 className="text-sm font-medium text-white/70 mb-3 flex items-center gap-2">
+                <Zap className="w-4 h-4 text-yellow-400" />
                 Drag Categories
               </h3>
               <div className="flex flex-wrap gap-2">
@@ -500,7 +888,8 @@ function StrudelLive() {
                 isDragging ? "border-purple-500 bg-purple-500/10" : "border-white/20 bg-white/5"
               }`}
             >
-              <h3 className="text-sm font-medium text-white/70 mb-3">
+              <h3 className="text-sm font-medium text-white/70 mb-3 flex items-center gap-2">
+                <Waves className="w-4 h-4 text-purple-400" />
                 Drop Zone ({droppedItems.length} layers)
               </h3>
               {droppedItems.length === 0 ? (
@@ -537,22 +926,173 @@ function StrudelLive() {
             </div>
           </div>
 
-          <div className="space-y-4">
-            <label className="text-sm font-medium text-white/70">
-              Generated Pattern
-            </label>
-            <div className="h-[350px] rounded-lg bg-[#1a1a2e] border border-white/10 p-4 overflow-auto font-mono text-sm text-green-400">
-              <pre>{currentCode || "// Drag categories or click Generate Random"}</pre>
+          <div className="lg:col-span-8 space-y-4">
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium text-white/70 flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-pink-400" />
+                Code Editor
+                <span className="text-xs text-white/30">(Press Tab for autocomplete)</span>
+              </label>
+              <div className="flex items-center gap-2 text-xs text-white/40">
+                <span>Notes</span>
+                <span className="w-2 h-2 rounded-full bg-green-400" />
+                <span>Sounds</span>
+                <span className="w-2 h-2 rounded-full bg-red-400" />
+                <span>Effects</span>
+                <span className="w-2 h-2 rounded-full bg-purple-400" />
+              </div>
+            </div>
+            
+            <div 
+              ref={editorContainerRef}
+              className="relative"
+              style={{
+                filter: isEditorFocused ? `drop-shadow(0 0 ${editorGlow}px rgba(168, 85, 247, 0.5))` : "none",
+                transition: "filter 0.15s ease-out",
+              }}
+            >
+              {keyEffects.map((effect) => (
+                <div
+                  key={effect.id}
+                  className="absolute pointer-events-none rounded-full animate-ping"
+                  style={{
+                    left: `${effect.x}%`,
+                    top: `${effect.y}%`,
+                    width: "20px",
+                    height: "20px",
+                    backgroundColor: effect.color,
+                    opacity: 0.8,
+                    transform: "translate(-50%, -50%)",
+                  }}
+                />
+              ))}
+              
+              <textarea
+                ref={textareaRef}
+                value={code}
+                onChange={handleCodeChange}
+                onKeyDown={handleKeyDown}
+                onFocus={() => setIsEditorFocused(true)}
+                onBlur={() => setTimeout(() => setIsEditorFocused(false), 200)}
+                placeholder={`bd: "bd*4"~ sd: "~ sd ~ sd"\n\n# Press Tab to autocomplete\n# Notes: c2 c3 c4 c5\n# Sounds: bd sd hh cp\n# Effects: slow rev delay`}
+                className="w-full h-[280px] rounded-lg bg-[#0a0a0f] border-2 border-white/10 p-4 font-mono text-sm text-green-400 resize-none focus:outline-none focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 placeholder:text-white/20 transition-all"
+                spellCheck={false}
+              />
+              
+              <div className="absolute bottom-4 right-4 flex items-center gap-2 text-xs text-white/30">
+                <span className="px-2 py-1 rounded bg-white/5 border border-white/10">Tab</span>
+                <span>autocomplete</span>
+              </div>
+            </div>
+            
+            {showAutocomplete && filteredAutocomplete.length > 0 && (
+              <div 
+                className="absolute z-50 w-72 max-h-64 overflow-auto rounded-lg bg-[#12121a] border border-purple-500/30 shadow-2xl shadow-purple-500/10"
+                style={{ 
+                  top: autocompletePosition.top, 
+                  left: autocompletePosition.left,
+                }}
+              >
+                {filteredAutocomplete.map((item, index) => (
+                  <div
+                    key={item.label}
+                    onClick={() => insertAutocomplete(item.label)}
+                    className={`px-3 py-2 cursor-pointer flex items-center justify-between gap-2 transition-colors ${
+                      index === selectedAutocompleteIndex 
+                        ? "bg-purple-500/30 text-white" 
+                        : "text-white/70 hover:bg-white/5"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className={`font-mono text-sm ${getCategoryColor(item.category)}`}>
+                        {item.label}
+                      </span>
+                      <span className="text-xs text-white/40">{item.description}</span>
+                    </div>
+                    <span className={`text-xs px-1.5 py-0.5 rounded ${
+                      item.category === "note" ? "bg-green-500/20 text-green-400" :
+                      item.category === "sound" ? "bg-red-500/20 text-red-400" :
+                      item.category === "effect" ? "bg-purple-500/20 text-purple-400" :
+                      item.category === "pattern" ? "bg-blue-500/20 text-blue-400" :
+                      "bg-white/10 text-white/50"
+                    }`}>
+                      {item.category}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            <div className="p-4 rounded-lg bg-white/5 border border-white/10">
+              <h3 className="text-sm font-medium text-white/70 mb-3 flex items-center gap-2">
+                <Code2 className="w-4 h-4 text-blue-400" />
+                Example Patterns - Click to Insert
+              </h3>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                {EXAMPLE_PATTERNS.map((example) => (
+                  <button
+                    key={example.id}
+                    onClick={() => {
+                      setCode(prev => prev ? prev + "\n\n" + example.code : example.code);
+                      if (textareaRef.current) {
+                        textareaRef.current.focus();
+                      }
+                    }}
+                    className="text-left p-2 rounded bg-white/5 border border-white/10 hover:bg-purple-500/20 hover:border-purple-500/50 transition-all group"
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-medium text-white/80 group-hover:text-white">{example.name}</span>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-white/10 text-white/50 group-hover:bg-purple-500/30 group-hover:text-purple-300">
+                        {example.genre}
+                      </span>
+                    </div>
+                    <div className="text-[10px] text-white/40 font-mono truncate">
+                      {example.code.split("\n")[0]}
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
             
             <div className="p-4 rounded-lg bg-white/5 border border-white/10">
-              <h3 className="text-sm font-medium text-white/70 mb-2">Categories</h3>
-              <div className="grid grid-cols-2 gap-2 text-xs text-white/50">
-                <div><span className="text-red-400">Kick</span> - bd</div>
-                <div><span className="text-yellow-400">Snare</span> - sd</div>
-                <div><span className="text-purple-400">Hi-Hat</span> - hh</div>
-                <div><span className="text-amber-400">Bass</span> - notes</div>
-                <div><span className="text-green-400">Lead</span> - notes</div>
+              <h3 className="text-sm font-medium text-white/70 mb-3">Quick Reference</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                <div>
+                  <div className="text-white/50 mb-1">Sounds</div>
+                  <div className="space-y-0.5 font-mono">
+                    <div><span className="text-red-400">bd</span> - kick</div>
+                    <div><span className="text-yellow-400">sd</span> - snare</div>
+                    <div><span className="text-purple-400">hh</span> - hi-hat</div>
+                    <div><span className="text-pink-400">cp</span> - clap</div>
+                  </div>
+                </div>
+                <div>
+                  <div className="text-white/50 mb-1">Notes</div>
+                  <div className="space-y-0.5 font-mono">
+                    <div><span className="text-green-400">c2-c5</span> - bass to lead</div>
+                    <div><span className="text-green-400">d2</span> - d2</div>
+                    <div><span className="text-green-400">e2</span> - e2</div>
+                    <div><span className="text-green-400">f2</span> - f2</div>
+                  </div>
+                </div>
+                <div>
+                  <div className="text-white/50 mb-1">Effects</div>
+                  <div className="space-y-0.5 font-mono">
+                    <div><span className="text-purple-400">slow 2</span> - slow</div>
+                    <div><span className="text-purple-400">fast 2</span> - fast</div>
+                    <div><span className="text-purple-400">rev</span> - reverse</div>
+                    <div><span className="text-purple-400">room</span> - reverb</div>
+                  </div>
+                </div>
+                <div>
+                  <div className="text-white/50 mb-1">Symbols</div>
+                  <div className="space-y-0.5 font-mono">
+                    <div><span className="text-yellow-400">~</span> - rest</div>
+                    <div><span className="text-cyan-400">*</span> - repeat</div>
+                    <div><span className="text-cyan-400">:</span> - layer</div>
+                    <div><span className="text-cyan-400">"</span> - string</div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
