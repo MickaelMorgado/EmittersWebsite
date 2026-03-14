@@ -245,7 +245,7 @@ const ParticleBurst = ({ color, burstKey }: { color: string; burstKey: number })
   );
 };
 
-// Enhanced turbo jet animation with multi-layered flames and particle trails
+// Burnout Paradise-style nitro jet animation - compact hot core
 const ExhaustPlume = ({
   value,
   direction,
@@ -254,37 +254,36 @@ const ExhaustPlume = ({
   direction: "left" | "right";
 }) => {
   const intensity = Math.min(1, Math.max(0, value));
-  const isRight = direction === "right";
-  const scale = 0.4 + intensity * 0.9;
+  if (intensity < 0.02) return null;
 
+  const isRight = direction === "right";
+  const scale = 0.2 + intensity * 0.5; // Compact nitro style
+
+  // Burnout-style flames: hot blue/white core, less spread
   const flameStyles = [
-    { scaleX: 2.8, scaleY: 2.2, opacity: 0.08 * intensity, blur: 32, hue: 30 },
-    { scaleX: 2.3, scaleY: 1.9, opacity: 0.15 * intensity, blur: 24, hue: 35 },
-    { scaleX: 1.9, scaleY: 1.6, opacity: 0.25 * intensity, blur: 18, hue: 40 },
-    { scaleX: 1.5, scaleY: 1.3, opacity: 0.4 * intensity, blur: 12, hue: 50 },
-    { scaleX: 1.1, scaleY: 1.0, opacity: 0.6 * intensity, blur: 6, hue: 60 },
-    { scaleX: 0.7, scaleY: 0.65, opacity: 0.8 * intensity, blur: 2, hue: 50 },
+    { scaleX: 1.6, scaleY: 1.4, opacity: 0.1 * intensity, blur: 20, hue: 200 },
+    { scaleX: 1.2, scaleY: 1.1, opacity: 0.25 * intensity, blur: 12, hue: 210 },
+    { scaleX: 0.9, scaleY: 0.85, opacity: 0.5 * intensity, blur: 6, hue: 220 },
+    { scaleX: 0.6, scaleY: 0.6, opacity: 0.7 * intensity, blur: 2, hue: 50 },
   ];
 
+  // Fewer, tighter particles
   const particles = useMemo(() => {
-    if (intensity < 0.15) return [];
-    const count = Math.ceil(5 * intensity);
+    const count = Math.ceil(2 * intensity);
     return Array.from({ length: count }).map((_, i) => ({
-      offsetX: (Math.random() - 0.5) * 80 * intensity,
-      offsetY: (Math.random() - 0.5) * 50 * intensity,
-      delay: i * 40,
-      duration: 350 + Math.random() * 250,
+      offsetX: (Math.random() - 0.5) * 40 * intensity,
+      offsetY: (Math.random() - 0.5) * 30 * intensity,
+      delay: i * 60,
+      duration: 250 + Math.random() * 150,
     }));
   }, [intensity]);
-
-  if (intensity < 0.02) return null;
 
   return (
     <div
       className="pointer-events-none absolute inset-0 overflow-visible"
       style={{
-        marginLeft: isRight ? "4px" : "0",
-        marginRight: isRight ? "0" : "4px",
+        marginLeft: isRight ? "2px" : "0",
+        marginRight: isRight ? "0" : "2px",
       }}
     >
       {flameStyles.map((flame, idx) => {
@@ -293,40 +292,39 @@ const ExhaustPlume = ({
           top: "50%",
           left: isRight ? "100%" : undefined,
           right: isRight ? undefined : "100%",
-          width: "170px",
-          height: "90px",
+          width: "100px",
+          height: "60px",
           opacity: flame.opacity,
           transform: `translateY(-50%) scaleX(${flame.scaleX * scale}) scaleY(${flame.scaleY * scale})`,
           transformOrigin: isRight ? "left center" : "right center",
           background: isRight
-            ? `linear-gradient(90deg, transparent 0%, hsl(${flame.hue}, 100%, 60%) 15%, hsl(${flame.hue - 10}, 100%, 50%) 50%, transparent 100%)`
-            : `linear-gradient(270deg, transparent 0%, hsl(${flame.hue}, 100%, 60%) 15%, hsl(${flame.hue - 10}, 100%, 50%) 50%, transparent 100%)`,
+            ? `linear-gradient(90deg, transparent 0%, hsl(${flame.hue}, 100%, 55%) 20%, hsl(${flame.hue - 5}, 100%, 45%) 60%, transparent 100%)`
+            : `linear-gradient(270deg, transparent 0%, hsl(${flame.hue}, 100%, 55%) 20%, hsl(${flame.hue - 5}, 100%, 45%) 60%, transparent 100%)`,
           borderRadius: isRight ? "0 100% 100% 0" : "100% 0 0 100%",
           filter: `blur(${flame.blur}px)`,
           mixBlendMode: "screen",
-          animation: `flame-flicker ${0.05 + idx * 0.025}s ease-in-out infinite alternate`,
-          animationDelay: `${idx * 25}ms`,
+          animation: `flame-flicker ${0.04 + idx * 0.02}s ease-in-out infinite alternate`,
+          animationDelay: `${idx * 15}ms`,
           zIndex: idx,
         };
         return <div key={idx} style={style} />;
       })}
 
-      {/* Particle trails */}
       {particles.map((p, i) => (
         <div
           key={`particle-${i}`}
           style={{
             position: "absolute",
-            width: "6px",
-            height: "6px",
-            background: "radial-gradient(circle at 30% 30%, #ffff88, #ff9900)",
+            width: "4px",
+            height: "4px",
+            background: "radial-gradient(circle at 30% 30%, #ffffff, #4488ff)",
             borderRadius: "50%",
             left: isRight ? "100%" : undefined,
             right: isRight ? undefined : "100%",
             top: "50%",
-            boxShadow: "0 0 10px #ffaa44",
-            filter: "blur(1.5px)",
-            opacity: 0.6,
+            boxShadow: "0 0 6px #5599ff",
+            filter: "blur(1px)",
+            opacity: 0.7,
             animation: `turbo-particle-trail ${p.duration}ms ease-out ${p.delay}ms forwards`,
             "--offsetX": `${isRight ? p.offsetX : -p.offsetX}px`,
             "--offsetY": `${p.offsetY}px`,
@@ -402,8 +400,8 @@ const Stick = ({
           style={
             glowStrength
               ? {
-                  boxShadow: `0 0 35px rgba(255,70,70,${0.3 + glowStrength * 0.5})`,
-                  borderColor: `rgba(255,80,80,${0.2 + glowStrength * 0.5})`,
+                  boxShadow: `0 0 35px rgba(255,70,70,${0.4 + glowStrength * 0.4})`,
+                  borderColor: `rgba(255,80,80,${0.3 + glowStrength * 0.4})`,
                 }
               : undefined
           }
@@ -413,8 +411,8 @@ const Stick = ({
             <div
               className="pointer-events-none absolute inset-0 rounded-full"
               style={{
-                background: `radial-gradient(circle, rgba(255,70,70,${glowStrength * 0.2}), transparent 60%)`,
-                filter: "blur(10px)",
+                background: "radial-gradient(circle, rgba(255,70,70,0.15), transparent 60%)",
+                filter: "blur(8px)",
                 opacity: glowStrength,
               }}
             />
@@ -424,34 +422,15 @@ const Stick = ({
             className="absolute h-12 w-12 rounded-full shadow-[0_10px_25px_rgba(0,0,0,0.6)]"
             style={{
               background: stickOpacity > 0
-                ? `radial-gradient(circle at 30% 30%, rgba(255, 120, 120, ${0.6 + stickOpacity * 0.4}), rgba(122, 15, 15, ${stickOpacity * 0.8}))`
+                ? `radial-gradient(circle at 30% 30%, rgba(255, 100, 100, ${stickOpacity}), rgba(122, 15, 15, ${stickOpacity * 0.7}))`
                 : "linear-gradient(135deg, rgba(255,255,255,0.4), rgba(255,255,255,0.05))",
-              // Properly center the stick (48px / 2 = 24px)
+              // Properly center the stick
               left: "50%",
               top: "50%",
-              marginLeft: "-24px",
-              marginTop: "-24px",
-              transform: `translate(calc(-50% + ${x * offsetScale}px), calc(-50% - ${y * offsetScale}px))`,
+              transform: `translate(calc(-50% + ${x * offsetScale}px), calc(-50% + ${y * offsetScale}px))`,
               transition: stickOpacity > 0 ? "none" : "background 150ms ease",
             }}
           />
-          {stickOpacity > 0 && (
-            <div
-              className="pointer-events-none absolute rounded-full"
-              style={{
-                left: "50%",
-                top: "50%",
-                width: "36px",
-                height: "36px",
-                marginLeft: "-18px",
-                marginTop: "-18px",
-                transform: `translate(calc(-50% + ${x * offsetScale * 0.5}px), calc(-50% - ${y * offsetScale * 0.5}px))`,
-                background: `radial-gradient(circle, rgba(255,200,100,${stickOpacity * 0.35}) 0%, transparent 70%)`,
-                filter: "blur(4px)",
-                opacity: stickOpacity,
-              }}
-            />
-          )}
         </div>
       </div>
     </Draggable>
