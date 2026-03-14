@@ -403,8 +403,8 @@ const Stick = ({
           style={
             glowStrength
               ? {
-                  boxShadow: `0 0 35px rgba(255,70,70,${0.4 + glowStrength * 0.4})`,
-                  borderColor: `rgba(255,80,80,${0.3 + glowStrength * 0.4})`,
+                  boxShadow: `0 0 35px rgba(255,70,70,${0.3 + glowStrength * 0.5})`,
+                  borderColor: `rgba(255,80,80,${0.2 + glowStrength * 0.5})`,
                 }
               : undefined
           }
@@ -414,8 +414,8 @@ const Stick = ({
             <div
               className="pointer-events-none absolute inset-0 rounded-full"
               style={{
-                background: "radial-gradient(circle, rgba(255,70,70,0.15), transparent 60%)",
-                filter: "blur(8px)",
+                background: `radial-gradient(circle, rgba(255,70,70,${glowStrength * 0.2}), transparent 60%)`,
+                filter: "blur(10px)",
                 opacity: glowStrength,
               }}
             />
@@ -425,15 +425,34 @@ const Stick = ({
             className="absolute h-12 w-12 rounded-full shadow-[0_10px_25px_rgba(0,0,0,0.6)]"
             style={{
               background: stickOpacity > 0
-                ? `radial-gradient(circle at 30% 30%, rgba(255, 100, 100, ${stickOpacity}), rgba(122, 15, 15, ${stickOpacity * 0.7}))`
+                ? `radial-gradient(circle at 30% 30%, rgba(255, 120, 120, ${0.6 + stickOpacity * 0.4}), rgba(122, 15, 15, ${stickOpacity * 0.8}))`
                 : "linear-gradient(135deg, rgba(255,255,255,0.4), rgba(255,255,255,0.05))",
               // Properly center the stick (48px / 2 = 24px)
               left: "50%",
               top: "50%",
-              transform: `translate(calc(-50% + ${x * offsetScale}px), calc(-50% + ${y * offsetScale}px))`,
+              marginLeft: "-24px",
+              marginTop: "-24px",
+              transform: `translate(calc(-50% + ${x * offsetScale}px), calc(-50% - ${y * offsetScale}px))`,
               transition: stickOpacity > 0 ? "none" : "background 150ms ease",
             }}
           />
+          {stickOpacity > 0 && (
+            <div
+              className="pointer-events-none absolute rounded-full"
+              style={{
+                left: "50%",
+                top: "50%",
+                width: "36px",
+                height: "36px",
+                marginLeft: "-18px",
+                marginTop: "-18px",
+                transform: `translate(calc(-50% + ${x * offsetScale * 0.5}px), calc(-50% - ${y * offsetScale * 0.5}px))`,
+                background: `radial-gradient(circle, rgba(255,200,100,${stickOpacity * 0.35}) 0%, transparent 70%)`,
+                filter: "blur(4px)",
+                opacity: stickOpacity,
+              }}
+            />
+          )}
         </div>
       </div>
     </Draggable>
