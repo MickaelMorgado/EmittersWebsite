@@ -235,53 +235,112 @@ export default function ImageCompressorPage() {
     return new Promise((resolve, reject) => {
       const video = document.createElement("video");
       video.preload = "metadata";
-      video.muted = true;
+      video.muted = true; // Mute to avoid autoplay issues
       video.playsInline = true;
 
       video.onloadedmetadata = () => {
         video.currentTime = 0;
       };
 
-      video.onloadeddata = () => {
-        const canvas = document.createElement("canvas");
-        canvas.width = targetWidth;
-        canvas.height = targetHeight;
+      video.onloadeddata = async () => {
+        try {
+          // Create canvas for resizing
+          const canvas = document.createElement("canvas");
+          canvas.width = targetWidth;
+          canvas.height = targetHeight;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) {
+            reject(new Error("Canvas context not available"));
+            return;
+          }
 
-        const ctx = canvas.getContext("2d");
-        if (!ctx) {
-          reject(new Error("Canvas context not available"));
-          return;
-        }
+          // Calculate crop to center
+          const videoAspect = video.videoWidth / video.videoHeight;
+          const targetAspect = targetWidth / targetHeight;
+          
+          let sx = 0, sy = 0, sw = video.videoWidth, sh = video.videoHeight;
+          
+          if (videoAspect > targetAspect) {
+            sw = video.videoHeight * targetAspect;
+            sx = (video.videoWidth - sw) / 2;
+          } else {
+            sh = video.videoWidth / targetAspect;
+            sy = (video.videoHeight - sh) / 2;
+          }
 
-        // Calculate crop to center
-        const videoAspect = video.videoWidth / video.videoHeight;
-        const targetAspect = targetWidth / targetHeight;
-        
-        let sx = 0, sy = 0, sw = video.videoWidth, sh = video.videoHeight;
-        
-        if (videoAspect > targetAspect) {
-          // Video is wider, crop sides
-          sw = video.videoHeight * targetAspect;
-          sx = (video.videoWidth - sw) / 2;
-        } else {
-          // Video is taller, crop top/bottom
-          sh = video.videoWidth / targetAspect;
-          sy = (video.videoHeight - sh) / 2;
-        }
+          // Use MediaRecorder to capture video frames
+          const stream = canvas.captureStream(30); // 30 FPS
+          
+          // Check supported mime types
+          let mimeType = "video/webm;codecs=vp9";
+          if (!MediaRecorder.isTypeSupported(mimeType)) {
+            mimeType = "video/webm;codecs=vp8";
+            if (!MediaRecorder.isTypeSupported(mimeType)) {
+              mimeType = "video/webm";
+            }
+          }
 
-        ctx.drawImage(video, sx, sy, sw, sh, 0, 0, targetWidth, targetHeight);
+          const recorder = new MediaRecorder(stream, {
+            mimeType
+          });
 
-        canvas.toBlob(
-          (blob) => {
-            if (!blob) {
-              reject(new Error("Video processing failed"));
+          const chunks: Blob[] = [];
+          
+          recorder.ondataavailable = (e) => {
+            if (e.data.size > 0) {
+              chunks.push(e.data);
+            }
+          };
+
+          recorder.onstop = () => {
+            const blob = new Blob(chunks, { type: mimeType.split(';')[0] });
+            URL.revokeObjectURL(video.src);
+            resolve({ blob, size: blob.size });
+          };
+
+          recorder.onerror = (e) => {
+            reject(new Error("Recording failed: " + String(e)));
+          };
+
+          // Start recording
+          recorder.start(100); // Collect data every 100ms
+
+          // Play video and draw frames to canvas
+          video.currentTime = 0;
+          video.play();
+
+          const drawFrame = () => {
+            if (video.ended) {
+              setTimeout(() => {
+                if (recorder.state === "recording") {
+                  recorder.stop();
+                }
+              }, 500);
               return;
             }
-            resolve({ blob, size: blob.size });
-          },
-          "video/mp4",
-          0.95
-        );
+            
+            if (!video.paused) {
+              // Draw current frame scaled/cropped
+              ctx.drawImage(video, sx, sy, sw, sh, 0, 0, targetWidth, targetHeight);
+              requestAnimationFrame(drawFrame);
+            }
+          };
+
+          // Start drawing
+          drawFrame();
+
+          // Set timeout to stop recording (max 30 seconds or video duration)
+          const duration = Math.min(video.duration || 10, 30);
+          setTimeout(() => {
+            if (recorder.state === "recording") {
+              recorder.stop();
+              video.pause();
+            }
+          }, (duration * 1000) + 1000);
+
+        } catch (err) {
+          reject(err);
+        }
       };
 
       video.onerror = () => reject(new Error("Failed to load video"));
@@ -397,8 +456,7 @@ export default function ImageCompressorPage() {
   const handleDownloadVideos = () => {
     videos.forEach((vid) => {
       if (vid.croppedBlob && vid.status === "done") {
-        const ext = vid.file.name.split(".").pop() || "mp4";
-        const name = vid.file.name.replace(/\.[^/.]+$/, "") + `_${videoWidth}x${videoHeight}.` + ext;
+        const name = vid.file.name.replace(/\.[^/.]+$/, "") + `_${videoWidth}x${videoHeight}.webm`;
         const url = URL.createObjectURL(vid.croppedBlob);
         const a = document.createElement("a");
         a.href = url;
@@ -1074,7 +1132,7 @@ export default function ImageCompressorPage() {
                   <p className="text-xs text-white/40 text-center">
                     All video processing happens in your browser.
                     <br />
-                    Videos are cropped to center and exported as MP4.
+                    Videos are cropped to center and exported as WebM.
                   </p>
                 </CardContent>
               </Card>
