@@ -29,6 +29,12 @@
       { "version": "1.0.0", "releasedAt": "2026-01-08", "changes": ["Initial release"] }
     ]
   },
+  "ps3-visualizer": {
+    "current": { "version": "0.1.0", "releasedAt": "2026-03-13", "changes": ["Initial DualShock particle visualizer"] },
+    "history": [
+      { "version": "0.1.0", "releasedAt": "2026-03-13", "changes": ["Initial DualShock particle visualizer"] }
+    ]
+  },
   "todo": {
     "current": { "version": "1.0.0", "releasedAt": "2026-01-05", "changes": ["Daily habit tracker"] },
     "history": [

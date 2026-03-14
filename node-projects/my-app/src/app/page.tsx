@@ -33,6 +33,7 @@ const PROJECTS: { [section: string]: Project[] } = {
     { title: "Blockchains visualizer", description: "Interactive 3D blockchains and token visualizer", href: "/blockchain-visualizer", accentColor: "31, 239, 239", isPublic: false },
     { title: "Data Visualizer Project", description: "Interactive 3D data visualizer", href: "/dataVisualizer", accentColor: "45, 212, 191", isPublic: true },
     { title: "Sounder Project", description: "A sound design tool for creating randomized music", href: "/sounder", accentColor: "244, 63, 94", isPublic: true },
+    { title: "PS3 Controller Visualizer", description: "DualShock 3 telemetry with particle-driven buttons", href: "/ps3-visualizer", accentColor: "0, 160, 255", isPublic: true },
     { title: "Daily Todo Tracker", description: "Track your daily habits and see progress over time.", href: "/todo", accentColor: "234, 179, 8" },
     { title: "Hips Project", description: "Main and finished landing page", href: "/HipsExample", accentColor: "59, 130, 246" },
     { title: "3D Printer Camera Monitor", description: "Monitor multiple 3D-printer camera feeds", href: "/printer-monitor", accentColor: "255, 50, 50", isPublic: true },
