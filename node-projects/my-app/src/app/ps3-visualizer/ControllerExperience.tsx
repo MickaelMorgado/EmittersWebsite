@@ -254,12 +254,9 @@ const ExhaustPlume = ({
   direction: "left" | "right";
 }) => {
   const intensity = Math.min(1, Math.max(0, value));
-  if (intensity < 0.02) return null;
-
   const isRight = direction === "right";
   const scale = 0.4 + intensity * 0.9;
 
-  // Multi-layered flames with more detail and turbulence
   const flameStyles = [
     { scaleX: 2.8, scaleY: 2.2, opacity: 0.08 * intensity, blur: 32, hue: 30 },
     { scaleX: 2.3, scaleY: 1.9, opacity: 0.15 * intensity, blur: 24, hue: 35 },
@@ -269,8 +266,8 @@ const ExhaustPlume = ({
     { scaleX: 0.7, scaleY: 0.65, opacity: 0.8 * intensity, blur: 2, hue: 50 },
   ];
 
-  // Particle trail for enhanced detail
   const particles = useMemo(() => {
+    if (intensity < 0.15) return [];
     const count = Math.ceil(5 * intensity);
     return Array.from({ length: count }).map((_, i) => ({
       offsetX: (Math.random() - 0.5) * 80 * intensity,
@@ -279,6 +276,8 @@ const ExhaustPlume = ({
       duration: 350 + Math.random() * 250,
     }));
   }, [intensity]);
+
+  if (intensity < 0.02) return null;
 
   return (
     <div
