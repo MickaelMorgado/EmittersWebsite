@@ -30,8 +30,9 @@
     ]
   },
   "ps3-visualizer": {
-    "current": { "version": "0.1.0", "releasedAt": "2026-03-13", "changes": ["Initial DualShock particle visualizer"] },
+    "current": { "version": "0.2.0", "releasedAt": "2026-03-14", "changes": ["Enhanced flame effects with detailed layers", "Heating exhaust tube effect on L2/R2", "D-pad glow and particle effects", "Action button particle repositioning"] },
     "history": [
+      { "version": "0.2.0", "releasedAt": "2026-03-14", "changes": ["Enhanced flame effects with detailed layers", "Heating exhaust tube effect on L2/R2", "D-pad glow and particle effects", "Action button particle repositioning"] },
       { "version": "0.1.0", "releasedAt": "2026-03-13", "changes": ["Initial DualShock particle visualizer"] }
     ]
   },

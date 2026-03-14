@@ -211,7 +211,7 @@ const ParticleBurst = ({ color, burstKey }: { color: string; burstKey: number })
       delay: Math.random() * 80,
       duration: 280 + Math.random() * 420,
       size: 6 + Math.random() * 12,
-      opacity: 0.25 + Math.random() * 0.5,
+      opacity: 0.5 + Math.random() * 1,
     }));
   }, [burstKey]);
 
@@ -245,7 +245,7 @@ const ParticleBurst = ({ color, burstKey }: { color: string; burstKey: number })
   );
 };
 
-// Burnout Paradise-style nitro jet animation - compact hot core
+// Detailed flame animation with multiple layers
 const ExhaustPlume = ({
   value,
   direction,
@@ -257,24 +257,45 @@ const ExhaustPlume = ({
   if (intensity < 0.02) return null;
 
   const isRight = direction === "right";
-  const scale = 0.2 + intensity * 0.5; // Compact nitro style
+  const scale = 0.3 + intensity * 0.8;
 
-  // Burnout-style flames: hot blue/white core, less spread
-  const flameStyles = [
-    { scaleX: 1.6, scaleY: 1.4, opacity: 0.1 * intensity, blur: 20, hue: 200 },
-    { scaleX: 1.2, scaleY: 1.1, opacity: 0.25 * intensity, blur: 12, hue: 210 },
-    { scaleX: 0.9, scaleY: 0.85, opacity: 0.5 * intensity, blur: 6, hue: 220 },
-    { scaleX: 0.6, scaleY: 0.6, opacity: 0.7 * intensity, blur: 2, hue: 50 },
+  // Multi-layer detailed flames: outer → mid → inner → core
+  const flameLayers = [
+    // Outer wispy flames
+    { scaleX: 3.0, scaleY: 1.4, opacity: 0.08 * intensity, blur: 35, hue: 280, lightness: 65, width: 200, height: 70 },
+    { scaleX: 2.8, scaleY: 1.3, opacity: 0.1 * intensity, blur: 30, hue: 290, lightness: 60, width: 190, height: 65 },
+    // Mid flames
+    { scaleX: 2.4, scaleY: 1.2, opacity: 0.2 * intensity, blur: 22, hue: 40, lightness: 55, width: 170, height: 60 },
+    { scaleX: 2.0, scaleY: 1.1, opacity: 0.3 * intensity, blur: 16, hue: 25, lightness: 55, width: 150, height: 55 },
+    // Inner hot flames
+    { scaleX: 1.8, scaleY: 1.0, opacity: 0.45 * intensity, blur: 10, hue: 15, lightness: 60, width: 130, height: 50 },
+    { scaleX: 1.5, scaleY: 0.9, opacity: 0.6 * intensity, blur: 6, hue: 8, lightness: 65, width: 110, height: 45 },
+    // White-hot core
+    { scaleX: 1.2, scaleY: 0.6, opacity: 0.85 * intensity, blur: 3, hue: 45, lightness: 85, width: 80, height: 30 },
+    { scaleX: 0.8, scaleY: 0.4, opacity: intensity, blur: 1, hue: 55, lightness: 98, width: 50, height: 20 },
   ];
 
-  // Fewer, tighter particles
+  // Many detailed spark particles
   const particles = useMemo(() => {
-    const count = Math.ceil(2 * intensity);
+    const count = Math.ceil(20 * intensity);
     return Array.from({ length: count }).map((_, i) => ({
-      offsetX: (Math.random() - 0.5) * 40 * intensity,
-      offsetY: (Math.random() - 0.5) * 30 * intensity,
-      delay: i * 60,
-      duration: 250 + Math.random() * 150,
+      offsetX: (Math.random() - 0.5) * 120 * intensity,
+      offsetY: (Math.random() - 0.5) * 50 * intensity,
+      delay: i * 15,
+      duration: 150 + Math.random() * 300,
+      size: 2 + Math.random() * 10,
+      hue: Math.random() > 0.5 ? 30 + Math.random() * 20 : 0 + Math.random() * 30,
+    }));
+  }, [intensity]);
+
+  // Ember particles that float upward
+  const embers = useMemo(() => {
+    const count = Math.ceil(12 * intensity);
+    return Array.from({ length: count }).map((_, i) => ({
+      offsetX: (Math.random() - 0.5) * 50 * intensity,
+      delay: i * 50,
+      duration: 400 + Math.random() * 600,
+      size: 1 + Math.random() * 3,
     }));
   }, [intensity]);
 
@@ -286,48 +307,72 @@ const ExhaustPlume = ({
         marginRight: isRight ? "0" : "2px",
       }}
     >
-      {flameStyles.map((flame, idx) => {
+      {/* Main flame layers */}
+      {flameLayers.map((flame, idx) => {
         const style: CSSProperties = {
           position: "absolute",
           top: "50%",
           left: isRight ? "100%" : undefined,
           right: isRight ? undefined : "100%",
-          width: "100px",
-          height: "60px",
+          width: `${flame.width}px`,
+          height: `${flame.height}px`,
           opacity: flame.opacity,
           transform: `translateY(-50%) scaleX(${flame.scaleX * scale}) scaleY(${flame.scaleY * scale})`,
           transformOrigin: isRight ? "left center" : "right center",
           background: isRight
-            ? `linear-gradient(90deg, transparent 0%, hsl(${flame.hue}, 100%, 55%) 20%, hsl(${flame.hue - 5}, 100%, 45%) 60%, transparent 100%)`
-            : `linear-gradient(270deg, transparent 0%, hsl(${flame.hue}, 100%, 55%) 20%, hsl(${flame.hue - 5}, 100%, 45%) 60%, transparent 100%)`,
+            ? `linear-gradient(90deg, transparent 0%, hsl(${flame.hue}, 100%, ${flame.lightness - 20}%) 10%, hsl(${flame.hue}, 100%, ${flame.lightness}%) 30%, hsl(${flame.hue - 15}, 100%, ${flame.lightness - 5}%) 60%, transparent 100%)`
+            : `linear-gradient(270deg, transparent 0%, hsl(${flame.hue}, 100%, ${flame.lightness - 20}%) 10%, hsl(${flame.hue}, 100%, ${flame.lightness}%) 30%, hsl(${flame.hue - 15}, 100%, ${flame.lightness - 5}%) 60%, transparent 100%)`,
           borderRadius: isRight ? "0 100% 100% 0" : "100% 0 0 100%",
           filter: `blur(${flame.blur}px)`,
           mixBlendMode: "screen",
-          animation: `flame-flicker ${0.04 + idx * 0.02}s ease-in-out infinite alternate`,
-          animationDelay: `${idx * 15}ms`,
+          animation: `flame-flicker ${0.02 + idx * 0.01}s ease-in-out infinite alternate`,
+          animationDelay: `${idx * 8}ms`,
           zIndex: idx,
         };
         return <div key={idx} style={style} />;
       })}
 
+      {/* Bright spark particles */}
       {particles.map((p, i) => (
         <div
-          key={`particle-${i}`}
+          key={`spark-${i}`}
           style={{
             position: "absolute",
-            width: "4px",
-            height: "4px",
-            background: "radial-gradient(circle at 30% 30%, #ffffff, #4488ff)",
+            width: `${p.size}px`,
+            height: `${p.size}px`,
+            background: `radial-gradient(circle at 30% 30%, #ffffff, hsl(${p.hue}, 100%, 70%), hsl(${p.hue - 10}, 100%, 50%))`,
             borderRadius: "50%",
             left: isRight ? "100%" : undefined,
             right: isRight ? undefined : "100%",
             top: "50%",
-            boxShadow: "0 0 6px #5599ff",
-            filter: "blur(1px)",
-            opacity: 0.7,
+            boxShadow: `0 0 ${6 + p.size * 2}px hsl(${p.hue}, 100%, 60%), 0 0 ${12 + p.size * 3}px hsl(${p.hue}, 100%, 50%)`,
+            filter: "blur(0.3px)",
+            opacity: 0.95,
             animation: `turbo-particle-trail ${p.duration}ms ease-out ${p.delay}ms forwards`,
             "--offsetX": `${isRight ? p.offsetX : -p.offsetX}px`,
             "--offsetY": `${p.offsetY}px`,
+          } as CSSProperties & Record<string, string | number>}
+        />
+      ))}
+
+      {/* Floating embers */}
+      {embers.map((e, i) => (
+        <div
+          key={`ember-${i}`}
+          style={{
+            position: "absolute",
+            width: `${e.size}px`,
+            height: `${e.size}px`,
+            background: `radial-gradient(circle, #ff6600, #ff3300)`,
+            borderRadius: "50%",
+            left: isRight ? "100%" : undefined,
+            right: isRight ? undefined : "100%",
+            top: "50%",
+            boxShadow: `0 0 4px #ff4400`,
+            filter: "blur(0.5px)",
+            opacity: 0.6 + Math.random() * 0.3,
+            animation: `ember-float ${e.duration}ms ease-out ${e.delay}ms infinite`,
+            "--emberX": `${isRight ? e.offsetX : -e.offsetX}px`,
           } as CSSProperties & Record<string, string | number>}
         />
       ))}
@@ -422,7 +467,7 @@ const Stick = ({
             className="absolute h-12 w-12 rounded-full shadow-[0_10px_25px_rgba(0,0,0,0.6)]"
             style={{
               background: stickOpacity > 0
-                ? `radial-gradient(circle at 30% 30%, rgba(255, 100, 100, ${stickOpacity}), rgba(122, 15, 15, ${stickOpacity * 0.7}))`
+                ? `radial-gradient(circle at 30% 30%, rgba(255, 100, 100, ${stickOpacity}), rgba(255, 0, 0, ${stickOpacity * 0.7}))`
                 : "linear-gradient(135deg, rgba(255,255,255,0.4), rgba(255,255,255,0.05))",
               // Properly center the stick
               left: "50%",
@@ -453,23 +498,51 @@ const DPadButton = ({
   onPositionChange: (id: string, position: DraggablePosition) => void;
   locked: boolean;
   debugMode: boolean;
-}) => (
-  <Draggable
-    element={element}
-    onPositionChange={onPositionChange}
-    locked={locked}
-    debugMode={debugMode}
-  >
-    <div
-      className={clsx(
-        "flex h-14 w-14 items-center justify-center rounded-2xl border bg-black/40 text-white/60 transition-all",
-        active && "border-cyan-400/60 text-cyan-300 shadow-[0_0_30px_rgba(59,228,255,0.4)]"
-      )}
+}) => {
+  const burstKey = useBurstKey(active);
+  
+  return (
+    <Draggable
+      element={element}
+      onPositionChange={onPositionChange}
+      locked={locked}
+      debugMode={debugMode}
     >
-      <DPadArrow direction={label as "up" | "down" | "left" | "right"} />
-    </div>
-  </Draggable>
-);
+      <div
+        className={clsx(
+          "relative flex h-14 w-14 items-center justify-center rounded-2xl border bg-black/40 text-white/60 transition-all",
+          active && "scale-110"
+        )}
+        style={{
+          borderColor: active ? "rgba(59, 228, 255, 0.9)" : "rgba(255, 255, 255, 0.1)",
+          color: active ? "#67e8f9" : "rgba(255, 255, 255, 0.6)",
+          background: active 
+            ? "linear-gradient(135deg, rgba(6, 182, 212, 0.4), rgba(8, 145, 178, 0.3))"
+            : "rgba(0, 0, 0, 0.4)",
+          boxShadow: active 
+            ? "0 0 40px rgba(6, 182, 212, 0.7), 0 0 80px rgba(6, 182, 212, 0.3), inset 0 0 20px rgba(6, 182, 212, 0.2)"
+            : "none",
+          transition: "all 100ms ease-out",
+        }}
+      >
+        {/* Inner glow */}
+        {active && (
+          <div 
+            className="absolute inset-0 rounded-2xl pointer-events-none"
+            style={{
+              background: "radial-gradient(circle, rgba(103, 232, 249, 0.4), transparent 70%)",
+              filter: "blur(8px)",
+            }}
+          />
+        )}
+        
+        <DPadArrow direction={label as "up" | "down" | "left" | "right"} />
+        
+        <ParticleBurst color="#67e8f9" burstKey={burstKey} />
+      </div>
+    </Draggable>
+  );
+};
 
 const FaceButton = ({
   symbol,
@@ -516,7 +589,9 @@ const FaceButton = ({
             filter: "blur(12px)",
           }}
         />
-        <ParticleBurst color={color} burstKey={burstKey} />
+        <div className="absolute" style={{ right: 23, bottom: 23 }}>
+          <ParticleBurst color={color} burstKey={burstKey} />
+        </div>
       </div>
     </Draggable>
   );
@@ -542,26 +617,95 @@ const ShoulderButton = ({
   onPositionChange: (id: string, position: DraggablePosition) => void;
   locked: boolean;
   debugMode: boolean;
-}) => (
-  <Draggable
-    element={element}
-    onPositionChange={onPositionChange}
-    locked={locked}
-    debugMode={debugMode}
-  >
-    <div
-      className={clsx(
-        "relative flex h-12 w-24 items-center justify-center rounded-2xl border border-white/10 bg-black/70 text-sm font-semibold tracking-[0.3em] text-white/50",
-        active && "border-orange-400/60 text-orange-200"
-      )}
+}) => {
+  const heatLevel = intensity;
+  
+  // Heat colors: cold steel → warm → hot → white-hot
+  const getHeatGradient = (heat: number) => {
+    if (heat < 0.1) {
+      return "linear-gradient(135deg, rgba(40,40,45,0.95), rgba(20,20,25,0.95))";
+    }
+    // Interpolate from dark steel to red-orange to white
+    const r = Math.min(255, 40 + heat * 215);
+    const g = Math.min(255, heat * 180);
+    const b = Math.max(0, 40 - heat * 40);
+    return `linear-gradient(135deg, rgba(${r},${g},${b},0.95), rgba(${Math.max(20, r-30)},${Math.max(0, g-30)},${b},0.95))`;
+  };
+  
+  const glowIntensity = Math.pow(heatLevel, 0.7);
+  
+  return (
+    <Draggable
+      element={element}
+      onPositionChange={onPositionChange}
+      locked={locked}
+      debugMode={debugMode}
     >
-      {label}
-      <div className="absolute inset-0 overflow-visible">
-        <ExhaustPlume value={intensity} direction={direction} />
+      <div
+        className={clsx(
+          "relative flex h-12 w-24 items-center justify-center rounded-2xl border text-sm font-semibold tracking-[0.3em] transition-all",
+          active ? "border-orange-400/80 text-orange-100" : "border-white/10 text-white/50"
+        )}
+        style={{
+          background: getHeatGradient(heatLevel),
+          boxShadow: heatLevel > 0.1 
+            ? `0 0 ${20 * glowIntensity}px rgba(255, ${100 + heatLevel * 100}, 0, ${0.3 + glowIntensity * 0.5}), inset 0 0 ${15 * heatLevel}px rgba(255, 80, 0, ${0.2 + heatLevel * 0.3})`
+            : "none",
+          borderColor: heatLevel > 0.3 
+            ? `rgba(255, ${150 - heatLevel * 100}, 0, ${0.5 + heatLevel * 0.5})`
+            : active ? "rgba(255, 160, 0, 0.8)" : "rgba(255, 255, 255, 0.1)",
+          transition: "background 100ms ease, box-shadow 200ms ease, border-color 200ms ease",
+        }}
+      >
+        {/* Inner heat glow */}
+        <div 
+          className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none"
+          style={{
+            background: heatLevel > 0.2 
+              ? `radial-gradient(circle at center, rgba(255, ${200 - heatLevel * 150}, 0, ${heatLevel * 0.4}), transparent 70%)`
+              : "transparent",
+            transition: "background 150ms ease",
+          }}
+        />
+        
+        {/* Heat lines / cooling effect */}
+        {heatLevel > 0.1 && (
+          <>
+            <div 
+              className="absolute top-1 left-2 right-2 h-px"
+              style={{
+                background: `linear-gradient(90deg, transparent, rgba(255, ${100 + heatLevel * 100}, 0, ${heatLevel * 0.5}), transparent)`,
+                opacity: heatLevel,
+              }}
+            />
+            <div 
+              className="absolute bottom-1 left-2 right-2 h-px"
+              style={{
+                background: `linear-gradient(90deg, transparent, rgba(255, ${80 + heatLevel * 80}, 0, ${heatLevel * 0.3}), transparent)`,
+                opacity: heatLevel * 0.6,
+              }}
+            />
+          </>
+        )}
+        
+        <span style={{ 
+          color: heatLevel > 0.5 
+            ? `rgba(255, ${200 + heatLevel * 55}, ${heatLevel * 100}, 1)` 
+            : active ? "rgba(255, 200, 150, 1)" : "rgba(255, 255, 255, 0.5)",
+          textShadow: heatLevel > 0.3 
+            ? `0 0 ${10 * heatLevel}px rgba(255, 150, 0, ${heatLevel})`
+            : "none",
+        }}>
+          {label}
+        </span>
+        
+        <div className="absolute inset-0 overflow-visible">
+          <ExhaustPlume value={intensity} direction={direction} />
+        </div>
       </div>
-    </div>
-  </Draggable>
-);
+    </Draggable>
+  );
+};
 
 const ControllerExperience = () => {
   const state = useDualShock();
@@ -840,6 +984,19 @@ const ControllerExperience = () => {
           }
           100% {
             transform: translate(calc(-50% + var(--offsetX, 0px)), calc(-50% + var(--offsetY, 0px))) scale(0.3);
+            opacity: 0;
+          }
+        }
+        @keyframes ember-float {
+          0% {
+            transform: translate(-50%, -50%) translateY(0) scale(1);
+            opacity: 0.8;
+          }
+          50% {
+            opacity: 0.6;
+          }
+          100% {
+            transform: translate(calc(-50% + var(--emberX, 0px)), calc(-50% - 40px)) scale(0.2);
             opacity: 0;
           }
         }

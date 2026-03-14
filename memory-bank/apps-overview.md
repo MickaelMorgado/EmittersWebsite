@@ -21,6 +21,7 @@ This document provides a centralized overview of all interactive applications an
 | **TikTok Analytics** | Import and analyze TikTok video metrics from CSV. | [TikTok Analytics](project-specific/apps/tiktok-analytics.md) |
 | **Trading Tools** | Advanced SciChart-based backtesting tools. | [Trading Tools](project-specific/apps/trading-tools.md) |
 | **Stalker 2 Ammo** | Tactical munitions logistics terminal with AI. | [Stalker 2 Ammo](project-specific/apps/stalker-ammo.md) |
+| **PS3 Controller Visualizer** | DualShock particle visualizer for streaming. | [PS3 Visualizer](project-specific/apps/ps3-visualizer.md) |
 
 ## Infrastructure & Backend
 
