@@ -504,7 +504,7 @@ const FaceButton = ({
           active && "scale-110 border-white/40"
         )}
       >
-        <span className="text-2xl font-light" style={{ color, fontSize: symbol === "□" ? "2.2rem" : undefined, transform: symbol === "□" ? "translateY(-3px)" : undefined }}>
+        <span className="text-2xl font-light" style={{ color, fontSize: symbol === "□" ? "2.86rem" : undefined, transform: symbol === "□" ? "translateY(-7px)" : undefined }}>
           {symbol}
         </span>
         <div
