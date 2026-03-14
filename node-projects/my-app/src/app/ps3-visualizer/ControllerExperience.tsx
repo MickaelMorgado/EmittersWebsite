@@ -427,7 +427,7 @@ const Stick = ({
               // Properly center the stick
               left: "50%",
               top: "50%",
-              transform: `translate(calc(-50% + ${x * offsetScale}px), calc(-50% + ${y * offsetScale}px))`,
+              transform: `translate(calc(-50% + ${x * offsetScale}px), calc(-50% - ${y * offsetScale}px))`,
               transition: stickOpacity > 0 ? "none" : "background 150ms ease",
             }}
           />
