@@ -6,7 +6,7 @@ import { AgentCard } from "./AgentCard";
 import { SpawnAgentForm } from "./SpawnAgentForm";
 import { ChatPanel } from "./ChatPanel";
 import { StatsPanel } from "./StatsPanel";
-import { RefreshCw, Loader2, AlertCircle } from "lucide-react";
+import { RefreshCw, Loader2, AlertCircle, Plus, X } from "lucide-react";
 
 const GATEWAY_URL = process.env.NEXT_PUBLIC_OPENCLAW_GATEWAY_URL || "http://127.0.0.1:18789";
 
@@ -17,6 +17,7 @@ export function AgentDashboard() {
   const [isSpawning, setIsSpawning] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [showSpawnForm, setShowSpawnForm] = useState(false);
 
   const loadAgents = useCallback(async () => {
     try {
@@ -146,8 +147,26 @@ export function AgentDashboard() {
         {/* Stats */}
         <StatsPanel agents={agents} />
 
-        {/* Spawn Form */}
-        <SpawnAgentForm onSpawn={handleSpawn} isSpawning={isSpawning} />
+        {/* Spawn Form - Collapsible */}
+        {showSpawnForm ? (
+          <div className="relative">
+            <button
+              onClick={() => setShowSpawnForm(false)}
+              className="absolute -top-2 -right-2 z-10 rounded-full bg-white/10 p-1 text-white/60 hover:bg-white/20"
+            >
+              <X className="h-4 w-4" />
+            </button>
+            <SpawnAgentForm onSpawn={handleSpawn} isSpawning={isSpawning} />
+          </div>
+        ) : (
+          <button
+            onClick={() => setShowSpawnForm(true)}
+            className="w-full flex items-center justify-center gap-2 rounded-xl border border-dashed border-white/20 bg-white/5 py-3 text-sm text-white/60 hover:border-cyan-500/50 hover:bg-cyan-500/10 hover:text-cyan-400 transition-all"
+          >
+            <Plus className="h-4 w-4" />
+            Spawn Agent
+          </button>
+        )}
 
         {/* Agent List */}
         <div className="space-y-2">
