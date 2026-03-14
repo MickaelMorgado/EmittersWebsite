@@ -22,6 +22,7 @@ This document provides a centralized overview of all interactive applications an
 | **Trading Tools** | Advanced SciChart-based backtesting tools. | [Trading Tools](project-specific/apps/trading-tools.md) |
 | **Stalker 2 Ammo** | Tactical munitions logistics terminal with AI. | [Stalker 2 Ammo](project-specific/apps/stalker-ammo.md) |
 | **PS3 Controller Visualizer** | DualShock particle visualizer for streaming. | [PS3 Visualizer](project-specific/apps/ps3-visualizer.md) |
+| **Mission Control** | AI agent management dashboard for OpenClaw. | [Mission Control](project-specific/apps/mission-control.md) |
 
 ## Infrastructure & Backend
 

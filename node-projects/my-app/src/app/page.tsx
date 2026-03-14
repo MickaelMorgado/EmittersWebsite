@@ -30,6 +30,7 @@ const PROJECTS: { [section: string]: Project[] } = {
     { title: "Blender Vertex Measurements", description: "Blender add-on for real-time distance measurements", href: "https://github.com/MickaelMorgado/BlenderVertexMeasurements", accentColor: "255, 153, 0", isExternal: true, isPublic: true },
   ],
   "Node Projects": [
+    { title: "Mission Control", description: "AI Agent management dashboard for OpenClaw", href: "/mission-control", accentColor: "8, 145, 178", isPublic: true },
     { title: "Blockchains visualizer", description: "Interactive 3D blockchains and token visualizer", href: "/blockchain-visualizer", accentColor: "31, 239, 239", isPublic: false },
     { title: "Data Visualizer Project", description: "Interactive 3D data visualizer", href: "/dataVisualizer", accentColor: "45, 212, 191", isPublic: true },
     { title: "Sounder Project", description: "A sound design tool for creating randomized music", href: "/sounder", accentColor: "244, 63, 94", isPublic: true },

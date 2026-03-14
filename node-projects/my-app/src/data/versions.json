@@ -108,5 +108,11 @@
     "history": [
       { "version": "1.0.0", "releasedAt": "2026-01-01", "changes": ["Initial release"] }
     ]
+  },
+  "mission-control": {
+    "current": { "version": "0.1.0", "releasedAt": "2026-03-14", "changes": ["AI Agent management dashboard for OpenClaw"] },
+    "history": [
+      { "version": "0.1.0", "releasedAt": "2026-03-14", "changes": ["AI Agent management dashboard for OpenClaw"] }
+    ]
   }
 }
