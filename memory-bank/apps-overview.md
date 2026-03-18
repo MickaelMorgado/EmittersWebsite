@@ -22,8 +22,10 @@ This document provides a centralized overview of all interactive applications an
 | **Trading Tools** | Advanced SciChart-based backtesting tools. | [Trading Tools](project-specific/apps/trading-tools.md) |
 | **Stalker 2 Ammo** | Tactical munitions logistics terminal with AI. | [Stalker 2 Ammo](project-specific/apps/stalker-ammo.md) |
 | **PS3 Controller Visualizer** | DualShock particle visualizer for streaming. | [PS3 Visualizer](project-specific/apps/ps3-visualizer.md) |
+| **Cursor Follower** | Portrait (9:16) live stream centered on mouse cursor. | [Cursor Follower](project-specific/apps/cursor-follower.md) |
 | **Mission Control** | AI agent management dashboard for OpenClaw. | [Mission Control](project-specific/apps/mission-control.md) |
 | **Media Processor** | Compress images and crop videos with preset ratios. | [Media Processor](project-specific/apps/media-processor.md) |
+| **Cursor Follower** | Portrait (9:16) live stream centered on mouse cursor. | [Cursor Follower](project-specific/apps/cursor-follower.md) |
 
 ## Infrastructure & Backend
 
