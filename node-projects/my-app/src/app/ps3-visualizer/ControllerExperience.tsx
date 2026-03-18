@@ -473,9 +473,9 @@ const Stick = ({
 };
 
 const DPadButton = ({
-  label: _label,
+  label,
   active,
-  position: _position,
+  position,
   element,
   onPositionChange,
   locked,
@@ -535,10 +535,10 @@ const DPadButton = ({
 };
 
 const FaceButton = ({
-  symbol: _symbol,
-  color: _color,
+  symbol,
+  color,
   active,
-  position: _position,
+  position,
   element,
   onPositionChange,
   locked,

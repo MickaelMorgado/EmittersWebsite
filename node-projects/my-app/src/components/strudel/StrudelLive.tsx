@@ -4,6 +4,15 @@ import { useState, DragEvent, useRef, useEffect, useCallback, useMemo } from "re
 import { Button } from "@/components/ui/button";
 import { Play, Square, RotateCcw, Music2, Shuffle, Trash2, GripVertical, Loader2, Volume2, VolumeX, Sparkles, Zap, Waves, Code2 } from "lucide-react";
 
+declare global {
+  interface Window {
+    Tone?: {
+      started: boolean;
+      Transport?: unknown;
+    };
+  }
+}
+
 interface CategoryPattern {
   name: string;
   code: string;
@@ -471,7 +480,7 @@ function StrudelLive() {
       console.log("Sequence built:", sequence.length, "layers");
       console.log("Layers:", JSON.stringify(sequence));
       
-      const loop = new (window.Tone as any).Loop((time) => {
+      const loop = new (window.Tone as any).Loop((time: unknown) => {
         for (let layerIdx = 0; layerIdx < sequence.length; layerIdx++) {
           const layer = sequence[layerIdx];
           if (stepIndex < layer.length) {
