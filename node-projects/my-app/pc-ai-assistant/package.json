@@ -1,14 +1,18 @@
 {
   "name": "pc-ai-assistant-server",
   "version": "1.0.0",
-  "description": "Voice AI Assistant Server",
+  "description": "Voice AI Assistant Server with TikTok Integration",
   "main": "voice_ollama.js",
   "scripts": {
-    "start": "node voice_ollama.js"
+    "start": "node voice_ollama.js & node tiktok-server.js",
+    "dev": "npm run start",
+    "stop": "taskkill /F /IM node.exe"
   },
   "dependencies": {
     "ollama": "^0.3.0",
     "express": "^4.18.2",
-    "socket.io": "^4.7.4"
+    "socket.io": "^4.7.4",
+    "tiktok-live-connector": "^2.1.1-beta1",
+    "ws": "^8.19.0"
   }
 }

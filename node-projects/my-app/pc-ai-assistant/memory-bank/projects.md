@@ -8,7 +8,7 @@ A sophisticated voice-activated AI assistant with real-time 3D galaxy visualizat
 - AI-powered voice conversations with Ollama (Llama-2)
 - AI Transcript Correction (STT cleanup pass)
 - Real-time 3D galaxy visualization (FE) reactive to voice and events
-- Proactive audience engagement during chat silence
+- Proactive engagement when the stream is quiet
 - Cross-platform TTS via Piper & Python bridge
 
 ### Technical Stack

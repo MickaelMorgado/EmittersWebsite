@@ -29,6 +29,13 @@
       { "version": "1.0.0", "releasedAt": "2026-01-08", "changes": ["Initial release"] }
     ]
   },
+  "ps3-visualizer": {
+    "current": { "version": "0.2.0", "releasedAt": "2026-03-14", "changes": ["Enhanced flame effects with detailed layers", "Heating exhaust tube effect on L2/R2", "D-pad glow and particle effects", "Action button particle repositioning"] },
+    "history": [
+      { "version": "0.2.0", "releasedAt": "2026-03-14", "changes": ["Enhanced flame effects with detailed layers", "Heating exhaust tube effect on L2/R2", "D-pad glow and particle effects", "Action button particle repositioning"] },
+      { "version": "0.1.0", "releasedAt": "2026-03-13", "changes": ["Initial DualShock particle visualizer"] }
+    ]
+  },
   "todo": {
     "current": { "version": "1.0.0", "releasedAt": "2026-01-05", "changes": ["Daily habit tracker"] },
     "history": [
@@ -100,6 +107,18 @@
     "current": { "version": "1.0.0", "releasedAt": "2026-01-01", "changes": ["Personal portfolio"] },
     "history": [
       { "version": "1.0.0", "releasedAt": "2026-01-01", "changes": ["Initial release"] }
+    ]
+  },
+  "image-compressor": {
+    "current": { "version": "1.0.0", "releasedAt": "2026-03-14", "changes": ["Media Processor - compress images and crop videos with preset ratios"] },
+    "history": [
+      { "version": "1.0.0", "releasedAt": "2026-03-14", "changes": ["Media Processor - compress images and crop videos with preset ratios"] }
+    ]
+  },
+  "mission-control": {
+    "current": { "version": "0.1.0", "releasedAt": "2026-03-14", "changes": ["AI Agent management dashboard for OpenClaw"] },
+    "history": [
+      { "version": "0.1.0", "releasedAt": "2026-03-14", "changes": ["AI Agent management dashboard for OpenClaw"] }
     ]
   }
 }

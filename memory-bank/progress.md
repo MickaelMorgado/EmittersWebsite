@@ -9,6 +9,25 @@
 - [x] Wrote functions.md  
 - [x] Wrote progress.md
 
+## 2026-03-07: TikTok Analytics App
+
+### ✅ New TikTok Analytics Application
+- **Location**: `node-projects/my-app/src/app/tiktok-analytics/`
+- **Store**: `node-projects/my-app/src/stores/useTikTokAnalyticsStore.ts`
+- **Features**:
+  - CSV file import with drag-and-drop support
+  - Parses tab-separated values (Post Date, Caption, URL, Metrics Date, Views, Likes, Comments, Shares)
+  - Stats cards: Total videos, views, likes, comments, shares
+  - Recharts area charts showing engagement over time
+  - Data table with sortable columns
+  - Click row to open TikTok URL in new tab
+  - VersionBadge integration
+
+### ✅ Route & Navigation
+- Added link to main page (`/tiktok-analytics`)
+- Added to memory-bank/apps-overview.md
+- Created app documentation in memory-bank/project-specific/apps/tiktok-analytics.md
+
 ## 2026-02-22: Agent Workflow System & Version Tracking
 
 ### ✅ Agent Configuration System
