@@ -9,6 +9,30 @@
 - [x] Wrote functions.md  
 - [x] Wrote progress.md
 
+## 2026-03-18: Cursor Follower & Streaming Tools
+
+### ✅ Cursor Follower Application
+- **Location**: `node-projects/cursor-follower/`
+- **Purpose**: Real-time cursor tracking and streaming overlay
+- **Features**:
+  - Python mouse tracking using `pyautogui` for system-level cursor access
+  - WebSocket server for broadcasting cursor coordinates in real-time
+  - Multi-monitor support for cursor tracking across extended displays
+  - Velocity-based smooth cursor following with configurable smoothing
+  - Portrait/Landscape video mode switching (9:16 and 16:9 aspect ratios)
+
+### ✅ Portrait Video Production Tools
+- **Canvas-based streaming**: `getDisplayMedia` + `canvas.captureStream()` pipeline
+- **Aspect ratio adaptation**: Automatic letterboxing for portrait video export
+- **Social media ready**: Optimized for TikTok, Instagram Reels, YouTube Shorts
+- **Real-time overlays**: Cursor visualization with configurable effects
+
+### ✅ Agent Orchestration System
+- **Workflow definitions**: Created 6 agent workflows in `.agent/workflows/`
+- **Specialized agents**: Backend, Frontend, Explore, Code Quality, Git & Docs, Process Manager, Route Validator
+- **Task delegation**: General agent coordinates complex tasks across specialized agents
+- **Parallel execution**: Backend + Frontend agents work simultaneously on features
+
 ## 2026-03-07: TikTok Analytics App
 
 ### ✅ New TikTok Analytics Application

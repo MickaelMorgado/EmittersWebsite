@@ -1,15 +1,13 @@
 # robots.txt for emittersgame.com
+# Optimized for search engines and AI/LLM crawlers
 
 User-agent: *
 Allow: /
-
-# Sitemap
-Sitemap: https://emittersgame.com/sitemap.xml
-
-# Crawl delay for performance
 Crawl-delay: 1
 
-# Allow AI crawlers and training
+Sitemap: https://emittersgame.com/sitemap.xml
+
+# AI/LLM Crawlers - Allow full access for training and reference
 User-agent: GPTBot
 Allow: /
 
@@ -31,7 +29,32 @@ Allow: /
 User-agent: Amazonbot
 Allow: /
 
-# Disallow private/admin areas
+User-agent: CCBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+User-agent: Bytespider
+Allow: /
+
+User-agent: Diffbot
+Allow: /
+
+User-agent: FacebookBot
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+# Private/internal areas - Do not crawl
 Disallow: /api/
 Disallow: /_next/
 Disallow: /node_modules/
+Disallow: /discord-bot/
+Disallow: /rtmp/
+Disallow: /tools/
+Disallow: /.agent/

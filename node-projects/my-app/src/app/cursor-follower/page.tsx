@@ -1,7 +1,7 @@
 'use client';
 
 import { VersionBadge } from '@/components/VersionBadge';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Sidebar from '../../components/sidebar';
 
 const STREAM_FPS = 60;
@@ -18,10 +18,11 @@ export default function CursorFollower() {
   const [status, setStatus] = useState('Ready to start');
   const [error, setError] = useState('');
   const [serverConnected, setServerConnected] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  const canvasWidth = orientation === 'portrait' ? 1080 : 1920;
-  const canvasHeight = orientation === 'portrait' ? 1920 : 1080;
-  const targetAspect = orientation === 'portrait' ? 9 / 16 : 16 / 9;
+  const canvasWidth = useMemo(() => orientation === 'portrait' ? 1080 : 1920, [orientation]);
+  const canvasHeight = useMemo(() => orientation === 'portrait' ? 1920 : 1080, [orientation]);
+  const targetAspect = useMemo(() => orientation === 'portrait' ? 9 / 16 : 16 / 9, [orientation]);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -278,6 +279,10 @@ export default function CursorFollower() {
     };
   }, [stopCapture]);
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   return (
     <div className="relative h-screen overflow-hidden mx-auto max-w-screen bg-[#0a0a0f]">
       <video
@@ -370,14 +375,20 @@ export default function CursorFollower() {
 
         <div className="mb-8">
           <h2 className="text-[10px] uppercase tracking-[0.2em] text-indigo-500 mb-4 font-bold">Orientation</h2>
-          <select
-            value={orientation}
-            onChange={(e) => setOrientation(e.target.value as Orientation)}
-            className="w-full bg-[#1a1a22] text-gray-300 text-[10px] px-3 py-2 rounded border border-white/10 focus:border-indigo-500 focus:outline-none"
-          >
-            <option value="portrait">Portrait (1080x1920)</option>
-            <option value="landscape">Landscape (1920x1080)</option>
-          </select>
+          {mounted ? (
+            <select
+              value={orientation}
+              onChange={(e) => setOrientation(e.target.value as Orientation)}
+              className="w-full bg-[#1a1a22] text-gray-300 text-[10px] px-3 py-2 rounded border border-white/10 focus:border-indigo-500 focus:outline-none"
+            >
+              <option value="portrait">Portrait (1080x1920)</option>
+              <option value="landscape">Landscape (1920x1080)</option>
+            </select>
+          ) : (
+            <div className="w-full bg-[#1a1a22] text-gray-400 text-[10px] px-3 py-2 rounded border border-white/10">
+              Loading...
+            </div>
+          )}
         </div>
 
         <div className="mb-8">
@@ -437,8 +448,8 @@ export default function CursorFollower() {
         <div className="p-4 bg-indigo-950/10 border border-indigo-900/30 rounded">
           <h3 className="text-white text-[10px] uppercase tracking-widest mb-3 font-bold">Output</h3>
           <ul className="text-gray-500 text-[9px] space-y-2 uppercase tracking-tighter">
-            <li>• Resolution: {canvasWidth}x{canvasHeight}</li>
-            <li>• Aspect: {orientation === 'portrait' ? '9:16 Portrait' : '16:9 Landscape'}</li>
+            <li>• Resolution: {mounted ? `${canvasWidth}x${canvasHeight}` : '1080x1920'}</li>
+            <li>• Aspect: {mounted ? (orientation === 'portrait' ? '9:16 Portrait' : '16:9 Landscape') : '9:16 Portrait'}</li>
             <li>• FPS: {STREAM_FPS}</li>
             <li>• Python + WebSocket tracking</li>
           </ul>

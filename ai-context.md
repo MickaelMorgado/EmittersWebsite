@@ -37,6 +37,7 @@
 
 | App | Description | Tech Highlights |
 |-----|-------------|-----------------|
+| Cursor Follower | Interactive cursor tracking with visual effects | Canvas, Mouse events |
 | Data Visualizer | Interactive 3D data visualization | Three.js, WebGL |
 | Sounder | Sound design tool for randomized music | Tone.js, Web Audio API |
 | EMF Detector Simulator | Radiation scanner with sonar feedback | Canvas, Audio synthesis |

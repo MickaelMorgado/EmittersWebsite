@@ -17,10 +17,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - versions.json data file with semantic versioning for 17 projects
 - SEO files: robots.txt, sitemap.xml, ai-context.md
 - Memory-bank history tracking system
+- Cursor Follower interactive web app
+- AI-context.md enhanced for LLM discoverability
 
 ### Changed
 - Enhanced project organization with dedicated workflows
 - Updated documentation structure for AI discoverability
+- Expanded robots.txt with comprehensive AI crawler directives
 
 ## [1.0.0] - 2026-02-22
 

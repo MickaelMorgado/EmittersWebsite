@@ -29,7 +29,15 @@ function VersionBadge({ projectName }: { projectName: string }) {
     return () => clearTimeout(timer);
   }, []);
 
-  if (!project) return null;
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    const timer = setTimeout(() => setIsVisible(true), 500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (!mounted || !project) return null;
 
   const { current, history } = project;
   const displayHistory = history.slice(0, 5);
