@@ -4,19 +4,24 @@ import { VersionBadge } from '@/components/VersionBadge';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Sidebar from '../../components/sidebar';
 
-const CANVAS_WIDTH = 1080;
-const CANVAS_HEIGHT = 1920;
 const STREAM_FPS = 60;
 const MOUSE_SERVER_URL = 'ws://localhost:3003';
+
+type Orientation = 'portrait' | 'landscape';
 
 export default function CursorFollower() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [isPreparing, setIsPreparing] = useState(false);
   const [preparingCountdown, setPreparingCountdown] = useState(3);
   const [cropScale, setCropScale] = useState(0.5);
+  const [orientation, setOrientation] = useState<Orientation>('portrait');
   const [status, setStatus] = useState('Ready to start');
   const [error, setError] = useState('');
   const [serverConnected, setServerConnected] = useState(false);
+
+  const canvasWidth = orientation === 'portrait' ? 1080 : 1920;
+  const canvasHeight = orientation === 'portrait' ? 1920 : 1080;
+  const targetAspect = orientation === 'portrait' ? 9 / 16 : 16 / 9;
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -216,15 +221,15 @@ export default function CursorFollower() {
       const scaledMouseX = smoothMouseX.current * scaleX;
       const scaledMouseY = smoothMouseY.current * scaleY;
 
-      const targetAspect = 9 / 16;
+      const currentTargetAspect = orientation === 'portrait' ? 9 / 16 : 16 / 9;
       let cropWidth, cropHeight;
 
-      if (vw / vh > targetAspect) {
+      if (vw / vh > currentTargetAspect) {
         cropHeight = vh * cropScale;
-        cropWidth = cropHeight * targetAspect;
+        cropWidth = cropHeight * currentTargetAspect;
       } else {
         cropWidth = vw * cropScale;
-        cropHeight = cropWidth / targetAspect;
+        cropHeight = cropWidth / currentTargetAspect;
       }
 
       let srcX = scaledMouseX - cropWidth / 2;
@@ -234,28 +239,32 @@ export default function CursorFollower() {
       srcY = Math.max(0, Math.min(srcY, vh - cropHeight));
 
       ctx.fillStyle = '#000';
-      ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+      ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-      ctx.drawImage(video, srcX, srcY, cropWidth, cropHeight, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+      ctx.drawImage(video, srcX, srcY, cropWidth, cropHeight, 0, 0, canvasWidth, canvasHeight);
 
       animationRef.current = requestAnimationFrame(render);
     };
 
     render();
-  }, [cropScale]);
+  }, [cropScale, orientation]);
 
   useEffect(() => {
     if (isStreaming && canvasRef.current) {
       const canvas = canvasRef.current;
-      canvas.width = CANVAS_WIDTH;
-      canvas.height = CANVAS_HEIGHT;
+      canvas.width = canvasWidth;
+      canvas.height = canvasHeight;
+
+      // Reset smoothing on orientation change
+      smoothMouseX.current = capturedWidth.current / 2;
+      smoothMouseY.current = capturedHeight.current / 2;
 
       canvasStreamRef.current = canvas.captureStream(STREAM_FPS);
       if (previewRef.current) {
         previewRef.current.srcObject = canvasStreamRef.current;
       }
     }
-  }, [isStreaming]);
+  }, [isStreaming, orientation, canvasWidth, canvasHeight]);
 
   useEffect(() => {
     if (isStreaming) {
@@ -360,6 +369,18 @@ export default function CursorFollower() {
         </div>
 
         <div className="mb-8">
+          <h2 className="text-[10px] uppercase tracking-[0.2em] text-indigo-500 mb-4 font-bold">Orientation</h2>
+          <select
+            value={orientation}
+            onChange={(e) => setOrientation(e.target.value as Orientation)}
+            className="w-full bg-[#1a1a22] text-gray-300 text-[10px] px-3 py-2 rounded border border-white/10 focus:border-indigo-500 focus:outline-none"
+          >
+            <option value="portrait">Portrait (1080x1920)</option>
+            <option value="landscape">Landscape (1920x1080)</option>
+          </select>
+        </div>
+
+        <div className="mb-8">
           <h2 className="text-[10px] uppercase tracking-[0.2em] text-indigo-500 mb-4 font-bold">Zoom Level</h2>
           <div className="space-y-4">
             <div>
@@ -416,8 +437,8 @@ export default function CursorFollower() {
         <div className="p-4 bg-indigo-950/10 border border-indigo-900/30 rounded">
           <h3 className="text-white text-[10px] uppercase tracking-widest mb-3 font-bold">Output</h3>
           <ul className="text-gray-500 text-[9px] space-y-2 uppercase tracking-tighter">
-            <li>• Resolution: {CANVAS_WIDTH}x{CANVAS_HEIGHT}</li>
-            <li>• Aspect: 9:16 Portrait</li>
+            <li>• Resolution: {canvasWidth}x{canvasHeight}</li>
+            <li>• Aspect: {orientation === 'portrait' ? '9:16 Portrait' : '16:9 Landscape'}</li>
             <li>• FPS: {STREAM_FPS}</li>
             <li>• Python + WebSocket tracking</li>
           </ul>
