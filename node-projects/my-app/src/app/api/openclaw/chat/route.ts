@@ -11,14 +11,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Session key is required" }, { status: 400 });
     }
 
-    let tool: string;
-    let params: Record<string, unknown> = { sessionKey };
+    const tool: string = action === "history" ? "sessions_history" : "sessions_send";
+    const params: Record<string, unknown> = { sessionKey };
 
     if (action === "history") {
-      tool = "sessions_history";
       if (limit) params.limit = limit;
     } else if (action === "send") {
-      tool = "sessions_send";
       if (!message) {
         return NextResponse.json({ error: "Message is required for send action" }, { status: 400 });
       }

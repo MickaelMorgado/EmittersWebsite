@@ -254,10 +254,34 @@ const ExhaustPlume = ({
   direction: "left" | "right";
 }) => {
   const intensity = Math.min(1, Math.max(0, value));
-  if (intensity < 0.02) return null;
-
   const isRight = direction === "right";
   const scale = 0.3 + intensity * 0.8;
+
+  // Many detailed spark particles - must be before conditional return
+  const particles = useMemo(() => {
+    const count = Math.ceil(20 * intensity);
+    return Array.from({ length: count }).map((_, i) => ({
+      offsetX: (Math.random() - 0.5) * 120 * intensity,
+      offsetY: (Math.random() - 0.5) * 50 * intensity,
+      delay: i * 15,
+      duration: 150 + Math.random() * 300,
+      size: 2 + Math.random() * 10,
+      hue: Math.random() > 0.5 ? 30 + Math.random() * 20 : 0 + Math.random() * 30,
+    }));
+  }, [intensity]);
+
+  // Ember particles that float upward - must be before conditional return
+  const embers = useMemo(() => {
+    const count = Math.ceil(12 * intensity);
+    return Array.from({ length: count }).map((_, i) => ({
+      offsetX: (Math.random() - 0.5) * 50 * intensity,
+      delay: i * 50,
+      duration: 400 + Math.random() * 600,
+      size: 1 + Math.random() * 3,
+    }));
+  }, [intensity]);
+
+  if (intensity < 0.02) return null;
 
   // Multi-layer detailed flames: outer → mid → inner → core
   const flameLayers = [
@@ -275,30 +299,6 @@ const ExhaustPlume = ({
     { scaleX: 0.8, scaleY: 0.4, opacity: intensity, blur: 1, hue: 55, lightness: 98, width: 50, height: 20 },
   ];
 
-  // Many detailed spark particles
-  const particles = useMemo(() => {
-    const count = Math.ceil(20 * intensity);
-    return Array.from({ length: count }).map((_, i) => ({
-      offsetX: (Math.random() - 0.5) * 120 * intensity,
-      offsetY: (Math.random() - 0.5) * 50 * intensity,
-      delay: i * 15,
-      duration: 150 + Math.random() * 300,
-      size: 2 + Math.random() * 10,
-      hue: Math.random() > 0.5 ? 30 + Math.random() * 20 : 0 + Math.random() * 30,
-    }));
-  }, [intensity]);
-
-  // Ember particles that float upward
-  const embers = useMemo(() => {
-    const count = Math.ceil(12 * intensity);
-    return Array.from({ length: count }).map((_, i) => ({
-      offsetX: (Math.random() - 0.5) * 50 * intensity,
-      delay: i * 50,
-      duration: 400 + Math.random() * 600,
-      size: 1 + Math.random() * 3,
-    }));
-  }, [intensity]);
-
   return (
     <div
       className="pointer-events-none absolute inset-0 overflow-visible"
@@ -307,73 +307,63 @@ const ExhaustPlume = ({
         marginRight: isRight ? "0" : "2px",
       }}
     >
-      {/* Main flame layers */}
-      {flameLayers.map((flame, idx) => {
-        const style: CSSProperties = {
-          position: "absolute",
-          top: "50%",
-          left: isRight ? "100%" : undefined,
-          right: isRight ? undefined : "100%",
-          width: `${flame.width}px`,
-          height: `${flame.height}px`,
-          opacity: flame.opacity,
-          transform: `translateY(-50%) scaleX(${flame.scaleX * scale}) scaleY(${flame.scaleY * scale})`,
-          transformOrigin: isRight ? "left center" : "right center",
-          background: isRight
-            ? `linear-gradient(90deg, transparent 0%, hsl(${flame.hue}, 100%, ${flame.lightness - 20}%) 10%, hsl(${flame.hue}, 100%, ${flame.lightness}%) 30%, hsl(${flame.hue - 15}, 100%, ${flame.lightness - 5}%) 60%, transparent 100%)`
-            : `linear-gradient(270deg, transparent 0%, hsl(${flame.hue}, 100%, ${flame.lightness - 20}%) 10%, hsl(${flame.hue}, 100%, ${flame.lightness}%) 30%, hsl(${flame.hue - 15}, 100%, ${flame.lightness - 5}%) 60%, transparent 100%)`,
-          borderRadius: isRight ? "0 100% 100% 0" : "100% 0 0 100%",
-          filter: `blur(${flame.blur}px)`,
-          mixBlendMode: "screen",
-          animation: `flame-flicker ${0.02 + idx * 0.01}s ease-in-out infinite alternate`,
-          animationDelay: `${idx * 8}ms`,
-          zIndex: idx,
-        };
-        return <div key={idx} style={style} />;
-      })}
-
-      {/* Bright spark particles */}
-      {particles.map((p, i) => (
+      {/* Flame layers */}
+      {flameLayers.map((layer, idx) => (
         <div
-          key={`spark-${i}`}
+          key={idx}
           style={{
             position: "absolute",
-            width: `${p.size}px`,
-            height: `${p.size}px`,
-            background: `radial-gradient(circle at 30% 30%, #ffffff, hsl(${p.hue}, 100%, 70%), hsl(${p.hue - 10}, 100%, 50%))`,
-            borderRadius: "50%",
-            left: isRight ? "100%" : undefined,
-            right: isRight ? undefined : "100%",
-            top: "50%",
-            boxShadow: `0 0 ${6 + p.size * 2}px hsl(${p.hue}, 100%, 60%), 0 0 ${12 + p.size * 3}px hsl(${p.hue}, 100%, 50%)`,
-            filter: "blur(0.3px)",
-            opacity: 0.95,
-            animation: `turbo-particle-trail ${p.duration}ms ease-out ${p.delay}ms forwards`,
-            "--offsetX": `${isRight ? p.offsetX : -p.offsetX}px`,
-            "--offsetY": `${p.offsetY}px`,
-          } as CSSProperties & Record<string, string | number>}
+            left: "50%",
+            bottom: isRight ? "0" : "auto",
+            top: isRight ? "auto" : "0",
+            width: `${layer.width}px`,
+            height: `${layer.height}px`,
+            transform: `translateX(-50%) scale(${layer.scaleX}, ${layer.scaleY})`,
+            background: `linear-gradient(to top, hsla(${layer.hue}, 100%, ${layer.lightness}%, ${layer.opacity}), hsla(${layer.hue + 20}, 100%, ${layer.lightness + 10}%, ${layer.opacity * 0.7}))`,
+            borderRadius: "50% 50% 50% 50% / 60% 60% 40% 40%",
+            filter: `blur(${layer.blur}px)`,
+            mixBlendMode: "screen",
+          }}
         />
       ))}
 
-      {/* Floating embers */}
-      {embers.map((e, i) => (
+      {/* Spark particles */}
+      {particles.map((particle, idx) => (
         <div
-          key={`ember-${i}`}
+          key={`spark-${idx}`}
           style={{
             position: "absolute",
-            width: `${e.size}px`,
-            height: `${e.size}px`,
-            background: `radial-gradient(circle, #ff6600, #ff3300)`,
+            left: "50%",
+            bottom: isRight ? "-5px" : "100%",
+            width: `${particle.size}px`,
+            height: `${particle.size}px`,
+            marginLeft: `${particle.offsetX}px`,
+            marginBottom: `-${particle.offsetY}px`,
+            background: `hsl(${particle.hue}, 100%, 70%)`,
             borderRadius: "50%",
-            left: isRight ? "100%" : undefined,
-            right: isRight ? undefined : "100%",
-            top: "50%",
-            boxShadow: `0 0 4px #ff4400`,
-            filter: "blur(0.5px)",
-            opacity: 0.6 + Math.random() * 0.3,
-            animation: `ember-float ${e.duration}ms ease-out ${e.delay}ms infinite`,
-            "--emberX": `${isRight ? e.offsetX : -e.offsetX}px`,
-          } as CSSProperties & Record<string, string | number>}
+            animation: `spark-rise ${particle.duration}ms ease-out ${particle.delay}ms infinite`,
+            boxShadow: `0 0 ${particle.size * 2}px hsl(${particle.hue}, 100%, 60%)`,
+          }}
+        />
+      ))}
+
+      {/* Ember particles */}
+      {embers.map((ember, idx) => (
+        <div
+          key={`ember-${idx}`}
+          style={{
+            position: "absolute",
+            left: "50%",
+            bottom: isRight ? "0" : "auto",
+            top: isRight ? "auto" : "0",
+            width: `${ember.size}px`,
+            height: `${ember.size}px`,
+            marginLeft: `${ember.offsetX}px`,
+            background: `hsl(${20 + Math.random() * 30}, 100%, ${50 + Math.random() * 30}%)`,
+            borderRadius: "50%",
+            animation: `ember-float ${ember.duration}ms ease-in-out ${ember.delay}ms infinite`,
+            boxShadow: `0 0 ${ember.size * 3}px hsl(30, 100%, 50%)`,
+          }}
         />
       ))}
     </div>
@@ -407,8 +397,8 @@ const DPadArrow = ({ direction }: { direction: "up" | "down" | "left" | "right" 
 };
 
 const Stick = ({
-  label,
-  position: propPosition,
+  label: _label,
+  position: _position,
   x,
   y,
   element,
@@ -485,7 +475,7 @@ const Stick = ({
 const DPadButton = ({
   label,
   active,
-  position: propPosition,
+  position,
   element,
   onPositionChange,
   locked,
@@ -548,7 +538,7 @@ const FaceButton = ({
   symbol,
   color,
   active,
-  position: propPosition,
+  position,
   element,
   onPositionChange,
   locked,

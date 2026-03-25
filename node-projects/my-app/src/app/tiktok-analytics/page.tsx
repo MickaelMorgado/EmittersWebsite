@@ -64,11 +64,12 @@ export default function TikTokAnalyticsPage() {
   const [apiMode, setApiMode] = useState<"csv" | "api">("csv");
 
   useEffect(() => {
-    const savedToken = localStorage.getItem("tiktok_access_token");
-    const savedOpenId = localStorage.getItem("tiktok_open_id");
-    if (savedToken && savedOpenId) {
-      setApiMode("api");
-    }
+    // TODO: Fix localStorage - app not finalized
+    // const savedToken = localStorage.getItem("tiktok_access_token");
+    // const savedOpenId = localStorage.getItem("tiktok_open_id");
+    // if (savedToken && savedOpenId) {
+    //   setApiMode("api");
+    // }
   }, []);
 
   const handleFile = useCallback((file: File) => {
@@ -103,6 +104,10 @@ export default function TikTokAnalyticsPage() {
   }, [handleFile]);
 
   const loadFromApi = async () => {
+    // TODO: Fix localStorage - app not finalized
+    setError("API mode disabled - app not finalized");
+    return;
+    /*
     const accessToken = localStorage.getItem("tiktok_access_token");
     const openId = localStorage.getItem("tiktok_open_id");
 
@@ -155,9 +160,14 @@ export default function TikTokAnalyticsPage() {
     } finally {
       setIsLoadingApi(false);
     }
+    */
   };
 
   const startAuth = async () => {
+    // TODO: Fix localStorage - app not finalized
+    setError("API mode disabled - app not finalized");
+    return;
+    /*
     const codeVerifier = 'dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk';
     const codeChallenge = 'E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM';
     
@@ -165,9 +175,13 @@ export default function TikTokAnalyticsPage() {
     
     const redirectUri = window.location.origin + "/tiktok-analytics";
     window.location.href = `/api/tiktok-auth?redirect_uri=${encodeURIComponent(redirectUri)}&code_challenge=${codeChallenge}`;
+    */
   };
 
   const handleCodeSubmit = async (code: string) => {
+    // TODO: Fix localStorage - app not finalized
+    return;
+    /*
     if (!code) return;
     setIsLoadingApi(true);
     setError("");
@@ -202,22 +216,25 @@ export default function TikTokAnalyticsPage() {
     } finally {
       setIsLoadingApi(false);
     }
+    */
   };
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const code = params.get("code");
-    if (code) {
-      handleCodeSubmit(code);
-      window.history.replaceState({}, "", "/tiktok-analytics");
-    }
+    // TODO: Fix localStorage - app not finalized
+    // const params = new URLSearchParams(window.location.search);
+    // const code = params.get("code");
+    // if (code) {
+    //   handleCodeSubmit(code);
+    //   window.history.replaceState({}, "", "/tiktok-analytics");
+    // }
   }, []);
 
   const disconnectApi = () => {
-    localStorage.removeItem("tiktok_access_token");
-    localStorage.removeItem("tiktok_open_id");
-    localStorage.removeItem("tiktok_refresh_token");
-    localStorage.removeItem("tiktok_code_verifier");
+    // TODO: Fix localStorage - app not finalized
+    // localStorage.removeItem("tiktok_access_token");
+    // localStorage.removeItem("tiktok_open_id");
+    // localStorage.removeItem("tiktok_refresh_token");
+    // localStorage.removeItem("tiktok_code_verifier");
     setApiMode("csv");
     setVideos([]);
   };
@@ -271,7 +288,9 @@ export default function TikTokAnalyticsPage() {
     ) : null;
   };
 
-  const isApiConnected = localStorage.getItem("tiktok_access_token") && localStorage.getItem("tiktok_open_id");
+  // TODO: Fix localStorage - app not finalized
+  // const isApiConnected = localStorage.getItem("tiktok_access_token") && localStorage.getItem("tiktok_open_id");
+  const isApiConnected = false;
 
   return (
     <div className="min-h-screen bg-background text-foreground p-4 lg:p-8">
@@ -365,6 +384,9 @@ export default function TikTokAnalyticsPage() {
                         className="flex-1"
                       />
                       <Button onClick={() => {
+                        // TODO: Fix localStorage - app not finalized
+                        setError("API mode disabled - app not finalized");
+                        /*
                         const token = (document.getElementById("accessToken") as HTMLInputElement).value;
                         if (token) {
                           localStorage.setItem("tiktok_access_token", token);
@@ -372,6 +394,7 @@ export default function TikTokAnalyticsPage() {
                           setApiMode("api");
                           loadFromApi();
                         }
+                        */
                       }}>
                         Use Token
                       </Button>
