@@ -373,6 +373,30 @@ const $googleSendToSheetsBtn = document.getElementById('googleSendToSheetsBtn');
 const audioSuccess = new Audio('squirrel_404_click_tick.wav');
 const audioNotify = new Audio('joseegn_ui_sound_select.wav');
 
+// Regenerate MQL when form inputs change
+const regenerateMQLFromForm = () => {
+  const params = getCurrentParams();
+  const mqlText = generateMQLFromParams(params);
+  const textarea = document.getElementById('algoEditorTextareaMain1');
+  if (textarea) textarea.value = mqlText;
+};
+
+// Initialize form input listeners after DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+  const sessionStartInput = document.getElementById('backtesting-hour');
+  const sessionEndInput = document.getElementById('backtesting-end');
+  const slPointsInput = document.getElementById('SLPoints');
+  const tpPointsInput = document.getElementById('TPPoints');
+  const lotSizeInput = document.getElementById('LotSize');
+  const maPeriodInput = document.getElementById('MAPeriod');
+  const maThresholdInput = document.getElementById('MAThreshold');
+  
+  const mqlFormInputs = [sessionStartInput, sessionEndInput, slPointsInput, tpPointsInput, lotSizeInput, maPeriodInput, maThresholdInput];
+  mqlFormInputs.forEach(input => {
+    if (input) input.addEventListener('change', regenerateMQLFromForm);
+  });
+});
+
 // Function to update Google Sheets button state based on CSV field content
 const updateGoogleSheetsButtonState = () => {
   const csvContent = $exportableCSVField.value.trim();
@@ -763,8 +787,18 @@ window.ordersHistory = ordersHistory;
 
 const handleFileAndInitGraph = (file) => {
   if (file) {
-    reinitializeChart();
-
+    // Use reinitializeChart to properly reset
+    if (typeof reinitializeChart === 'function') {
+      reinitializeChart();
+    }
+    
+    // Ensure chart section is visible
+    const chartSection = document.querySelector('.chart-section');
+    if (chartSection) {
+      chartSection.classList.remove('chart-collapsed');
+      chartSection.classList.add('chart-expanded');
+    }
+    
     // Clear orders history
     ordersHistory = [];
     numbDays = 0;
@@ -779,7 +813,9 @@ const handleFileAndInitGraph = (file) => {
     document.getElementById('backtestingResultOrderHistory').innerHTML = '';
 
     // Add visible class to loading element
-    document.getElementById('loading-element').classList.add('visible');
+    const loadingEl = document.getElementById('loading-element');
+    loadingEl.classList.add('visible');
+    loadingEl.querySelector('.loading-text').textContent = 'Running backtest...';
 
     // Read the CSV file just to get the first and last dates and count total candles:
     const reader = new FileReader();
@@ -2586,7 +2622,7 @@ const getCurrentParams = () => ({
   maThreshold: parseFloat($MAThresholdInput?.value) || 0.00003,
 });
 
-// Load parameters and run backtest
+// Load parameters and run backtest (with chart)
 const loadParamsAndRun = (params) => {
   // Set values to inputs
   if ($strategyInput) $strategyInput.value = params.strategy;
@@ -2600,8 +2636,17 @@ const loadParamsAndRun = (params) => {
   if ($MAPeriodInput) $MAPeriodInput.value = params.maPeriod;
   if ($MAThresholdInput) $MAThresholdInput.value = params.maThreshold;
   
-  // Run optimized backtest
-  runOptimizedBacktestUI();
+  if (!cachedFile) {
+    alert('Please load a CSV file first!');
+    return;
+  }
+  
+  // Collapse result panel to show chart
+  const resultPanel = document.getElementById('result-panel');
+  if (resultPanel) resultPanel.classList.remove('active');
+  
+  // Run the full backtest with chart - reuse the file that was uploaded
+  handleFileAndInitGraph(cachedFile);
 };
 
 // Load CSV and cache it
@@ -2664,7 +2709,7 @@ const runOptimizedBacktestUI = async () => {
   
   // Show loading
   document.getElementById('loading-element').classList.add('visible');
-  document.getElementById('loading-element').querySelector('span').textContent = 'Running optimized backtest...';
+  document.getElementById('loading-element').querySelector('.loading-text').textContent = 'Running optimized backtest...';
   
   // Use setTimeout to allow UI to update
   setTimeout(() => {
@@ -2672,7 +2717,7 @@ const runOptimizedBacktestUI = async () => {
     
     // Hide loading
     document.getElementById('loading-element').classList.remove('visible');
-    document.getElementById('loading-element').querySelector('span').textContent = 'Backtesting is running ...';
+    document.getElementById('loading-element').querySelector('.loading-text').textContent = 'Backtesting is running ...';
     
     // Display results
     displayBacktestResult(result);
@@ -3006,26 +3051,189 @@ const saveCurrentParams = () => {
 // Generate MQL from parameters
 const generateMQLFromParams = (params) => {
   const template = `//+------------------------------------------------------------------+
-//|                                               GeneratedEA.mq5    |
-//|                        Generated by Backtest System              |
+//|                   CSID + TTR + MADirection EA                    |
 //+------------------------------------------------------------------+
-#property copyright "Copyright © 2024"
-#property link      "https://yourwebsite.com"
+#property strict
 #property version   "1.00"
 
-input double SlPoints        = ${params.slSize.toFixed(6)};    // Stop Loss
-input double TpPoints        = ${params.tpSize.toFixed(6)};    // Take Profit
-input double LotSize         = ${params.lotSize.toFixed(2)};    // Lot size
-input double Commission      = ${params.commissionSize.toFixed(6)};    // Commission per trade
-input double TsIncrement     = ${params.tsSize.toFixed(6)};    // Trailing Stop increment
-input int    MaPeriod        = ${Math.floor(params.maPeriod)};       // MA period
-input double MaThreshold     = ${params.maThreshold.toFixed(6)};    // MA threshold
+input int LookbackPeriod = 20;
+input string SessionStart = "${params.sessionStart || '09:50:00'}";
+input string SessionEnd = "${params.sessionEnd || '11:00:00'}";
+input int MAPeriod = ${Math.floor(params.maPeriod)};
+input double MAThreshold = ${params.maThreshold.toFixed(6)};
+input int ATRPeriod = 20;
+input double ATRMultiplier = 1.2;
+input double LotSize = ${params.lotSize.toFixed(2)};
+input double SLPrice = ${params.slSize.toFixed(6)};
+input double TPPrice = ${params.tpSize.toFixed(6)};
+
+#include <Trade/Trade.mqh>
+
+string csid_high_name = "CSID_High";
+string csid_low_name = "CSID_Low";
+string ttr_start_name = "TTR_Start";
+string ttr_end_name = "TTR_End";
+
+int ma_handle = INVALID_HANDLE;
+int atr_handle = INVALID_HANDLE;
+CTrade trade;
+bool atr_triggered = false;
+
+int OnInit()
+{
+   ma_handle = iMA(_Symbol, _Period, MAPeriod, 0, MODE_SMA, PRICE_CLOSE);
+   if(ma_handle == INVALID_HANDLE) { Print("Failed to create MA"); return(INIT_FAILED); }
+   atr_handle = iATR(_Symbol, _Period, ATRPeriod);
+   if(atr_handle == INVALID_HANDLE) { Print("Failed to create ATR"); return(INIT_FAILED); }
+   trade.SetExpertMagicNumber(12345);
+   trade.SetDeviationInPoints(10);
+   return(INIT_SUCCEEDED);
+}
+
+void OnDeinit(const int reason)
+{
+   if(ma_handle != INVALID_HANDLE) IndicatorRelease(ma_handle);
+   if(atr_handle != INVALID_HANDLE) IndicatorRelease(atr_handle);
+   ObjectDelete(0, csid_high_name);
+   ObjectDelete(0, csid_low_name);
+   ObjectDelete(0, ttr_start_name);
+   ObjectDelete(0, ttr_end_name);
+}
+
+bool IsBullish(double o, double c) { return(c > o); }
+
+bool IsInTradingTime()
+{
+   datetime t = TimeCurrent();
+   MqlDateTime dt; TimeToStruct(t, dt);
+   int current_min = dt.hour * 60 + dt.min;
+   int sh = (int)StringSubstr(SessionStart, 0, 2);
+   int sm = (int)StringSubstr(SessionStart, 3, 2);
+   int eh = (int)StringSubstr(SessionEnd, 0, 2);
+   int em = (int)StringSubstr(SessionEnd, 3, 2);
+   return(current_min >= sh * 60 + sm && current_min <= eh * 60 + em);
+}
+
+double GetHighestHigh(int lb)
+{
+   int total = Bars(_Symbol, _Period);
+   if(total < lb + 1) return(0);
+   double highest = 0;
+   for(int i = 1; i <= lb; i++)
+   {
+      double o = iOpen(_Symbol, _Period, i);
+      double c = iClose(_Symbol, _Period, i);
+      if(o <= 0 || c <= 0) continue;
+      double price = IsBullish(o, c) ? c : o;
+      if(price > highest || highest == 0) highest = price;
+   }
+   return(highest);
+}
+
+double GetLowestLow(int lb)
+{
+   int total = Bars(_Symbol, _Period);
+   if(total < lb + 1) return(0);
+   double lowest = 0;
+   for(int i = 1; i <= lb; i++)
+   {
+      double o = iOpen(_Symbol, _Period, i);
+      double c = iClose(_Symbol, _Period, i);
+      if(o <= 0 || c <= 0) continue;
+      double price = IsBullish(o, c) ? o : c;
+      if(price < lowest || lowest == 0) lowest = price;
+   }
+   return(lowest);
+}
+
+double GetMA()
+{
+   if(ma_handle == INVALID_HANDLE) return(0);
+   double ma[];
+   if(CopyBuffer(ma_handle, 0, 0, 2, ma) < 2) return(0);
+   return(ma[0]);
+}
+
+int GetMADirection()
+{
+   int total = Bars(_Symbol, _Period);
+   if(total < LookbackPeriod + 3) return(0);
+   double ma_now = 0, ma_past = 0, ma_past2 = 0;
+   for(int j = 0; j < LookbackPeriod; j++) ma_now += iClose(_Symbol, _Period, j);
+   ma_now /= LookbackPeriod;
+   for(int j = LookbackPeriod; j < LookbackPeriod * 2; j++) ma_past += iClose(_Symbol, _Period, j);
+   ma_past /= LookbackPeriod;
+   for(int j = LookbackPeriod * 2; j < LookbackPeriod * 3; j++) ma_past2 += iClose(_Symbol, _Period, j);
+   ma_past2 /= LookbackPeriod;
+   if(ma_now <= 0 || ma_past <= 0 || ma_past2 <= 0) return(0);
+   double accel = ma_now - 2 * ma_past + ma_past2;
+   if(accel > MAThreshold) return(1);
+   if(accel < -MAThreshold) return(-1);
+   return(0);
+}
+
+bool CheckCSIDSignal(double &direction)
+{
+   int total = Bars(_Symbol, _Period);
+   if(total < LookbackPeriod + 2) return(false);
+   double current_close = iClose(_Symbol, _Period, 0);
+   double highest = GetHighestHigh(LookbackPeriod);
+   double lowest = GetLowestLow(LookbackPeriod);
+   if(highest <= 0 || lowest <= 0) return(false);
+   if(current_close > highest) { direction = 1; return(true); }
+   if(current_close < lowest) { direction = -1; return(true); }
+   return(false);
+}
+
+bool CheckATRSignal()
+{
+   if(atr_handle == INVALID_HANDLE) return(false);
+   double atr[];
+   if(CopyBuffer(atr_handle, 0, 0, 1, atr) < 1) return(false);
+   double current_atr = atr[0];
+   if(current_atr <= 0) return(false);
+   double high = iHigh(_Symbol, _Period, 0);
+   double low = iLow(_Symbol, _Period, 1);
+   double prev_close = iClose(_Symbol, _Period, 1);
+   double tr = MathMax(high - low, MathMax(MathAbs(high - prev_close), MathAbs(low - prev_close)));
+   return(tr > current_atr * ATRMultiplier);
+}
+
+void ExecuteTrade(double direction)
+{
+   double price = iClose(_Symbol, _Period, 0);
+   double sl = 0, tp = 0;
+   if(direction > 0) { sl = price - SLPrice; tp = price + TPPrice; trade.Buy(LotSize, _Symbol, 0, sl, tp); }
+   else { sl = price + SLPrice; tp = price - TPPrice; trade.Sell(LotSize, _Symbol, 0, sl, tp); }
+}
 
 void OnTick()
 {
-    // Your trading logic here
+   static datetime last_bar = 0;
+   datetime current_bar = iTime(_Symbol, _Period, 0);
+   if(current_bar == last_bar) return;
+   last_bar = current_bar;
+   
+   int total = Bars(_Symbol, _Period);
+   if(total < LookbackPeriod + 2 || total < ATRPeriod + 2) return;
+   
+   bool in_session = IsInTradingTime();
+   static bool was_in_session = false;
+   if(!was_in_session && in_session) atr_triggered = false;
+   was_in_session = in_session;
+   
+   int ma_dir = GetMADirection();
+   bool atr_signal = CheckATRSignal();
+   
+   if(in_session && !atr_triggered && atr_signal) atr_triggered = true;
+   
+   double direction = 0;
+   if(CheckCSIDSignal(direction))
+   {
+      bool ma_ok = (direction > 0 && ma_dir > 0) || (direction < 0 && ma_dir < 0);
+      if(in_session && ma_ok && atr_triggered) ExecuteTrade(direction);
+   }
 }
-//+------------------------------------------------------------------+
 `;
   return template;
 };
@@ -3046,6 +3254,39 @@ const loadParamsAsMQL = (params) => {
   showMQLExpertAdvisor(mqlText);
 };
 
+// Download MQL5 file
+const downloadMQL5 = () => {
+  const textarea = document.getElementById('algoEditorTextareaMain1');
+  if (!textarea || !textarea.value) {
+    alert('No MQL5 code to download');
+    return;
+  }
+  
+  const blob = new Blob([textarea.value], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'GeneratedEA.mq5';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+};
+
+// Attach download button listener
+document.getElementById('downloadMQL5Btn')?.addEventListener('click', downloadMQL5);
+
+// Run backtest from MQL panel
+const runBacktestFromMQL = () => {
+  if (cachedCSVData.length === 0) {
+    alert('Please load a CSV file first!');
+    return;
+  }
+  const params = getCurrentParams();
+  loadParamsAndRun(params);
+};
+document.getElementById('runBacktestFromMQLBtn')?.addEventListener('click', runBacktestFromMQL);
+
 // Run all saved parameter sets
 const runAllSavedParams = async () => {
   if (cachedCSVData.length === 0) {
@@ -3060,7 +3301,7 @@ const runAllSavedParams = async () => {
   
   // Show loading
   document.getElementById('loading-element').classList.add('visible');
-  document.getElementById('loading-element').querySelector('span').textContent = 'Running multiple backtests...';
+  document.getElementById('loading-element').querySelector('.loading-text').textContent = 'Running multiple backtests...';
   
   // Clear previous results
   backtestResults = [];
@@ -3081,7 +3322,7 @@ const runAllSavedParams = async () => {
     
     // Hide loading
     document.getElementById('loading-element').classList.remove('visible');
-    document.getElementById('loading-element').querySelector('span').textContent = 'Backtesting is running ...';
+    document.getElementById('loading-element').querySelector('.loading-text').textContent = 'Backtesting is running ...';
     
     audioSuccess.play();
     alert(`Completed ${savedParamSets.length} backtests! Best result: ${best.moneyEquivalent}$`);
@@ -3115,7 +3356,7 @@ const runGridSearch = async () => {
   }
   
   document.getElementById('loading-element').classList.add('visible');
-  document.getElementById('loading-element').querySelector('span').textContent = 'Optimizing parameters...';
+  document.getElementById('loading-element').querySelector('.loading-text').textContent = 'Optimizing parameters...';
   
   backtestResults = [];
   
@@ -3149,7 +3390,7 @@ const runGridSearch = async () => {
       bestResult = result;
     }
     
-    document.getElementById('loading-element').querySelector('span').textContent = 
+    document.getElementById('loading-element').querySelector('.loading-text').textContent = 
       `Phase 1: Random search ${i+1}/${randomIterations} - Best: ${bestProfit.toFixed(2)}$`;
     
     if (i % 5 === 0) await new Promise(resolve => setTimeout(resolve, 1));
@@ -3162,7 +3403,7 @@ const runGridSearch = async () => {
   }
   
   // Phase 2: Hill Climbing from best found
-  document.getElementById('loading-element').querySelector('span').textContent = 'Phase 2: Fine-tuning...';
+  document.getElementById('loading-element').querySelector('.loading-text').textContent = 'Phase 2: Fine-tuning...';
   
   let currentBest = { ...bestResult.params };
   let currentProfit = bestProfit;
@@ -3205,7 +3446,7 @@ const runGridSearch = async () => {
       }
     }
     
-    document.getElementById('loading-element').querySelector('span').textContent = 
+    document.getElementById('loading-element').querySelector('.loading-text').textContent = 
       `Phase 2: Fine-tuning ${iter+1}/${maxNeighbors} - Best: ${currentProfit.toFixed(2)}$`;
     
     if (!foundBetter) break;
@@ -3213,7 +3454,7 @@ const runGridSearch = async () => {
   }
   
   // Phase 3: Verify best params
-  document.getElementById('loading-element').querySelector('span').textContent = 'Phase 3: Verifying best parameters...';
+  document.getElementById('loading-element').querySelector('.loading-text').textContent = 'Phase 3: Verifying best parameters...';
   
   const finalParams = { ...baseParams, ...currentBest, name: 'OPTIMIZED_BEST' };
   const finalResult = runOptimizedBacktest(finalParams, cachedCSVData);
