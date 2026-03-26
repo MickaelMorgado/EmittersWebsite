@@ -78,3 +78,35 @@ Access via `canvasStreamRef` or modify to expose externally.
 - WebSocket broadcasts mouse position at ~60fps
 - Renders to canvas using `ctx.drawImage()` with computed source rectangle
 - Source rectangle clamped to video bounds to prevent black borders
+
+## VS Code Debug
+
+Added launch configuration in `.vscode/launch.json`:
+- Name: "Mouse Cursor Follower"
+- Run: `python node-projects/my-app/cursor-follower/mouse_tracker.py`
+- Use F5 or Debug panel to run
+
+## Browser Control API
+
+The mouse server can be controlled directly from the browser:
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/start` | GET | Start Python tracker process |
+| `/stop` | GET | Stop Python tracker process |
+| `/status` | GET | Returns `{status, pid, mouse}` |
+
+Example:
+```bash
+# Start server
+curl http://localhost:3003/start
+
+# Check status  
+curl http://localhost:3003/status
+# {"status":"running","pid":12345,"mouse":{"x":0,"y":0,...}}
+
+# Stop server
+curl http://localhost:3003/stop
+```
+
+The frontend now includes a "Start Mouse Server" button in the sidebar when the server is not running.

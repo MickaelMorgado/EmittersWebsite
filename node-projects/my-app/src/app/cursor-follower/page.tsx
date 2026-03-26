@@ -6,6 +6,7 @@ import Sidebar from '../../components/sidebar';
 
 const STREAM_FPS = 60;
 const MOUSE_SERVER_URL = 'ws://localhost:3003';
+const MOUSE_SERVER_API = 'http://localhost:3003';
 
 type Orientation = 'portrait' | 'landscape';
 
@@ -18,6 +19,7 @@ export default function CursorFollower() {
   const [status, setStatus] = useState('Ready to start');
   const [error, setError] = useState('');
   const [serverConnected, setServerConnected] = useState(false);
+  const [serverRunning, setServerRunning] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   const canvasWidth = useMemo(() => orientation === 'portrait' ? 1080 : 1920, [orientation]);
@@ -95,6 +97,42 @@ export default function CursorFollower() {
     if (wsRef.current) {
       wsRef.current.close();
       wsRef.current = null;
+    }
+  }, []);
+
+  const checkServerStatus = useCallback(async () => {
+    try {
+      const res = await fetch(`${MOUSE_SERVER_API}/status`);
+      const data = await res.json();
+      setServerRunning(data.status === 'running');
+      return data;
+    } catch {
+      setServerRunning(false);
+      return null;
+    }
+  }, []);
+
+  const startMouseServer = useCallback(async () => {
+    try {
+      const res = await fetch(`${MOUSE_SERVER_API}/start`);
+      const data = await res.json();
+      if (data.status === 'starting' || data.status === 'already_running') {
+        setServerRunning(true);
+        return true;
+      }
+      return false;
+    } catch {
+      setError('Failed to start mouse server');
+      return false;
+    }
+  }, []);
+
+  const stopMouseServer = useCallback(async () => {
+    try {
+      await fetch(`${MOUSE_SERVER_API}/stop`);
+      setServerRunning(false);
+    } catch {
+      // Ignore
     }
   }, []);
 
@@ -281,6 +319,7 @@ export default function CursorFollower() {
 
   useEffect(() => {
     setMounted(true);
+    checkServerStatus();
   }, []);
 
   return (
@@ -361,15 +400,20 @@ export default function CursorFollower() {
           <h2 className="text-[10px] uppercase tracking-[0.2em] text-indigo-500 mb-4 font-bold">Mouse Server</h2>
           <div className="text-[10px] text-gray-400 space-y-2">
             <p>Server: {MOUSE_SERVER_URL}</p>
+            <p className={serverRunning ? 'text-green-400' : 'text-red-400'}>
+              Server: {serverRunning ? 'Running' : 'Stopped'}
+            </p>
             <p className={serverConnected ? 'text-green-400' : 'text-red-400'}>
-              Status: {serverConnected ? 'Connected' : 'Disconnected'}
+              Tracker: {serverConnected ? 'Connected' : 'Disconnected'}
             </p>
-            <p className="text-gray-600 mt-2">
-              Start server first:<br />
-              <code className="text-[9px] bg-black/30 px-2 py-1 rounded block mt-1">
-                cd cursor-follower && npm start
-              </code>
-            </p>
+            {!serverRunning && (
+              <button
+                onClick={startMouseServer}
+                className="mt-2 w-full py-2 bg-indigo-600 text-white text-[10px] uppercase tracking-widest hover:bg-indigo-500 transition-all"
+              >
+                Start Mouse Server
+              </button>
+            )}
           </div>
         </div>
 
