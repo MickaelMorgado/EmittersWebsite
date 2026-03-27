@@ -2650,8 +2650,7 @@ const loadParamsAndRun = (params) => {
 };
 
 // Load CSV and cache it
-const loadAndCacheCSV = (file) => {
-  return new Promise((resolve, reject) => {
+const loadAndCacheCSV = (file) => new Promise((resolve, reject) => {
     Papa.parse(file, {
       header: true,
       dynamicTyping: true,
@@ -2671,7 +2670,6 @@ const loadAndCacheCSV = (file) => {
       error: reject,
     });
   });
-};
 
 // Run optimized backtest (no chart rendering)
 const runOptimizedBacktestUI = async () => {
