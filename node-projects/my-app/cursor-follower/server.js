@@ -12,9 +12,27 @@ const wss = new WebSocket.Server({ server });
 let pythonProcess = null;
 let mouseData = { x: 0, y: 0, screenWidth: 1920, screenHeight: 1080 };
 
+app.get('/start', (req, res) => {
+  if (pythonProcess) {
+    return res.json({ status: 'already_running', pid: pythonProcess.pid });
+  }
+  startPythonTracker();
+  res.json({ status: 'starting' });
+});
+
+app.get('/stop', (req, res) => {
+  if (pythonProcess) {
+    pythonProcess.kill();
+    pythonProcess = null;
+    return res.json({ status: 'stopped' });
+  }
+  res.json({ status: 'not_running' });
+});
+
 app.get('/status', (req, res) => {
   res.json({
     status: pythonProcess ? 'running' : 'stopped',
+    pid: pythonProcess?.pid || null,
     mouse: mouseData
   });
 });
