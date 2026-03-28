@@ -7,7 +7,7 @@ import { Bloom, EffectComposer } from '@react-three/postprocessing';
 import { Copy, Users, Wifi, WifiOff } from 'lucide-react';
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import Peer, { DataConnection } from 'peerjs';
-// @ts-ignore
+// @ts-expect-error - howler does not have TypeScript definitions
 import { Howler, Howl } from 'howler';
 import { OBJLoader } from 'three-stdlib';
 import * as THREE from 'three';
