@@ -1820,7 +1820,8 @@ void OnTick()
                         <th>ID</th>
                         <th>Time</th>
                         <th>Price</th>
-                        <th>SL</th>
+                        <th>Initial SL</th>
+                        <th>Current SL</th>
                         <th>TP</th>
                         <th>Direction</th>
                         <th>Order Status</th>
@@ -1834,6 +1835,7 @@ void OnTick()
                           <td>${order.id}</td>
                           <td>${order.time}</td>
                           <td>${order.price.toFixed(5)}</td>
+                          <td>${order.initialSl.toFixed(5)}</td>
                           <td>${order.sl.toFixed(5)}</td>
                           <td>${order.tp.toFixed(5)}</td>
                           <td>${order.direction}</td>
