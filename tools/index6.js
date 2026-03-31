@@ -195,14 +195,12 @@ const runOptimizedBacktest = (params, csvRows) => {
           const direction = bullishCSID ? 'BULL' : 'BEAR';
           const entryPrice = row[EnumMT5OHLC.OPEN];
           
-          const initialSl = direction === 'BULL' ? entryPrice - localSlSize() : entryPrice + localSlSize();
           localOrdersHistory.push({
             id: localOrdersHistory.length + 1,
             breakEvenMoved: false,
             time: candleDateTime,
             price: entryPrice,
-            initialSl: initialSl,
-            sl: initialSl,
+            sl: direction === 'BULL' ? entryPrice - localSlSize() : entryPrice + localSlSize(),
             tp: direction === 'BULL' ? entryPrice + localTpSize() : entryPrice - localTpSize(),
             direction: direction,
             closed: false,
@@ -223,19 +221,15 @@ const runOptimizedBacktest = (params, csvRows) => {
       const low = row[EnumMT5OHLC.LOW];
       const close = row[EnumMT5OHLC.CLOSE];
       
-      // Break-even: only move SL to BE, don't close on same candle
-      let skipSLCheck = false;
       if (!order.breakEvenMoved) {
         if ((order.direction === 'BULL' && close >= order.price + localSlSize()) ||
             (order.direction === 'BEAR' && close <= order.price - localSlSize())) {
           order.sl = order.price;
           order.breakEvenMoved = true;
-          skipSLCheck = true; // Don't close at SL on same candle
         }
       }
       
-      // Only apply trailing stop after the candle has closed (not on the same candle when order was opened)
-      if (order.time !== candleDateTime && localCandlesFromBuffer.length >= 2) {
+      if (localCandlesFromBuffer.length >= 2) {
         const prevCandle = localCandlesFromBuffer[localCandlesFromBuffer.length - 2];
         let candleSize = Math.abs(prevCandle[EnumMT5OHLC.CLOSE] - prevCandle[EnumMT5OHLC.OPEN]);
         
@@ -251,20 +245,14 @@ const runOptimizedBacktest = (params, csvRows) => {
         }
       }
       
-      // Check TP first (always)
-      const tpHit = (order.direction === 'BULL' && high >= order.tp) || 
-                   (order.direction === 'BEAR' && low <= order.tp);
-      // Check SL only if not skipped (not same candle as BE move)
-      const slHit = !skipSLCheck && ((order.direction === 'BULL' && low <= order.sl) || 
-                                      (order.direction === 'BEAR' && high >= order.sl));
-      
-      if (tpHit || slHit) {
+      if ((order.direction === 'BULL' && (high >= order.tp || low <= order.sl)) ||
+          (order.direction === 'BEAR' && (low <= order.tp || high >= order.sl))) {
         order.closed = true;
         order.closedPrice = order.direction === 'BULL' 
-          ? (tpHit ? order.tp : order.sl)
-          : (tpHit ? order.tp : order.sl);
+          ? (high >= order.tp ? order.tp : order.sl)
+          : (low <= order.tp ? order.tp : order.sl);
         order.closedTime = candleDateTime;
-        order.closedOrderType = tpHit ? 'CLOSED_BY_TP' : 'CLOSED_BY_SL';
+        order.closedOrderType = high >= order.tp ? 'CLOSED_BY_TP' : 'CLOSED_BY_SL';
         order.pnlPoints = order.direction === 'BULL'
           ? order.closedPrice - order.price
           : order.price - order.closedPrice;
@@ -789,7 +777,6 @@ let processedDays = 0;
 let totalCandles = 0;
 let processedCandles = 0;
 let ordersHistory = [];
-let pendingCloseOrders = [];
 let firstDate = new Date();
 let lastDate = new Date();
 let prevDate = null;
@@ -814,7 +801,6 @@ const handleFileAndInitGraph = (file) => {
     
     // Clear orders history
     ordersHistory = [];
-    pendingCloseOrders = [];
     numbDays = 0;
     processedDays = 0;
     processedCandles = 0;
@@ -940,9 +926,6 @@ const handleFileAndInitGraph = (file) => {
           // Plot real-time indicators:
           appendIndicatorsToChart(results.data, csvDataIndex);
         }
-        
-        // Process pending close annotations from previous candle (place them on current candle)
-        processPendingCloseAnnotations(results.data);
         
         // Run the Check for TP/SL hit function on every candle (always run this - it's the core logic)
         checkForTPSLHit(results.data, csvDataIndex);
@@ -1270,60 +1253,6 @@ const initSciChart = (data) => {
       };
 
       // TP/SL Validation: ========================================
-      // Function to process pending close annotations (place them on current candle)
-      const processPendingCloseAnnotations = (d) => {
-        const currentTime = `${d[EnumMT5OHLC.DATE]} ${d[EnumMT5OHLC.TIME]}`;
-        const currentUnixTime = convertMT5DateToUnix(currentTime);
-        
-        pendingCloseOrders.forEach(pending => {
-          const { order, level, orderOpenTime, tradeResult } = pending;
-          
-          const tradeResultColor = () => {
-            switch (tradeResult) {
-              case EnumTradeResult.WIN: return bullishColor;
-              case EnumTradeResult.LOSS: return bearishColor;
-              case EnumTradeResult.BE: return 'FFFF00';
-              default: return '666666';
-            }
-          };
-          
-          // Marker + Label on current candle
-          sciChartSurface.annotations.add(
-            new CustomAnnotation({
-              x1: timeToIndex.get(currentUnixTime),
-              y1: level,
-              verticalAnchorPoint: EVerticalAnchorPoint.Center,
-              horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
-              svgString: signalAnnotation.svgString.sell,
-            }),
-            new TextAnnotation({
-              text: order.id,
-              horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
-              verticalAnchorPoint: EVerticalAnchorPoint.Bottom,
-              x1: timeToIndex.get(currentUnixTime),
-              y1: level,
-            })
-          );
-
-          // Line from entry to close
-          sciChartSurface.annotations.add(
-            new LineAnnotation({
-              stroke: `#${tradeResultColor()}`,
-              strokeThickness: 1,
-              strokeDashArray: [5, 5],
-              x1: timeToIndex.get(orderOpenTime),
-              x2: timeToIndex.get(currentUnixTime),
-              y1: order.price,
-              y2: level,
-            })
-          );
-        });
-        
-        // Clear pending close orders after processing
-        pendingCloseOrders = [];
-      };
-      window.processPendingCloseAnnotations = processPendingCloseAnnotations;
-
       // Function to check all TP/SL hit:
       // OPTIMIZED: Only process active orders instead of filtering through all orders
       const checkForTPSLHit = (d, dataIndex) => {
@@ -1332,9 +1261,6 @@ const initSciChart = (data) => {
         activeOrders.forEach((order) => {
 
           // break-even at SL distance (1R)
-          // Only move SL to breakeven, don't close on the same candle
-          // The close will happen on a subsequent candle when price drops back to BE level
-          let skipSLCheck = false;
           if (!order.breakEvenMoved) {
             const closePrice = d[EnumMT5OHLC.CLOSE];
             const slDistance = slSize();
@@ -1344,7 +1270,6 @@ const initSciChart = (data) => {
             ) {
               order.sl = order.price;
               order.breakEvenMoved = true;
-              skipSLCheck = true; // Don't close at SL/BE on same candle - wait for next candle
             }
           }
 
@@ -1394,20 +1319,43 @@ const initSciChart = (data) => {
             // OPTIMIZED: Calculate profitability only when trades close, not every candle
             profitabilityCalculation();
 
-            // Store order in pendingCloseOrders to place annotation on NEXT candle (not current)
-            // This ensures visual close indicator appears on the next candle, not the same one
-            pendingCloseOrders.push({
-              order: order,
-              level: level,
-              orderOpenTime: orderOpenTime,
-              tradeResult: order.tradeResult,
-            });
+            const orderCloseTime = convertMT5DateToUnix(order.closedTime);
+
+            // Marker + Label
+            sciChartSurface.annotations.add(
+              new CustomAnnotation({
+                x1: timeToIndex.get(orderCloseTime),
+                y1: level,
+                verticalAnchorPoint: EVerticalAnchorPoint.Center,
+                horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
+                svgString: signalAnnotation.svgString.sell,
+              }),
+              new TextAnnotation({
+                text: order.id,
+                horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
+                verticalAnchorPoint: EVerticalAnchorPoint.Bottom,
+                x1: timeToIndex.get(orderCloseTime),
+                y1: level,
+              })
+            );
+
+            // Line
+            const tradeResultedColor = tradeResultColor();
+            sciChartSurface.annotations.add(
+              new LineAnnotation({
+                stroke: `#${tradeResultedColor}`,
+                strokeThickness: 1,
+                strokeDashArray: [5, 5],
+                x1: timeToIndex.get(orderOpenTime),
+                x2: timeToIndex.get(orderCloseTime),
+                y1: order.price,
+                y2: level,
+              })
+            );
           };
 
           // Modify SL (Trailing Stop)
-          // Only apply trailing stop after the candle has closed (not on the same candle when order was opened)
-          const currentCandleTime = `${d[EnumMT5OHLC.DATE]} ${d[EnumMT5OHLC.TIME]}`;
-          const shouldTrail = order.time !== currentCandleTime && candlesFromBuffer.length >= 2;
+          if (candlesFromBuffer.length < 2) return;
 
           const trailingStopSize =
             parseFloat($TSIncrementInput.value) || 0.0000;
@@ -1454,12 +1402,16 @@ const initSciChart = (data) => {
             }
           }
 
-          if (shouldTrail) {
-            if (order.direction == EnumDirection.BULL) {
-              order.sl += trailingSizeMultiplier(candleSize);
-            } else if (order.direction == EnumDirection.BEAR) {
-              order.sl -= trailingSizeMultiplier(candleSize);
-            }
+          if (order.direction == EnumDirection.BULL) {
+            //console.log('Moving SL of ', order.id, ' from ', order.sl, ' to ',  order.sl + trailingStopSize);
+            /*order.sl < order.price && d[EnumMT5OHLC.OPEN] > order.price ? order.sl = order.price : */
+            order.sl += trailingSizeMultiplier(candleSize);
+            // order.sl = order.sl + trailingStopSize; // Move SL by trailingStopSize (up side)
+          } else if (order.direction == EnumDirection.BEAR) {
+            //console.log('Moving SL of ', order.id, ' from ', order.sl, ' to ',  order.sl - trailingStopSize);
+            // order.sl = order.sl - trailingStopSize; // Move SL by trailingStopSize (down side)
+            /*order.sl > order.price && d[EnumMT5OHLC.OPEN] < order.price ? order.sl = order.price : */
+            order.sl -= trailingSizeMultiplier(candleSize);
           }
 
           // Trailing Stop visual:
@@ -1514,13 +1466,11 @@ const initSciChart = (data) => {
           // Check TP
           if ((isBull && high >= order.tp) || (!isBull && low <= order.tp)) {
             closeOrder(order.tp, EnumclosedOrderType.CLOSED_BY_TP);
-            return; // Order closed, don't check SL
           }
 
-          // Check SL (skip if break-even was just moved on this candle)
-          if (!skipSLCheck && ((isBull && low <= order.sl) || (!isBull && high >= order.sl))) {
+          // Check SL
+          if ((isBull && low <= order.sl) || (!isBull && high >= order.sl)) {
             closeOrder(order.sl, EnumclosedOrderType.CLOSED_BY_SL);
-            return; // Order closed
           }
         });
       };
@@ -1577,16 +1527,12 @@ const initSciChart = (data) => {
             };
 
             // Add order to history:
-            const initialSL = tradeDirection === EnumDirection.BULL 
-              ? candle[definedCandleMoment] - slSize() 
-              : candle[definedCandleMoment] + slSize();
-            ordersHistory.push({
-              id: ordersHistory.length + 1,
-              breakEvenMoved: false,
-              time: `${candle[EnumMT5OHLC.DATE]} ${candle[EnumMT5OHLC.TIME]}`,
-              price: candle[definedCandleMoment],
-              initialSl: initialSL,
-              closedOrderType: EnumclosedOrderType.PENDING,
+ordersHistory.push({
+          id: ordersHistory.length + 1,
+          breakEvenMoved: false,
+          time: `${candle[EnumMT5OHLC.DATE]} ${candle[EnumMT5OHLC.TIME]}`,
+          price: candle[definedCandleMoment],
+          closedOrderType: EnumclosedOrderType.PENDING,
               ...orderOptionsBasedDirection(tradeDirection),
             });
             window.ordersHistory = ordersHistory;
@@ -1974,7 +1920,7 @@ const initSciChart = (data) => {
     <table>
       <thead>
         <tr class="historical-order-table-header">
-          <th>ID</th><th>Time</th><th>Price</th><th>Initial SL</th><th>SL</th><th>TP</th><th>Direction</th><th>Closed Order Type</th><th>Closed Price</th><th>Closed Time</th><th>P/L (Points)</th>
+          <th>ID</th><th>Time</th><th>Price</th><th>SL</th><th>TP</th><th>Direction</th><th>Closed Order Type</th><th>Closed Price</th><th>Closed Time</th><th>P/L (Points)</th>
         </tr>
       </thead>
       <tbody>
@@ -1985,7 +1931,6 @@ const initSciChart = (data) => {
             <td>${order.id}</td>
             <td>${order.time}</td>
             <td>${order.price.toFixed(5)}</td>
-            <td>${order.initialSl ? order.initialSl.toFixed(5) : '-'}</td>
             <td>${order.sl.toFixed(5)}</td>
             <td>${order.tp.toFixed(5)}</td>
             <td>${order.direction}</td>
@@ -2674,7 +2619,7 @@ const getCurrentParams = () => ({
   commissionSize: parseFloat($CommissionSizeInput?.value) || 0.00005,
   tsSize: parseFloat($TSIncrementInput?.value) || 0.0001,
   maPeriod: parseFloat($MAPeriodInput?.value) || 200,
-  maThreshold: parseFloat($MAThresholdInput?.value) || 0.00003,
+  maThreshold: parseFloat($MAThresholdInput?.value) || 0.003,
 });
 
 // Load parameters and run backtest (with chart)
@@ -2935,12 +2880,17 @@ const displayBacktestResult = (result) => {
   
   $backTestingResult.value = text;
   
+  // Auto-generate MQL from the backtest parameters
+  const mqlText = generateMQLFromParams(result.params);
+  const textarea = document.getElementById('algoEditorTextareaMain1');
+  if (textarea) textarea.value = mqlText;
+  
   // Update order history table
   document.getElementById('backtestingResultOrderHistory').innerHTML = `
     <table>
       <thead>
         <tr class="historical-order-table-header">
-          <th>ID</th><th>Time</th><th>Price</th><th>Initial SL</th><th>SL</th><th>TP</th><th>Direction</th><th>Closed Type</th><th>Closed Price</th><th>P/L (Points)</th>
+          <th>ID</th><th>Time</th><th>Price</th><th>SL</th><th>TP</th><th>Direction</th><th>Closed Type</th><th>Closed Price</th><th>P/L (Points)</th>
         </tr>
       </thead>
       <tbody>
@@ -2949,7 +2899,6 @@ const displayBacktestResult = (result) => {
             <td>${order.id}</td>
             <td>${order.time}</td>
             <td>${order.price.toFixed(5)}</td>
-            <td>${order.initialSl ? order.initialSl.toFixed(5) : '-'}</td>
             <td>${order.sl.toFixed(5)}</td>
             <td>${order.tp.toFixed(5)}</td>
             <td>${order.direction}</td>
@@ -3110,16 +3059,17 @@ const generateMQLFromParams = (params) => {
 #property strict
 #property version   "1.00"
 
-input int LookbackPeriod = 20;
-input string SessionStart = "${params.sessionStart || '09:50:00'}";
-input string SessionEnd = "${params.sessionEnd || '11:00:00'}";
-input int MAPeriod = ${Math.floor(params.maPeriod)};
-input double MAThreshold = ${params.maThreshold.toFixed(6)};
-input int ATRPeriod = 20;
-input double ATRMultiplier = 1.2;
-input double LotSize = ${params.lotSize.toFixed(2)};
-input double SLPrice = ${params.slSize.toFixed(6)};
-input double TPPrice = ${params.tpSize.toFixed(6)};
+// Hardcoded parameters - no inputs to avoid MT5 cache issues
+const int LOOKBACK_PERIOD = 20;
+const string SESSION_START = "${params.sessionStart || '09:50:00'}";
+const string SESSION_END = "${params.sessionEnd || '11:00:00'}";
+const int MA_PERIOD = ${Math.floor(params.maPeriod)};
+const double MA_THRESHOLD = ${params.maThreshold ? params.maThreshold.toFixed(6) : 0.003};
+const int ATR_PERIOD = 20;
+const double ATR_MULTIPLIER = 1.2;
+const double LOT_SIZE = ${params.lotSize.toFixed(2)};
+const double SL_PRICE = ${params.slSize ? params.slSize.toFixed(6) : 0.0003};
+const double TP_PRICE = ${params.tpSize ? params.tpSize.toFixed(6) : 0.0009};
 
 #include <Trade/Trade.mqh>
 
@@ -3135,9 +3085,14 @@ bool atr_triggered = false;
 
 int OnInit()
 {
-   ma_handle = iMA(_Symbol, _Period, MAPeriod, 0, MODE_SMA, PRICE_CLOSE);
+   Print("=== CSID EA Started ===");
+   Print("MA_Period: ", MA_PERIOD, ", MA_Threshold: ", MA_THRESHOLD);
+   Print("SL: ", SL_PRICE, ", TP: ", TP_PRICE, ", Lot: ", LOT_SIZE);
+   Print("Session: ", SESSION_START, " - ", SESSION_END);
+   
+   ma_handle = iMA(_Symbol, _Period, MA_PERIOD, 0, MODE_SMA, PRICE_CLOSE);
    if(ma_handle == INVALID_HANDLE) { Print("Failed to create MA"); return(INIT_FAILED); }
-   atr_handle = iATR(_Symbol, _Period, ATRPeriod);
+   atr_handle = iATR(_Symbol, _Period, ATR_PERIOD);
    if(atr_handle == INVALID_HANDLE) { Print("Failed to create ATR"); return(INIT_FAILED); }
    trade.SetExpertMagicNumber(12345);
    trade.SetDeviationInPoints(10);
@@ -3161,10 +3116,10 @@ bool IsInTradingTime()
    datetime t = TimeCurrent();
    MqlDateTime dt; TimeToStruct(t, dt);
    int current_min = dt.hour * 60 + dt.min;
-   int sh = (int)StringSubstr(SessionStart, 0, 2);
-   int sm = (int)StringSubstr(SessionStart, 3, 2);
-   int eh = (int)StringSubstr(SessionEnd, 0, 2);
-   int em = (int)StringSubstr(SessionEnd, 3, 2);
+   int sh = (int)StringSubstr(SESSION_START, 0, 2);
+   int sm = (int)StringSubstr(SESSION_START, 3, 2);
+   int eh = (int)StringSubstr(SESSION_END, 0, 2);
+   int em = (int)StringSubstr(SESSION_END, 3, 2);
    return(current_min >= sh * 60 + sm && current_min <= eh * 60 + em);
 }
 
@@ -3211,28 +3166,28 @@ double GetMA()
 int GetMADirection()
 {
    int total = Bars(_Symbol, _Period);
-   if(total < LookbackPeriod + 3) return(0);
+   if(total < LOOKBACK_PERIOD + 3) return(0);
    double ma_now = 0, ma_past = 0, ma_past2 = 0;
-   for(int j = 0; j < LookbackPeriod; j++) ma_now += iClose(_Symbol, _Period, j);
-   ma_now /= LookbackPeriod;
-   for(int j = LookbackPeriod; j < LookbackPeriod * 2; j++) ma_past += iClose(_Symbol, _Period, j);
-   ma_past /= LookbackPeriod;
-   for(int j = LookbackPeriod * 2; j < LookbackPeriod * 3; j++) ma_past2 += iClose(_Symbol, _Period, j);
-   ma_past2 /= LookbackPeriod;
+   for(int j = 0; j < LOOKBACK_PERIOD; j++) ma_now += iClose(_Symbol, _Period, j);
+   ma_now /= LOOKBACK_PERIOD;
+   for(int j = LOOKBACK_PERIOD; j < LOOKBACK_PERIOD * 2; j++) ma_past += iClose(_Symbol, _Period, j);
+   ma_past /= LOOKBACK_PERIOD;
+   for(int j = LOOKBACK_PERIOD * 2; j < LOOKBACK_PERIOD * 3; j++) ma_past2 += iClose(_Symbol, _Period, j);
+   ma_past2 /= LOOKBACK_PERIOD;
    if(ma_now <= 0 || ma_past <= 0 || ma_past2 <= 0) return(0);
    double accel = ma_now - 2 * ma_past + ma_past2;
-   if(accel > MAThreshold) return(1);
-   if(accel < -MAThreshold) return(-1);
+   if(accel > MA_THRESHOLD) return(1);
+   if(accel < -MA_THRESHOLD) return(-1);
    return(0);
 }
 
 bool CheckCSIDSignal(double &direction)
 {
    int total = Bars(_Symbol, _Period);
-   if(total < LookbackPeriod + 2) return(false);
+   if(total < LOOKBACK_PERIOD + 2) return(false);
    double current_close = iClose(_Symbol, _Period, 0);
-   double highest = GetHighestHigh(LookbackPeriod);
-   double lowest = GetLowestLow(LookbackPeriod);
+   double highest = GetHighestHigh(LOOKBACK_PERIOD);
+   double lowest = GetLowestLow(LOOKBACK_PERIOD);
    if(highest <= 0 || lowest <= 0) return(false);
    if(current_close > highest) { direction = 1; return(true); }
    if(current_close < lowest) { direction = -1; return(true); }
@@ -3246,19 +3201,40 @@ bool CheckATRSignal()
    if(CopyBuffer(atr_handle, 0, 0, 1, atr) < 1) return(false);
    double current_atr = atr[0];
    if(current_atr <= 0) return(false);
-   double high = iHigh(_Symbol, _Period, 0);
+   
+   // Use previous closed candle (index 1) - index 0 is current incomplete candle
+   double high = iHigh(_Symbol, _Period, 1);
    double low = iLow(_Symbol, _Period, 1);
-   double prev_close = iClose(_Symbol, _Period, 1);
+   double prev_close = iClose(_Symbol, _Period, 2);
+   
    double tr = MathMax(high - low, MathMax(MathAbs(high - prev_close), MathAbs(low - prev_close)));
-   return(tr > current_atr * ATRMultiplier);
+   
+   // Match BT: TR must exceed ATR (not ATR * 1.2)
+   return(tr > current_atr);
 }
 
 void ExecuteTrade(double direction)
 {
-   double price = iClose(_Symbol, _Period, 0);
+   double price = NormalizeDouble(iClose(_Symbol, _Period, 0), _Digits);
    double sl = 0, tp = 0;
-   if(direction > 0) { sl = price - SLPrice; tp = price + TPPrice; trade.Buy(LotSize, _Symbol, 0, sl, tp); }
-   else { sl = price + SLPrice; tp = price - TPPrice; trade.Sell(LotSize, _Symbol, 0, sl, tp); }
+   Print("ExecuteTrade - price: ", price, " direction: ", direction);
+   
+   // Use much larger distance to meet broker minimum requirements (typically 20-50 pips)
+   double min_distance = _Point * 100; // 100 points = 10 pips minimum
+   double sl_dist = MathMax(SL_PRICE * 3, min_distance); // At least 3x SL or 100 points
+   double tp_dist = MathMax(TP_PRICE * 3, min_distance * 2); // At least 3x TP or 200 points
+   
+   if(direction > 0) { 
+      sl = NormalizeDouble(price - sl_dist, _Digits); 
+      tp = NormalizeDouble(price + tp_dist, _Digits); 
+   }
+   else { 
+      sl = NormalizeDouble(price + sl_dist, _Digits); 
+      tp = NormalizeDouble(price - tp_dist, _Digits); 
+   }
+   Print("ExecuteTrade - sl_dist: ", sl_dist, " tp_dist: ", tp_dist, " sl: ", sl, " tp: ", tp);
+   if(direction > 0) { trade.Buy(LOT_SIZE, _Symbol, price, sl, tp); }
+   else { trade.Sell(LOT_SIZE, _Symbol, price, sl, tp); }
 }
 
 void OnTick()
@@ -3269,7 +3245,7 @@ void OnTick()
    last_bar = current_bar;
    
    int total = Bars(_Symbol, _Period);
-   if(total < LookbackPeriod + 2 || total < ATRPeriod + 2) return;
+   if(total < LOOKBACK_PERIOD + 2 || total < ATR_PERIOD + 2) return;
    
    bool in_session = IsInTradingTime();
    static bool was_in_session = false;
@@ -3282,10 +3258,19 @@ void OnTick()
    if(in_session && !atr_triggered && atr_signal) atr_triggered = true;
    
    double direction = 0;
-   if(CheckCSIDSignal(direction))
-   {
-      bool ma_ok = (direction > 0 && ma_dir > 0) || (direction < 0 && ma_dir < 0);
-      if(in_session && ma_ok && atr_triggered) ExecuteTrade(direction);
+   bool csid_signal = CheckCSIDSignal(direction);
+   
+   //bool ma_ok = (direction > 0 && ma_dir > 0) || (direction < 0 && ma_dir < 0);
+   bool ma_ok = true; // Disable MA check for now
+   
+   bool all_signals = in_session && csid_signal && atr_triggered;
+   Print("in_session | csid_signal | atr_triggered: ", in_session, " ", csid_signal, " ", atr_triggered);
+   Print("ma_dir: ", ma_dir, " direction: ", direction, " ma_ok: ", ma_ok);
+   
+   if(all_signals && ma_ok) {
+      Print(">>> EXECUTING TRADE >>> direction: ", direction);
+      ExecuteTrade(direction);
+      atr_triggered = false;
    }
 }
 `;
@@ -3329,6 +3314,14 @@ const downloadMQL5 = () => {
 
 // Attach download button listener
 document.getElementById('downloadMQL5Btn')?.addEventListener('click', downloadMQL5);
+
+// Regenerate MQL from form parameters
+document.getElementById('regenerateMQLBtn')?.addEventListener('click', () => {
+  const params = getCurrentParams();
+  const mqlText = generateMQLFromParams(params);
+  const textarea = document.getElementById('algoEditorTextareaMain1');
+  if (textarea) textarea.value = mqlText;
+});
 
 // Run backtest from MQL panel
 const runBacktestFromMQL = () => {
