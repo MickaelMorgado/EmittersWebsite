@@ -154,18 +154,22 @@ table {
 }
 .historical-order-line td:nth-child(3),
 .historical-order-table-header th:nth-child(3) {
+ min-width: 70px;
   width: 5%;
 }
 .historical-order-line td:nth-child(4),
 .historical-order-table-header th:nth-child(4) {
+  min-width: 70px;
   width: 5%;
 }
 .historical-order-line td:nth-child(5),
 .historical-order-table-header th:nth-child(5) {
+  min-width: 70px;
   width: 5%;
 }
 .historical-order-line td:nth-child(6),
 .historical-order-table-header th:nth-child(6) {
+
   width: 10%;
 }
 .historical-order-line td:nth-child(7),
@@ -175,6 +179,9 @@ table {
 .historical-order-line td:nth-child(8),
 .historical-order-table-header th:nth-child(8) {
   width: 12%;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
 }
 .historical-order-line td:nth-child(9),
 .historical-order-table-header th:nth-child(9) {
