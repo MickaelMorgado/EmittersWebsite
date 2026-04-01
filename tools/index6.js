@@ -1920,7 +1920,16 @@ ordersHistory.push({
     <table>
       <thead>
         <tr class="historical-order-table-header">
-          <th>ID</th><th>Time</th><th>Price</th><th>SL</th><th>TP</th><th>Direction</th><th>Closed Order Type</th><th>Closed Price</th><th>Closed Time</th><th>P/L (Points)</th>
+          <th>ID</th>
+          <th>Time</th>
+          <th>Direction</th>
+          <th>Price</th>
+          <th>SL</th>
+          <th>TP</th>
+          <th>Closed Price</th>
+          <th title="Closed Order Type">Closed Order Type</th>
+          <th>Closed Time</th>
+          <th>P/L (Points)</th>
         </tr>
       </thead>
       <tbody>
@@ -1930,14 +1939,17 @@ ordersHistory.push({
           <tr class="historical-order-line clickable-row" data-trade-time="${order.time}" title="Click to navigate to this trade on chart">
             <td>${order.id}</td>
             <td>${order.time}</td>
+            <td>${order.direction}</td>
             <td>${order.price.toFixed(5)}</td>
             <td>${order.sl.toFixed(5)}</td>
             <td>${order.tp.toFixed(5)}</td>
-            <td>${order.direction}</td>
-            <td class="order-status-${order.closedOrderType}">${
+            <td>${parseFloat(order.closedPrice).toFixed(5) || ''}</td>
+            <td
+              title="${order.closedOrderType}"
+              class="order-status-${order.closedOrderType}"
+            >${
               order.closedOrderType
             }</td>
-            <td>${parseFloat(order.closedPrice).toFixed(5) || ''}</td>
             <td>${order.closedTime || ''}</td>
             <td class="trade-result-${order.tradeResult}" title="${
               order.tradeResult
@@ -2636,7 +2648,7 @@ const loadParamsAndRun = (params) => {
   if ($MAPeriodInput) $MAPeriodInput.value = params.maPeriod;
   if ($MAThresholdInput) $MAThresholdInput.value = params.maThreshold;
   
-  if (!cachedFile) {
+  if (!cachedFile && cachedCSVData.length === 0) {
     alert('Please load a CSV file first!');
     return;
   }
@@ -3082,6 +3094,8 @@ int ma_handle = INVALID_HANDLE;
 int atr_handle = INVALID_HANDLE;
 CTrade trade;
 bool atr_triggered = false;
+double prev_highest = 0;
+double prev_lowest = 0;
 
 int OnInit()
 {
@@ -3155,6 +3169,14 @@ double GetLowestLow(int lb)
    return(lowest);
 }
 
+void UpdatePreviousCSIDLevels()
+{
+   double current_high = GetHighestHigh(LOOKBACK_PERIOD);
+   double current_low = GetLowestLow(LOOKBACK_PERIOD);
+   if(current_high > 0) prev_highest = current_high;
+   if(current_low > 0) prev_lowest = current_low;
+}
+
 double GetMA()
 {
    if(ma_handle == INVALID_HANDLE) return(0);
@@ -3186,8 +3208,8 @@ bool CheckCSIDSignal(double &direction)
    int total = Bars(_Symbol, _Period);
    if(total < LOOKBACK_PERIOD + 2) return(false);
    double current_close = iClose(_Symbol, _Period, 0);
-   double highest = GetHighestHigh(LOOKBACK_PERIOD);
-   double lowest = GetLowestLow(LOOKBACK_PERIOD);
+   double highest = prev_highest;
+   double lowest = prev_lowest;
    if(highest <= 0 || lowest <= 0) return(false);
    if(current_close > highest) { direction = 1; return(true); }
    if(current_close < lowest) { direction = -1; return(true); }
@@ -3219,20 +3241,15 @@ void ExecuteTrade(double direction)
    double sl = 0, tp = 0;
    Print("ExecuteTrade - price: ", price, " direction: ", direction);
    
-   // Use much larger distance to meet broker minimum requirements (typically 20-50 pips)
-   double min_distance = _Point * 100; // 100 points = 10 pips minimum
-   double sl_dist = MathMax(SL_PRICE * 3, min_distance); // At least 3x SL or 100 points
-   double tp_dist = MathMax(TP_PRICE * 3, min_distance * 2); // At least 3x TP or 200 points
-   
    if(direction > 0) { 
-      sl = NormalizeDouble(price - sl_dist, _Digits); 
-      tp = NormalizeDouble(price + tp_dist, _Digits); 
+      sl = NormalizeDouble(price - SL_PRICE, _Digits); 
+      tp = NormalizeDouble(price + TP_PRICE, _Digits); 
    }
    else { 
-      sl = NormalizeDouble(price + sl_dist, _Digits); 
-      tp = NormalizeDouble(price - tp_dist, _Digits); 
+      sl = NormalizeDouble(price + SL_PRICE, _Digits); 
+      tp = NormalizeDouble(price - TP_PRICE, _Digits); 
    }
-   Print("ExecuteTrade - sl_dist: ", sl_dist, " tp_dist: ", tp_dist, " sl: ", sl, " tp: ", tp);
+   Print("ExecuteTrade - SL_PRICE: ", SL_PRICE, " TP_PRICE: ", TP_PRICE, " sl: ", sl, " tp: ", tp);
    if(direction > 0) { trade.Buy(LOT_SIZE, _Symbol, price, sl, tp); }
    else { trade.Sell(LOT_SIZE, _Symbol, price, sl, tp); }
 }
@@ -3247,6 +3264,13 @@ void OnTick()
    int total = Bars(_Symbol, _Period);
    if(total < LOOKBACK_PERIOD + 2 || total < ATR_PERIOD + 2) return;
    
+   // Check CSID first using previous candle's levels (like backtest)
+   double direction = 0;
+   bool csid_signal = CheckCSIDSignal(direction);
+   
+   // Then update levels for next candle's comparison
+   UpdatePreviousCSIDLevels();
+   
    bool in_session = IsInTradingTime();
    static bool was_in_session = false;
    if(!was_in_session && in_session) atr_triggered = false;
@@ -3256,9 +3280,6 @@ void OnTick()
    bool atr_signal = CheckATRSignal();
    
    if(in_session && !atr_triggered && atr_signal) atr_triggered = true;
-   
-   double direction = 0;
-   bool csid_signal = CheckCSIDSignal(direction);
    
    //bool ma_ok = (direction > 0 && ma_dir > 0) || (direction < 0 && ma_dir < 0);
    bool ma_ok = true; // Disable MA check for now
@@ -3411,7 +3432,7 @@ const runGridSearch = async () => {
   const ranges = {
     slSize: { min: 0.0005, max: 0.003, step: 0.0005 },
     tpSize: { min: 0.001, max: 0.01, step: 0.001 },
-    tsSize: { min: 0.00001, max: 0.00002, step: 0.00001 },
+    tsSize: { min: 0.00001, max: 0.0002, step: 0.00005 },
   };
   
   // Helper: generate random parameter set
