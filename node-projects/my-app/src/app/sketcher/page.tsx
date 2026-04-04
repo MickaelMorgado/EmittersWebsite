@@ -20,8 +20,8 @@ type ToolId = "line" | "rect" | "circle" | "centerline";
 // --- Constants ---
 const BG = "#0c1220";
 const BG_PANEL = "#151b35";
-const GRID_COLOR = "#192345";
-const GRID_MAJOR = "#1e2850";
+const GRID_COLOR = "#141c38";
+const GRID_MAJOR = "#1a2340";
 const LINE_COLOR = "#e8e8e8";
 const DIM_COLOR = "#c0c0c0";
 const CENTERLINE_COLOR = "#cc4444";
