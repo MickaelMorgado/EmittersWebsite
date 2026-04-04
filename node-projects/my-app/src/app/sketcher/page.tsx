@@ -18,15 +18,15 @@ type ViewId = "top" | "front" | "right" | "left" | "bottom" | "back";
 type ToolId = "line" | "rect" | "circle" | "centerline";
 
 // --- Constants ---
-const BG = "#141a33";
-const BG_PANEL = "#1a2140";
-const GRID_COLOR = "#1e2a52";
-const GRID_MAJOR = "#243060";
+const BG = "#101829";
+const BG_PANEL = "#151b35";
+const GRID_COLOR = "#192345";
+const GRID_MAJOR = "#1e2850";
 const LINE_COLOR = "#e8e8e8";
 const DIM_COLOR = "#c0c0c0";
 const CENTERLINE_COLOR = "#cc4444";
-const PREVIEW_COLOR = "#5599ff";
-const GHOST_LINE = "#4a5a80";
+const PREVIEW_COLOR = "#4d88e6";
+const GHOST_LINE = "#404d70";
 const GHOST_CENTER = "#6a3333";
 const GRID_SIZE = 20;
 const MIN_ZOOM = 0.15;
@@ -263,7 +263,7 @@ export default function Page() {
     }
 
     // origin axes
-    ctx.strokeStyle = "#2e4080"; ctx.lineWidth = 1;
+    ctx.strokeStyle = "#253570"; ctx.lineWidth = 1;
     if (ox > 0 && ox < W) { ctx.beginPath(); ctx.moveTo(ox, 0); ctx.lineTo(ox, H); ctx.stroke(); }
     if (oy > 0 && oy < H) { ctx.beginPath(); ctx.moveTo(0, oy); ctx.lineTo(W, oy); ctx.stroke(); }
 
@@ -459,7 +459,7 @@ export default function Page() {
     }
 
     // border
-    ctx.strokeStyle = active === v ? "#4488cc" : "#2a3568";
+    ctx.strokeStyle = active === v ? "#3d78b6" : "#223050";
     ctx.lineWidth = active === v ? 2 : 1;
     ctx.setLineDash([]); ctx.strokeRect(0, 0, W, H);
   }, [elements, drawing, drawPts, tool, active, w2s, localToScreen]);
@@ -601,34 +601,35 @@ export default function Page() {
   return (
     <div className="h-screen flex flex-col overflow-hidden select-none" style={{ background: BG, fontFamily: "'Courier New', monospace" }} onContextMenu={e => e.preventDefault()}>
       {/* Toolbar */}
-      <div className="flex items-center gap-3 px-4 py-2 shrink-0" style={{ background: "#111833", borderBottom: "1px solid #2a3568" }}>
-        <div className="flex items-center gap-2 pr-4" style={{ borderRight: "1px solid #2a3568" }}>
-          <div className="w-7 h-7 rounded flex items-center justify-center" style={{ background: "#3366aa" }}>
+      <div className="flex items-center gap-3 px-4 py-2 shrink-0" style={{ background: "#0d1428", borderBottom: "1px solid #223050" }}>
+        <div className="flex items-center gap-2 pr-4" style={{ borderRight: "1px solid #223050" }}>
+          <div className="w-7 h-7 rounded flex items-center justify-center" style={{ background: "#2d5899" }}>
             <span className="text-white text-xs font-bold">BP</span>
           </div>
-          <span className="text-sm font-bold" style={{ color: "#8899bb" }}>Blueprint Sketcher</span>
+          <span className="text-sm font-bold" style={{ color: "#7382a0" }}>Blueprint Sketcher</span>
         </div>
         <div className="flex items-center gap-1">
           {toolDefs.map(t => (
             <button key={t.id} onClick={() => setTool(t.id)} className="px-3 py-1.5 text-xs font-bold rounded transition-colors"
-              style={{ background: tool === t.id ? "#3366aa" : "transparent", color: tool === t.id ? "#fff" : "#6678a0", border: `1px solid ${tool === t.id ? "#4477bb" : "#2a3568"}` }}>
+              style={{ background: tool === t.id ? "#2d5899" : "transparent", color: tool === t.id ? "#fff" : "#5a6a8a", border: `1px solid ${tool === t.id ? "#3d6a9e" : "#223050"}` }}>
               <span className="mr-1">{t.icon}</span>{t.label}
             </button>
           ))}
         </div>
-        <div className="flex items-center gap-1 ml-2 pl-2" style={{ borderLeft: "1px solid #2a3568" }}>
-          <button onClick={() => setHatchMode(!hatchMode)} className="px-3 py-1.5 text-xs font-bold rounded transition-colors"
-            style={{ background: hatchMode ? "#664422" : "transparent", color: hatchMode ? "#ffcc88" : "#6678a0", border: `1px solid ${hatchMode ? "#885533" : "#2a3568"}` }}>
+<div className="flex items-center gap-1 ml-2 pl-2" style={{ borderLeft: "1px solid #223050" }}>
+            <button
+              onClick={() => setHatchMode(!hatchMode)}
+              style={{ background: hatchMode ? "#553311" : "transparent", color: hatchMode ? "#eecc77" : "#5a6a8a", border: `1px solid ${hatchMode ? "#774422" : "#223050"}` }}>
             <span className="mr-1">{"\u2572"}</span>Hatch
           </button>
         </div>
         <div className="flex items-center gap-1 ml-auto">
           <button onClick={resetView} className="px-3 py-1.5 text-xs font-bold rounded transition-colors"
-            style={{ background: "transparent", color: "#6678a0", border: "1px solid #2a3568" }}>Reset View</button>
-          <button onClick={undo} className="px-3 py-1.5 text-xs font-bold rounded transition-colors"
-            style={{ background: "transparent", color: "#6678a0", border: "1px solid #2a3568" }}>Undo</button>
-          <button onClick={clear} className="px-3 py-1.5 text-xs font-bold rounded transition-colors"
-            style={{ background: "transparent", color: "#aa5555", border: "1px solid #553333" }}>Clear All</button>
+style={{ background: "transparent", color: "#5a6a8a", border: "1px solid #223050" }}>Reset View</button>
+            <button onClick={undo} className="px-2 py-1 rounded text-xs font-medium"
+              style={{ background: "transparent", color: "#5a6a8a", border: "1px solid #223050" }}>Undo</button>
+            <button onClick={() => { setElements([]); setUndoStack([]); }} className="px-2 py-1 rounded text-xs font-medium"
+              style={{ background: "transparent", color: "#994444", border: "1px solid #442222" }}>Clear All</button>
         </div>
       </div>
 
@@ -654,16 +655,14 @@ export default function Page() {
       </div>
 
       {/* Status bar */}
-      <div className="flex items-center px-4 py-1 text-xs shrink-0" style={{ background: "#111833", borderTop: "1px solid #2a3568", color: "#556688" }}>
-        <span>View: <strong style={{ color: "#8899bb" }}>{V[active].name}</strong></span>
+<div className="flex items-center px-4 py-1 text-xs shrink-0" style={{ background: "#0d1428", borderTop: "1px solid #223050", color: "#445566" }}>
+        <span>View: <strong style={{ color: "#7382a0" }}>{V[active].name}</strong></span>
         <span className="mx-3">|</span>
-        <span>Tool: <strong style={{ color: "#8899bb" }}>{tool}</strong></span>
+        <span>Tool: <strong style={{ color: "#7382a0" }}>{tool}</strong></span>
         <span className="mx-3">|</span>
-        <span>Zoom: <strong style={{ color: "#8899bb" }}>{Math.round(cam.zoom * 100)}%</strong></span>
-        <span className="mx-3">|</span>
-        <span>Elements: {srcCount} / {elements.length}</span>
-        {hatchMode && <><span className="mx-3">|</span><span style={{ color: "#ffcc88" }}>Hatch ON</span></>}
-        <span className="ml-auto" style={{ color: "#3a4a6a" }}>Scroll: zoom | Mid/Right drag: pan</span>
+        <span>Zoom: <strong style={{ color: "#7382a0" }}>{Math.round(cam.zoom * 100)}%</strong></span>
+        {hatchMode && <><span className="mx-3">|</span><span style={{ color: "#eecc77" }}>Hatch ON</span></>}
+        <span className="ml-auto" style={{ color: "#2d3a50" }}>Scroll: zoom | Mid/Right drag: pan</span>
       </div>
     </div>
   );
