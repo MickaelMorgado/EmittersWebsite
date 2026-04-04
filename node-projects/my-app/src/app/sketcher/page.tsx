@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 // --- Types ---
 interface Point { x: number; y: number }
@@ -20,7 +20,7 @@ type ToolId = "line" | "rect" | "circle" | "centerline";
 // --- Constants ---
 const BG = "#0c1220";
 const BG_PANEL = "#0c1220";
-const BG_CONTAINER = `#0c1220, linear-gradient(#141c38 1px, transparent 1px), linear-gradient(90deg, #141c38 1px, transparent 1px)`;
+const BG_CONTAINER = `linear-gradient(#141c38 1px, transparent 1px), linear-gradient(90deg, #141c38 1px, transparent 1px)`;
 const GRID_COLOR = "#141c38";
 const GRID_MAJOR = "#1a2340";
 const LINE_COLOR = "#e8e8e8";
@@ -600,7 +600,7 @@ export default function Page() {
   );
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden select-none" style={{ background: `${BG}, ${BG_CONTAINER}`, backgroundSize: "20px 20px", fontFamily: "'Courier New', monospace" }} onContextMenu={e => e.preventDefault()}>
+    <div className="h-screen flex flex-col overflow-hidden select-none" style={{ backgroundColor: BG, backgroundImage: BG_CONTAINER, backgroundSize: "20px 20px", backgroundPosition: "0 0", fontFamily: "'Courier New', monospace" }} onContextMenu={e => e.preventDefault()}>
       {/* Toolbar */}
       <div className="flex items-center gap-3 px-4 py-2 shrink-0" style={{ background: "#0d1428", borderBottom: "1px solid #223050" }}>
         <div className="flex items-center gap-2 pr-4" style={{ borderRight: "1px solid #223050" }}>
@@ -656,7 +656,7 @@ style={{ background: "transparent", color: "#5a6a8a", border: "1px solid #223050
       </div>
 
       {/* Status bar */}
-<div className="flex items-center px-4 py-1 text-xs shrink-0" style={{ background: "#0d1428", borderTop: "1px solid #223050", color: "#445566" }}>
+      <div className="flex items-center px-4 py-1 text-xs shrink-0" style={{ background: "#0d1428", borderTop: "1px solid #223050", color: "#445566" }}>
         <span>View: <strong style={{ color: "#7382a0" }}>{V[active].name}</strong></span>
         <span className="mx-3">|</span>
         <span>Tool: <strong style={{ color: "#7382a0" }}>{tool}</strong></span>
