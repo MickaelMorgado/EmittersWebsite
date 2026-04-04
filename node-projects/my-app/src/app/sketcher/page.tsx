@@ -85,8 +85,8 @@ function drawDimLine(
 ) {
   ctx.save();
   ctx.strokeStyle = color; ctx.fillStyle = color;
-  ctx.lineWidth = 0.8;
-  ctx.font = "bold 11px 'Courier New', monospace";
+  ctx.lineWidth = 0.4;
+  ctx.font = "italic 11px system-ui, sans-serif";
 
   let x1: number, y1: number, x2: number, y2: number;
   let ex1a: number, ey1a: number, ex1b: number, ey1b: number;
@@ -270,12 +270,12 @@ export default function Page() {
 
     // labels (screen-fixed)
     ctx.fillStyle = "rgba(170,180,200,0.5)";
-    ctx.font = "bold 13px 'Courier New', monospace"; ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+    ctx.font = "italic bold 13px system-ui, sans-serif"; ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
     ctx.fillText(V[v].name, 10, 20);
-    ctx.font = "11px 'Courier New', monospace"; ctx.fillStyle = "rgba(130,145,175,0.4)";
+    ctx.font = "italic 11px system-ui, sans-serif"; ctx.fillStyle = "rgba(130,145,175,0.4)";
     ctx.fillText(`${V[v].axes[0]} \u2192`, 10, 36);
     ctx.fillText(`${V[v].axes[1]} \u2191`, 10, 50);
-    ctx.fillStyle = "rgba(100,115,155,0.3)"; ctx.font = "10px 'Courier New', monospace";
+    ctx.fillStyle = "rgba(100,115,155,0.3)"; ctx.font = "italic 10px system-ui, sans-serif";
     ctx.textAlign = "right"; ctx.fillText(`${Math.round(z * 100)}%`, W - 8, 18); ctx.textAlign = "left";
 
     // --- draw elements ---
@@ -342,7 +342,7 @@ export default function Page() {
           ctx.globalAlpha = 1;
           ctx.save();
           ctx.fillStyle = DIM_COLOR;
-          ctx.font = "bold 11px 'Courier New', monospace"; ctx.textAlign = "left"; ctx.textBaseline = "middle";
+          ctx.font = "italic bold 11px system-ui, sans-serif"; ctx.textAlign = "left"; ctx.textBaseline = "middle";
           const diam = Math.round(dist3(el.points3D[0], el.points3D[1]) * 2);
           const lbl = `\u00D8${diam}`;
           const tw = ctx.measureText(lbl).width;
@@ -446,7 +446,7 @@ export default function Page() {
           drawCL(ctx, sc.x - sr - 8, sc.y, sc.x + sr + 8, sc.y);
           drawCL(ctx, sc.x, sc.y - sr - 8, sc.x, sc.y + sr + 8);
           ctx.globalAlpha = 1;
-          ctx.fillStyle = pc; ctx.font = "bold 11px 'Courier New', monospace";
+          ctx.fillStyle = pc; ctx.font = "italic bold 11px system-ui, sans-serif";
           ctx.textAlign = "left"; ctx.textBaseline = "middle";
           ctx.fillText(`\u00D8${Math.round(r3 * 2)}`, sc.x + sr + 12, sc.y);
         }
@@ -595,7 +595,7 @@ export default function Page() {
   );
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden select-none" style={{ backgroundColor: BG, backgroundImage: BG_CONTAINER, backgroundSize: "20px 20px", backgroundPosition: "0 0", fontFamily: "'Courier New', monospace" }} onContextMenu={e => e.preventDefault()}>
+    <div className="h-screen flex flex-col overflow-hidden select-none" style={{ backgroundColor: BG, backgroundImage: BG_CONTAINER, backgroundSize: "20px 20px", backgroundPosition: "0 0", fontFamily: "system-ui, sans-serif" }} onContextMenu={e => e.preventDefault()}>
       {/* Toolbar */}
       <div className="flex items-center gap-3 px-4 py-2 shrink-0" style={{ background: "#0d1428", borderBottom: "1px solid #223050" }}>
         <div className="flex items-center gap-2 pr-4" style={{ borderRight: "1px solid #223050" }}>
