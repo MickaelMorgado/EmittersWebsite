@@ -18,7 +18,7 @@ type ViewId = "top" | "front" | "right" | "left" | "bottom" | "back";
 type ToolId = "line" | "rect" | "circle" | "centerline";
 
 // --- Constants ---
-const BG = "#101829";
+const BG = "#0c1220";
 const BG_PANEL = "#151b35";
 const GRID_COLOR = "#192345";
 const GRID_MAJOR = "#1e2850";
@@ -263,18 +263,18 @@ export default function Page() {
     }
 
     // origin axes
-    ctx.strokeStyle = "#253570"; ctx.lineWidth = 1;
+    ctx.strokeStyle = "#1d2d58"; ctx.lineWidth = 1;
     if (ox > 0 && ox < W) { ctx.beginPath(); ctx.moveTo(ox, 0); ctx.lineTo(ox, H); ctx.stroke(); }
     if (oy > 0 && oy < H) { ctx.beginPath(); ctx.moveTo(0, oy); ctx.lineTo(W, oy); ctx.stroke(); }
 
     // labels (screen-fixed)
-    ctx.fillStyle = "rgba(200,210,230,0.6)";
+    ctx.fillStyle = "rgba(170,180,200,0.5)";
     ctx.font = "bold 13px 'Courier New', monospace"; ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
     ctx.fillText(V[v].name, 10, 20);
-    ctx.font = "11px 'Courier New', monospace"; ctx.fillStyle = "rgba(160,170,200,0.5)";
+    ctx.font = "11px 'Courier New', monospace"; ctx.fillStyle = "rgba(130,145,175,0.4)";
     ctx.fillText(`${V[v].axes[0]} \u2192`, 10, 36);
     ctx.fillText(`${V[v].axes[1]} \u2191`, 10, 50);
-    ctx.fillStyle = "rgba(120,140,180,0.4)"; ctx.font = "10px 'Courier New', monospace";
+    ctx.fillStyle = "rgba(100,115,155,0.3)"; ctx.font = "10px 'Courier New', monospace";
     ctx.textAlign = "right"; ctx.fillText(`${Math.round(z * 100)}%`, W - 8, 18); ctx.textAlign = "left";
 
     // --- draw elements ---
