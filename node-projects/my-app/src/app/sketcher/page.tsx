@@ -20,7 +20,7 @@ type ToolId = "line" | "rect" | "circle" | "centerline";
 // --- Constants ---
 const BG = "#0c1220";
 const BG_PANEL = "#0c1220";
-const BG_CONTAINER = "linear-gradient(#141c38 1px, transparent 1px), linear-gradient(90deg, #141c38 1px, transparent 1px)";
+const BG_CONTAINER = `#0c1220, linear-gradient(#141c38 1px, transparent 1px), linear-gradient(90deg, #141c38 1px, transparent 1px)`;
 const GRID_COLOR = "#141c38";
 const GRID_MAJOR = "#1a2340";
 const LINE_COLOR = "#e8e8e8";
@@ -600,7 +600,7 @@ export default function Page() {
   );
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden select-none" style={{ background: BG_CONTAINER, backgroundSize: "20px 20px", fontFamily: "'Courier New', monospace" }} onContextMenu={e => e.preventDefault()}>
+    <div className="h-screen flex flex-col overflow-hidden select-none" style={{ background: `${BG}, ${BG_CONTAINER}`, backgroundSize: "20px 20px", fontFamily: "'Courier New', monospace" }} onContextMenu={e => e.preventDefault()}>
       {/* Toolbar */}
       <div className="flex items-center gap-3 px-4 py-2 shrink-0" style={{ background: "#0d1428", borderBottom: "1px solid #223050" }}>
         <div className="flex items-center gap-2 pr-4" style={{ borderRight: "1px solid #223050" }}>
