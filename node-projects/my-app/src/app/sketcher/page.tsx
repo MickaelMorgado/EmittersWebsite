@@ -85,8 +85,8 @@ function drawDimLine(
 ) {
   ctx.save();
   ctx.strokeStyle = color; ctx.fillStyle = color;
-  ctx.lineWidth = 0.4;
-  ctx.font = "italic 11px system-ui, sans-serif";
+  ctx.lineWidth = 0.3;
+  ctx.font = "italic 10px system-ui, sans-serif";
 
   let x1: number, y1: number, x2: number, y2: number;
   let ex1a: number, ey1a: number, ex1b: number, ey1b: number;
