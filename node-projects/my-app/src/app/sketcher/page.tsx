@@ -20,9 +20,9 @@ type ToolId = "line" | "rect" | "circle" | "centerline";
 // --- Constants ---
 const BG = "#0c1220";
 const BG_PANEL = "#0c1220";
-const BG_CONTAINER = `linear-gradient(#141c38 1px, transparent 1px), linear-gradient(90deg, #141c38 1px, transparent 1px)`;
-const GRID_COLOR = "#141c38";
-const GRID_MAJOR = "#1a2340";
+const BG_CONTAINER = `linear-gradient(#141c3850 1px, transparent 1px), linear-gradient(90deg, #141c3850 1px, transparent 1px)`;
+const GRID_COLOR = "#141c3850";
+const GRID_MAJOR = "#141c3850";
 const LINE_COLOR = "#e8e8e8";
 const DIM_COLOR = "#c0c0c0";
 const CENTERLINE_COLOR = "#cc4444";
@@ -250,7 +250,7 @@ export default function Page() {
     // grid
     const gs = GRID_SIZE * z;
     if (gs > 3) {
-      ctx.lineWidth = 0.5;
+      ctx.lineWidth = 1;
       for (let x = ((ox % gs) + gs) % gs; x < W; x += gs) {
         const wc = Math.round((x - ox) / z);
         ctx.strokeStyle = wc % (GRID_SIZE * 5) === 0 ? GRID_MAJOR : GRID_COLOR;
@@ -458,11 +458,6 @@ export default function Page() {
 
       ctx.restore();
     }
-
-    // border
-    ctx.strokeStyle = active === v ? "#3d78b6" : "#223050";
-    ctx.lineWidth = active === v ? 2 : 1;
-    ctx.setLineDash([]); ctx.strokeRect(0, 0, W, H);
   }, [elements, drawing, drawPts, tool, active, w2s, localToScreen]);
 
   // --- Resize ---
@@ -594,7 +589,7 @@ export default function Page() {
 
   const vc = (v: ViewId) => (
     <div key={v} className="relative overflow-hidden">
-      <canvas ref={el => { if (el) canvases.current[v] = el; }} className="w-full h-full block" style={{ cursor: "crosshair" }}
+      <canvas ref={el => { if (el) canvases.current[v] = el; }} className="w-full h-full block" style={{ cursor: "crosshair", outline: "none" }}
         onMouseDown={e => onDown(v, e)} onMouseMove={e => onMove(v, e)} onMouseUp={e => onUp(v, e)} onMouseLeave={() => onLeave(v)} />
     </div>
   );
@@ -635,8 +630,8 @@ style={{ background: "transparent", color: "#5a6a8a", border: "1px solid #223050
       </div>
 
       {/* Canvas grid — cross layout matching standard 3rd-angle projection */}
-      <div className="flex-1 p-1">
-        <div className="h-full grid gap-[2px]" style={{ gridTemplateColumns: "1fr 1fr 1fr 1fr", gridTemplateRows: "1fr 1fr 1fr" }}>
+      <div className="flex-1">
+        <div className="h-full grid gap-[0px]" style={{ gridTemplateColumns: "1fr 1fr 1fr 1fr", gridTemplateRows: "1fr 1fr 1fr" }}>
           {/* Row 1: empty | TOP | empty | empty */}
           <div />
           {vc("top")}
