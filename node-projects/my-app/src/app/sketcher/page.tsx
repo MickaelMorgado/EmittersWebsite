@@ -20,7 +20,7 @@ type ToolId = "line" | "rect" | "circle" | "centerline";
 // --- Constants ---
 const BG = "#0c1220";
 const BG_PANEL = "#0c1220";
-const BG_CONTAINER = "repeating-linear-gradient(0deg, #0c1220 0px, #0c1220 19px, #141c38 19px, #141c38 20px), repeating-linear-gradient(90deg, #0c1220 0px, #0c1220 19px, #141c38 19px, #141c38 20px)";
+const BG_CONTAINER = "linear-gradient(#141c38 1px, transparent 1px), linear-gradient(90deg, #141c38 1px, transparent 1px)";
 const GRID_COLOR = "#141c38";
 const GRID_MAJOR = "#1a2340";
 const LINE_COLOR = "#e8e8e8";
