@@ -68,7 +68,7 @@ export async function GET() {
     { symbol: 'KVUE', type: 'stock' },
     { symbol: 'EXOD', type: 'stock' },
     { symbol: 'DIB', type: 'stock', yahooSymbol: 'DIB.MI' },
-    { symbol: '76M', type: 'stock', yahooSymbol: 'XBOTF' },
+    { symbol: 'XBOTF', type: 'stock', yahooSymbol: 'XBOTF' },
     { symbol: 'SP500', type: 'index', yahooSymbol: '%5EGSPC' },
   ];
 

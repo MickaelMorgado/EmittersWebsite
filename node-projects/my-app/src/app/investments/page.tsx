@@ -301,7 +301,7 @@ export default function InvestmentsPage() {
         const data = await res.json();
         
         const allResults = data
-          .filter((d: any) => d.price > 0)
+          .filter((d: any) => d && d.price > 0)
           .map((d: any) => ({
             symbol: d.symbol,
             name: getCryptoName(d.symbol) || getStockSymbol(d.symbol),
