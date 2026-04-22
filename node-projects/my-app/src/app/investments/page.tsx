@@ -144,7 +144,7 @@ const PORTFOLIO: Record<string, { bep: number; qty: number; currency: string }> 
   EXOD: { bep: 19.42975, qty: 20, currency: 'USD' },
   KVUE: { bep: 18.09, qty: 2, currency: 'USD' },
   EGL: { bep: 4.26, qty: 2, currency: 'EUR' },
-  XBOTF: { bep: 0.254, qty: 70, currency: 'USD' },
+  XBOTF: { bep: 0.2899, qty: 70, currency: 'USD' },
   BTC: { bep: 105900, qty: 0, currency: 'USD' },
   SOL: { bep: 140, qty: 0, currency: 'USD' },
   BMW: { bep: 75, qty: 0, currency: 'EUR' },
