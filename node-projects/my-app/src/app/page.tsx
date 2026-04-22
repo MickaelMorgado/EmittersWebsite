@@ -2,9 +2,57 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { X } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Lock, X } from 'lucide-react';
 import Link from 'next/link';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+
+const AUTH_PASSWORD = 'Mickael01';
+const PRIVATE_APPS = ['/investments'];
+
+function AuthModal({ isOpen, onClose, onUnlock }: { isOpen: boolean; onClose: () => void; onUnlock: () => void }) {
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (password === AUTH_PASSWORD) {
+      localStorage.setItem('private-apps-unlocked', 'true');
+      onUnlock();
+    } else {
+      setError('Invalid password');
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50" onClick={onClose}>
+      <Card className="w-full max-w-md bg-zinc-900 border-zinc-800" onClick={e => e.stopPropagation()}>
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold text-center uppercase flex items-center justify-center gap-2">
+            <Lock className="h-5 w-5" /> Private Apps
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <Input
+              type="password"
+              placeholder="Enter password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="bg-zinc-800 border-zinc-700 text-white"
+            />
+            {error && <p className="text-red-500 text-sm">{error}</p>}
+            <Button type="submit" className="w-full">
+              Unlock
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
 
 function TypographyH1({ children }: { children: React.ReactNode }) {
   return <h1 className="text-4xl font-bold tracking-tight mb-4 heading-shine uppercase">{children}</h1>;
@@ -92,19 +140,42 @@ function TiltCard({
 
 export default function Home() {
   const [isGlobalHovered, setIsGlobalHovered] = useState(false);
+  const [unlocked, setUnlocked] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
+  useEffect(() => {
+    const isUnlocked = localStorage.getItem('private-apps-unlocked') === 'true';
+    setUnlocked(isUnlocked);
+  }, []);
+
+  const handleUnlock = () => {
+    setUnlocked(true);
+    setShowAuthModal(false);
+  };
+
+  const isPrivateApp = (href: string) => PRIVATE_APPS.includes(href);
+
   return (
     <div className="bg-black min-h-screen text-white">
+      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} onUnlock={handleUnlock} />
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between">
           <div>
             <TypographyH1>Welcome to my Projects Page</TypographyH1>
             <p className="text-muted-foreground mb-8">Explore my collection of interactive projects and experiments.</p>
           </div>
-          <Link href="/" className="size-8">
-            <Button size="icon" aria-label="Back to homepage" variant="default">
-              <X className="h-4 w-4" />
-            </Button>
-          </Link>
+          <div className="flex gap-2">
+            {PRIVATE_APPS.length > 0 && (
+              <Button variant="outline" size="icon" onClick={() => setShowAuthModal(true)}>
+                <Lock className="h-4 w-4" />
+              </Button>
+            )}
+            <Link href="/" className="size-8">
+              <Button size="icon" aria-label="Back to homepage" variant="default">
+                <X className="h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
         </div>
 
         <section className="mt-12">
@@ -338,6 +409,39 @@ export default function Home() {
                 </Card>
               </TiltCard>
             </Link>
+            {unlocked ? (
+              <Link href="/investments" target="_blank" className="h-full">
+                <TiltCard isGlobalHovered={isGlobalHovered} setIsGlobalHovered={setIsGlobalHovered} accentColor="16, 185, 129">
+                  <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
+                    <CardHeader>
+                      <CardTitle className="uppercase">Investments Dashboard</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-muted-foreground text-sm">
+                        Track stocks, crypto, and market indices
+                      </p>
+                    </CardContent>
+                  </Card>
+                </TiltCard>
+              </Link>
+            ) : (
+              <div className="h-full" onClick={() => setShowAuthModal(true)}>
+                <TiltCard isGlobalHovered={isGlobalHovered} setIsGlobalHovered={setIsGlobalHovered} accentColor="16, 185, 129">
+                  <Card className="h-full flex flex-col hover:shadow-md transition-opacity opacity-50">
+                    <CardHeader>
+                      <CardTitle className="uppercase flex items-center gap-2">
+                        <Lock className="h-4 w-4" /> Investments
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-muted-foreground text-sm">
+                        Click to unlock
+                      </p>
+                    </CardContent>
+                  </Card>
+                </TiltCard>
+              </div>
+            )}
           </div>
         </section>
 
