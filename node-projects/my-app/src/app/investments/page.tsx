@@ -296,36 +296,38 @@ export default function InvestmentsPage() {
     async function fetchAllPrices() {
       setLoading(true);
       
-      try {
+try {
         const res = await fetch('/api/investments');
         const data = await res.json();
         
-        const allResults = data
-          .filter((d: any) => d && d.price > 0)
-          .map((d: any) => ({
-            symbol: d.symbol,
-            name: getCryptoName(d.symbol) || getStockSymbol(d.symbol),
-            price: d.price,
-            change: d.change,
-            bep: getBEP(d.symbol),
-            qty: getQty(d.symbol),
-            currency: getCurrency(d.symbol),
-            price24h: d.price
-          }));
-        
-        const withAllocation = (a: any) => {
-          const qty = getQty(a.symbol);
-          const bep = getBEP(a.symbol);
-          return (qty || 0) * (bep || 0);
-        };
-        
-        const commodityResults = allResults.filter((a: any) => ['XAU','XPT','SP500'].includes(a.symbol));
-        const cryptoResults = allResults.filter((a: any) => ['BTC','ETH','LTC','XRP','SOL','FIL','DOGE','ADA','XTZ'].includes(a.symbol));
-        const stockResults = allResults.filter((a: any) => ['AAPL','META','TTWO','XPEV','EGL','KVUE','EXOD','DIB','XBOTF'].includes(a.symbol));
-        
-        setCryptoData(cryptoResults.sort((a: any, b: any) => withAllocation(b) - withAllocation(a)));
-        setStockData(stockResults.sort((a: any, b: any) => withAllocation(b) - withAllocation(a)));
-        setCommodities(commodityResults.sort((a: any, b: any) => withAllocation(b) - withAllocation(a)));
+        if (Array.isArray(data) {
+          const allResults = data
+            .filter((d: any) => d && d.price > 0)
+            .map((d: any) => ({
+              symbol: d.symbol,
+              name: getCryptoName(d.symbol) || getStockSymbol(d.symbol),
+              price: d.price,
+              change: d.change,
+              bep: getBEP(d.symbol),
+              qty: getQty(d.symbol),
+              currency: getCurrency(d.symbol),
+              price24h: d.price
+            }));
+          
+          const withAllocation = (a: any) => {
+            const qty = getQty(a.symbol);
+            const bep = getBEP(a.symbol);
+            return (qty || 0) * (bep || 0);
+          };
+          
+          const commodityResults = allResults.filter((a: any) => ['XAU','XPT','SP500'].includes(a.symbol));
+          const cryptoResults = allResults.filter((a: any) => ['BTC','ETH','LTC','XRP','SOL','FIL','DOGE','ADA','XTZ'].includes(a.symbol));
+          const stockResults = allResults.filter((a: any) => ['AAPL','META','TTWO','XPEV','EGL','KVUE','EXOD','DIB','XBOTF'].includes(a.symbol));
+          
+          if (cryptoResults.length > 0) setCryptoData(cryptoResults.sort((a: any, b: any) => withAllocation(b) - withAllocation(a)));
+          if (stockResults.length > 0) setStockData(stockResults.sort((a: any, b: any) => withAllocation(b) - withAllocation(a)));
+          if (commodityResults.length > 0) setCommodities(commodityResults.sort((a: any, b: any) => withAllocation(b) - withAllocation(a)));
+        }
       } catch (err) {
         console.error('Failed to fetch prices:', err);
       }
