@@ -300,39 +300,28 @@ try {
         const res = await fetch('/api/investments');
         const data = await res.json();
         
-        if (Array.isArray(data) {
-          const allResults = data
-            .filter((d: any) => d && d.price > 0)
-            .map((d: any) => ({
-              symbol: d.symbol,
-              name: getCryptoName(d.symbol) || getStockSymbol(d.symbol),
-              price: d.price,
-              change: d.change,
-              bep: getBEP(d.symbol),
-              qty: getQty(d.symbol),
-              currency: getCurrency(d.symbol),
-              price24h: d.price
-            }));
+        if (Array.isArray(data)) {
+          const allResults = data.filter((d: any) => d && d.price > 0).map((d: any) => ({
+            symbol: d.symbol,
+            name: getCryptoName(d.symbol) || getStockSymbol(d.symbol),
+            price: d.price,
+            change: d.change,
+            bep: getBEP(d.symbol),
+            qty: getQty(d.symbol),
+            currency: getCurrency(d.symbol),
+            price24h: d.price
+          }));
           
-          const withAllocation = (a: any) => {
-            const qty = getQty(a.symbol);
-            const bep = getBEP(a.symbol);
-            return (qty || 0) * (bep || 0);
-          };
+          const withAllocation = (a: any) => (getQty(a.symbol) || 0) * (getBEP(a.symbol) || 0);
           
-          const commodityResults = allResults.filter((a: any) => ['XAU','XPT','SP500'].includes(a.symbol));
           const cryptoResults = allResults.filter((a: any) => ['BTC','ETH','LTC','XRP','SOL','FIL','DOGE','ADA','XTZ'].includes(a.symbol));
           const stockResults = allResults.filter((a: any) => ['AAPL','META','TTWO','XPEV','EGL','KVUE','EXOD','DIB','XBOTF'].includes(a.symbol));
+          const commodityResults = allResults.filter((a: any) => ['XAU','XPT','SP500'].includes(a.symbol));
           
-          // Keep existing data if new data is empty
-          // Only update if we have data, preserve existing state otherwise
-        const cryptoWithData = cryptoResults.length > 0 ? cryptoResults : allResults.filter((a: any) => ['BTC','ETH','LTC','XRP','SOL','FIL','DOGE','ADA','XTZ'].includes(a.symbol) && a.price > 0);
-        const stockWithData = stockResults.length > 0 ? stockResults : allResults.filter((a: any) => ['AAPL','META','TTWO','XPEV','EGL','KVUE','EXOD','DIB','XBOTF'].includes(a.symbol) && a.price > 0);
-        const commodityWithData = commodityResults.length > 0 ? commodityResults : allResults.filter((a: any) => ['XAU','XPT','SP500'].includes(a.symbol) && a.price > 0);
-        
-        if (cryptoWithData.length > 0) setCryptoData(cryptoWithData.sort((a: any, b: any) => withAllocation(b) - withAllocation(a)));
-        if (stockWithData.length > 0) setStockData(stockWithData.sort((a: any, b: any) => withAllocation(b) - withAllocation(a))));
-        if (commodityWithData.length > 0) setCommodities(commodityWithData.sort((a: any, b: any) => withAllocation(b) - withAllocation(a))));
+          // Only update if we have data
+          if (cryptoResults.length > 0) setCryptoData(cryptoResults.sort((a: any, b: any) => withAllocation(b) - withAllocation(a)));
+          if (stockResults.length > 0) setStockData(stockResults.sort((a: any, b: any) => withAllocation(b) - withAllocation(a)));
+          if (commodityResults.length > 0) setCommodities(commodityResults.sort((a: any, b: any) => withAllocation(b) - withAllocation(a)));
         }
       } catch (err) {
         console.error('Failed to fetch prices:', err);
