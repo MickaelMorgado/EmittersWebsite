@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
 const CRYPTO_API = 'https://api.binance.com/api/v3';
-const CRYPTO_FALLBACK = 'https://api.coingecko.com/v3';
+const COINGECKO_API = 'https://api.coingecko.com/api/v3';
 const STOCK_API = 'https://query1.finance.yahoo.com/v8/finance/chart';
 const METAL_API = 'https://query1.finance.yahoo.com/v8/finance/chart';
 
@@ -29,26 +29,26 @@ async function fetchCryptoPrice(symbol: string) {
     SOL: 'solana', FIL: 'filecoin', DOGE: 'dogecoin', ADA: 'cardano', XTZ: 'tezos'
   };
   
-  // Try Binance
-  try {
-    const priceRes = await fetch(`${CRYPTO_API}/ticker/price?symbol=${symbol}USDT`, { signal: AbortSignal.timeout(3000) });
-    const priceData = await priceRes.json();
-    if (priceData.price) {
-      return { price: parseFloat(priceData.price), change: 0 };
-    }
-  } catch {}
-  
-  // Fallback: CoinGecko
+  // Try CoinGecko first (more reliable from serverless)
   const geckoId = cryptoMap[symbol];
   if (geckoId) {
     try {
-      const geckoRes = await fetch(`${CRYPTO_FALLBACK}/simple/price?ids=${geckoId}&vs_currencies=usd`, { signal: AbortSignal.timeout(3000) });
+      const geckoRes = await fetch(`${COINGECKO_API}/simple/price?ids=${geckoId}&vs_currencies=usd`);
       const geckoData = await geckoRes.json();
       if (geckoData[geckoId]?.usd) {
         return { price: geckoData[geckoId].usd, change: 0 };
       }
     } catch {}
   }
+  
+  // Fallback: Binance
+  try {
+    const priceRes = await fetch(`${CRYPTO_API}/ticker/price?symbol=${symbol}USDT`);
+    const priceData = await priceRes.json();
+    if (priceData.price) {
+      return { price: parseFloat(priceData.price), change: 0 };
+    }
+  } catch {}
   
   return { price: 0, change: 0 };
 }
