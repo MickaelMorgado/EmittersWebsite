@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
-const AUTH_PASSWORD = 'mick123';
+const AUTH_PASSWORD = 'Mickael01';
 
 function AuthScreen({ onUnlock }: { onUnlock: () => void }) {
   const [password, setPassword] = useState('');
