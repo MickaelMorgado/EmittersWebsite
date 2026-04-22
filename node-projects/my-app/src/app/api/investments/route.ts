@@ -29,33 +29,28 @@ async function fetchCryptoPrice(symbol: string) {
     SOL: 'solana', FIL: 'filecoin', DOGE: 'dogecoin', ADA: 'cardano', XTZ: 'tezos'
   };
   
+  // Try Binance
   try {
-    // Try Binance first
+    const priceRes = await fetch(`${CRYPTO_API}/ticker/price?symbol=${symbol}USDT`, { signal: AbortSignal.timeout(3000) });
+    const priceData = await priceRes.json();
+    if (priceData.price) {
+      return { price: parseFloat(priceData.price), change: 0 };
+    }
+  } catch {}
+  
+  // Fallback: CoinGecko
+  const geckoId = cryptoMap[symbol];
+  if (geckoId) {
     try {
-      const priceRes = await fetch(`${CRYPTO_API}/ticker/price?symbol=${symbol}USDT`, { signal: AbortSignal.timeout(3000) });
-      const priceData = await priceRes.json();
-      if (priceData.price) {
-        return { price: parseFloat(priceData.price), change: 0 };
+      const geckoRes = await fetch(`${CRYPTO_FALLBACK}/simple/price?ids=${geckoId}&vs_currencies=usd`, { signal: AbortSignal.timeout(3000) });
+      const geckoData = await geckoRes.json();
+      if (geckoData[geckoId]?.usd) {
+        return { price: geckoData[geckoId].usd, change: 0 };
       }
-    } catch {
-      // Binance failed, try CoinGecko fallback
-    }
-    
-    const geckoId = cryptoMap[symbol];
-    if (geckoId) {
-      try {
-        const geckoRes = await fetch(`${CRYPTO_FALLBACK}/simple/price?ids=${geckoId}&vs_currencies=usd`, { signal: AbortSignal.timeout(3000) });
-        const geckoData = await geckoRes.json();
-        if (geckoData[geckoId]?.usd) {
-          return { price: geckoData[geckoId].usd, change: 0 };
-        }
-      } catch {
-        // CoinGecko also failed
-      }
-    }
-    
-    return null;
-  } catch { return null; }
+    } catch {}
+  }
+  
+  return { price: 0, change: 0 };
 }
 
 async function fetchStockPrice(symbol: string) {
