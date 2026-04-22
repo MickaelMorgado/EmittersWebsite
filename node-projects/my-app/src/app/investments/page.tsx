@@ -142,7 +142,7 @@ const PORTFOLIO: Record<string, { bep: number; qty: number; currency: string }> 
   XPEV: { bep: 18.78, qty: 2, currency: 'USD' },
   DIB: { bep: 11.39666, qty: 12, currency: 'EUR' },
   EXOD: { bep: 19.42975, qty: 20, currency: 'USD' },
-  KVUE: { bep: 17.22, qty: 2, currency: 'USD' },
+  KVUE: { bep: 18.09, qty: 2, currency: 'USD' },
   EGL: { bep: 4.26, qty: 2, currency: 'EUR' },
   XBOTF: { bep: 0.254, qty: 70, currency: 'USD' },
   BTC: { bep: 105900, qty: 0, currency: 'USD' },
