@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 
 const CRYPTO_API = 'https://api.binance.com/api/v3';
+const CRYPTO_FALLBACK = 'https://api.coingecko.com/v3';
 const STOCK_API = 'https://query1.finance.yahoo.com/v8/finance/chart';
 const METAL_API = 'https://query1.finance.yahoo.com/v8/finance/chart';
 
@@ -23,14 +24,46 @@ async function fetchMetalPrice(symbol: string) {
 }
 
 async function fetchCryptoPrice(symbol: string) {
+  const cryptoMap: Record<string, string> = {
+    BTC: 'bitcoin', ETH: 'ethereum', LTC: 'litecoin', XRP: 'ripple',
+    SOL: 'solana', FIL: 'filecoin', DOGE: 'dogecoin', ADA: 'cardano', XTZ: 'tezos'
+  };
+  
   try {
-    const [priceRes, tickerRes] = await Promise.all([
-      fetch(`${CRYPTO_API}/ticker/price?symbol=${symbol}USDT`),
-      fetch(`${CRYPTO_API}/ticker/24hr?symbol=${symbol}USDT`)
-    ]);
-    const priceData = await priceRes.json();
-    const tickerData = await tickerRes.json();
-    return { price: parseFloat(priceData.price), change: parseFloat(tickerData.priceChangePercent) };
+    // Binance with timeout
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 3000);
+    
+    try {
+      const priceRes = await fetch(`${CRYPTO_API}/ticker/price?symbol=${symbol}USDT`, { signal: controller.signal });
+      clearTimeout(timeout);
+      const priceData = await priceRes.json();
+      
+      if (priceData.price) {
+        return { price: parseFloat(priceData.price), change: 0 };
+      }
+    } catch {
+      clearTimeout(timeout);
+    }
+    
+    // Fallback: CoinGecko
+    const geckoId = cryptoMap[symbol];
+    if (geckoId) {
+      const geckoRes = await fetch(`${CRYPTO_FALLBACK}/simple/price?ids=${geckoId}&vs_currencies=usd`, { signal: AbortSignal.timeout(3000) });
+      const geckoData = await geckoRes.json();
+      if (geckoData[geckoId]?.usd) {
+        return { price: geckoData[geckoId].usd, change: 0 };
+      }
+    }
+    
+    return null;
+  } catch { return null; }
+}
+    
+    // Fallback: try simpler endpoint
+    const simpleRes = await fetch(`${CRYPTO_API}/ticker/price?symbol=${symbol}USDT`);
+    const simpleData = await simpleRes.json();
+    return simpleData.price ? { price: parseFloat(simpleData.price), change: 0 } : null;
   } catch { return null; }
 }
 
