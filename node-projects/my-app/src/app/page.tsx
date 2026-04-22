@@ -338,20 +338,6 @@ export default function Home() {
                 </Card>
               </TiltCard>
             </Link>
-            <Link href="/investments" target="_blank" className="h-full">
-              <TiltCard isGlobalHovered={isGlobalHovered} setIsGlobalHovered={setIsGlobalHovered} accentColor="16, 185, 129">
-                <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
-                  <CardHeader>
-                    <CardTitle className="uppercase">Investments Dashboard</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground text-sm">
-                      Track stocks, crypto, and market indices
-                    </p>
-                  </CardContent>
-                </Card>
-              </TiltCard>
-            </Link>
           </div>
         </section>
 
