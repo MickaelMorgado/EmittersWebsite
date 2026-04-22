@@ -3,12 +3,14 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Lock, X } from 'lucide-react';
+import { Lock, Search, X } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 
 const AUTH_PASSWORD = 'Mickael01';
 const PRIVATE_APPS = ['/investments'];
+
+type VisibilityFilter = 'all' | 'public' | 'private';
 
 function AuthModal({ isOpen, onClose, onUnlock }: { isOpen: boolean; onClose: () => void; onUnlock: () => void }) {
   const [password, setPassword] = useState('');
@@ -53,6 +55,8 @@ function AuthModal({ isOpen, onClose, onUnlock }: { isOpen: boolean; onClose: ()
     </div>
   );
 }
+
+
 
 function TypographyH1({ children }: { children: React.ReactNode }) {
   return <h1 className="text-4xl font-bold tracking-tight mb-4 heading-shine uppercase">{children}</h1>;
@@ -142,6 +146,10 @@ export default function Home() {
   const [isGlobalHovered, setIsGlobalHovered] = useState(false);
   const [unlocked, setUnlocked] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [visibilityFilter, setVisibilityFilter] = useState<VisibilityFilter>('all');
+
+  
 
   useEffect(() => {
     const isUnlocked = localStorage.getItem('private-apps-unlocked') === 'true';
@@ -162,7 +170,26 @@ export default function Home() {
         <div className="flex items-center justify-between">
           <div>
             <TypographyH1>Welcome to my Projects Page</TypographyH1>
-            <p className="text-muted-foreground mb-8">Explore my collection of interactive projects and experiments.</p>
+            <div className="flex gap-4 items-center mb-8">
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+                <Input
+                  placeholder="Search projects..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 bg-zinc-900 border-zinc-700"
+                />
+              </div>
+              <select
+                value={visibilityFilter}
+                onChange={(e) => setVisibilityFilter(e.target.value as VisibilityFilter)}
+                className="bg-zinc-900 border border-zinc-700 text-white px-3 py-2 rounded-md"
+              >
+                <option value="all">All</option>
+                <option value="public">Public</option>
+                <option value="private">Private</option>
+              </select>
+            </div>
           </div>
           <div className="flex gap-2">
             {PRIVATE_APPS.length > 0 && (
