@@ -30,40 +30,31 @@ async function fetchCryptoPrice(symbol: string) {
   };
   
   try {
-    // Binance with timeout
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 3000);
-    
+    // Try Binance first
     try {
-      const priceRes = await fetch(`${CRYPTO_API}/ticker/price?symbol=${symbol}USDT`, { signal: controller.signal });
-      clearTimeout(timeout);
+      const priceRes = await fetch(`${CRYPTO_API}/ticker/price?symbol=${symbol}USDT`, { signal: AbortSignal.timeout(3000) });
       const priceData = await priceRes.json();
-      
       if (priceData.price) {
         return { price: parseFloat(priceData.price), change: 0 };
       }
     } catch {
-      clearTimeout(timeout);
+      // Binance failed, try CoinGecko fallback
     }
     
-    // Fallback: CoinGecko
     const geckoId = cryptoMap[symbol];
     if (geckoId) {
-      const geckoRes = await fetch(`${CRYPTO_FALLBACK}/simple/price?ids=${geckoId}&vs_currencies=usd`, { signal: AbortSignal.timeout(3000) });
-      const geckoData = await geckoRes.json();
-      if (geckoData[geckoId]?.usd) {
-        return { price: geckoData[geckoId].usd, change: 0 };
+      try {
+        const geckoRes = await fetch(`${CRYPTO_FALLBACK}/simple/price?ids=${geckoId}&vs_currencies=usd`, { signal: AbortSignal.timeout(3000) });
+        const geckoData = await geckoRes.json();
+        if (geckoData[geckoId]?.usd) {
+          return { price: geckoData[geckoId].usd, change: 0 };
+        }
+      } catch {
+        // CoinGecko also failed
       }
     }
     
     return null;
-  } catch { return null; }
-}
-    
-    // Fallback: try simpler endpoint
-    const simpleRes = await fetch(`${CRYPTO_API}/ticker/price?symbol=${symbol}USDT`);
-    const simpleData = await simpleRes.json();
-    return simpleData.price ? { price: parseFloat(simpleData.price), change: 0 } : null;
   } catch { return null; }
 }
 
