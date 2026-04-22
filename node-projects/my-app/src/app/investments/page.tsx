@@ -321,7 +321,7 @@ export default function InvestmentsPage() {
         
         const commodityResults = allResults.filter((a: any) => ['XAU','XPT','SP500'].includes(a.symbol));
         const cryptoResults = allResults.filter((a: any) => ['BTC','ETH','LTC','XRP','SOL','FIL','DOGE','ADA','XTZ'].includes(a.symbol));
-        const stockResults = allResults.filter((a: any) => ['AAPL','META','TTWO','XPEV','EGL','KVUE','EXOD','DIB','XBOTF'].includes(a.symbol)));
+        const stockResults = allResults.filter((a: any) => ['AAPL','META','TTWO','XPEV','EGL','KVUE','EXOD','DIB','XBOTF'].includes(a.symbol));
         
         setCryptoData(cryptoResults.sort((a: any, b: any) => withAllocation(b) - withAllocation(a)));
         setStockData(stockResults.sort((a: any, b: any) => withAllocation(b) - withAllocation(a)));
