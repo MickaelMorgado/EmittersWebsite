@@ -3,6 +3,50 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrendingDown, TrendingUp } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+
+const AUTH_PASSWORD = 'mick123';
+
+function AuthScreen({ onUnlock }: { onUnlock: () => void }) {
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (password === AUTH_PASSWORD) {
+      localStorage.setItem('investments-token', password);
+      onUnlock();
+    } else {
+      setError('Invalid password');
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-black text-white flex items-center justify-center p-4">
+      <Card className="w-full max-w-md bg-zinc-900 border-zinc-800">
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold text-center uppercase">Investments</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <Input
+              type="password"
+              placeholder="Enter password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="bg-zinc-800 border-zinc-700 text-white"
+            />
+            {error && <p className="text-red-500 text-sm">{error}</p>}
+            <Button type="submit" className="w-full">
+              Unlock
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
 
 interface Asset {
   symbol: string;
@@ -287,6 +331,7 @@ function getTradingViewLink(symbol: string, currency: string): string {
 }
 
 export default function InvestmentsPage() {
+  const [unlocked, setUnlocked] = useState(false);
   const [cryptoData, setCryptoData] = useState<Asset[]>(getInitialCrypto());
   const [stockData, setStockData] = useState<Asset[]>(getInitialStocks());
   const [commodities, setCommodities] = useState<Asset[]>(getInitialCommodities());
@@ -333,6 +378,15 @@ try {
     const interval = setInterval(fetchAllPrices, 30000);
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    const token = localStorage.getItem('investments-token');
+    if (token === AUTH_PASSWORD) setUnlocked(true);
+  }, []);
+
+  if (!unlocked) {
+    return <AuthScreen onUnlock={() => setUnlocked(true)} />;
+  }
 
   return (
     <div className="min-h-screen bg-black text-white p-4 lg:p-8">
