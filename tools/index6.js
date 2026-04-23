@@ -1,4 +1,323 @@
-// NOTES:
+// Store parsed CSV data in memory for multiple backtest runs
+let cachedCSVData = [];
+let cachedFileInfo = null;
+let cachedFile = null;
+
+// Store backtest results for comparison
+let backtestResults = [];
+window.backtestResults = backtestResults;
+
+// Saved parameter sets
+let savedParamSets = [];
+window.savedParamSets = savedParamSets;
+
+const EnumclosedOrderType = {
+  PENDING: 'PENDING',
+  CLOSED_BY_TP: 'CLOSED_BY_TP',
+  CLOSED_BY_SL: 'CLOSED_BY_SL',
+};
+const EnumTradeResult = {
+  WIN: 'WIN',
+  LOSS: 'LOSS',
+  BE: 'BE',
+};
+const EnumDirection = {
+  BULL: 'BULL',
+  BEAR: 'BEAR',
+};
+
+// Run optimized backtest (no chart rendering)
+const runOptimizedBacktest = (params, csvRows) => {
+  // Reset state for new backtest run
+  const localOrdersHistory = [];
+  let localCSIDLookbackCandleSerie = [];
+  let localCSIDSignalTriggered = false;
+  let localCSIDCoolddownSignal = 5;
+  let localCandlesFromBuffer = [];
+  let localChartCandleIndex = 0;
+  let localCandleTimes = [];
+  let localTimeToIndex = new Map();
+  let localNumbDays = 0;
+  let localProcessedDays = 0;
+  let localTradeCount = 0;
+  
+  // Local state for indicators
+  let localHighestHighLong = [];
+  let localLowestLowShort = [];
+  let localListeningATR = true;
+  let localCanTakeATrade = true;
+  
+  const localSlSize = () => params.slSize;
+  const localTpSize = () => params.tpSize;
+  const localLotSize = () => params.lotSize;
+  const localCommissionSize = () => params.commissionSize;
+  const localTsSize = () => params.tsSize;
+  const localMaPeriod = () => params.maPeriod;
+  const localMaThreshold = () => params.maThreshold;
+  const localStrategy = params.strategy;
+  const localSessionStart = params.sessionStart;
+  const localSessionEnd = params.sessionEnd;
+  
+  const localArrayOfSignals = [false, true, false, false]; // [CSID, TTR, ATR, MADirection]
+  const lookbackPeriod = 20;
+  
+  const getCandleDirection = (openPrice = 0, closePrice = 0) => {
+    if (openPrice == 0 || closePrice == 0) return 'BULL';
+    return closePrice > openPrice ? 'BULL' : 'BEAR';
+  };
+  
+  const convertMT5DateToUnix = (candleTime) => {
+    const ct = candleTime.replaceAll('.', '-');
+    return new Date(ct).getTime() / 1000;
+  };
+  
+  const inTradingTimeRange = (d) => {
+    const startRangeTime = new Date(`${d[EnumMT5OHLC.DATE]} ${localSessionStart}`);
+    const endRangeTime = new Date(`${d[EnumMT5OHLC.DATE]} ${localSessionEnd}`);
+    const currentTime = new Date(`${d[EnumMT5OHLC.DATE]} ${d[EnumMT5OHLC.TIME]}`);
+    localArrayOfSignals[1] = currentTime >= startRangeTime && currentTime <= endRangeTime;
+  };
+  
+  const calcATR = (d, dataIndex) => {
+    const ATRLength = 20;
+    const atrMultiplierThreshold = 1.2;
+    
+    if (dataIndex < ATRLength || !localListeningATR || !localArrayOfSignals[1]) return;
+    
+    const lastIndex = localCandlesFromBuffer.length - 1;
+    if (lastIndex < 1) return;
+    
+    const currCandle = localCandlesFromBuffer[lastIndex];
+    const prevCandle = localCandlesFromBuffer[lastIndex - 1];
+    
+    const currTR = Math.max(
+      currCandle[EnumMT5OHLC.HIGH] - currCandle[EnumMT5OHLC.LOW],
+      Math.abs(currCandle[EnumMT5OHLC.HIGH] - prevCandle[EnumMT5OHLC.CLOSE]),
+      Math.abs(currCandle[EnumMT5OHLC.LOW] - prevCandle[EnumMT5OHLC.CLOSE])
+    );
+    
+    let trSum = 0;
+    for (let i = Math.max(1, localCandlesFromBuffer.length - ATRLength); i < localCandlesFromBuffer.length; i++) {
+      const c = localCandlesFromBuffer[i];
+      const pc = localCandlesFromBuffer[i - 1];
+      trSum += Math.max(
+        c[EnumMT5OHLC.HIGH] - c[EnumMT5OHLC.LOW],
+        Math.abs(c[EnumMT5OHLC.HIGH] - pc[EnumMT5OHLC.CLOSE]),
+        Math.abs(c[EnumMT5OHLC.LOW] - pc[EnumMT5OHLC.CLOSE])
+      );
+    }
+    const atr = trSum / Math.min(ATRLength, localCandlesFromBuffer.length);
+    
+    if (currTR > atr * atrMultiplierThreshold) {
+      localListeningATR = false;
+      localArrayOfSignals[2] = true;
+    }
+  };
+  
+  const simpleMA = (candles, period) => {
+    if (candles.length < period) return 0;
+    let sum = 0;
+    for (let i = candles.length - period; i < candles.length; i++) {
+      sum += candles[i][EnumMT5OHLC.CLOSE];
+    }
+    return sum / period;
+  };
+  
+  const computeMAAccel = (maArray) => {
+    const len = maArray.length;
+    if (len < 3) return 0;
+    return maArray[len - 1] - 2 * maArray[len - 2] + maArray[len - 3];
+  };
+  
+  // Process each candle
+  csvRows.forEach((row, idx) => {
+    if (!row[EnumMT5OHLC.OPEN]) return;
+    
+    if (row[EnumMT5OHLC.OPEN] === row[EnumMT5OHLC.HIGH] &&
+        row[EnumMT5OHLC.HIGH] === row[EnumMT5OHLC.LOW] &&
+        row[EnumMT5OHLC.LOW] === row[EnumMT5OHLC.CLOSE]) return;
+    
+    const dataIndex = idx;
+    
+    if (localCandlesFromBuffer.length >= 10) {
+      localCandlesFromBuffer.shift();
+    }
+    localCandlesFromBuffer.push(row);
+    
+    const candleDateTime = `${row[EnumMT5OHLC.DATE]} ${row[EnumMT5OHLC.TIME]}`;
+    const unixTime = convertMT5DateToUnix(candleDateTime);
+    localCandleTimes.push(unixTime);
+    localTimeToIndex.set(unixTime, localChartCandleIndex);
+    localChartCandleIndex++;
+    
+    if (row[EnumMT5OHLC.DATE] !== (localCandlesFromBuffer[localCandlesFromBuffer.length - 2]?.[EnumMT5OHLC.DATE])) {
+      localProcessedDays++;
+    }
+    
+    inTradingTimeRange(row);
+    calcATR(row, dataIndex);
+    
+    if (dataIndex >= lookbackPeriod) {
+      localCSIDLookbackCandleSerie.push(row);
+      
+      const recentCandles = localCSIDLookbackCandleSerie.slice(-lookbackPeriod - 1);
+      if (recentCandles.length >= lookbackPeriod) {
+        const highPrices = recentCandles.slice(0, lookbackPeriod).map(c => 
+          getCandleDirection(c[EnumMT5OHLC.OPEN], c[EnumMT5OHLC.CLOSE]) === 'BULL' 
+            ? c[EnumMT5OHLC.CLOSE] : c[EnumMT5OHLC.OPEN]
+        );
+        const lowPrices = recentCandles.slice(0, lookbackPeriod).map(c => 
+          getCandleDirection(c[EnumMT5OHLC.OPEN], c[EnumMT5OHLC.CLOSE]) === 'BULL' 
+            ? c[EnumMT5OHLC.OPEN] : c[EnumMT5OHLC.CLOSE]
+        );
+        
+        localHighestHighLong.push(Math.max(...highPrices));
+        localLowestLowShort.push(Math.min(...lowPrices));
+        
+        const bullishCSID = row[EnumMT5OHLC.CLOSE] > localHighestHighLong[localHighestHighLong.length - 2];
+        const bearishCSID = row[EnumMT5OHLC.CLOSE] < localLowestLowShort[localLowestLowShort.length - 2];
+        
+        const maArray = [];
+        for (let i = Math.max(0, localCSIDLookbackCandleSerie.length - 10); i < localCSIDLookbackCandleSerie.length; i++) {
+          maArray.push(simpleMA(localCSIDLookbackCandleSerie.slice(0, i + 1), 6));
+        }
+        const accel = computeMAAccel(maArray);
+        localArrayOfSignals[3] = Math.abs(accel) > 0.00003;
+        
+        if ((bullishCSID || bearishCSID) && localArrayOfSignals[1] && localArrayOfSignals[2] && localArrayOfSignals[3]) {
+          if (localCSIDSignalTriggered) {
+            localCSIDCoolddownSignal--;
+            if (localCSIDCoolddownSignal > 0) return;
+            localCSIDSignalTriggered = false;
+            localCSIDCoolddownSignal = 5;
+          }
+          
+          const direction = bullishCSID ? 'BULL' : 'BEAR';
+          const entryPrice = row[EnumMT5OHLC.OPEN];
+          
+          localOrdersHistory.push({
+            id: localOrdersHistory.length + 1,
+            breakEvenMoved: false,
+            time: candleDateTime,
+            price: entryPrice,
+            sl: direction === 'BULL' ? entryPrice - localSlSize() : entryPrice + localSlSize(),
+            tp: direction === 'BULL' ? entryPrice + localTpSize() : entryPrice - localTpSize(),
+            direction: direction,
+            closed: false,
+            closedOrderType: 'PENDING',
+          });
+          
+          localTradeCount++;
+          localListeningATR = true;
+          localArrayOfSignals[2] = false;
+          localCSIDSignalTriggered = true;
+        }
+      }
+    }
+    
+    const activeOrders = localOrdersHistory.filter(o => !o.closed);
+    activeOrders.forEach(order => {
+      const high = row[EnumMT5OHLC.HIGH];
+      const low = row[EnumMT5OHLC.LOW];
+      const close = row[EnumMT5OHLC.CLOSE];
+      
+      if (!order.breakEvenMoved) {
+        if ((order.direction === 'BULL' && close >= order.price + localSlSize()) ||
+            (order.direction === 'BEAR' && close <= order.price - localSlSize())) {
+          order.sl = order.price;
+          order.breakEvenMoved = true;
+        }
+      }
+      
+      if (localCandlesFromBuffer.length >= 2) {
+        const prevCandle = localCandlesFromBuffer[localCandlesFromBuffer.length - 2];
+        let candleSize = Math.abs(prevCandle[EnumMT5OHLC.CLOSE] - prevCandle[EnumMT5OHLC.OPEN]);
+        
+        let trailingMultiplier = localStrategy === 'CSID_W_MA_DynamicTS' 
+          ? (candleSize >= 0.0005 ? 3 : candleSize >= 0.0003 ? 2 : 1)
+          : 1;
+        
+        const trailingSize = localTsSize() * trailingMultiplier;
+        if (order.direction === 'BULL') {
+          order.sl += trailingSize;
+        } else {
+          order.sl -= trailingSize;
+        }
+      }
+      
+      if ((order.direction === 'BULL' && (high >= order.tp || low <= order.sl)) ||
+          (order.direction === 'BEAR' && (low <= order.tp || high >= order.sl))) {
+        order.closed = true;
+        order.closedPrice = order.direction === 'BULL' 
+          ? (high >= order.tp ? order.tp : order.sl)
+          : (low <= order.tp ? order.tp : order.sl);
+        order.closedTime = candleDateTime;
+        order.closedOrderType = high >= order.tp ? 'CLOSED_BY_TP' : 'CLOSED_BY_SL';
+        order.pnlPoints = order.direction === 'BULL'
+          ? order.closedPrice - order.price
+          : order.price - order.closedPrice;
+        order.tradeResult = order.pnlPoints > 0 ? 'WIN' : (order.pnlPoints < -0.0001 ? 'LOSS' : 'BE');
+      }
+    });
+  });
+  
+  const calculateResults = () => {
+    const commissionPoints = localCommissionSize();
+    let profitsInPoints = 0;
+    let grossProfit = 0;
+    let grossLoss = 0;
+    let wins = 0;
+    let losses = 0;
+    let equityDataMoney = [];
+    
+    localOrdersHistory.filter(o => o.closed).forEach(order => {
+      if (order.closedOrderType === 'CLOSED_BY_TP') profitsInPoints += localTpSize();
+      if (order.closedOrderType === 'CLOSED_BY_SL') profitsInPoints -= localSlSize();
+      
+      const tradeMoney = (order.pnlPoints - commissionPoints) * 100000 * localLotSize();
+      equityDataMoney.push((equityDataMoney.at(-1) || 0) + tradeMoney);
+      
+      if (tradeMoney > 0) {
+        grossProfit += tradeMoney;
+        wins++;
+      } else if (tradeMoney < 0) {
+        grossLoss += Math.abs(tradeMoney);
+        losses++;
+      }
+    });
+    
+    const winRate = localOrdersHistory.length > 0 
+      ? ((wins / localOrdersHistory.length) * 100).toFixed(2) 
+      : 0;
+    
+    const profitFactor = grossLoss > 0 ? (grossProfit / grossLoss).toFixed(2) : (grossProfit > 0 ? '∞' : '0');
+    const moneyEquivalent = equityDataMoney.at(-1) || 0;
+    
+    let maxDrawdown = 0;
+    let peak = equityDataMoney[0] || 0;
+    for (const value of equityDataMoney) {
+      if (value > peak) peak = value;
+      const drawdown = peak - value;
+      if (drawdown > maxDrawdown) maxDrawdown = drawdown;
+    }
+    
+    return {
+      params: { ...params },
+      id: Date.now(),
+      timestamp: new Date().toISOString(),
+      tradeCount: localTradeCount,
+      totalTrades: localOrdersHistory.filter(o => o.closed).length,
+      winRate,
+      profitFactor,
+      profitsInPoints,
+      moneyEquivalent: moneyEquivalent.toFixed(2),
+      maxDrawdown: maxDrawdown.toFixed(2),
+      orders: localOrdersHistory,
+    };
+  };
+  
+  return calculateResults();
+};
 /*
   Most of the functions if they are using charting annotation, they need to be inside initchart function.
   - The Graph is now populating or get drawned with the CSV file data at a pace speed (one by one).
@@ -49,9 +368,34 @@ const $ThemeInput = document.getElementById('themeSelector');
 const $BTTInput = document.getElementById('backtesting-hour');
 const $ETTInput = document.getElementById('backtesting-end');
 const $strategyInput = document.getElementById('backtesting-strategy');
+const $fastBacktestMode = document.getElementById('fastBacktestMode');
 const $googleSendToSheetsBtn = document.getElementById('googleSendToSheetsBtn');
 const audioSuccess = new Audio('squirrel_404_click_tick.wav');
 const audioNotify = new Audio('joseegn_ui_sound_select.wav');
+
+// Regenerate MQL when form inputs change
+const regenerateMQLFromForm = () => {
+  const params = getCurrentParams();
+  const mqlText = generateMQLFromParams(params);
+  const textarea = document.getElementById('algoEditorTextareaMain1');
+  if (textarea) textarea.value = mqlText;
+};
+
+// Initialize form input listeners after DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+  const sessionStartInput = document.getElementById('backtesting-hour');
+  const sessionEndInput = document.getElementById('backtesting-end');
+  const slPointsInput = document.getElementById('SLPoints');
+  const tpPointsInput = document.getElementById('TPPoints');
+  const lotSizeInput = document.getElementById('LotSize');
+  const maPeriodInput = document.getElementById('MAPeriod');
+  const maThresholdInput = document.getElementById('MAThreshold');
+  
+  const mqlFormInputs = [sessionStartInput, sessionEndInput, slPointsInput, tpPointsInput, lotSizeInput, maPeriodInput, maThresholdInput];
+  mqlFormInputs.forEach(input => {
+    if (input) input.addEventListener('change', regenerateMQLFromForm);
+  });
+});
 
 // Function to update Google Sheets button state based on CSV field content
 const updateGoogleSheetsButtonState = () => {
@@ -109,36 +453,70 @@ const loadConfigs = () => {
   window.location.search = configuration;
 }
 
+// Panel order in HTML: [0]=MQL5, [1]=Backtesting Algo, [2]=Review, [3]=Comparison
+
 const revealAlgoEditor = () => {
+  // MQL5 Generator is panel 0
   $resultPanel.classList.add('active');
-  document
-    .querySelectorAll('.result-panel-content')[0]
-    .classList.remove('h-hide');
+  document.querySelectorAll('.result-panel-content')[0].classList.remove('h-hide');
   document.querySelectorAll('.result-panel-content')[1].classList.add('h-hide');
   document.querySelectorAll('.result-panel-content')[2].classList.add('h-hide');
+  document.querySelectorAll('.result-panel-content')[3].classList.add('h-hide');
 };
 
 const revealAlgo = () => {
+  // Backtesting results (Algo) is panel 1
   $resultPanel.classList.add('active');
   document.querySelectorAll('.result-panel-content')[0].classList.add('h-hide');
-  document
-    .querySelectorAll('.result-panel-content')[1]
-    .classList.remove('h-hide');
+  document.querySelectorAll('.result-panel-content')[1].classList.remove('h-hide');
   document.querySelectorAll('.result-panel-content')[2].classList.add('h-hide');
+  document.querySelectorAll('.result-panel-content')[3].classList.add('h-hide');
 };
 revealAlgo();
 
 const revealReview = () => {
+  // Review Historical is panel 2
   $resultPanel.classList.add('active');
   document.querySelectorAll('.result-panel-content')[0].classList.add('h-hide');
   document.querySelectorAll('.result-panel-content')[1].classList.add('h-hide');
-  document
-    .querySelectorAll('.result-panel-content')[2]
-    .classList.remove('h-hide');
+  document.querySelectorAll('.result-panel-content')[2].classList.remove('h-hide');
+  document.querySelectorAll('.result-panel-content')[3].classList.add('h-hide');
+};
+
+const revealComparison = () => {
+  // Parameter Comparison is panel 3
+  $resultPanel.classList.add('active');
+  document.querySelectorAll('.result-panel-content')[0].classList.add('h-hide');
+  document.querySelectorAll('.result-panel-content')[1].classList.add('h-hide');
+  document.querySelectorAll('.result-panel-content')[2].classList.add('h-hide');
+  document.querySelectorAll('.result-panel-content')[3].classList.remove('h-hide');
 };
 
 const toggleHeight = () => {
+  const chartSection = document.querySelector('.chart-section');
+  
+  // Toggle panel active
   $resultPanel.classList.toggle('active');
+  
+  if ($resultPanel.classList.contains('active')) {
+    if (chartSection.classList.contains('chart-collapsed')) {
+      // Details only: full height panel
+      $resultPanel.classList.add('full-height');
+      chartSection.style.height = '0px';
+    } else {
+      // Split layout: half height each
+      $resultPanel.classList.remove('full-height');
+      const fullHeight = window.innerHeight;
+      const halfHeight = Math.max(500, fullHeight / 2);
+      $resultPanel.style.height = `${halfHeight}px`;
+      chartSection.style.height = `${halfHeight}px`;
+    }
+  } else {
+    // Panel hidden or minimal height
+    $resultPanel.classList.remove('full-height');
+    $resultPanel.style.height = '';
+    chartSection.style.height = '';
+  }
 };
 $toolbarToggler?.addEventListener('click', toggleHeight);
 
@@ -283,20 +661,6 @@ let maThreshold = () => parseFloat($MAThresholdInput.value);
 let bullishColor = '00FF00';
 let bearishColor = 'FF0000';
 let greyColor = '999999';
-const EnumDirection = {
-  BULL: 'BULL',
-  BEAR: 'BEAR',
-};
-const EnumclosedOrderType = {
-  PENDING: 'PENDING',
-  CLOSED_BY_TP: 'CLOSED_BY_TP',
-  CLOSED_BY_SL: 'CLOSED_BY_SL',
-};
-const EnumTradeResult = {
-  WIN: 'WIN',
-  LOSS: 'LOSS',
-  BE: 'BE',
-};
 const EnumActionType = {
   VERTICAL_LINE: 'VERTICAL_LINE',
   DRAW_A_CIRCLE: 'DRAW_A_CIRCLE',
@@ -423,8 +787,18 @@ window.ordersHistory = ordersHistory;
 
 const handleFileAndInitGraph = (file) => {
   if (file) {
-    reinitializeChart();
-
+    // Use reinitializeChart to properly reset
+    if (typeof reinitializeChart === 'function') {
+      reinitializeChart();
+    }
+    
+    // Ensure chart section is visible
+    const chartSection = document.querySelector('.chart-section');
+    if (chartSection) {
+      chartSection.classList.remove('chart-collapsed');
+      chartSection.classList.add('chart-expanded');
+    }
+    
     // Clear orders history
     ordersHistory = [];
     numbDays = 0;
@@ -439,7 +813,9 @@ const handleFileAndInitGraph = (file) => {
     document.getElementById('backtestingResultOrderHistory').innerHTML = '';
 
     // Add visible class to loading element
-    document.getElementById('loading-element').classList.add('visible');
+    const loadingEl = document.getElementById('loading-element');
+    loadingEl.classList.add('visible');
+    loadingEl.querySelector('.loading-text').textContent = 'Running backtest...';
 
     // Read the CSV file just to get the first and last dates and count total candles:
     const reader = new FileReader();
@@ -535,16 +911,23 @@ const handleFileAndInitGraph = (file) => {
         csvDataIndex += 1;
         processedCandles += 1;
 
+        const isFastMode = $fastBacktestMode?.checked;
+
         parser.pause();
         // Dynamic infos:
         updateDynamicInfos(results.data, csvDataIndex);
-        // Append data to the chart:
-        appendDataToChart(results.data);
-        // Backtesting date time logics (annotation on chart and select element population):
-        addBacktestingDateTimeToChart(results.data, csvDataIndex);
-        // Plot real-time indicators:
-        appendIndicatorsToChart(results.data, csvDataIndex);
-        // Run the Check for TP/SL hit function on every drawn candle:
+        
+        // Only update chart if NOT in fast mode
+        if (!isFastMode) {
+          // Append data to the chart:
+          appendDataToChart(results.data);
+          // Backtesting date time logics (annotation on chart and select element population):
+          addBacktestingDateTimeToChart(results.data, csvDataIndex);
+          // Plot real-time indicators:
+          appendIndicatorsToChart(results.data, csvDataIndex);
+        }
+        
+        // Run the Check for TP/SL hit function on every candle (always run this - it's the core logic)
         checkForTPSLHit(results.data, csvDataIndex);
         // Note: profitabilityCalculation() is now called only when trades close (in closeOrder function)
 
@@ -567,6 +950,19 @@ const handleFileAndInitGraph = (file) => {
         currentParser = null;
         // Remove visible class from loading element
         document.getElementById('loading-element').classList.remove('visible');
+        
+        // Cache the CSV data for optimized backtest
+        cachedCSVData = results.data.filter(row => row && row[EnumMT5OHLC.OPEN]);
+        cachedFile = file;
+        cachedFileInfo = {
+          name: file.name,
+          firstDate: cachedCSVData[0]?.[EnumMT5OHLC.DATE],
+          lastDate: cachedCSVData[cachedCSVData.length - 1]?.[EnumMT5OHLC.DATE],
+          totalCandles: cachedCSVData.length,
+        };
+        
+        console.log(`CSV cached: ${cachedCSVData.length} candles loaded`);
+        
         audioSuccess.play();
       },
       error: (error) => {
@@ -604,6 +1000,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Initially disable Google Sheets button since there's no data yet
   updateGoogleSheetsButtonState();
+  
+  // Load and display saved results from localStorage
+  loadResultsFromStorage();
+  if (backtestResults.length > 0) {
+    updateSavedResultsComparison();
+    renderComparisonChart();
+  }
 
   // Extract URL parameters
   const urlParams = new URLSearchParams(window.location.search);
@@ -624,6 +1027,31 @@ document.addEventListener('DOMContentLoaded', () => {
     icon.title = label.getAttribute("title");
     label.appendChild(icon);
   });
+  
+  // Keyboard shortcuts
+  document.addEventListener('keydown', (e) => {
+    // Ctrl+Enter: Run optimized backtest
+    if (e.ctrlKey && e.key === 'Enter') {
+      e.preventDefault();
+      runOptimizedBacktestUI();
+    }
+    // Ctrl+S: Save current params
+    if (e.ctrlKey && e.key === 's') {
+      e.preventDefault();
+      saveCurrentParams();
+    }
+    // Ctrl+Shift+G: Run grid search
+    if (e.ctrlKey && e.shiftKey && e.key === 'G') {
+      e.preventDefault();
+      runGridSearch();
+    }
+  });
+  
+  // Comparison panel button handler
+  const comparisonBtn = document.getElementById('result-panel-toolbar-content-toggler-comparison');
+  if (comparisonBtn) {
+    comparisonBtn.addEventListener('click', revealComparison);
+  }
 });
 
 const initSciChart = (data) => {
@@ -1492,7 +1920,16 @@ ordersHistory.push({
     <table>
       <thead>
         <tr class="historical-order-table-header">
-          <th>ID</th><th>Time</th><th>Price</th><th>SL</th><th>TP</th><th>Direction</th><th>Closed Order Type</th><th>Closed Price</th><th>Closed Time</th><th>P/L (Points)</th>
+          <th>ID</th>
+          <th>Time</th>
+          <th>Direction</th>
+          <th>Price</th>
+          <th>SL</th>
+          <th>TP</th>
+          <th>Closed Price</th>
+          <th title="Closed Order Type">Closed Order Type</th>
+          <th>Closed Time</th>
+          <th>P/L (Points)</th>
         </tr>
       </thead>
       <tbody>
@@ -1502,14 +1939,17 @@ ordersHistory.push({
           <tr class="historical-order-line clickable-row" data-trade-time="${order.time}" title="Click to navigate to this trade on chart">
             <td>${order.id}</td>
             <td>${order.time}</td>
+            <td>${order.direction}</td>
             <td>${order.price.toFixed(5)}</td>
             <td>${order.sl.toFixed(5)}</td>
             <td>${order.tp.toFixed(5)}</td>
-            <td>${order.direction}</td>
-            <td class="order-status-${order.closedOrderType}">${
+            <td>${parseFloat(order.closedPrice).toFixed(5) || ''}</td>
+            <td
+              title="${order.closedOrderType}"
+              class="order-status-${order.closedOrderType}"
+            >${
               order.closedOrderType
             }</td>
-            <td>${parseFloat(order.closedPrice).toFixed(5) || ''}</td>
             <td>${order.closedTime || ''}</td>
             <td class="trade-result-${order.tradeResult}" title="${
               order.tradeResult
@@ -2177,3 +2617,981 @@ $googleSendToSheetsBtn.addEventListener('click', sendToGoogleSheets);
 
 // Continuously update button state when CSV field content changes
 $exportableCSVField.addEventListener('input', updateGoogleSheetsButtonState);
+
+// ==================== OPTIMIZED BACKTEST & PARAMETER COMPARISON ====================
+
+// Get current parameters from inputs
+const getCurrentParams = () => ({
+  strategy: $strategyInput?.value || 'CSID_W_MA_DynamicTS',
+  sessionStart: $sessionStartInput?.value || '09:50:00',
+  sessionEnd: $sessionEndInput?.value || '11:00:00',
+  slSize: parseFloat($SLPointsInput?.value) || 0.0001,
+  tpSize: parseFloat($TPPointsInput?.value) || 0.0003,
+  lotSize: parseFloat($LotSizeInput?.value) || 1.0,
+  commissionSize: parseFloat($CommissionSizeInput?.value) || 0.00005,
+  tsSize: parseFloat($TSIncrementInput?.value) || 0.0001,
+  maPeriod: parseFloat($MAPeriodInput?.value) || 200,
+  maThreshold: parseFloat($MAThresholdInput?.value) || 0.003,
+});
+
+// Load parameters and run backtest (with chart)
+const loadParamsAndRun = (params) => {
+  // Set values to inputs
+  if ($strategyInput) $strategyInput.value = params.strategy;
+  if ($sessionStartInput) $sessionStartInput.value = params.sessionStart;
+  if ($sessionEndInput) $sessionEndInput.value = params.sessionEnd;
+  if ($SLPointsInput) $SLPointsInput.value = params.slSize;
+  if ($TPPointsInput) $TPPointsInput.value = params.tpSize;
+  if ($LotSizeInput) $LotSizeInput.value = params.lotSize;
+  if ($CommissionSizeInput) $CommissionSizeInput.value = params.commissionSize;
+  if ($TSIncrementInput) $TSIncrementInput.value = params.tsSize;
+  if ($MAPeriodInput) $MAPeriodInput.value = params.maPeriod;
+  if ($MAThresholdInput) $MAThresholdInput.value = params.maThreshold;
+  
+  if (!cachedFile && cachedCSVData.length === 0) {
+    alert('Please load a CSV file first!');
+    return;
+  }
+  
+  // Collapse result panel to show chart
+  const resultPanel = document.getElementById('result-panel');
+  if (resultPanel) resultPanel.classList.remove('active');
+  
+  // Run the full backtest with chart - reuse the file that was uploaded
+  handleFileAndInitGraph(cachedFile);
+};
+
+// Load CSV and cache it
+const loadAndCacheCSV = (file) => new Promise((resolve, reject) => {
+    Papa.parse(file, {
+      header: true,
+      dynamicTyping: true,
+      complete: (results) => {
+        cachedCSVData = results.data.filter(row => row[EnumMT5OHLC.OPEN]);
+        cachedFile = file;
+        cachedFileInfo = {
+          name: file.name,
+          firstDate: cachedCSVData[0]?.[EnumMT5OHLC.DATE],
+          lastDate: cachedCSVData[cachedCSVData.length - 1]?.[EnumMT5OHLC.DATE],
+          totalCandles: cachedCSVData.length,
+        };
+        $firstDate.textContent = cachedFileInfo.firstDate;
+        $lastDate.textContent = cachedFileInfo.lastDate;
+        resolve(cachedCSVData);
+      },
+      error: reject,
+    });
+  });
+
+// Run optimized backtest (no chart rendering)
+const runOptimizedBacktestUI = async () => {
+  // Check if we have cached data or if there's a file in the input
+  let csvData = cachedCSVData;
+  
+  // If no cached data, try to get from file input
+  if (csvData.length === 0) {
+    const file = $csvFileInput?.files?.[0];
+    if (file) {
+      // Parse the file directly for optimized backtest
+      console.log('Parsing file for optimized backtest...');
+      const results = await new Promise((resolve, reject) => {
+        Papa.parse(file, {
+          header: true,
+          dynamicTyping: true,
+          complete: resolve,
+          error: reject,
+        });
+      });
+      csvData = results.data.filter(row => row && row[EnumMT5OHLC.OPEN]);
+      cachedCSVData = csvData;
+      console.log(`Parsed ${csvData.length} candles from file`);
+    }
+  }
+  
+  if (csvData.length === 0) {
+    alert('Please load a CSV file first! The data will be cached for fast backtesting.');
+    return;
+  }
+  
+  const params = getCurrentParams();
+  
+  console.log(`Running optimized backtest with ${csvData.length} candles...`);
+  
+  // Show loading
+  document.getElementById('loading-element').classList.add('visible');
+  document.getElementById('loading-element').querySelector('.loading-text').textContent = 'Running optimized backtest...';
+  
+  // Use setTimeout to allow UI to update
+  setTimeout(() => {
+    const result = runOptimizedBacktest(params, csvData);
+    
+    // Hide loading
+    document.getElementById('loading-element').classList.remove('visible');
+    document.getElementById('loading-element').querySelector('.loading-text').textContent = 'Backtesting is running ...';
+    
+    // Display results
+    displayBacktestResult(result);
+    
+    // Auto-save to comparison
+    saveResultForComparison(result);
+    
+    audioSuccess.play();
+  }, 50);
+};
+
+// Monte Carlo simulation for equity curves
+const runMonteCarloSimulation = (orders, params, numSimulations = 50) => {
+  const closedTrades = orders.filter(o => o.closed && o.pnlPoints !== undefined);
+  if (closedTrades.length < 5) return null;
+  
+  const tradeReturns = closedTrades.map(t => (t.pnlPoints - params.commissionSize) * 100000 * params.lotSize);
+  const simulations = [];
+  
+  for (let sim = 0; sim < numSimulations; sim++) {
+    const equityCurve = [0];
+    let equity = 0;
+    
+    // Randomly resample trades with replacement
+    for (let i = 0; i < closedTrades.length; i++) {
+      const randomTrade = tradeReturns[Math.floor(Math.random() * tradeReturns.length)];
+      equity += randomTrade;
+      equityCurve.push(equity);
+    }
+    simulations.push(equityCurve);
+  }
+  
+  // Calculate statistics
+  const finalEquities = simulations.map(s => s[s.length - 1]);
+  finalEquities.sort((a, b) => a - b);
+  
+  const median = finalEquities[Math.floor(finalEquities.length / 2)];
+  const p10 = finalEquities[Math.floor(finalEquities.length * 0.1)];
+  const p90 = finalEquities[Math.floor(finalEquities.length * 0.9)];
+  const best = finalEquities[finalEquities.length - 1];
+  const worst = finalEquities[0];
+  
+  return {
+    simulations,
+    median,
+    p10,
+    p90,
+    best,
+    worst,
+    finalEquities,
+  };
+};
+
+// Render comparison results chart (equity curves for all saved results)
+const renderComparisonChart = () => {
+  const canvas = document.getElementById('monteCarloChart');
+  if (!canvas) return;
+  
+  if (backtestResults.length === 0) {
+    document.getElementById('monteCarloStats').innerHTML = '<p style="color: #666;">Run some backtests to see comparison.</p>';
+    return;
+  }
+  
+  // Destroy existing chart if any
+  if (window.monteCarloChartInstance) {
+    window.monteCarloChartInstance.destroy();
+  }
+  
+  const ctx = canvas.getContext('2d');
+  
+  // Get equity curves from each result
+  const resultsWithEquity = backtestResults.map((r, idx) => {
+    const equityCurve = [0];
+    let equity = 0;
+    const commission = r.params.commissionSize || 0.00005;
+    
+    r.orders.filter(o => o.closed).forEach(order => {
+      const tradeMoney = (order.pnlPoints - commission) * 100000 * r.params.lotSize;
+      equity += tradeMoney;
+      equityCurve.push(equity);
+    });
+    
+    return {
+      name: r.params.name || `Run ${idx + 1}`,
+      equity: equityCurve,
+      money: parseFloat(r.moneyEquivalent),
+      winRate: parseFloat(r.winRate),
+    };
+  }).filter(r => r.equity.length > 1);
+  
+  // Sort by final profit
+  resultsWithEquity.sort((a, b) => b.money - a.money);
+  
+  const maxLength = Math.max(...resultsWithEquity.map(r => r.equity.length));
+  const labels = Array.from({ length: maxLength }, (_, i) => i);
+  
+  // Color gradient from best (green) to worst (red)
+  const colors = resultsWithEquity.map((r, i, arr) => {
+    const ratio = i / Math.max(arr.length - 1, 1);
+    const rVal = Math.round(255 * ratio);
+    const gVal = Math.round(255 * (1 - ratio));
+    return `rgba(${rVal}, ${gVal}, 0, 0.7)`;
+  });
+  
+  const datasets = resultsWithEquity.map((r, idx) => ({
+    label: r.name,
+    data: r.equity,
+    borderColor: colors[idx],
+    borderWidth: idx === 0 ? 2 : 1,
+    fill: false,
+    pointRadius: 0,
+    tension: 0.1,
+  }));
+  
+  window.monteCarloChartInstance = new Chart(ctx, {
+    type: 'line',
+    data: { labels, datasets },
+    options: {
+      responsive: false,
+      animation: false,
+      plugins: {
+        legend: { 
+          display: true,
+          position: 'right',
+          labels: { color: '#888', font: { size: 9 }, boxWidth: 1 }
+        },
+      },
+      scales: {
+        x: { display: false },
+        y: {
+          ticks: { color: '#888', font: { size: 10 } },
+          grid: { color: '#333' },
+        },
+      },
+    },
+  });
+  
+  // Update stats
+  const best = resultsWithEquity[0];
+  const worst = resultsWithEquity[resultsWithEquity.length - 1];
+  document.getElementById('monteCarloStats').innerHTML = `
+    <div style="display: flex; gap: 15px; flex-wrap: wrap; font-size: 11px;">
+      <span style="color: #5f5;">Best: ${best.name} (${best.money}$)</span>
+      <span style="color: #f55;">Worst: ${worst.name} (${worst.money}$)</span>
+      <span style="color: #fff;">Runs: ${resultsWithEquity.length}</span>
+    </div>
+  `;
+};
+
+// Display backtest result
+const displayBacktestResult = (result) => {
+  ordersHistory = result.orders;
+  window.ordersHistory = ordersHistory;
+  
+  // Update result text
+  let text = `Trade Taken: ${result.totalTrades} (in ${result.tradeCount} signals)`;
+  text += `\nWin Rate: ${result.winRate}%`;
+  text += `\nProfits: `;
+  text += `\n Money: ${result.moneyEquivalent}$`;
+  text += `\n Profit Factor: ${result.profitFactor}`;
+  text += `\n Max Drawdown: ${result.maxDrawdown}$`;
+  
+  $backTestingResult.value = text;
+  
+  // Auto-generate MQL from the backtest parameters
+  const mqlText = generateMQLFromParams(result.params);
+  const textarea = document.getElementById('algoEditorTextareaMain1');
+  if (textarea) textarea.value = mqlText;
+  
+  // Update order history table
+  document.getElementById('backtestingResultOrderHistory').innerHTML = `
+    <table>
+      <thead>
+        <tr class="historical-order-table-header">
+          <th>ID</th><th>Time</th><th>Price</th><th>SL</th><th>TP</th><th>Direction</th><th>Closed Type</th><th>Closed Price</th><th>P/L (Points)</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${result.orders.filter(o => o.closed).map(order => `
+          <tr class="historical-order-line">
+            <td>${order.id}</td>
+            <td>${order.time}</td>
+            <td>${order.price.toFixed(5)}</td>
+            <td>${order.sl.toFixed(5)}</td>
+            <td>${order.tp.toFixed(5)}</td>
+            <td>${order.direction}</td>
+            <td class="order-status-${order.closedOrderType}">${order.closedOrderType}</td>
+            <td>${parseFloat(order.closedPrice).toFixed(5) || ''}</td>
+            <td class="trade-result-${order.tradeResult}">${order.pnlPoints?.toFixed(5) || ''}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+  
+  // Generate exportable CSV
+  const csvFileName = cachedFile?.name?.split('.')[0] || 'backtest';
+  const resultToCSV = [
+    `\t`,
+    `${backtestingDate}\t`,
+    `${csvFileName}\t`,
+    `${result.params.strategy}\t`,
+    `${result.params.sessionStart}\t`,
+    `${result.params.sessionEnd}\t`,
+    `${result.totalTrades}\t`,
+    `${result.winRate}%\t`,
+    `${result.moneyEquivalent}\t`,
+    `${result.params.lotSize}\t`,
+    `${result.params.slSize}\t`,
+    `${result.params.tpSize}\t`,
+    `${result.params.tsSize}\t`,
+    `${result.params.maPeriod}\t`,
+    `${result.profitFactor}\t`,
+  ].join('');
+  
+  $exportableCSVField.value = resultToCSV;
+  updateGoogleSheetsButtonState();
+  
+  // Render comparison chart with all saved results
+  renderComparisonChart();
+};
+
+// Save results to localStorage
+const saveResultsToStorage = () => {
+  try {
+    localStorage.setItem('backtestResults', JSON.stringify(backtestResults));
+  } catch (e) { console.warn('Could not save to localStorage:', e); }
+};
+
+// Load results from localStorage
+const loadResultsFromStorage = () => {
+  try {
+    const saved = localStorage.getItem('backtestResults');
+    if (saved) {
+      backtestResults = JSON.parse(saved);
+      window.backtestResults = backtestResults;
+    }
+  } catch (e) { console.warn('Could not load from localStorage:', e); }
+};
+
+// Load on startup
+loadResultsFromStorage();
+
+// Save results to localStorage whenever they change
+const saveResultForComparison = (result) => {
+  backtestResults.push(result);
+  window.backtestResults = backtestResults;
+  saveResultsToStorage();
+  updateSavedResultsComparison();
+};
+
+// Update the comparison table
+const updateSavedResultsComparison = () => {
+  const container = document.getElementById('savedResultsComparison');
+  
+  if (backtestResults.length === 0) {
+    container.innerHTML = '<p style="color: #666; font-style: italic;">No saved results yet. Run a backtest and save parameters to compare.</p>';
+    return;
+  }
+  
+  // Sort by money equivalent (best first)
+  const sorted = [...backtestResults].sort((a, b) => parseFloat(b.moneyEquivalent) - parseFloat(a.moneyEquivalent));
+  
+  container.innerHTML = `
+    <table class="comparison-results-table">
+      <thead>
+        <tr class="comparison-table-header">
+          <th>#</th>
+          <th>Name</th>
+          <th>Strategy</th>
+          <th>SL</th>
+          <th>TP</th>
+          <th>TS</th>
+          <th>Trades</th>
+          <th>Win%</th>
+          <th>P/F</th>
+          <th>P/L ($)</th>
+          <th>DD ($)</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${sorted.map((r, idx) => `
+          <tr class="comparison-row ${idx === 0 ? 'best-result' : ''} ${idx === sorted.length - 1 && sorted.length > 1 ? 'worst-result' : ''}">
+            <td>${idx + 1}</td>
+            <td>${r.params.name || '-'}</td>
+            <td>${r.params.strategy}</td>
+            <td>${r.params.slSize}</td>
+            <td>${r.params.tpSize}</td>
+            <td>${r.params.tsSize}</td>
+            <td>${r.totalTrades}</td>
+            <td class="${parseFloat(r.winRate) >= 50 ? 'text-profit' : 'text-loss'}">${r.winRate}%</td>
+            <td>${r.profitFactor}</td>
+            <td class="${parseFloat(r.moneyEquivalent) >= 0 ? 'text-profit' : 'text-loss'}">${r.moneyEquivalent}$</td>
+            <td class="text-drawdown">${r.maxDrawdown}$</td>
+            <td>
+              <button class="btn-load-params" data-params='${JSON.stringify(r.params)}' title="Load params & run backtest">▶</button>
+              <button class="btn-load-mql" data-params='${JSON.stringify(r.params)}' title="Generate MQL Expert Advisor">MQL</button>
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+  
+  // Add event listeners to load buttons
+  container.querySelectorAll('.btn-load-params').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const params = JSON.parse(e.target.dataset.params);
+      loadParamsAndRun(params);
+    });
+  });
+
+  container.querySelectorAll('.btn-load-mql').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const params = JSON.parse(e.target.dataset.params);
+      loadParamsAsMQL(params);
+    });
+  });
+  
+  // Render comparison chart
+  renderComparisonChart();
+};
+
+// Save current parameters
+const saveCurrentParams = () => {
+  const params = getCurrentParams();
+  params.id = Date.now();
+  params.timestamp = new Date().toISOString();
+  params.name = document.getElementById('paramSetName')?.value || `Config ${savedParamSets.length + 1}`;
+  savedParamSets.push(params);
+  window.savedParamSets = savedParamSets;
+  alert(`Parameters "${params.name}" saved! Total saved: ${savedParamSets.length}`);
+};
+
+// Generate MQL from parameters
+const generateMQLFromParams = (params) => {
+  const template = `//+------------------------------------------------------------------+
+//|                   CSID + TTR + MADirection EA                    |
+//+------------------------------------------------------------------+
+#property strict
+#property version   "1.00"
+
+// Hardcoded parameters - no inputs to avoid MT5 cache issues
+const int LOOKBACK_PERIOD = 20;
+const string SESSION_START = "${params.sessionStart || '09:50:00'}";
+const string SESSION_END = "${params.sessionEnd || '11:00:00'}";
+const int MA_PERIOD = ${Math.floor(params.maPeriod)};
+const double MA_THRESHOLD = ${params.maThreshold ? params.maThreshold.toFixed(6) : 0.003};
+const int ATR_PERIOD = 20;
+const double ATR_MULTIPLIER = 1.2;
+const double LOT_SIZE = ${params.lotSize.toFixed(2)};
+const double SL_PRICE = ${params.slSize ? params.slSize.toFixed(6) : 0.0003};
+const double TP_PRICE = ${params.tpSize ? params.tpSize.toFixed(6) : 0.0009};
+
+#include <Trade/Trade.mqh>
+
+string csid_high_name = "CSID_High";
+string csid_low_name = "CSID_Low";
+string ttr_start_name = "TTR_Start";
+string ttr_end_name = "TTR_End";
+
+int ma_handle = INVALID_HANDLE;
+int atr_handle = INVALID_HANDLE;
+CTrade trade;
+bool atr_triggered = false;
+double prev_highest = 0;
+double prev_lowest = 0;
+
+int OnInit()
+{
+   Print("=== CSID EA Started ===");
+   Print("MA_Period: ", MA_PERIOD, ", MA_Threshold: ", MA_THRESHOLD);
+   Print("SL: ", SL_PRICE, ", TP: ", TP_PRICE, ", Lot: ", LOT_SIZE);
+   Print("Session: ", SESSION_START, " - ", SESSION_END);
+   
+   ma_handle = iMA(_Symbol, _Period, MA_PERIOD, 0, MODE_SMA, PRICE_CLOSE);
+   if(ma_handle == INVALID_HANDLE) { Print("Failed to create MA"); return(INIT_FAILED); }
+   atr_handle = iATR(_Symbol, _Period, ATR_PERIOD);
+   if(atr_handle == INVALID_HANDLE) { Print("Failed to create ATR"); return(INIT_FAILED); }
+   trade.SetExpertMagicNumber(12345);
+   trade.SetDeviationInPoints(10);
+   return(INIT_SUCCEEDED);
+}
+
+void OnDeinit(const int reason)
+{
+   if(ma_handle != INVALID_HANDLE) IndicatorRelease(ma_handle);
+   if(atr_handle != INVALID_HANDLE) IndicatorRelease(atr_handle);
+   ObjectDelete(0, csid_high_name);
+   ObjectDelete(0, csid_low_name);
+   ObjectDelete(0, ttr_start_name);
+   ObjectDelete(0, ttr_end_name);
+}
+
+bool IsBullish(double o, double c) { return(c > o); }
+
+bool IsInTradingTime()
+{
+   datetime t = TimeCurrent();
+   MqlDateTime dt; TimeToStruct(t, dt);
+   int current_min = dt.hour * 60 + dt.min;
+   int sh = (int)StringSubstr(SESSION_START, 0, 2);
+   int sm = (int)StringSubstr(SESSION_START, 3, 2);
+   int eh = (int)StringSubstr(SESSION_END, 0, 2);
+   int em = (int)StringSubstr(SESSION_END, 3, 2);
+   return(current_min >= sh * 60 + sm && current_min <= eh * 60 + em);
+}
+
+double GetHighestHigh(int lb)
+{
+   int total = Bars(_Symbol, _Period);
+   if(total < lb + 1) return(0);
+   double highest = 0;
+   for(int i = 1; i <= lb; i++)
+   {
+      double o = iOpen(_Symbol, _Period, i);
+      double c = iClose(_Symbol, _Period, i);
+      if(o <= 0 || c <= 0) continue;
+      double price = IsBullish(o, c) ? c : o;
+      if(price > highest || highest == 0) highest = price;
+   }
+   return(highest);
+}
+
+double GetLowestLow(int lb)
+{
+   int total = Bars(_Symbol, _Period);
+   if(total < lb + 1) return(0);
+   double lowest = 0;
+   for(int i = 1; i <= lb; i++)
+   {
+      double o = iOpen(_Symbol, _Period, i);
+      double c = iClose(_Symbol, _Period, i);
+      if(o <= 0 || c <= 0) continue;
+      double price = IsBullish(o, c) ? o : c;
+      if(price < lowest || lowest == 0) lowest = price;
+   }
+   return(lowest);
+}
+
+void UpdatePreviousCSIDLevels()
+{
+   double current_high = GetHighestHigh(LOOKBACK_PERIOD);
+   double current_low = GetLowestLow(LOOKBACK_PERIOD);
+   if(current_high > 0) prev_highest = current_high;
+   if(current_low > 0) prev_lowest = current_low;
+}
+
+double GetMA()
+{
+   if(ma_handle == INVALID_HANDLE) return(0);
+   double ma[];
+   if(CopyBuffer(ma_handle, 0, 0, 2, ma) < 2) return(0);
+   return(ma[0]);
+}
+
+int GetMADirection()
+{
+   int total = Bars(_Symbol, _Period);
+   if(total < LOOKBACK_PERIOD + 3) return(0);
+   double ma_now = 0, ma_past = 0, ma_past2 = 0;
+   for(int j = 0; j < LOOKBACK_PERIOD; j++) ma_now += iClose(_Symbol, _Period, j);
+   ma_now /= LOOKBACK_PERIOD;
+   for(int j = LOOKBACK_PERIOD; j < LOOKBACK_PERIOD * 2; j++) ma_past += iClose(_Symbol, _Period, j);
+   ma_past /= LOOKBACK_PERIOD;
+   for(int j = LOOKBACK_PERIOD * 2; j < LOOKBACK_PERIOD * 3; j++) ma_past2 += iClose(_Symbol, _Period, j);
+   ma_past2 /= LOOKBACK_PERIOD;
+   if(ma_now <= 0 || ma_past <= 0 || ma_past2 <= 0) return(0);
+   double accel = ma_now - 2 * ma_past + ma_past2;
+   if(accel > MA_THRESHOLD) return(1);
+   if(accel < -MA_THRESHOLD) return(-1);
+   return(0);
+}
+
+bool CheckCSIDSignal(double &direction)
+{
+   int total = Bars(_Symbol, _Period);
+   if(total < LOOKBACK_PERIOD + 2) return(false);
+   double current_close = iClose(_Symbol, _Period, 0);
+   double highest = prev_highest;
+   double lowest = prev_lowest;
+   if(highest <= 0 || lowest <= 0) return(false);
+   if(current_close > highest) { direction = 1; return(true); }
+   if(current_close < lowest) { direction = -1; return(true); }
+   return(false);
+}
+
+bool CheckATRSignal()
+{
+   if(atr_handle == INVALID_HANDLE) return(false);
+   double atr[];
+   if(CopyBuffer(atr_handle, 0, 0, 1, atr) < 1) return(false);
+   double current_atr = atr[0];
+   if(current_atr <= 0) return(false);
+   
+   // Use previous closed candle (index 1) - index 0 is current incomplete candle
+   double high = iHigh(_Symbol, _Period, 1);
+   double low = iLow(_Symbol, _Period, 1);
+   double prev_close = iClose(_Symbol, _Period, 2);
+   
+   double tr = MathMax(high - low, MathMax(MathAbs(high - prev_close), MathAbs(low - prev_close)));
+   
+   // Match BT: TR must exceed ATR (not ATR * 1.2)
+   return(tr > current_atr);
+}
+
+void ExecuteTrade(double direction)
+{
+   double price = NormalizeDouble(iClose(_Symbol, _Period, 0), _Digits);
+   double sl = 0, tp = 0;
+   Print("ExecuteTrade - price: ", price, " direction: ", direction);
+   
+   if(direction > 0) { 
+      sl = NormalizeDouble(price - SL_PRICE, _Digits); 
+      tp = NormalizeDouble(price + TP_PRICE, _Digits); 
+   }
+   else { 
+      sl = NormalizeDouble(price + SL_PRICE, _Digits); 
+      tp = NormalizeDouble(price - TP_PRICE, _Digits); 
+   }
+   Print("ExecuteTrade - SL_PRICE: ", SL_PRICE, " TP_PRICE: ", TP_PRICE, " sl: ", sl, " tp: ", tp);
+   if(direction > 0) { trade.Buy(LOT_SIZE, _Symbol, price, sl, tp); }
+   else { trade.Sell(LOT_SIZE, _Symbol, price, sl, tp); }
+}
+
+void OnTick()
+{
+   static datetime last_bar = 0;
+   datetime current_bar = iTime(_Symbol, _Period, 0);
+   if(current_bar == last_bar) return;
+   last_bar = current_bar;
+   
+   int total = Bars(_Symbol, _Period);
+   if(total < LOOKBACK_PERIOD + 2 || total < ATR_PERIOD + 2) return;
+   
+   // Check CSID first using previous candle's levels (like backtest)
+   double direction = 0;
+   bool csid_signal = CheckCSIDSignal(direction);
+   
+   // Then update levels for next candle's comparison
+   UpdatePreviousCSIDLevels();
+   
+   bool in_session = IsInTradingTime();
+   static bool was_in_session = false;
+   if(!was_in_session && in_session) atr_triggered = false;
+   was_in_session = in_session;
+   
+   int ma_dir = GetMADirection();
+   bool atr_signal = CheckATRSignal();
+   
+   if(in_session && !atr_triggered && atr_signal) atr_triggered = true;
+   
+   //bool ma_ok = (direction > 0 && ma_dir > 0) || (direction < 0 && ma_dir < 0);
+   bool ma_ok = true; // Disable MA check for now
+   
+   bool all_signals = in_session && csid_signal && atr_triggered;
+   Print("in_session | csid_signal | atr_triggered: ", in_session, " ", csid_signal, " ", atr_triggered);
+   Print("ma_dir: ", ma_dir, " direction: ", direction, " ma_ok: ", ma_ok);
+   
+   if(all_signals && ma_ok) {
+      Print(">>> EXECUTING TRADE >>> direction: ", direction);
+      ExecuteTrade(direction);
+      atr_triggered = false;
+   }
+}
+`;
+  return template;
+};
+
+// Show MQL in Expert Advisor Generator panel
+const showMQLExpertAdvisor = (mqlText) => {
+  const textarea = document.getElementById('algoEditorTextareaMain1');
+  if (textarea) {
+    textarea.value = mqlText;
+    // Switch to MQL panel
+    document.getElementById('result-panel-toolbar-content-toggler-algo-editor').click();
+  }
+};
+
+// Load params as MQL generation via button in the results table
+const loadParamsAsMQL = (params) => {
+  const mqlText = generateMQLFromParams(params);
+  showMQLExpertAdvisor(mqlText);
+};
+
+// Download MQL5 file
+const downloadMQL5 = () => {
+  const textarea = document.getElementById('algoEditorTextareaMain1');
+  if (!textarea || !textarea.value) {
+    alert('No MQL5 code to download');
+    return;
+  }
+  
+  const blob = new Blob([textarea.value], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'GeneratedEA.mq5';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+};
+
+// Attach download button listener
+document.getElementById('downloadMQL5Btn')?.addEventListener('click', downloadMQL5);
+
+// Regenerate MQL from form parameters
+document.getElementById('regenerateMQLBtn')?.addEventListener('click', () => {
+  const params = getCurrentParams();
+  const mqlText = generateMQLFromParams(params);
+  const textarea = document.getElementById('algoEditorTextareaMain1');
+  if (textarea) textarea.value = mqlText;
+});
+
+// Run backtest from MQL panel
+const runBacktestFromMQL = () => {
+  if (cachedCSVData.length === 0) {
+    alert('Please load a CSV file first!');
+    return;
+  }
+  const params = getCurrentParams();
+  loadParamsAndRun(params);
+};
+document.getElementById('runBacktestFromMQLBtn')?.addEventListener('click', runBacktestFromMQL);
+
+// Run all saved parameter sets
+const runAllSavedParams = async () => {
+  if (cachedCSVData.length === 0) {
+    alert('Please load a CSV file first!');
+    return;
+  }
+  
+  if (savedParamSets.length === 0) {
+    alert('No saved parameter sets! Save some parameters first.');
+    return;
+  }
+  
+  // Show loading
+  document.getElementById('loading-element').classList.add('visible');
+  document.getElementById('loading-element').querySelector('.loading-text').textContent = 'Running multiple backtests...';
+  
+  // Clear previous results
+  backtestResults = [];
+  
+  setTimeout(() => {
+    savedParamSets.forEach((params, idx) => {
+      const result = runOptimizedBacktest(params, cachedCSVData);
+      result.params.name = params.name || `Config ${idx + 1}`;
+      backtestResults.push(result);
+    });
+    
+    // Update comparison
+    updateSavedResultsComparison();
+    
+    // Show best result
+    const best = [...backtestResults].sort((a, b) => parseFloat(b.moneyEquivalent) - parseFloat(a.moneyEquivalent))[0];
+    displayBacktestResult(best);
+    
+    // Hide loading
+    document.getElementById('loading-element').classList.remove('visible');
+    document.getElementById('loading-element').querySelector('.loading-text').textContent = 'Backtesting is running ...';
+    
+    audioSuccess.play();
+    alert(`Completed ${savedParamSets.length} backtests! Best result: ${best.moneyEquivalent}$`);
+  }, 50);
+};
+
+// Clear saved results
+const clearSavedResults = () => {
+  if (confirm('Clear all saved results?')) {
+    backtestResults = [];
+    savedParamSets = [];
+    window.backtestResults = backtestResults;
+    window.savedParamSets = savedParamSets;
+    localStorage.removeItem('backtestResults');
+    updateSavedResultsComparison();
+    renderComparisonChart();
+  }
+};
+
+// Intelligent parameter optimization using random search + hill climbing
+const runGridSearch = async () => {
+  if (cachedCSVData.length === 0) {
+    alert('Please load a CSV file first!');
+    return;
+  }
+  
+  const baseParams = getCurrentParams();
+  
+  if (!confirm('Run automatic parameter optimization? This will find the most profitable parameters.')) {
+    return;
+  }
+  
+  document.getElementById('loading-element').classList.add('visible');
+  document.getElementById('loading-element').querySelector('.loading-text').textContent = 'Optimizing parameters...';
+  
+  backtestResults = [];
+  
+  // Define search ranges
+  const ranges = {
+    slSize: { min: 0.0005, max: 0.003, step: 0.0005 },
+    tpSize: { min: 0.001, max: 0.01, step: 0.001 },
+    tsSize: { min: 0.00001, max: 0.0002, step: 0.00005 },
+  };
+  
+  // Helper: generate random parameter set
+  const randomParams = () => ({
+    slSize: Math.round((ranges.slSize.min + Math.random() * (ranges.slSize.max - ranges.slSize.min)) / ranges.slSize.step) * ranges.slSize.step,
+    tpSize: Math.round((ranges.tpSize.min + Math.random() * (ranges.tpSize.max - ranges.tpSize.min)) / ranges.tpSize.step) * ranges.tpSize.step,
+    tsSize: Math.round((ranges.tsSize.min + Math.random() * (ranges.tsSize.max - ranges.tsSize.min)) / ranges.tsSize.step) * ranges.tsSize.step,
+  });
+  
+  // Phase 1: Random Search (broad exploration)
+  const randomIterations = 50;
+  let bestResult = null;
+  let bestProfit = -Infinity;
+  
+  for (let i = 0; i < randomIterations; i++) {
+    const params = { ...baseParams, ...randomParams(), name: `Random_${i+1}` };
+    const result = runOptimizedBacktest(params, cachedCSVData);
+    backtestResults.push(result);
+    
+    const profit = parseFloat(result.moneyEquivalent);
+    if (profit > bestProfit) {
+      bestProfit = profit;
+      bestResult = result;
+    }
+    
+    document.getElementById('loading-element').querySelector('.loading-text').textContent = 
+      `Phase 1: Random search ${i+1}/${randomIterations} - Best: ${bestProfit.toFixed(2)}$`;
+    
+    if (i % 5 === 0) await new Promise(resolve => setTimeout(resolve, 1));
+  }
+  
+  if (!bestResult) {
+    alert('No valid results found.');
+    document.getElementById('loading-element').classList.remove('visible');
+    return;
+  }
+  
+  // Phase 2: Hill Climbing from best found
+  document.getElementById('loading-element').querySelector('.loading-text').textContent = 'Phase 2: Fine-tuning...';
+  
+  let currentBest = { ...bestResult.params };
+  let currentProfit = bestProfit;
+  let neighborsTested = 0;
+  const maxNeighbors = 30;
+  const improvementThreshold = 0.001;
+  
+  for (let iter = 0; iter < maxNeighbors; iter++) {
+    let foundBetter = false;
+    
+    // Test neighbors around current best
+    const neighborTests = [
+      { param: 'slSize', delta: ranges.slSize.step },
+      { param: 'slSize', delta: -ranges.slSize.step },
+      { param: 'tpSize', delta: ranges.tpSize.step },
+      { param: 'tpSize', delta: -ranges.tpSize.step },
+      { param: 'tsSize', delta: ranges.tsSize.step },
+      { param: 'tsSize', delta: -ranges.tsSize.step },
+    ];
+    
+    for (const test of neighborTests) {
+      const newParams = { 
+        ...baseParams, 
+        ...currentBest,
+        [test.param]: Math.max(ranges[test.param].min, Math.min(ranges[test.param].max, currentBest[test.param] + test.delta)),
+        name: `Hill_${iter}_${test.param}_${test.delta > 0 ? 'up' : 'down'}`
+      };
+      
+      const result = runOptimizedBacktest(newParams, cachedCSVData);
+      backtestResults.push(result);
+      
+      const profit = parseFloat(result.moneyEquivalent);
+      neighborsTested++;
+      
+      if (profit > currentProfit + improvementThreshold) {
+        currentBest = { ...newParams };
+        currentProfit = profit;
+        foundBetter = true;
+        break;
+      }
+    }
+    
+    document.getElementById('loading-element').querySelector('.loading-text').textContent = 
+      `Phase 2: Fine-tuning ${iter+1}/${maxNeighbors} - Best: ${currentProfit.toFixed(2)}$`;
+    
+    if (!foundBetter) break;
+    if (iter % 3 === 0) await new Promise(resolve => setTimeout(resolve, 1));
+  }
+  
+  // Phase 3: Verify best params
+  document.getElementById('loading-element').querySelector('.loading-text').textContent = 'Phase 3: Verifying best parameters...';
+  
+  const finalParams = { ...baseParams, ...currentBest, name: 'OPTIMIZED_BEST' };
+  const finalResult = runOptimizedBacktest(finalParams, cachedCSVData);
+  backtestResults.push(finalResult);
+  
+  updateSavedResultsComparison();
+  
+  // Show best result
+  const sortedResults = [...backtestResults].sort((a, b) => parseFloat(b.moneyEquivalent) - parseFloat(a.moneyEquivalent));
+  displayBacktestResult(sortedResults[0]);
+  
+  document.getElementById('loading-element').classList.remove('visible');
+  
+  audioSuccess.play();
+  
+  const best = sortedResults[0];
+  alert(`Optimization complete!\n\nBest Profit: ${best.moneyEquivalent}$\nWin Rate: ${best.winRate}%\nTrades: ${best.totalTrades}\n\nParameters:\nSL: ${best.params.slSize}\nTP: ${best.params.tpSize}\nTS: ${best.params.tsSize}`);
+};
+
+// Export parameters
+const exportParams = () => {
+  const data = {
+    paramSets: savedParamSets,
+    results: backtestResults,
+    exportedAt: new Date().toISOString(),
+  };
+  
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `backtest_params_${Date.now()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+};
+
+// Import parameters
+const importParams = (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (data.paramSets) {
+        savedParamSets = data.paramSets;
+        window.savedParamSets = savedParamSets;
+      }
+      if (data.results) {
+        backtestResults = data.results;
+        window.backtestResults = backtestResults;
+        updateSavedResultsComparison();
+      }
+      alert(`Imported ${savedParamSets.length} parameter sets and ${backtestResults.length} results!`);
+    } catch (err) {
+      alert('Error importing file: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+};
+
+// Event listeners
+document.getElementById('runOptimizedBacktest')?.addEventListener('click', runOptimizedBacktestUI);
+document.getElementById('saveParamSet')?.addEventListener('click', saveCurrentParams);
+document.getElementById('runAllSavedParams')?.addEventListener('click', runAllSavedParams);
+document.getElementById('clearSavedResults')?.addEventListener('click', clearSavedResults);
+document.getElementById('runGridSearch')?.addEventListener('click', runGridSearch);
+document.getElementById('exportParams')?.addEventListener('click', exportParams);
+document.getElementById('importParams')?.addEventListener('click', () => document.getElementById('importParamsInput').click());
+document.getElementById('importParamsInput')?.addEventListener('change', importParams);

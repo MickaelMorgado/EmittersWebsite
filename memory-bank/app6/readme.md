@@ -119,3 +119,60 @@ This document summarizes every core function defined in `tools/index6.js` and `t
 
 - **stepByStep(step, actions)**  
   Executes the nth callback in an array of action functions, used for multi-click tools.
+
+---
+
+## MT5 Strategy Tester Issues
+
+### "Waiting for Update" Hang
+A custom indicator or template that runs fine on a live chart but hangs inside the tester UI can freeze it on "Waiting for Update". 
+
+**Solutions:**
+1. Close MT5 completely
+2. Run the cleanup commands below
+3. Delete any custom templates from `MQL5/Profiles/Templates/`
+4. Delete any custom indicators that may be causing issues
+5. Restart MT5
+
+### Infinite Loops / Blocking Code
+Infinite loops or blocking code in `OnInit` of the EA or its indicators will also prevent the first tick from being processed in visual mode.
+
+**Solutions:**
+1. Ensure `OnInit` returns quickly (no while loops, no long calculations)
+2. Use `OnStart()` for one-time initialization instead of `OnInit()`
+3. Move heavy calculations to `OnTick()` with proper bar check
+4. Avoid `Sleep()` in visual mode
+
+---
+
+## MT5 Strategy Tester Maintenance
+
+When the MT5 strategy tester is failing, producing unexpected results, or visualization issues occur, run these cleanup commands.
+
+**Terminal Path:** `C:\Users\Mickael M\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075`
+
+**WSL Path:** `/mnt/<DRIVE>/Users/<USER>/AppData/Roaming/MetaQuotes/Terminal/<ID>/`
+
+```bash
+# Delete old Tester ini files (7+ days)
+find MQL5/Profiles/Tester/ -maxdepth 1 -mtime +7 -type f -iname "*.ini" -exec rm {} \;
+
+# Delete .dat files in symbols
+find bases/XPMT5-*/symbols/ -type f -iname "*.dat" -exec rm {} \;
+
+# Delete .dat files in trades
+find bases/XPMT5-*/trades/* -type f -name "*.dat" -exec rm {} \;
+
+# Delete chr and wnd files
+find MQL5/Profiles/ -type f -name "*.chr" -exec rm {} \;
+find MQL5/Profiles/ -type f -name "*.wnd" -exec rm {} \;
+
+# Backup tester.tpl
+[ -f MQL5/Profiles/Templates/tester.tpl ] && mv MQL5/Profiles/Templates/tester.tpl MQL5/Profiles/Templates/_tester.tpl
+
+# Clear ticks and cache
+rm -r bases/XPMT5-*/ticks/*
+rm -r Tester/cache/
+```
+
+**Note:** Close MT5 before running these commands.

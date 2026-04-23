@@ -1,3 +1,11 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Services - Web Development & More",
+  description: "Professional web development services including custom web apps, mobile apps, API development, and performance optimization.",
+  keywords: ["web development", "services", "custom web apps", "React", "Next.js", "API development"],
+};
+
 import { FaLaptopCode, FaMobileAlt, FaServer, FaChartLine, FaCode, FaPalette } from 'react-icons/fa';
 
 const services = [

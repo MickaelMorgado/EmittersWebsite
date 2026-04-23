@@ -7,6 +7,7 @@ import { GUI } from 'lil-gui';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import Sidebar from '../../components/sidebar';
+import { VersionBadge } from "@/components/VersionBadge";
 
 interface Device {
   deviceId: string;
@@ -503,6 +504,7 @@ export default function CameraEffects() {
           </ul>
         </div>
       </Sidebar>
+      <VersionBadge projectName="camera-effects" />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { Wifi } from "lucide-react"
 import { useCallback, useEffect, useRef, useState } from "react"
 import DualRangeSlider from "./DualRangeSlider"
 import SevenSegmentDisplay from "./SevenSegmentDisplay"
+import { VersionBadge } from "@/components/VersionBadge"
 import "./sevenSegmentFont.css"
 
 interface ConnectionInfo {
@@ -352,6 +353,7 @@ export default function EMFDetectorPage() {
           </div>
         </div>
       </div>
+      <VersionBadge projectName="emf-detector" />
     </div>
   )
 }

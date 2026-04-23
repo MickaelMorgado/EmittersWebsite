@@ -6,6 +6,7 @@ import { Bloom, EffectComposer, Noise, Vignette } from '@react-three/postprocess
 import { Suspense, useEffect, useRef, useState } from "react"
 import { io, Socket } from 'socket.io-client'
 import * as THREE from "three"
+import { VersionBadge } from "@/components/VersionBadge"
 
 // Galaxy Component
 interface GalaxyProps {
@@ -159,14 +160,31 @@ function Galaxy({ count, spacing, color, animationState }: GalaxyProps) {
   )
 }
 
-// Main PC AI Assistant Component
+  // Main PC AI Assistant Component
 export default function PCAIAssistant() {
+  // Visual modes: default galaxy vs chroma-key overlay for OBS
+  const [visualMode, setVisualMode] = useState<'default' | 'overlay'>('default')
+
+  // Chromakey overlay (green background, solid shape)
+  function ChromakeyOverlay() {
+    return (
+      <Canvas camera={{ position: [0, 0, 6], fov: 60 }} gl={{ powerPreference: 'high-performance' }} style={{ position: 'absolute', inset: 0 }}>
+        <color attach="background" args={["#00ff00"]} />
+        <ambientLight intensity={1} />
+        <mesh rotation={[0.2, 0.6, 0]}>
+          <dodecahedronGeometry args={[2.8, 0]} />
+          <meshStandardMaterial color="#ffffff" metalness={0.2} roughness={0.8} />
+        </mesh>
+      </Canvas>
+    )
+  }
   const [socket, setSocket] = useState<Socket | null>(null)
   const [status, setStatus] = useState('Ready 🎨')
   const [animationState, setAnimationState] = useState<'idle' | 'listening' | 'processing' | 'speaking'>('idle')
   const [particleColor, setParticleColor] = useState('#ffffff')
   const [conversationLines, setConversationLines] = useState<string[]>([])
-  const [audioEnabled, setAudioEnabled] = useState(false)
+const [audioEnabled, setAudioEnabled] = useState(false)
+  const [micEnabled, setMicEnabled] = useState(true)
   const statusChangeSound = useRef<HTMLAudioElement | null>(null)
   const processingSound = useRef<HTMLAudioElement | null>(null)
 
@@ -253,11 +271,17 @@ export default function PCAIAssistant() {
         setStatus('Speaking... 🟢')
       })
 
-      newSocket.on('ai_response_end', () => {
+newSocket.on('ai_response_end', () => {
         console.log('PC AI Assistant: AI response end event received')
         setAnimationState('idle')
         setParticleColor('#ffffff')
         setStatus('Ready 🎨')
+      })
+
+      // Microphone toggle handler
+      newSocket.on('mic_status', (enabled: boolean) => {
+        console.log('PC AI Assistant: Microphone status received:', enabled)
+        setMicEnabled(enabled)
       })
 
       // Conversation text events
@@ -317,75 +341,107 @@ export default function PCAIAssistant() {
         ))}
       </div>
 
-      {/* Status Display */}
-      <div className="fixed bottom-[40%] left-1/2 transform -translate-x-1/2 z-10 bg-black/30 backdrop-blur-md border border-white/10 rounded-full px-4 py-2">
+{/* Status Display */}
+      <div className="fixed bottom-[40%] left-1/2 transform -translate-x-1/2 z-10 bg-black/30 backdrop-blur-md border border-white/10 rounded-full px-4 py-2 flex items-center gap-3">
         <span className="text-white text-lg font-light">{status}</span>
-      </div>
-
-
-      {/* 3D Canvas */}
-      <div className="absolute inset-0">
-        <Canvas
-          camera={{ position: [0, 20, 75], fov: 60, near: 1.0 }}
-          gl={{
-            antialias: true,
-            alpha: false,
-            powerPreference: "high-performance"
+        <button
+          onClick={() => {
+            const newState = !micEnabled
+            setMicEnabled(newState)
+            socket?.emit('mic_toggle', newState)
           }}
-          onCreated={({ gl }) => {
-            console.log('PC AI Assistant: Three.js canvas created')
-            gl.setClearColor('#000000')
-          }}
-          onError={(error) => {
-            console.error('PC AI Assistant: Canvas error:', error)
-          }}
+          className={`px-3 py-1 rounded-full text-sm font-medium transition-all ${
+            micEnabled 
+              ? 'bg-green-500/20 text-green-400 border border-green-500/50 hover:bg-green-500/30' 
+              : 'bg-red-500/20 text-red-400 border border-red-500/50 hover:bg-red-500/30'
+          }`}
         >
-          <Suspense fallback={
-            <div className="flex items-center justify-center h-full">
-              <div className="text-white text-xl">Loading Galaxy...</div>
-            </div>
-          }>
-            <color attach="background" args={["#000000"]} />
-
-            {/* Lighting */}
-            <ambientLight intensity={0.6} />
-            <pointLight position={[0, 0, 500]} intensity={1} color="#4169E1" />
-
-            {/* Galaxy */}
-            <Galaxy
-              count={3000}
-              spacing={1}
-              color={particleColor}
-              animationState={animationState}
-            />
-
-            {/* Camera Controls */}
-            <OrbitControls
-              enablePan={true}
-              enableZoom={true}
-              enableRotate={true}
-              autoRotate={true}
-              autoRotateSpeed={animationState === 'listening' ? 0.02 : 0.5}
-            />
-
-            {/* Post-processing Effects */}
-            <EffectComposer>
-              <Bloom
-                luminanceThreshold={0}
-                luminanceSmoothing={1}
-                height={100}
-                intensity={100}
-              />
-              <Noise opacity={0.03} />
-              <Vignette
-                offset={0.001}
-                darkness={1}
-                eskil={false}
-              />
-            </EffectComposer>
-          </Suspense>
-        </Canvas>
+          {micEnabled ? '🎤 On' : '🎤 Off'}
+        </button>
       </div>
+
+
+      {/* 3D Canvas or Chromakey Overlay (default or overlay mode) */}
+      <div className="absolute inset-0">
+        {visualMode === 'default' ? (
+          <Canvas
+            camera={{ position: [0, 20, 75], fov: 60, near: 1.0 }}
+            gl={{
+              antialias: true,
+              alpha: false,
+              powerPreference: "high-performance"
+            }}
+            onCreated={({ gl }) => {
+              console.log('PC AI Assistant: Three.js canvas created')
+              gl.setClearColor('#000000')
+            }}
+            onError={(error) => {
+              console.error('PC AI Assistant: Canvas error:', error)
+            }}
+          >
+            <Suspense fallback={
+              <div className="flex items-center justify-center h-full">
+                <div className="text-white text-xl">Loading Galaxy...</div>
+              </div>
+            }>
+              <color attach="background" args={["#000000"]} />
+
+              {/* Lighting */}
+              <ambientLight intensity={0.6} />
+              <pointLight position={[0, 0, 500]} intensity={1} color="#4169E1" />
+
+              {/* Galaxy */}
+              <Galaxy
+                count={3000}
+                spacing={1}
+                color={particleColor}
+                animationState={animationState}
+              />
+
+              {/* Camera Controls */}
+              <OrbitControls
+                enablePan={true}
+                enableZoom={true}
+                enableRotate={true}
+                autoRotate={true}
+                autoRotateSpeed={animationState === 'listening' ? 0.02 : 0.5}
+              />
+
+              {/* Post-processing Effects */}
+              <EffectComposer>
+                <Bloom
+                  luminanceThreshold={0}
+                  luminanceSmoothing={1}
+                  height={100}
+                  intensity={100}
+                />
+                <Noise opacity={0.03} />
+                <Vignette
+                  offset={0.001}
+                  darkness={1}
+                  eskil={false}
+                />
+              </EffectComposer>
+            </Suspense>
+          </Canvas>
+        ) : (
+          <ChromakeyOverlay />
+        )}
+      </div>
+
+      {/* Visual mode select (like AI Context) */}
+      <div className="absolute top-4 right-6 z-20 flex items-center gap-2">
+        <label className="text-xs text-white/80">Visual Mode</label>
+        <select
+          value={visualMode}
+          onChange={(e) => setVisualMode(e.target.value as 'default' | 'overlay')}
+          className="bg-black/60 text-white border border-white/20 rounded px-2 py-1"
+        >
+          <option value="default">Default (Galaxy)</option>
+          <option value="overlay">Chroma Overlay</option>
+        </select>
+      </div>
+      <VersionBadge projectName="pc-ai-assistant" />
     </div>
   )
 }

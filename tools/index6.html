@@ -322,6 +322,7 @@
           document.addEventListener('DOMContentLoaded', () => {
             const hidder = document.getElementById('hidder');
             const moveButton = document.getElementById('hidderNextCandle');
+            if (!hidder || !moveButton) return;
             let intervalId;
 
             function moveElement() {
@@ -432,6 +433,12 @@
               <i class="fas fa-stop"></i>
             </button>
           </div>
+          <div class="h-flex" style="margin-top: 10px;">
+            <label style="display: flex; align-items: center; gap: 5px;">
+              <input type="checkbox" id="fastBacktestMode">
+              <span>Fast Mode (No Chart)</span>
+            </label>
+          </div>
           <hr class="h-hr" />
           <label title="Current progression of the current backtesting file reading. (Starting Time - Current Time - Ending Time)">File Reading Progression</label>
           <div class="flex">
@@ -452,7 +459,7 @@
         </div>
       </div>
     </div>
-    <div class="tools">
+    <!--div class="tools">
       <button class="mybutton h-input-effects" data-anotation="RRBuy" title="RR Tool (Buy)" disabled>
         <i class="fas fa-ruler-combined"></i>
       </button>
@@ -471,12 +478,12 @@
       <button class="mybutton h-input-effects" data-anotation="rectangle" title="Rectangle Tool" disabled>
         <i class="fa-regular fa-square"></i>
       </button>
-    </div>
+    </div-->
     <div id="hidder"></div>
     <div class="chart-section">
       <div id="loading-element" class="loading-element">
         <span class="spinner"></span>
-        Backtesting is running ...
+        <span class="loading-text">Backtesting is running ...</span>
       </div>
       <div id="scichart-root"></div>
       <div id="result-panel" class="result-panel">
@@ -486,6 +493,12 @@
             class="mybutton h-input-effects result-panel-toolbar-toggler"
           >
             Backtesting results (Algo)
+          </button>
+          <button
+            id="result-panel-toolbar-content-toggler-comparison"
+            class="mybutton h-input-effects result-panel-toolbar-toggler"
+          >
+            Parameter Comparison
           </button>
           <button
             id="result-panel-toolbar-content-toggler-algo-editor"
@@ -517,83 +530,24 @@
           </button>
         </div>
         <div class="result-panel-content h-hide h-flex h-flex--column">
-          <h3>MQL5 Generator</h3>
+          <div class="h-flex" style="align-items: center; gap: 10px; margin-bottom: 10px;">
+            <h3>MQL5 Generator</h3>
+            <button id="runBacktestFromMQLBtn" class="mybutton h-input-effects" title="Run backtest with current params">
+              <i class="fas fa-play"></i> Run Backtest
+            </button>
+            <button id="downloadMQL5Btn" class="mybutton h-input-effects" title="Download .mq5 file">
+              <i class="fas fa-download"></i> Download .mq5
+            </button>
+          </div>
           <div class="h-flex">
             <textarea
               name="signal-condition-1-code"
               id="algoEditorTextareaMain1"
               width="100%"
-              rows="20"
-              style="width: 100%; white-space: nowrap"
-            >
-//+------------------------------------------------------------------+
-//|                        Simple MA Crossover Strategy              |
-//+------------------------------------------------------------------+
-#property strict
-
-input int FastMAPeriod = 10;
-input int SlowMAPeriod = 30;
-input double LotSize = 0.1;
-
-// Handles for indicators
-int fastMA, slowMA;
-
-//+------------------------------------------------------------------+
-//| Expert initialization function                                   |
-//+------------------------------------------------------------------+
-int OnInit()
-{
-   fastMA = iMA(_Symbol, _Period, FastMAPeriod, 0, MODE_SMA, PRICE_CLOSE);
-   slowMA = iMA(_Symbol, _Period, SlowMAPeriod, 0, MODE_SMA, PRICE_CLOSE);
-   return(INIT_SUCCEEDED);
-}
-
-//+------------------------------------------------------------------+
-//| Expert tick function                                             |
-//+------------------------------------------------------------------+
-void OnTick()
-{
-   double fastPrev = iMA(_Symbol, _Period, FastMAPeriod, 0, MODE_SMA, PRICE_CLOSE, 1);
-   double fastCurr = iMA(_Symbol, _Period, FastMAPeriod, 0, MODE_SMA, PRICE_CLOSE, 0);
-   double slowPrev = iMA(_Symbol, _Period, SlowMAPeriod, 0, MODE_SMA, PRICE_CLOSE, 1);
-   double slowCurr = iMA(_Symbol, _Period, SlowMAPeriod, 0, MODE_SMA, PRICE_CLOSE, 0);
-
-   // Check for crossover
-   bool buySignal = (fastPrev < slowPrev && fastCurr > slowCurr);
-   bool sellSignal = (fastPrev > slowPrev && fastCurr < slowCurr);
-
-   // Close opposite positions first
-   CloseAllPositions();
-
-   if(buySignal)
-      trade.Buy(LotSize, _Symbol);
-   else if(sellSignal)
-      trade.Sell(LotSize, _Symbol);
-}
-
-//+------------------------------------------------------------------+
-//| Helper: Close all open positions                                 |
-//+------------------------------------------------------------------+
-void CloseAllPositions()
-{
-   for(int i = PositionsTotal() - 1; i >= 0; i--)
-   {
-      string symbol = PositionGetSymbol(i);
-      if(PositionSelect(symbol))
-      {
-         if(PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY)
-            trade.PositionClose(symbol);
-         else if(PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_SELL)
-            trade.PositionClose(symbol);
-      }
-   }
-}
-
-//+------------------------------------------------------------------+
-CTrade trade;
-
-          </textarea
-            >
+              rows="30"
+              placeholder="Load a CSV and run a backtest to generate MQL5 code..."
+              style="width: 100%; white-space: pre; overflow-x: auto; font-family: monospace;"
+            ></textarea>
           </div>
         </div>
         <div class="result-panel-content h-flex h-flex--column">
@@ -710,6 +664,16 @@ CTrade trade;
                   </button>
                   <label for="loadConfigsButton" title="Load the configuration from URLs parameters. Browser URL will refresh with new parameters when loading!">Load Configurations</label>
                 </div>
+                <div class="h-flex h-flex--center">
+                  <button
+                    id="regenerateMQLBtn"
+                    class="mybutton h-input-effects"
+                    title="Regenerate MQL5 Code from current form parameters"
+                  >
+                    <i class="fas fa-code"></i>
+                  </button>
+                  <label for="regenerateMQLBtn">Generate MQL</label>
+                </div>
               </div>
             </div>
             <div class="second-content back-testing-results">
@@ -766,6 +730,53 @@ CTrade trade;
             <div id="backtestingResultOrderHistory" class="h-field"></div>
           </div>
         </div>
+        <div class="result-panel-content h-flex h-flex--column">
+          <h3>Parameter Comparison Results</h3>
+          <div class="h-flex" style="gap: 10px; margin-bottom: 15px;">
+            <button id="runOptimizedBacktest" class="mybutton h-input-effects" title="Run fast backtest with current parameters">
+              <i class="fas fa-bolt"></i> Run Optimized
+            </button>
+            <button id="saveParamSet" class="mybutton h-input-effects" title="Save current parameters for comparison">
+              <i class="fas fa-save"></i> Save Params
+            </button>
+            <button id="runAllSavedParams" class="mybutton h-input-effects" title="Run backtest on all saved parameter sets">
+              <i class="fas fa-play-circle"></i> Run All Saved
+            </button>
+            <button id="runGridSearch" class="mybutton h-input-effects" title="Run parameter optimization (grid search)">
+              <i class="fas fa-cogs"></i> Grid Search
+            </button>
+          </div>
+          <div style="margin-bottom: 15px;">
+            <label for="paramSetName">Param Set Name:</label>
+            <input type="text" id="paramSetName" placeholder="e.g., Conservative, Aggressive...">
+          </div>
+          <div class="h-flex" style="gap: 10px; margin-bottom: 15px;">
+            <button id="exportParams" class="mybutton h-input-effects" title="Export saved params to JSON">
+              <i class="fas fa-download"></i> Export
+            </button>
+            <button id="importParams" class="mybutton h-input-effects" title="Import params from JSON">
+              <i class="fas fa-upload"></i> Import
+            </button>
+            <input type="file" id="importParamsInput" accept=".json" style="display: none;">
+            <button id="clearSavedResults" class="mybutton h-input-effects" title="Clear all saved results">
+              <i class="fas fa-trash"></i> Clear All
+            </button>
+          </div>
+          <div class="h-flex" style="margin-bottom: 10px;">
+            <label style="display: flex; align-items: center; gap: 5px;">
+              <input type="checkbox" id="fastBacktestMode">
+              <span>Fast Mode (No Chart)</span>
+            </label>
+          </div>
+          <h5>Results Comparison</h5>
+          <div id="savedResultsComparison" class="h-field" style="max-height: 400px; overflow: auto; width: 100%; box-sizing: border-box;">
+            <p style="color: #666; font-style: italic;">No saved results yet. Run a backtest and save parameters to compare.</p>
+          </div>
+          <div id="monteCarloContainer" style="margin-top: 20px; background: transparent; padding: 0;">
+            <canvas id="monteCarloChart" width="1200px" height="500px"></canvas>
+            <div id="monteCarloStats" style="font-size: 11px; margin-top: 10px;"></div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -786,15 +797,30 @@ CTrade trade;
     toolbarToggler.addEventListener('click', toggleHeight);
 
     document.getElementById('result-panel-toolbar-content-toggler-algo').addEventListener('click', () => {
-      resultPanel.classList.add('active');
-      document.querySelectorAll('.result-panel-content')[0].classList.remove('h-hide');
-      document.querySelectorAll('.result-panel-content')[1].classList.add('h-hide');
-    });
-
-    document.getElementById('result-panel-toolbar-content-toggler-algo-editor').addEventListener('click', () => {
+      // Panel 1 = Backtesting results (Algo)
       resultPanel.classList.add('active');
       document.querySelectorAll('.result-panel-content')[0].classList.add('h-hide');
       document.querySelectorAll('.result-panel-content')[1].classList.remove('h-hide');
+      document.querySelectorAll('.result-panel-content')[2].classList.add('h-hide');
+      document.querySelectorAll('.result-panel-content')[3].classList.add('h-hide');
+    });
+
+    document.getElementById('result-panel-toolbar-content-toggler-comparison').addEventListener('click', () => {
+      // Panel 3 = Parameter Comparison
+      resultPanel.classList.add('active');
+      document.querySelectorAll('.result-panel-content')[0].classList.add('h-hide');
+      document.querySelectorAll('.result-panel-content')[1].classList.add('h-hide');
+      document.querySelectorAll('.result-panel-content')[2].classList.add('h-hide');
+      document.querySelectorAll('.result-panel-content')[3].classList.remove('h-hide');
+    });
+
+    document.getElementById('result-panel-toolbar-content-toggler-algo-editor').addEventListener('click', () => {
+      // Panel 0 = MQL5 Generator
+      resultPanel.classList.add('active');
+      document.querySelectorAll('.result-panel-content')[0].classList.remove('h-hide');
+      document.querySelectorAll('.result-panel-content')[1].classList.add('h-hide');
+      document.querySelectorAll('.result-panel-content')[2].classList.add('h-hide');
+      document.querySelectorAll('.result-panel-content')[3].classList.add('h-hide');
     });
 
     csvRefresh.addEventListener('click', () => {
@@ -816,24 +842,7 @@ CTrade trade;
 
     /* ---- */
 
-    const decimals = 5;
-    let slSize = () => parseFloat(document.getElementById('SLPoints').value);
-    let tpSize = () => parseFloat(document.getElementById('TPPoints').value);
-    let lotSize = () => parseFloat(document.getElementById('LotSize').value);
-    const EnumDirection = {
-      BULL: 'BULL',
-      BEAR: 'BEAR',
-    };
-    const EnumOrderStatus = {
-      PENDING: 'PENDING',
-      CLOSED_BY_TP: 'CLOSED_BY_TP',
-      CLOSED_BY_SL: 'CLOSED_BY_SL',
-    };
-    const EnumActionType = {
-      VERTICAL_LINE: 'VERTICAL_LINE',
-      DRAW_A_CIRCLE: 'DRAW_A_CIRCLE',
-      TAKE_A_TRADE: 'TAKE_A_TRADE',
-    };
+    // Note: Variables like decimals, slSize, tpSize, lotSize, enums are now defined in index6.js
 
     const getCandleDirection = (candle) => {
       return candle.close > candle.open ? EnumDirection.BULL : EnumDirection.BEAR;

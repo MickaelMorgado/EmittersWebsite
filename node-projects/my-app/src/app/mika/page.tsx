@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import "./portfolio.css";
+import { VersionBadge } from "@/components/VersionBadge";
 
 import Aquarium3D from "./Aquarium3D";
 import BMW3D from "./BMW3D";
@@ -691,6 +692,7 @@ export default function MikaPage() {
           </footer>
         </div>
       </div>
+      <VersionBadge projectName="mika" />
     </main>
   );
 }

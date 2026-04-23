@@ -118,6 +118,12 @@ table tr {
 
 .historical-order-table-header th {
   text-align: left;
+  width: 100%;
+}
+
+table {
+  width: 100%;
+  table-layout: fixed;
 }
 
 .historical-order-line:hover {
@@ -148,18 +154,22 @@ table tr {
 }
 .historical-order-line td:nth-child(3),
 .historical-order-table-header th:nth-child(3) {
+ min-width: 70px;
   width: 5%;
 }
 .historical-order-line td:nth-child(4),
 .historical-order-table-header th:nth-child(4) {
+  min-width: 70px;
   width: 5%;
 }
 .historical-order-line td:nth-child(5),
 .historical-order-table-header th:nth-child(5) {
+  min-width: 70px;
   width: 5%;
 }
 .historical-order-line td:nth-child(6),
 .historical-order-table-header th:nth-child(6) {
+
   width: 10%;
 }
 .historical-order-line td:nth-child(7),
@@ -169,6 +179,9 @@ table tr {
 .historical-order-line td:nth-child(8),
 .historical-order-table-header th:nth-child(8) {
   width: 12%;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
 }
 .historical-order-line td:nth-child(9),
 .historical-order-table-header th:nth-child(9) {
@@ -272,7 +285,7 @@ table {
 
 .result-panel {
   position: relative;
-  max-height: 60px;
+  height: 60px;
   background: black;
   color: white;
   overflow-y: auto;
@@ -309,12 +322,12 @@ table {
 
 /* When the result panel is active: */
 .result-panel.active {
-  max-height: 500px;
+  height: 500px;
 }
 
 /* When chart is collapsed and panel should take full height: */
 .result-panel.active.full-height {
-  max-height: 100vh;
+  height: 100vh;
 }
 
 .active .result-panel-toolbar-toggler {
@@ -596,4 +609,156 @@ table {
 
 .bokeh-toggle.active::before {
   content: '🔍';
+}
+
+/* Comparison Results Table */
+.comparison-results-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  table-layout: fixed;
+}
+
+.comparison-results-table thead {
+  position: sticky;
+  top: 0;
+  background: var(--dark);
+  z-index: 1;
+  width: 100%;
+  display: revert;
+}
+
+.comparison-results-table thead tr {
+  display: revert;
+}
+
+.comparison-table-header th {
+  padding: 8px 4px;
+  text-align: left;
+  background: var(--dark2);
+  color: var(--light);
+  font-weight: 600;
+  border-bottom: 2px solid var(--accent);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.comparison-table-header th:first-child {
+  width: 30px;
+  text-align: center;
+}
+
+.comparison-table-header th:nth-child(2) {
+  width: 100px;
+}
+
+.comparison-table-header th:last-child {
+  width: 110px;
+  text-align: center;
+}
+
+.btn-load-params, .btn-load-mql {
+  background: var(--accent);
+  border: none;
+  border-radius: 4px;
+  color: white;
+  cursor: pointer;
+  padding: 4px 10px;
+  font-size: 11px;
+  margin: 0 2px;
+  transition: background-color 0.3s ease;
+}
+
+.btn-load-params:hover, .btn-load-mql:hover {
+  background: var(--green);
+}
+
+.comparison-results-table tbody {
+  display: table-row-group;
+}
+
+.comparison-results-table tbody tr {
+  display: table-row;
+  padding: 8px;
+  border-bottom: 1px solid var(--dark3);
+}
+
+.comparison-results-table tbody tr:hover {
+  background: var(--dark3);
+}
+
+.comparison-results-table td {
+  padding: 6px 4px;
+  border: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.btn-load-params {
+  background: var(--accent);
+  border: none;
+  border-radius: 4px;
+  color: white;
+  cursor: pointer;
+  padding: 4px 8px;
+  font-size: 10px;
+}
+
+.btn-load-params:hover {
+  background: var(--green);
+}
+
+.comparison-results-table td:first-child {
+  text-align: center;
+}
+
+.comparison-row.best-result {
+  background: rgba(0, 255, 0, 0.1);
+}
+
+.comparison-row.best-result td {
+  color: #0f0;
+  font-weight: 600;
+}
+
+.comparison-row.worst-result {
+  background: rgba(255, 0, 0, 0.1);
+}
+
+.comparison-row.worst-result td {
+  color: #f88;
+}
+
+.text-profit {
+  color: #0f0 !important;
+}
+
+.text-loss {
+  color: #f00 !important;
+}
+
+.text-drawdown {
+  color: #fa0;
+}
+
+/* Monte Carlo Section */
+#monteCarloContainer {
+  background: var(--dark2);
+  padding: 15px;
+  border-radius: var(--radius);
+  margin-top: 10px;
+}
+
+#monteCarloContainer h5 {
+  margin: 0 0 10px 0;
+  color: var(--light);
+}
+
+#monteCarloStats {
+  margin-top: 10px;
+  padding: 10px;
+  background: var(--dark1);
+  border-radius: var(--radius);
 }
