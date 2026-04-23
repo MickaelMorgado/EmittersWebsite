@@ -8,7 +8,7 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 
 const AUTH_PASSWORD = 'Mickael01';
-const PRIVATE_APPS = ['/investments'];
+const PRIVATE_APPS = ['/investments', '/fact-check'];
 
 type VisibilityFilter = 'all' | 'public' | 'private';
 
@@ -436,6 +436,39 @@ export default function Home() {
                 </Card>
               </TiltCard>
             </Link>
+            {unlocked ? (
+              <Link href="/fact-check" target="_blank" className="h-full">
+                <TiltCard isGlobalHovered={isGlobalHovered} setIsGlobalHovered={setIsGlobalHovered} accentColor="239, 68, 68">
+                  <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
+                    <CardHeader>
+                      <CardTitle className="uppercase">Fact Check AI</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-muted-foreground text-sm">
+                        Verify claims with AI
+                      </p>
+                    </CardContent>
+                  </Card>
+                </TiltCard>
+              </Link>
+            ) : (
+              <div className="h-full" onClick={() => setShowAuthModal(true)}>
+                <TiltCard isGlobalHovered={isGlobalHovered} setIsGlobalHovered={setIsGlobalHovered} accentColor="239, 68, 68">
+                  <Card className="h-full flex flex-col hover:shadow-md transition-opacity opacity-50">
+                    <CardHeader>
+                      <CardTitle className="uppercase flex items-center gap-2">
+                        <Lock className="h-4 w-4" /> Fact Check
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-muted-foreground text-sm">
+                        Click to unlock
+                      </p>
+                    </CardContent>
+                  </Card>
+                </TiltCard>
+              </div>
+            )}
             {unlocked ? (
               <Link href="/investments" target="_blank" className="h-full">
                 <TiltCard isGlobalHovered={isGlobalHovered} setIsGlobalHovered={setIsGlobalHovered} accentColor="16, 185, 129">
