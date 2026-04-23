@@ -124,25 +124,21 @@ export default function Component() {
     try {
       setIsLoading(true);
 
-      const response = await fetch(
-        'https://api.openai.com/v1/chat/completions',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${process.env.NEXT_PUBLIC_OPENAI_API_KEY}`,
-          },
-          body: JSON.stringify({
-            model: 'gpt-3.5-turbo',
-            messages: [{ role: 'user', content: message }],
-          }),
-        }
-      );
+      const history = chatMessages
+        .slice(-6)
+        .map((m) => ({ role: m.role, content: m.content }));
+
+      const response = await fetch('/api/memogpt', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message, history }),
+      });
 
       if (!response.ok) throw new Error('Error with the API request.');
 
       const data = await response.json();
-      const reply = data.choices[0].message.content;
+      if (data.error) throw new Error(data.error);
+      const reply = data.content;
 
       appendMessage(reply, 'bot');
       // Use global speakBrowser function from script tag if speech is enabled
