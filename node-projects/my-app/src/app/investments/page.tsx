@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
-const AUTH_PASSWORD = 'Mickael01';
+const AUTH_PASSWORD = process.env.NEXT_PUBLIC_AUTH_PASSWORD;
 
 function AuthScreen({ onUnlock }: { onUnlock: () => void }) {
   const [password, setPassword] = useState('');

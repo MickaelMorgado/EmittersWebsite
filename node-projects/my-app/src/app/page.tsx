@@ -7,7 +7,7 @@ import { Lock, Search, X } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 
-const AUTH_PASSWORD = 'Mickael01';
+const AUTH_PASSWORD = process.env.NEXT_PUBLIC_AUTH_PASSWORD;
 const PRIVATE_APPS = ['/investments', '/fact-check'];
 
 type VisibilityFilter = 'all' | 'public' | 'private';
