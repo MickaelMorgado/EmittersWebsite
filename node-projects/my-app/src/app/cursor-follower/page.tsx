@@ -14,8 +14,8 @@ export default function CursorFollower() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [isPreparing, setIsPreparing] = useState(false);
   const [preparingCountdown, setPreparingCountdown] = useState(3);
-  const [cropScale, setCropScale] = useState(0.5);
-  const [orientation, setOrientation] = useState<Orientation>('portrait');
+  const [cropScale, setCropScale] = useState(0.4);
+  const [orientation, setOrientation] = useState<Orientation>('landscape');
   const [status, setStatus] = useState('Ready to start');
   const [error, setError] = useState('');
   const [serverConnected, setServerConnected] = useState(false);
@@ -375,16 +375,23 @@ export default function CursorFollower() {
         )}
       </div>
 
-      <div className="absolute bottom-4 left-16 z-10">
-        <div className="bg-black/40 backdrop-blur-md rounded border border-white/5 p-4">
-          <h1 className="text-white text-lg font-light tracking-[0.2em] mb-1 uppercase">Cursor Follower</h1>
-          <div className="flex items-center gap-3 text-[10px] tracking-widest">
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10">
+        <div className="bg-black/40 backdrop-blur-md rounded-lg border border-white/5 px-6 py-3">
+          <div className="flex items-center gap-4 text-xs tracking-widest mb-2">
             <span className={isPreparing ? 'text-yellow-400' : isStreaming ? 'text-green-400' : 'text-gray-600'}>
               {status}
             </span>
             <span className={serverConnected ? 'text-green-400' : 'text-red-400'}>
               {serverConnected ? 'TRACKING' : 'NO TRACKER'}
             </span>
+          </div>
+          <div className="flex items-center gap-4">
+            <h1 className="text-white text-xl font-bold tracking-[0.05em] italic uppercase">HYTEK</h1>
+            <div className="w-px h-6 bg-white/10" />
+            <div>
+              <span className="text-white/60 text-sm font-bold tracking-[0.05em] italic uppercase block">Cursor Follower</span>
+              <span className="text-white/40 text-xs font-bold tracking-[0.1em] italic uppercase">Link in Bio</span>
+            </div>
           </div>
         </div>
       </div>

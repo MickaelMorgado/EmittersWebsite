@@ -1,4 +1,4 @@
-.PHONY: build serve clean
+.PHONY: build serve clean start-full
 
 # Build the application
 build:
@@ -12,6 +12,9 @@ build:
 serve:
 	@echo "🌍 Serving the application..."
 	npx serve@latest out
+
+# Build and serve
+start-full: build serve
 
 # Clean build artifacts
 clean:
