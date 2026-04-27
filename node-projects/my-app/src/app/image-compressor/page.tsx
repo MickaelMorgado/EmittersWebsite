@@ -62,6 +62,7 @@ export default function ImageCompressorPage() {
   const [videoWidth, setVideoWidth] = useState(1080);
   const [videoHeight, setVideoHeight] = useState(1920);
   const [isProcessingVideo, setIsProcessingVideo] = useState(false);
+  const [videoFormat, setVideoFormat] = useState<"webm" | "mp4">("webm");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
 
@@ -230,7 +231,8 @@ export default function ImageCompressorPage() {
   const cropVideo = async (
     videoFile: VideoFile,
     targetWidth: number,
-    targetHeight: number
+    targetHeight: number,
+    outputFormat: "webm" | "mp4" = "webm"
   ): Promise<{ blob: Blob; size: number }> => {
     return new Promise((resolve, reject) => {
       const video = document.createElement("video");
@@ -271,12 +273,28 @@ export default function ImageCompressorPage() {
           // Use MediaRecorder to capture video frames
           const stream = canvas.captureStream(30); // 30 FPS
           
-          // Check supported mime types
-          let mimeType = "video/webm;codecs=vp9";
-          if (!MediaRecorder.isTypeSupported(mimeType)) {
-            mimeType = "video/webm;codecs=vp8";
+          // Check supported mime types based on output format
+          let mimeType = outputFormat === "mp4" ? "video/mp4" : "video/webm;codecs=vp9";
+          
+          if (outputFormat === "webm") {
             if (!MediaRecorder.isTypeSupported(mimeType)) {
-              mimeType = "video/webm";
+              mimeType = "video/webm;codecs=vp8";
+              if (!MediaRecorder.isTypeSupported(mimeType)) {
+                mimeType = "video/webm";
+              }
+            }
+          } else {
+            // For MP4, try different codec combinations
+            if (!MediaRecorder.isTypeSupported(mimeType)) {
+              mimeType = "video/mp4;codecs=avc1.42E01E,mp4a.40.2";
+              if (!MediaRecorder.isTypeSupported(mimeType)) {
+                mimeType = "video/mp4;codecs=avc1.42001E,mp4a.40.2";
+                if (!MediaRecorder.isTypeSupported(mimeType)) {
+                  // Fallback to WebM if MP4 not supported
+                  console.warn("MP4 not supported, falling back to WebM");
+                  mimeType = "video/webm;codecs=vp9";
+                }
+              }
             }
           }
 
@@ -293,7 +311,9 @@ export default function ImageCompressorPage() {
           };
 
           recorder.onstop = () => {
-            const blob = new Blob(chunks, { type: mimeType.split(';')[0] });
+            const actualMimeType = mimeType.split(';')[0];
+            const actualFormat = actualMimeType.includes('mp4') ? 'mp4' : 'webm';
+            const blob = new Blob(chunks, { type: actualMimeType });
             URL.revokeObjectURL(video.src);
             resolve({ blob, size: blob.size });
           };
@@ -409,7 +429,7 @@ export default function ImageCompressorPage() {
           setVideos([...updatedVideos]);
         }
 
-        const result = await cropVideo(updatedVideos[i], videoWidth, videoHeight);
+        const result = await cropVideo(updatedVideos[i], videoWidth, videoHeight, videoFormat);
 
         if (updatedVideos[i].preview) {
           URL.revokeObjectURL(updatedVideos[i].preview);
@@ -456,7 +476,8 @@ export default function ImageCompressorPage() {
   const handleDownloadVideos = () => {
     videos.forEach((vid) => {
       if (vid.croppedBlob && vid.status === "done") {
-        const name = vid.file.name.replace(/\.[^/.]+$/, "") + `_${videoWidth}x${videoHeight}.webm`;
+        const ext = videoFormat === "mp4" ? "mp4" : "webm";
+        const name = vid.file.name.replace(/\.[^/.]+$/, "") + `_${videoWidth}x${videoHeight}.${ext}`;
         const url = URL.createObjectURL(vid.croppedBlob);
         const a = document.createElement("a");
         a.href = url;
@@ -1073,6 +1094,36 @@ export default function ImageCompressorPage() {
                     </p>
                   </div>
 
+                  <div className="pt-4 border-t border-white/10">
+                    <label className="text-sm text-white/60 mb-3 block">
+                      Export Format
+                    </label>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setVideoFormat("webm")}
+                        className={`flex-1 text-sm px-4 py-3 rounded-lg bg-white/10 hover:bg-white/20 transition-all ${
+                          videoFormat === "webm"
+                            ? "ring-2 ring-purple-500 bg-purple-500/20"
+                            : ""
+                        }`}
+                      >
+                        <div className="font-medium">WebM</div>
+                        <div className="text-xs text-white/40">Default, fast</div>
+                      </button>
+                      <button
+                        onClick={() => setVideoFormat("mp4")}
+                        className={`flex-1 text-sm px-4 py-3 rounded-lg bg-white/10 hover:bg-white/20 transition-all ${
+                          videoFormat === "mp4"
+                            ? "ring-2 ring-purple-500 bg-purple-500/20"
+                            : ""
+                        }`}
+                      >
+                        <div className="font-medium">MP4</div>
+                        <div className="text-xs text-white/40">Better compatibility</div>
+                      </button>
+                    </div>
+                  </div>
+
                   {videos.length > 0 && (
                     <div className="space-y-3 pt-4 border-t border-white/10">
                       <div className="flex justify-between text-sm">
@@ -1132,7 +1183,7 @@ export default function ImageCompressorPage() {
                   <p className="text-xs text-white/40 text-center">
                     All video processing happens in your browser.
                     <br />
-                    Videos are cropped to center and exported as WebM.
+                    Videos are cropped to center and exported as {videoFormat.toUpperCase()}.
                   </p>
                 </CardContent>
               </Card>
