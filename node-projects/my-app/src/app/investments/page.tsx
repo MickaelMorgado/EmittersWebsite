@@ -1,10 +1,16 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { TrendingDown, TrendingUp } from 'lucide-react';
+import { TrendingDown, TrendingUp, Eye, EyeOff } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import InvestmentsSidebar from '@/app/investments/components/InvestmentsSidebar';
+import {
+  getEntries,
+  getBEP as getBEPFromEntries,
+  getCurrency as getCurrencyFromData,
+} from '@/app/investments/data';
 
 const AUTH_PASSWORD = process.env.NEXT_PUBLIC_AUTH_PASSWORD;
 
@@ -57,6 +63,16 @@ interface Asset {
   qty: number;
   currency: string;
   price24h: number;
+}
+
+interface SelectedAsset {
+  symbol: string;
+  name: string;
+  price: number;
+  change: number;
+  currency: string;
+  entries: { date: string; qty: number; price: number }[];
+  bep: number;
 }
 
 const CRYPTO_API = 'https://api.binance.com/api/v3';
@@ -121,47 +137,53 @@ async function fetchStockPrice(symbol: string): Promise<{ price: number; change:
   }
 }
 
-const STOCK_SYMBOLS = ['AAPL', 'META', 'TTWO', 'XPEV', 'EGL', 'KVUE'];
+const STOCK_SYMBOLS = ['DB', 'KVU', 'EXO', 'XBO', 'MOTA'];
 
 function getStockSymbol(symbol: string): string {
-  if (symbol === '76M') return 'XBOTF';
   return getStockName(symbol);
 }
 
 function getStockName(symbol: string): string {
   const names: Record<string, string> = {
-    AAPL: 'Apple', META: 'Meta', TTWO: 'Take-Two', XPEV: 'XPeng',
-    EGL: 'Eastman', KVUE: 'Kenvue', DIB: 'iShares Clean Energy',
-    MSGM: 'MGIC', EXOD: 'Exodus', XBOT: 'iShares Robotics',
-    ADA: 'Cardano', XTZ: 'Tezos', BMW: 'BMW'
+    DB: 'Digital Bros', KVU: 'Kenvue', EXO: 'Exodus', XBO: 'Realbotix',
+    MOTA: 'Mota Engil', BTC: 'Bitcoin', ETH: 'Ethereum', LTC: 'Litecoin',
+    XRP: 'XRP', SOL: 'Solana', FIL: 'Filecoin', DOGE: 'Dogecoin',
+    ADA: 'Cardano', XTZ: 'Tezos'
   };
   return names[symbol] || symbol;
 }
 
+
+
 const PORTFOLIO: Record<string, { bep: number; qty: number; currency: string }> = {
-  XPEV: { bep: 18.78, qty: 2, currency: 'USD' },
-  DIB: { bep: 11.39666, qty: 12, currency: 'EUR' },
-  EXOD: { bep: 19.42975, qty: 20, currency: 'USD' },
-  KVUE: { bep: 18.09, qty: 2, currency: 'USD' },
-  EGL: { bep: 4.26, qty: 2, currency: 'EUR' },
-  XBOTF: { bep: 0.2899, qty: 70, currency: 'USD' },
-  BTC: { bep: 105900, qty: 0, currency: 'USD' },
-  SOL: { bep: 140, qty: 0, currency: 'USD' },
-  BMW: { bep: 75, qty: 0, currency: 'EUR' },
-  ADA: { bep: 0.45, qty: 0, currency: 'USD' },
-  XTZ: { bep: 2.5, qty: 0, currency: 'USD' },
+  DB: { bep: 0, qty: 0, currency: 'EUR' },
+  KVU: { bep: 0, qty: 0, currency: 'USD' },
+  EXO: { bep: 0, qty: 0, currency: 'USD' },
+  XBO: { bep: 0, qty: 0, currency: 'EUR' },
+  MOTA: { bep: 0, qty: 0, currency: 'EUR' },
+  BTC: { bep: 0, qty: 0, currency: 'USD' },
+  ETH: { bep: 0, qty: 0, currency: 'USD' },
+  LTC: { bep: 0, qty: 0, currency: 'USD' },
+  XRP: { bep: 0, qty: 0, currency: 'USD' },
+  SOL: { bep: 0, qty: 0, currency: 'USD' },
+  FIL: { bep: 0, qty: 0, currency: 'USD' },
+  DOGE: { bep: 0, qty: 0, currency: 'USD' },
+  ADA: { bep: 0, qty: 0, currency: 'USD' },
+  XTZ: { bep: 0, qty: 0, currency: 'USD' },
 };
 
 function getBEP(symbol: string): number {
-  return PORTFOLIO[symbol]?.bep || 0;
+  const entries = getEntries(symbol);
+  return getBEPFromEntries(entries);
 }
 
 function getQty(symbol: string): number {
-  return PORTFOLIO[symbol]?.qty || 0;
+  const entries = getEntries(symbol);
+  return entries.reduce((sum, e) => sum + e.qty, 0);
 }
 
 function getCurrency(symbol: string): string {
-  return PORTFOLIO[symbol]?.currency || 'USD';
+  return getCurrencyFromData(symbol);
 }
 
 function getInitialCrypto(): Asset[] {
@@ -237,7 +259,7 @@ function MiniChart({ data, color }: { data: number[]; color: string }) {
   );
 }
 
-function AssetCard({ asset, loading, sparkline = [] }: { asset: Asset; loading?: boolean; sparkline?: number[] }) {
+function AssetCard({ asset, loading, sparkline = [], onClick, blurValues = false, compact = false }: { asset: Asset; loading?: boolean; sparkline?: number[]; onClick?: () => void; blurValues?: boolean; compact?: boolean }) {
   const { symbol, name, price, change, bep, qty, currency } = asset;
   const isPositive = change > 0;
   const isNeutral = change === 0;
@@ -253,12 +275,34 @@ function AssetCard({ asset, loading, sparkline = [] }: { asset: Asset; loading?:
       : 'bg-gradient-to-tl from-red-600/25 to-transparent'
     : '';
 
-  const link = getTradingViewLink(symbol, asset.currency);
-  
   const lineColor = hasPnlData ? (isProfit ? '#22c55e' : '#ef4444') : '#71717a';
 
+  if (compact) {
+    return (
+      <button onClick={onClick} className="block w-full text-left">
+        <Card className={`relative overflow-hidden bg-zinc-900/50 border-zinc-800 hover:border-zinc-600 transition-all py-2 px-3 ${gradientClass}`}>
+          <MiniChart data={sparkline} color={lineColor} />
+          <div className="flex items-center justify-between relative">
+            <div>
+              <CardTitle className="text-sm font-bold text-white">{symbol}</CardTitle>
+              <p className="text-[10px] text-zinc-400 truncate max-w-[80px]">{name}</p>
+            </div>
+            <div className="text-right">
+              <span className="text-sm font-semibold text-white">
+                {loading && !hasPrice ? <span className="text-zinc-500 text-xs animate-pulse">...</span> : formatPrice(price)}
+              </span>
+              <div className={`flex items-center text-[10px] font-medium ${isNeutral ? 'text-zinc-400' : isPositive ? 'text-green-500' : 'text-red-500'}`}>
+                {isNeutral ? '--' : `${isPositive ? '+' : ''}${Math.abs(change).toFixed(1)}%`}
+              </div>
+            </div>
+          </div>
+        </Card>
+      </button>
+    );
+  }
+
   return (
-    <a href={link} target="_blank" rel="noopener noreferrer" className="block">
+    <button onClick={onClick} className="block w-full text-left">
       <Card className={`relative overflow-hidden bg-zinc-900/50 border-zinc-800 hover:border-zinc-600 transition-all hover:scale-[1.02] ${gradientClass}`}>
         <MiniChart data={sparkline} color={lineColor} />
         <CardHeader className="pb-1 relative">
@@ -271,26 +315,17 @@ function AssetCard({ asset, loading, sparkline = [] }: { asset: Asset; loading?:
         <CardContent className="space-y-2 relative">
           <div className="flex items-end justify-between">
             <span className="text-xl font-semibold text-white">
-              {loading && !hasPrice ? (
-                <span className="text-zinc-500 text-sm animate-pulse">Loading...</span>
-              ) : (
-                formatPrice(price)
-              )}
+              {loading && !hasPrice ? <span className="text-zinc-500 text-sm animate-pulse">Loading...</span> : formatPrice(price)}
             </span>
             <div className={`flex items-center text-sm font-medium ${isNeutral ? 'text-zinc-400' : isPositive ? 'text-green-500' : 'text-red-500'}`}>
-              {isNeutral ? (
-                <span className="text-zinc-400">--</span>
-              ) : (
-                <>
-                  {isPositive ? <TrendingUp className="h-4 w-4 mr-1" /> : <TrendingDown className="h-4 w-4 mr-1" />}
-                  {Math.abs(change).toFixed(2)}%
-                </>
-              )}
+              {isNeutral ? <span className="text-zinc-400">--</span> : <>{isPositive ? <TrendingUp className="h-4 w-4 mr-1" /> : <TrendingDown className="h-4 w-4 mr-1" />}{Math.abs(change).toFixed(2)}%</>}
             </div>
           </div>
           <div className="flex items-center justify-between pt-1 border-t border-zinc-800">
-            <span className="text-xs text-zinc-500">BEP</span>
-            <span className="text-xs text-zinc-400">{bep > 0 ? `${currency} ${formatPrice(bep)}` : '--'}</span>
+            <span className="text-xs text-zinc-500">{blurValues ? 'Pos' : 'BEP'}</span>
+            <span className={`text-xs text-zinc-400 ${blurValues ? 'blur-sm select-none' : ''}`}>
+              {bep > 0 ? (blurValues ? '••••' : `${currency} ${formatPrice(bep)}`) : '--'}
+            </span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-xs text-zinc-500">P&L</span>
@@ -298,7 +333,7 @@ function AssetCard({ asset, loading, sparkline = [] }: { asset: Asset; loading?:
           </div>
         </CardContent>
       </Card>
-    </a>
+    </button>
   );
 }
 
@@ -336,6 +371,29 @@ export default function InvestmentsPage() {
   const [stockData, setStockData] = useState<Asset[]>(getInitialStocks());
   const [commodities, setCommodities] = useState<Asset[]>(getInitialCommodities());
   const [loading, setLoading] = useState(true);
+  const [selectedAsset, setSelectedAsset] = useState<SelectedAsset | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [blurValues, setBlurValues] = useState(false);
+
+  const handleAssetClick = (asset: Asset) => {
+    const entries = getEntries(asset.symbol);
+    const bep = getBEPFromEntries(entries);
+    setSelectedAsset({
+      symbol: asset.symbol,
+      name: asset.name,
+      price: asset.price,
+      change: asset.change,
+      currency: asset.currency,
+      entries,
+      bep,
+    });
+    setSidebarOpen(true);
+  };
+
+  const handleCloseSidebar = () => {
+    setSidebarOpen(false);
+    setSelectedAsset(null);
+  };
 
   useEffect(() => {
     async function fetchAllPrices() {
@@ -360,7 +418,7 @@ try {
           const withAllocation = (a: any) => (getQty(a.symbol) || 0) * (getBEP(a.symbol) || 0);
           
           const cryptoResults = allResults.filter((a: any) => ['BTC','ETH','LTC','XRP','SOL','FIL','DOGE','ADA','XTZ'].includes(a.symbol));
-          const stockResults = allResults.filter((a: any) => ['AAPL','META','TTWO','XPEV','EGL','KVUE','EXOD','DIB','XBOTF'].includes(a.symbol));
+          const stockResults = allResults.filter((a: any) => ['DB','KVU','EXO','XBO','MOTA'].includes(a.symbol));
           const commodityResults = allResults.filter((a: any) => ['XAU','XPT','SP500'].includes(a.symbol));
           
           // Only update if we have data
@@ -391,38 +449,66 @@ try {
   return (
     <div className="min-h-screen bg-black text-white p-4 lg:p-8">
       <div className="container mx-auto">
-        <h1 className="text-4xl font-bold tracking-tight mb-2 heading-shine uppercase">Investments Dashboard</h1>
-        <p className="text-zinc-400 mb-8">Track your stocks, crypto, and market indices</p>
+        <div className="flex items-center justify-between mb-2">
+          <h1 className="text-4xl font-bold tracking-tight heading-shine uppercase">Investments Dashboard</h1>
+          <button
+            onClick={() => setBlurValues(!blurValues)}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-colors"
+            title={blurValues ? 'Show values' : 'Hide values'}
+          >
+            {blurValues ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+            <span className="text-sm">{blurValues ? 'Show' : 'Hide'}</span>
+          </button>
+        </div>
+        <p className="text-zinc-400 mb-4">Track your stocks, crypto, and market indices</p>
 
-        {/* Crypto */}
-        <section className="mb-8">
-          <h2 className="text-2xl font-bold mb-4 text-zinc-300">Crypto</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-4">
-            {cryptoData.map((asset) => (
-              <AssetCard key={asset.symbol} asset={asset} loading={loading} />
-            ))}
-          </div>
-        </section>
+        <div className="flex gap-4 h-[calc(100vh-180px)]">
+          <div className={`flex-1 transition-all duration-300 overflow-y-auto pr-2 ${selectedAsset ? 'w-[40%]' : 'w-full'}`}>
+            {/* Crypto */}
+            <section className="mb-8">
+              <h2 className="text-2xl font-bold mb-4 text-zinc-300">Crypto</h2>
+              <div className={`grid gap-2 ${selectedAsset ? 'grid-cols-1' : 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-8'}`}>
+                {cryptoData.map((asset) => (
+                  <AssetCard key={asset.symbol} asset={asset} loading={loading} onClick={() => handleAssetClick(asset)} blurValues={blurValues} compact={!!selectedAsset} />
+                ))}
+              </div>
+            </section>
 
-        {/* Metals & Commodities */}
-        <section className="mb-8">
-          <h2 className="text-2xl font-bold mb-4 text-zinc-300">Metals & Commodities</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {commodities.map((asset) => (
-              <AssetCard key={asset.symbol} asset={asset} />
-            ))}
-          </div>
-        </section>
+            {/* Stocks */}
+            <section className="mb-8">
+              <h2 className={`font-bold mb-3 text-zinc-300 ${selectedAsset ? 'text-lg' : 'text-2xl mb-4'}`}>Stocks</h2>
+              <div className={`grid gap-2 ${selectedAsset ? 'grid-cols-1' : 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-8'}`}>
+                {stockData.map((asset) => (
+                  <AssetCard key={asset.symbol} asset={asset} loading={loading} onClick={() => handleAssetClick(asset)} blurValues={blurValues} compact={!!selectedAsset} />
+                ))}
+              </div>
+            </section>
 
-        {/* Stocks */}
-        <section>
-          <h2 className="text-2xl font-bold mb-4 text-zinc-300">Stocks</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-4">
-            {stockData.map((asset) => (
-              <AssetCard key={asset.symbol} asset={asset} loading={loading} />
-            ))}
+            {/* Metals & Commodities */}
+            <section className="mb-8">
+              <h2 className={`font-bold mb-3 text-zinc-300 ${selectedAsset ? 'text-lg' : 'text-2xl mb-4'}`}>Metals & Commodities</h2>
+              <div className={`grid gap-2 ${selectedAsset ? 'grid-cols-1' : 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6'}`}>
+                {commodities.map((asset) => (
+                  <AssetCard key={asset.symbol} asset={asset} onClick={() => handleAssetClick(asset)} blurValues={blurValues} compact={!!selectedAsset} loading={loading} />
+                ))}
+              </div>
+            </section>
           </div>
-        </section>
+          {selectedAsset && (
+            <InvestmentsSidebar
+              key={selectedAsset.symbol}
+              symbol={selectedAsset.symbol}
+              name={selectedAsset.name}
+              currentPrice={selectedAsset.price}
+              change24h={selectedAsset.change}
+              entries={selectedAsset.entries}
+              bep={selectedAsset.bep}
+              currency={getCurrencyFromData(selectedAsset.symbol)}
+              isOpen={sidebarOpen}
+              onClose={handleCloseSidebar}
+            />
+          )}
+        </div>
       </div>
     </div>
   );

@@ -79,15 +79,11 @@ export async function GET() {
     { symbol: 'DOGE', type: 'crypto' },
     { symbol: 'ADA', type: 'crypto' },
     { symbol: 'XTZ', type: 'crypto' },
-    { symbol: 'AAPL', type: 'stock' },
-    { symbol: 'META', type: 'stock' },
-    { symbol: 'TTWO', type: 'stock' },
-    { symbol: 'XPEV', type: 'stock' },
-    { symbol: 'EGL', type: 'stock', yahooSymbol: 'EGL.LS' },
-    { symbol: 'KVUE', type: 'stock' },
-    { symbol: 'EXOD', type: 'stock' },
-    { symbol: 'DIB', type: 'stock', yahooSymbol: 'DIB.MI' },
-    { symbol: 'XBOTF', type: 'stock', yahooSymbol: 'XBOTF' },
+    { symbol: 'DB', type: 'stock', yahooSymbol: 'DB.MI' },
+    { symbol: 'KVU', type: 'stock', yahooSymbol: 'KVUE' },
+    { symbol: 'EXO', type: 'stock', yahooSymbol: 'EXOD' },
+    { symbol: 'XBO', type: 'stock' },
+    { symbol: 'MOTA', type: 'stock', yahooSymbol: 'MOTA.LS' },
     { symbol: 'SP500', type: 'index', yahooSymbol: '%5EGSPC' },
   ];
 
@@ -96,9 +92,19 @@ export async function GET() {
     { symbol: 'XPT', type: 'metal', yahooSymbol: 'PL%3DF' },
   ];
 
+  const FALLBACK_PRICES: Record<string, { price: number; change: number }> = {
+    DB: { price: 8.50, change: 0 },
+    XBO: { price: 0.25, change: 0 },
+    MOTA: { price: 4.10, change: 0 },
+  };
+
   const results = await Promise.all(
     symbols.map(async ({ symbol, type, yahooSymbol }) => {
       const data = type === 'crypto' ? await fetchCryptoPrice(symbol) : await fetchStockPrice(yahooSymbol || symbol);
+      const fallback = FALLBACK_PRICES[symbol];
+      if ((!data?.price || data.price === 0) && fallback) {
+        return { symbol, type, ...fallback };
+      }
       return { symbol, type, ...data };
     })
   );
