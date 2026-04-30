@@ -128,7 +128,7 @@ const runOptimizedBacktest = (params, csvRows) => {
     if (candles.length < period) return 0;
     let sum = 0;
     for (let i = candles.length - period; i < candles.length; i++) {
-      sum += candles[i][EnumMT5OHLC.CLOSE];
+      sum += Number(candles[i][EnumMT5OHLC.CLOSE]);
     }
     return sum / period;
   };
@@ -173,19 +173,20 @@ const runOptimizedBacktest = (params, csvRows) => {
       const recentCandles = localCSIDLookbackCandleSerie.slice(-lookbackPeriod - 1);
       if (recentCandles.length >= lookbackPeriod) {
         const highPrices = recentCandles.slice(0, lookbackPeriod).map(c => 
-          getCandleDirection(c[EnumMT5OHLC.OPEN], c[EnumMT5OHLC.CLOSE]) === 'BULL' 
-            ? c[EnumMT5OHLC.CLOSE] : c[EnumMT5OHLC.OPEN]
+          getCandleDirection(Number(c[EnumMT5OHLC.OPEN]), Number(c[EnumMT5OHLC.CLOSE])) === 'BULL' 
+            ? Number(c[EnumMT5OHLC.CLOSE]) : Number(c[EnumMT5OHLC.OPEN])
         );
         const lowPrices = recentCandles.slice(0, lookbackPeriod).map(c => 
-          getCandleDirection(c[EnumMT5OHLC.OPEN], c[EnumMT5OHLC.CLOSE]) === 'BULL' 
-            ? c[EnumMT5OHLC.OPEN] : c[EnumMT5OHLC.CLOSE]
+          getCandleDirection(Number(c[EnumMT5OHLC.OPEN]), Number(c[EnumMT5OHLC.CLOSE])) === 'BULL' 
+            ? Number(c[EnumMT5OHLC.OPEN]) : Number(c[EnumMT5OHLC.CLOSE])
         );
         
         localHighestHighLong.push(Math.max(...highPrices));
         localLowestLowShort.push(Math.min(...lowPrices));
         
-        const bullishCSID = row[EnumMT5OHLC.CLOSE] > localHighestHighLong[localHighestHighLong.length - 2];
-        const bearishCSID = row[EnumMT5OHLC.CLOSE] < localLowestLowShort[localLowestLowShort.length - 2];
+        const currentClose = Number(row[EnumMT5OHLC.CLOSE]);
+        const bullishCSID = currentClose > localHighestHighLong[localHighestHighLong.length - 2];
+        const bearishCSID = currentClose < localLowestLowShort[localLowestLowShort.length - 2];
         
         const maArray = [];
         for (let i = Math.max(0, localCSIDLookbackCandleSerie.length - 10); i < localCSIDLookbackCandleSerie.length; i++) {
@@ -330,13 +331,17 @@ const direction = bullishCSID ? 'BULL' : 'BEAR';
         }
       }
       
-      // Check for SL hit (or TP if you want - this strategy only uses SL)
+// Check for SL hit (or TP if you want - this strategy only uses SL)
       if ((order.direction === 'BULL' && low <= order.sl) ||
           (order.direction === 'BEAR' && high >= order.sl)) {
         order.closed = true;
         order.closedPrice = order.sl;
         order.closedTime = candleDateTime;
-        order.closedOrderType = 'CLOSED_BY_SL';
+        if (order.direction === 'BULL') {
+          order.closedOrderType = high >= order.tp ? 'CLOSED_BY_TP' : 'CLOSED_BY_SL';
+        } else {
+          order.closedOrderType = low <= order.tp ? 'CLOSED_BY_TP' : 'CLOSED_BY_SL';
+        }
         order.pnlPoints = order.direction === 'BULL'
           ? order.closedPrice - order.price
           : order.price - order.closedPrice;
@@ -506,6 +511,39 @@ if (urlParams.has('slpoints')) { $SLPointsInput.value = urlParams.get('slpoints'
 if (urlParams.has('tppoints')) { $TPPointsInput.value = urlParams.get('tppoints') }
 if (urlParams.has('tsincrement')) { $TSIncrementInput.value = urlParams.get('tsincrement') }
 if (urlParams.has('strategy')) { $strategyInput.value = urlParams.get('strategy') }
+
+// Auto-load CSV file from URL parameter
+if (urlParams.has('csv')) {
+  const csvPath = urlParams.get('csv');
+  console.log('Loading CSV from:', csvPath);
+  fetch(csvPath)
+    .then(response => response.text())
+    .then(csvText => {
+      document.getElementById('csvContent').value = csvText;
+      // Also cache the data for Run Backtest button
+      const lines = csvText.split(/\r?\n/).filter(Boolean);
+      const headers = lines[0].split('\t');
+      cachedCSVData = lines.slice(1).map(line => {
+        const values = line.split('\t');
+        const row = {};
+        headers.forEach((h, i) => row[h] = values[i]);
+        return row;
+      }).filter(row => row['<OPEN>']);
+      console.log('CSV loaded and cached, length:', csvText.length, 'rows:', cachedCSVData.length);
+    })
+    .catch(err => console.error('Failed to load CSV:', err));
+}
+
+// Auto-enable Fast Mode from URL parameter
+if (urlParams.has('fastmode')) {
+  setTimeout(() => {
+    const fastModeCheckbox = document.querySelector('input[type="checkbox"][id*="fast"]');
+    if (fastModeCheckbox) {
+      fastModeCheckbox.checked = true;
+      console.log('Fast Mode auto-enabled');
+    }
+  }, 1000);
+}
 
 const saveConfigs = () => {
   const urlParams = new URLSearchParams(window.location.search);
@@ -806,16 +844,16 @@ const datasets = [
   },
 ];
 
-// Get candle direction based on open and close prices:
-const getCandleDirection = (openPrice = 0, closePrice = 0) => {
-  if (openPrice == 0 || closePrice == 0) {
-    return EnumDirection.BULL; // Default to BULL if no prices are provided
-  }
-  return closePrice > openPrice ? EnumDirection.BULL : EnumDirection.BEAR;
-};
 // Get candle direction from candle object:
 const getCandleDirectionFromCandle = (candle) =>
   getCandleDirection(candle[EnumMT5OHLC.OPEN], candle[EnumMT5OHLC.CLOSE]);
+
+// Global getCandleDirection function
+const getCandleDirection = (openPrice = 0, closePrice = 0) => {
+  if (openPrice == 0 || closePrice == 0) return 'BULL';
+  return closePrice > openPrice ? 'BULL' : 'BEAR';
+};
+window.getCandleDirection = getCandleDirection;
 
 const getCandleChartAxisLocationFromDate = (date) =>
   new Date(date).getTime() / 1000;
@@ -1036,6 +1074,23 @@ const handleFileAndInitGraph = (file) => {
         currentParser = null;
         // Remove visible class from loading element
         document.getElementById('loading-element').classList.remove('visible');
+        
+        // Backtest summary
+        const totalOrders = ordersHistory.length;
+        const closedOrders = ordersHistory.filter(o => o.closed).length;
+        const wins = ordersHistory.filter(o => o.closed && o.tradeResult === 'WIN').length;
+        const losses = ordersHistory.filter(o => o.closed && o.tradeResult === 'LOSS').length;
+        console.log('========== BACKTEST COMPLETE ==========');
+        console.log('Total candles processed:', processedCandles);
+        console.log('Total orders:', totalOrders);
+        console.log('Closed orders:', closedOrders);
+        console.log('Wins:', wins, '| Losses:', losses);
+        if (ordersHistory.length > 0) {
+          console.log('First 3 orders:', JSON.stringify(ordersHistory.slice(0, 3)));
+        } else {
+          console.log('No orders taken - check strategy signals and time range');
+        }
+        console.log('=========================================');
         
         // Cache the CSV data for optimized backtest
         cachedCSVData = results.data.filter(row => row && row[EnumMT5OHLC.OPEN]);
@@ -1501,8 +1556,15 @@ const initSciChart = (data) => {
           }
 
           // Trailing Stop visual:
+          const _isFast = window.location.search.includes('fastmode') ||
+            (document.getElementById('fastBacktestMode') && document.getElementById('fastBacktestMode').checked);
+          if (!_isFast) {
           const updateTrailingStopVisual = (order, d) => {
-            const time = new Date(`${d[EnumMT5OHLC.DATE]} ${d[EnumMT5OHLC.TIME]}`);
+            try {
+              // Skip visual update if chart is not initialized
+              if (!window.sciChartSurface) return;
+
+              const time = new Date(`${d[EnumMT5OHLC.DATE]} ${d[EnumMT5OHLC.TIME]}`);
             const localISO = time.getTime() / 1000;
             const xValue = timeToIndex.get(localISO);
 
@@ -1525,7 +1587,9 @@ const initSciChart = (data) => {
             if (trailingStopSeriesMap.has(order.id)) {
               // update existing series by appending new candle data
               const series = trailingStopSeriesMap.get(order.id);
-              series.dataSeries.append(xValue, yValue, y1Value);
+              if (series && series.dataSeries) {
+                series.dataSeries.append(xValue, yValue, y1Value);
+              }
             } else {
               // first time -> create a new series with 1 point
               const dataSeries = new XyyDataSeries(wasmContext, {
@@ -1546,8 +1610,12 @@ const initSciChart = (data) => {
               sciChartSurface.renderableSeries.add(newSeries);
               trailingStopSeriesMap.set(order.id, newSeries);
             }
+            } catch (e) {
+              // Silently skip visual update errors
+            }
           };
           updateTrailingStopVisual(order, d);
+          } // end if (!_isFast)
 
           // Check TP
           if ((isBull && high >= order.tp) || (!isBull && low <= order.tp)) {
@@ -2743,6 +2811,22 @@ const loadParamsAndRun = (params) => {
   const resultPanel = document.getElementById('result-panel');
   if (resultPanel) resultPanel.classList.remove('active');
   
+  // If we have cached data from URL load (no file object), create a blob and run chart
+  if (!cachedFile && cachedCSVData.length > 0) {
+    // Convert cached data back to CSV string
+    const headers = Object.keys(cachedCSVData[0]);
+    const csvRows = cachedCSVData.map(row => headers.map(h => row[h]).join('\t'));
+    const csvString = [headers.join('\t'), ...csvRows].join('\n');
+    
+    // Create a blob and treat as file
+    const blob = new Blob([csvString], { type: 'text/csv' });
+    const mockFile = new File([blob], 'cached.csv', { type: 'text/csv' });
+    
+    // Use the existing file handling
+    handleFileAndInitGraph(mockFile);
+    return;
+  }
+  
   // Run the full backtest with chart - reuse the file that was uploaded
   handleFileAndInitGraph(cachedFile);
 };
@@ -2956,8 +3040,10 @@ const renderComparisonChart = () => {
   const worst = resultsWithEquity[resultsWithEquity.length - 1];
   document.getElementById('monteCarloStats').innerHTML = `
     <div style="display: flex; gap: 15px; flex-wrap: wrap; font-size: 11px;">
-      <span style="color: #5f5;">Best: ${best.name} (${best.money}$)</span>
-      <span style="color: #f55;">Worst: ${worst.name} (${worst.money}$)</span>
+      ${best && worst ? `
+        <span style="color: #5f5;">Best: ${best.name} (${best.money}$)</span>
+        <span style="color: #f55;">Worst: ${worst.name} (${worst.money}$)</span>
+      ` : '<span style="color: #666;">No equity curves to compare</span>'}
       <span style="color: #fff;">Runs: ${resultsWithEquity.length}</span>
     </div>
   `;
