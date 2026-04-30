@@ -3776,13 +3776,17 @@ const runGridSearch = async () => {
   // Show best result
   const sortedResults = [...backtestResults].sort((a, b) => parseFloat(b.moneyEquivalent) - parseFloat(a.moneyEquivalent));
   displayBacktestResult(sortedResults[0]);
-  
-  document.getElementById('loading-element').classList.remove('visible');
-  
+
+  // Update loading indicator to show completion
+  document.getElementById('loading-element').querySelector('.loading-text').textContent = 'Optimization Complete!';
+
   audioSuccess.play();
-  
+
   const best = sortedResults[0];
   alert(`Optimization complete!\n\nBest Profit: ${best.moneyEquivalent}$\nWin Rate: ${best.winRate}%\nTrades: ${best.totalTrades}\n\nParameters:\nSL: ${best.params.slSize}\nTP: ${best.params.tpSize}\nTS: ${best.params.tsSize}`);
+
+  // Hide loading indicator after user closes the alert
+  document.getElementById('loading-element').classList.remove('visible');
 };
 
 
