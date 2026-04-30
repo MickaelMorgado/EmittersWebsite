@@ -1219,16 +1219,6 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Keyboard shortcuts
   document.addEventListener('keydown', (e) => {
-    // Ctrl+Enter: Run optimized backtest
-    if (e.ctrlKey && e.key === 'Enter') {
-      e.preventDefault();
-      runOptimizedBacktestUI();
-    }
-    // Ctrl+S: Save current params
-    if (e.ctrlKey && e.key === 's') {
-      e.preventDefault();
-      saveCurrentParams();
-    }
     // Ctrl+Shift+G: Run grid search
     if (e.ctrlKey && e.shiftKey && e.key === 'G') {
       e.preventDefault();
@@ -1449,25 +1439,26 @@ const initSciChart = (data) => {
         const activeOrders = ordersHistory.filter(order => !order.closed);
         activeOrders.forEach((order) => {
 
-          // break-even at SL distance (1R)
-          if (!order.breakEvenMoved) {
-            const closePrice = d[EnumMT5OHLC.CLOSE];
-            const slDistance = slSize();
-            if (
-              (order.direction === EnumDirection.BULL && closePrice >= order.price + slDistance) ||
-              (order.direction === EnumDirection.BEAR && closePrice <= order.price - slDistance)
-            ) {
-              order.sl = order.price;
-              order.breakEvenMoved = true;
-            }
-          }
-
           const isBull = order.direction === EnumDirection.BULL;
           const isBear = order.direction === EnumDirection.BEAR;
           const high = d[EnumMT5OHLC.HIGH];
           const low = d[EnumMT5OHLC.LOW];
           const close = d[EnumMT5OHLC.CLOSE];
           const open = d[EnumMT5OHLC.OPEN];
+
+          // break-even at SL distance (1R) — single-position only
+          // Multi-position orders use progressive SL movement instead (below)
+          const isMultiPosOrder = order.slMoveStartR !== undefined;
+          if (!isMultiPosOrder && !order.breakEvenMoved) {
+            const slDistance = slSize();
+            if (
+              (isBull && close >= order.price + slDistance) ||
+              (isBear && close <= order.price - slDistance)
+            ) {
+              order.sl = order.price;
+              order.breakEvenMoved = true;
+            }
+          }
           const currentTime = `${d[EnumMT5OHLC.DATE]} ${d[EnumMT5OHLC.TIME]}`;
           const orderOpenTime = convertMT5DateToUnix(order.time);
 
@@ -1581,41 +1572,51 @@ const initSciChart = (data) => {
            }
            const trailingSize = trailingSizeMultiplier(candleSize);
 
-           // Initialize trailingActive if not exists (for backward compatibility)
-           if (order.trailingActive === undefined) {
-             order.trailingActive = false;
-           }
+           if (isMultiPosOrder) {
+             // === Multi-position SL management (matches fast mode) ===
 
-           // 1. Progressive SL movement (move SL every 0.5R) - from Grid Search
-           if (!order.trailingActive) {
-             const slMoveThreshold = order.slMoveStartR + (order.slMoveCount * 0.5);
-             if (currentR >= slMoveThreshold) {
-               const newSL = isBull
-                 ? order.price + (slMoveThreshold * slSize())
-                 : order.price - (slMoveThreshold * slSize());
-               order.sl = newSL;
-               order.slMoveCount++;
+             // Initialize trailingActive if not exists (for backward compatibility)
+             if (order.trailingActive === undefined) {
+               order.trailingActive = false;
              }
-           }
 
-           // 2. Activate trailing after trailingStartR - from Grid Search
-           if (currentR >= order.trailingStartR && !order.trailingActive) {
-             order.trailingActive = true;
-           }
+             // 1. Progressive SL movement (move SL every 0.5R) — per-position
+             if (!order.trailingActive) {
+               const slMoveThreshold = order.slMoveStartR + (order.slMoveCount * 0.5);
+               if (currentR >= slMoveThreshold) {
+                 const newSL = isBull
+                   ? order.price + (slMoveThreshold * slSize())
+                   : order.price - (slMoveThreshold * slSize());
+                 order.sl = newSL;
+                 order.slMoveCount++;
+               }
+             }
 
-           // 3. Apply trailing stop - from Grid Search
-           if (order.trailingActive && candlesFromBuffer.length >= 2) {
-             const newTrailingSL = isBull
-               ? close - trailingSize
-               : close + trailingSize;
+             // 2. Activate trailing after per-position trailingStartR
+             if (currentR >= order.trailingStartR && !order.trailingActive) {
+               order.trailingActive = true;
+             }
 
-             // Only improve SL (never move backwards) - lock in profits
-             const slImproved = isBull
-               ? newTrailingSL > order.sl
-               : newTrailingSL < order.sl;
+             // 3. Apply trailing stop with profit-lock (only improve SL)
+             if (order.trailingActive && candlesFromBuffer.length >= 2) {
+               const newTrailingSL = isBull
+                 ? close - trailingSize
+                 : close + trailingSize;
 
-             if (slImproved) {
-               order.sl = newTrailingSL;
+               const slImproved = isBull
+                 ? newTrailingSL > order.sl
+                 : newTrailingSL < order.sl;
+
+               if (slImproved) {
+                 order.sl = newTrailingSL;
+               }
+             }
+           } else {
+             // === Single-position trailing (matches fast mode) ===
+             if (isBull) {
+               order.sl += trailingSize;
+             } else {
+               order.sl -= trailingSize;
              }
            }
 
@@ -2936,60 +2937,6 @@ const loadAndCacheCSV = (file) => new Promise((resolve, reject) => {
   });
 
 // Run optimized backtest (no chart rendering)
-const runOptimizedBacktestUI = async () => {
-  // Check if we have cached data or if there's a file in the input
-  let csvData = cachedCSVData;
-  
-  // If no cached data, try to get from file input
-  if (csvData.length === 0) {
-    const file = $csvFileInput?.files?.[0];
-    if (file) {
-      // Parse the file directly for optimized backtest
-      console.log('Parsing file for optimized backtest...');
-      const results = await new Promise((resolve, reject) => {
-        Papa.parse(file, {
-          header: true,
-          dynamicTyping: true,
-          complete: resolve,
-          error: reject,
-        });
-      });
-      csvData = results.data.filter(row => row && row[EnumMT5OHLC.OPEN]);
-      cachedCSVData = csvData;
-      console.log(`Parsed ${csvData.length} candles from file`);
-    }
-  }
-  
-  if (csvData.length === 0) {
-    alert('Please load a CSV file first! The data will be cached for fast backtesting.');
-    return;
-  }
-  
-  const params = getCurrentParams();
-  
-  console.log(`Running optimized backtest with ${csvData.length} candles...`);
-  
-  // Show loading
-  document.getElementById('loading-element').classList.add('visible');
-  document.getElementById('loading-element').querySelector('.loading-text').textContent = 'Running optimized backtest...';
-  
-  // Use setTimeout to allow UI to update
-  setTimeout(() => {
-    const result = runOptimizedBacktest(params, csvData);
-    
-    // Hide loading
-    document.getElementById('loading-element').classList.remove('visible');
-    document.getElementById('loading-element').querySelector('.loading-text').textContent = 'Backtesting is running ...';
-    
-    // Display results
-    displayBacktestResult(result);
-    
-    // Auto-save to comparison
-    saveResultForComparison(result);
-    
-    audioSuccess.play();
-  }, 50);
-};
 
 // Monte Carlo simulation for equity curves
 const runMonteCarloSimulation = (orders, params, numSimulations = 50) => {
@@ -3307,15 +3254,6 @@ const updateSavedResultsComparison = () => {
 };
 
 // Save current parameters
-const saveCurrentParams = () => {
-  const params = getCurrentParams();
-  params.id = Date.now();
-  params.timestamp = new Date().toISOString();
-  params.name = document.getElementById('paramSetName')?.value || `Config ${savedParamSets.length + 1}`;
-  savedParamSets.push(params);
-  window.savedParamSets = savedParamSets;
-  alert(`Parameters "${params.name}" saved! Total saved: ${savedParamSets.length}`);
-};
 
 // Generate MQL from parameters
 const generateMQLFromParams = (params) => {
@@ -3610,59 +3548,6 @@ const runBacktestFromMQL = () => {
 document.getElementById('runBacktestFromMQLBtn')?.addEventListener('click', runBacktestFromMQL);
 
 // Run all saved parameter sets
-const runAllSavedParams = async () => {
-  if (cachedCSVData.length === 0) {
-    alert('Please load a CSV file first!');
-    return;
-  }
-  
-  if (savedParamSets.length === 0) {
-    alert('No saved parameter sets! Save some parameters first.');
-    return;
-  }
-  
-  // Show loading
-  document.getElementById('loading-element').classList.add('visible');
-  document.getElementById('loading-element').querySelector('.loading-text').textContent = 'Running multiple backtests...';
-  
-  // Clear previous results
-  backtestResults = [];
-  
-  setTimeout(() => {
-    savedParamSets.forEach((params, idx) => {
-      const result = runOptimizedBacktest(params, cachedCSVData);
-      result.params.name = params.name || `Config ${idx + 1}`;
-      backtestResults.push(result);
-    });
-    
-    // Update comparison
-    updateSavedResultsComparison();
-    
-    // Show best result
-    const best = [...backtestResults].sort((a, b) => parseFloat(b.moneyEquivalent) - parseFloat(a.moneyEquivalent))[0];
-    displayBacktestResult(best);
-    
-    // Hide loading
-    document.getElementById('loading-element').classList.remove('visible');
-    document.getElementById('loading-element').querySelector('.loading-text').textContent = 'Backtesting is running ...';
-    
-    audioSuccess.play();
-    alert(`Completed ${savedParamSets.length} backtests! Best result: ${best.moneyEquivalent}$`);
-  }, 50);
-};
-
-// Clear saved results
-const clearSavedResults = () => {
-  if (confirm('Clear all saved results?')) {
-    backtestResults = [];
-    savedParamSets = [];
-    window.backtestResults = backtestResults;
-    window.savedParamSets = savedParamSets;
-    localStorage.removeItem('backtestResults');
-    updateSavedResultsComparison();
-    renderComparisonChart();
-  }
-};
 
 // Intelligent parameter optimization using random search + hill climbing
 const runGridSearch = async () => {
@@ -3796,56 +3681,6 @@ const runGridSearch = async () => {
   alert(`Optimization complete!\n\nBest Profit: ${best.moneyEquivalent}$\nWin Rate: ${best.winRate}%\nTrades: ${best.totalTrades}\n\nParameters:\nSL: ${best.params.slSize}\nTP: ${best.params.tpSize}\nTS: ${best.params.tsSize}`);
 };
 
-// Export parameters
-const exportParams = () => {
-  const data = {
-    paramSets: savedParamSets,
-    results: backtestResults,
-    exportedAt: new Date().toISOString(),
-  };
-  
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `backtest_params_${Date.now()}.json`;
-  a.click();
-  URL.revokeObjectURL(url);
-};
-
-// Import parameters
-const importParams = (event) => {
-  const file = event.target.files[0];
-  if (!file) return;
-  
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    try {
-      const data = JSON.parse(e.target.result);
-      if (data.paramSets) {
-        savedParamSets = data.paramSets;
-        window.savedParamSets = savedParamSets;
-      }
-      if (data.results) {
-        backtestResults = data.results;
-        window.backtestResults = backtestResults;
-        updateSavedResultsComparison();
-      }
-      alert(`Imported ${savedParamSets.length} parameter sets and ${backtestResults.length} results!`);
-    } catch (err) {
-      alert('Error importing file: ' + err.message);
-    }
-  };
-  reader.readAsText(file);
-  event.target.value = '';
-};
 
 // Event listeners
-document.getElementById('runOptimizedBacktest')?.addEventListener('click', runOptimizedBacktestUI);
-document.getElementById('saveParamSet')?.addEventListener('click', saveCurrentParams);
-document.getElementById('runAllSavedParams')?.addEventListener('click', runAllSavedParams);
-document.getElementById('clearSavedResults')?.addEventListener('click', clearSavedResults);
 document.getElementById('runGridSearch')?.addEventListener('click', runGridSearch);
-document.getElementById('exportParams')?.addEventListener('click', exportParams);
-document.getElementById('importParams')?.addEventListener('click', () => document.getElementById('importParamsInput').click());
-document.getElementById('importParamsInput')?.addEventListener('change', importParams);
