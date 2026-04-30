@@ -430,20 +430,23 @@ table {
 }
 
 .loading-element {
-  position: absolute;
-  top: 0;
-  background: rgba(0, 0, 0, 0.7);
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  background: rgba(0, 0, 0, 0.9);
   border-radius: 10px;
-  padding: 20px 20px 20px 60px;
-  z-index: 1;
-  opacity: 0;
-  transition: opacity 0.15s ease;
+  padding: 10px 15px 10px 50px;
+  z-index: 10000;
+  display: none;
   color: red;
   pointer-events: auto;
+  font-weight: bold;
+  border: 2px solid red;
+  box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
 }
 
 .loading-element.visible {
-  opacity: 1;
+  display: block;
 }
 
 .loading-element .spinner {
