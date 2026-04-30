@@ -63,6 +63,22 @@ const MULTI_POSITION_PRESETS = {
       { lot: 0.5, name: 'B', slMoveStartR: 1.0, trailingStartR: 2.5, lotMultiplier: 0.5 },
       { lot: 0.5, name: 'C', slMoveStartR: 1.5, trailingStartR: 3.5, lotMultiplier: 0.5 }
     ]
+  },
+  'balanced-runner': {
+    enabled: true,
+    positions: [
+      { lot: 1.0, name: 'A', slMoveStartR: 0.5, trailingStartR: 2.0, lotMultiplier: 1.0 },
+      { lot: 0.7, name: 'B', slMoveStartR: 1.0, trailingStartR: 3.0, lotMultiplier: 0.7 },
+      { lot: 0.5, name: 'C', slMoveStartR: 1.5, runToTP: true, lotMultiplier: 0.5 }
+    ]
+  },
+  'aggressive-runner': {
+    enabled: true,
+    positions: [
+      { lot: 1.5, name: 'A', slMoveStartR: 0.5, trailingStartR: 2.0, lotMultiplier: 1.5 },
+      { lot: 0.7, name: 'B', slMoveStartR: 1.0, trailingStartR: 3.0, lotMultiplier: 0.7 },
+      { lot: 0.3, name: 'C', slMoveStartR: 1.5, runToTP: true, lotMultiplier: 0.3 }
+    ]
   }
 };
 
@@ -70,20 +86,32 @@ const MULTI_POSITION_PRESETS = {
 const getMultiPositionConfig = () => {
   // First check dropdown value
   const dropdown = document.getElementById('multiPositionPreset');
+  let presetKey = 'balanced';
   if (dropdown && dropdown.value) {
-    return MULTI_POSITION_PRESETS[dropdown.value] || MULTI_POSITION_PRESETS.balanced;
+    presetKey = dropdown.value;
+  } else {
+    // Fall back to URL parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    presetKey = urlParams.get('multipreset') || 'balanced';
   }
-  // Fall back to URL parameter
-  const urlParams = new URLSearchParams(window.location.search);
-  const preset = urlParams.get('multipreset') || 'balanced';
-  return MULTI_POSITION_PRESETS[preset] || MULTI_POSITION_PRESETS.balanced;
+  const config = MULTI_POSITION_PRESETS[presetKey] || MULTI_POSITION_PRESETS.balanced;
+  return { ...config, presetName: presetKey };
 };
 
 // Run optimized backtest (no chart rendering)
 const runOptimizedBacktest = (params, csvRows) => {
-  // Get multi-position config based on URL preset
-  const MULTI_POSITION_CONFIG = getMultiPositionConfig();
-  console.log('Multi-position preset:', MULTI_POSITION_CONFIG.enabled ? 
+  // Get multi-position config from params preset (if provided), otherwise from dropdown
+  let MULTI_POSITION_CONFIG;
+  if (params && params.preset) {
+    // Use preset from params (for Grid Search)
+    const presetKey = params.preset;
+    const config = MULTI_POSITION_PRESETS[presetKey] || MULTI_POSITION_PRESETS.balanced;
+    MULTI_POSITION_CONFIG = { ...config, presetName: presetKey };
+  } else {
+    // Fall back to reading from dropdown
+    MULTI_POSITION_CONFIG = getMultiPositionConfig();
+  }
+  console.log('Multi-position preset:', MULTI_POSITION_CONFIG.enabled ?
     `enabled (${MULTI_POSITION_CONFIG.positions.length} positions)` : 'disabled');
   
   // Reset state for new backtest run
@@ -270,6 +298,7 @@ const direction = bullishCSID ? 'BULL' : 'BEAR';
                 slMoveStartR: posConfig.slMoveStartR,
                 slMoveCount: 0,
                 trailingStartR: posConfig.trailingStartR,
+                runToTP: posConfig.runToTP || false,
                 trailingActive: false,
                 breakEvenMoved: false,
                 closed: false,
@@ -324,12 +353,12 @@ const direction = bullishCSID ? 'BULL' : 'BEAR';
             order.slMoveCount++;
           }
         }
-        
-        // 2. Activate trailing after trailingStartR
-        if (currentR >= order.trailingStartR && !order.trailingActive) {
+
+        // 2. Activate trailing after trailingStartR (skip for runToTP positions — they ride to TP)
+        if (!order.runToTP && currentR >= order.trailingStartR && !order.trailingActive) {
           order.trailingActive = true;
         }
-        
+
         // 3. Apply trailing stop
         if (order.trailingActive && localCandlesFromBuffer.length >= 2) {
           const prevCandle = localCandlesFromBuffer[localCandlesFromBuffer.length - 2];
@@ -1592,8 +1621,8 @@ const initSciChart = (data) => {
                }
              }
 
-             // 2. Activate trailing after per-position trailingStartR
-             if (currentR >= order.trailingStartR && !order.trailingActive) {
+             // 2. Activate trailing after per-position trailingStartR (skip for runToTP — they ride to TP)
+             if (!order.runToTP && currentR >= order.trailingStartR && !order.trailingActive) {
                order.trailingActive = true;
              }
 
@@ -1752,6 +1781,7 @@ const initSciChart = (data) => {
                   slMoveStartR: posConfig.slMoveStartR,
                   slMoveCount: 0,
                   trailingStartR: posConfig.trailingStartR,
+                  runToTP: posConfig.runToTP || false,
                   trailingActive: false,
                   breakEvenMoved: false,
                   closed: false,
@@ -2861,6 +2891,7 @@ $exportableCSVField.addEventListener('input', updateGoogleSheetsButtonState);
 // Get current parameters from inputs
 const getCurrentParams = () => ({
   strategy: $strategyInput?.value || 'CSID_W_MA_DynamicTS',
+  preset: getMultiPositionConfig().presetName,
   sessionStart: $sessionStartInput?.value || '09:50:00',
   sessionEnd: $sessionEndInput?.value || '11:00:00',
   slSize: parseFloat($SLPointsInput?.value) || 0.0001,
@@ -2876,6 +2907,8 @@ const getCurrentParams = () => ({
 const loadParamsAndRun = (params) => {
   // Set values to inputs
   if ($strategyInput) $strategyInput.value = params.strategy;
+  const presetDropdown = document.getElementById('multiPositionPreset');
+  if (presetDropdown && params.preset) presetDropdown.value = params.preset;
   if ($sessionStartInput) $sessionStartInput.value = params.sessionStart;
   if ($sessionEndInput) $sessionEndInput.value = params.sessionEnd;
   if ($SLPointsInput) $SLPointsInput.value = params.slSize;
@@ -3131,7 +3164,7 @@ const displayBacktestResult = (result) => {
     `\t`,
     `${backtestingDate}\t`,
     `${csvFileName}\t`,
-    `${result.params.strategy}\t`,
+    `${result.params.preset || result.params.strategy}\t`,
     `${result.params.sessionStart}\t`,
     `${result.params.sessionEnd}\t`,
     `${result.totalTrades}\t`,
@@ -3199,7 +3232,7 @@ const updateSavedResultsComparison = () => {
         <tr class="comparison-table-header">
           <th>#</th>
           <th>Name</th>
-          <th>Strategy</th>
+          <th>Preset</th>
           <th>SL</th>
           <th>TP</th>
           <th>TS</th>
@@ -3216,7 +3249,7 @@ const updateSavedResultsComparison = () => {
           <tr class="comparison-row ${idx === 0 ? 'best-result' : ''} ${idx === sorted.length - 1 && sorted.length > 1 ? 'worst-result' : ''}">
             <td>${idx + 1}</td>
             <td>${r.params.name || '-'}</td>
-            <td>${r.params.strategy}</td>
+            <td>${r.params.preset || r.params.strategy}</td>
             <td>${r.params.slSize}</td>
             <td>${r.params.tpSize}</td>
             <td>${r.params.tsSize}</td>
