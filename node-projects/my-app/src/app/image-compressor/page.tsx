@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { VersionBadge } from "@/components/VersionBadge";
 import JSZip from "jszip";
-import { CheckCircle, Crop, Download, Image as ImageIcon, Loader2, Pause, Pencil, Play, Scissors, Upload, Video, X, Zap } from "lucide-react";
+import { CheckCircle, Crop, Download, Image as ImageIcon, Loader2, Pause, Pencil, Play, Scissors, Upload, Video, Volume2, VolumeX, X, Zap } from "lucide-react";
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -70,6 +70,7 @@ export default function ImageCompressorPage() {
   const [editingVideoId, setEditingVideoId] = useState<string | null>(null);
   const [draggingHandle, setDraggingHandle] = useState<"start" | "end" | null>(null);
   const [isPreviewPlaying, setIsPreviewPlaying] = useState(false);
+  const [isPreviewMuted, setIsPreviewMuted] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const timelineRef = useRef<HTMLDivElement>(null);
   const previewVideoRef = useRef<HTMLVideoElement>(null);
@@ -476,7 +477,7 @@ targetWidth: number,
             sy = (video.videoHeight - sh) / 2;
           }
 
-          // Use MediaRecorder to capture video frames
+// Use MediaRecorder to capture video frames
           const stream = canvas.captureStream(30); // 30 FPS
           
 // Check supported mime types based on output format
@@ -1227,7 +1228,14 @@ if (vid.croppedBlob && vid.status === "done") {
                           <Pencil className="w-4 h-4 text-purple-400" />
                           Trim: {editingVideo.file.name}
                         </CardTitle>
-                        <button
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => setIsPreviewMuted(!isPreviewMuted)}
+                            className="text-xs text-white/60 hover:text-white"
+                          >
+                            {isPreviewMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                          </button>
+                          <button
                           onClick={() => {
                             if (previewVideoRef.current) {
                               previewVideoRef.current.pause();
@@ -1239,6 +1247,7 @@ if (vid.croppedBlob && vid.status === "done") {
                         >
                           <X className="w-4 h-4" />
                         </button>
+                        </div>
                       </CardHeader>
                       <CardContent className="space-y-4">
 <div className="flex gap-4 items-stretch" style={{ height: '360px' }}>
@@ -1247,7 +1256,7 @@ if (vid.croppedBlob && vid.status === "done") {
                               ref={previewVideoRef}
                               src={editingVideo.preview}
                               className="absolute inset-0 w-full h-full object-contain"
-                              muted
+                              muted={isPreviewMuted}
                               onTimeUpdate={(e) => {
                                 const video = e.currentTarget;
                                 const vidDuration = editingVideo.duration || 30;
