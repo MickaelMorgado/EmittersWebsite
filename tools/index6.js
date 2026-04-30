@@ -2,7 +2,6 @@
 let cachedCSVData = [];
 let cachedFileInfo = null;
 let cachedFile = null;
-let csvDataLoaded = false; // Flag to track if CSV is fully loaded
 
 // Store backtest results for comparison
 let backtestResults = [];
@@ -960,9 +959,6 @@ window.ordersHistory = ordersHistory;
 
 const handleFileAndInitGraph = (file) => {
   if (file) {
-    // Reset CSV loaded flag when new file is being loaded
-    csvDataLoaded = false;
-
     // Use reinitializeChart to properly reset
     if (typeof reinitializeChart === 'function') {
       reinitializeChart();
@@ -1154,7 +1150,6 @@ const handleFileAndInitGraph = (file) => {
           totalCandles: cachedCSVData.length,
         };
 
-        csvDataLoaded = true; // Mark CSV as fully loaded
         console.log(`CSV cached: ${cachedCSVData.length} candles loaded`);
 
         audioSuccess.play();
@@ -3552,12 +3547,50 @@ const runBacktestFromMQL = () => {
 };
 document.getElementById('runBacktestFromMQLBtn')?.addEventListener('click', runBacktestFromMQL);
 
-// Run all saved parameter sets
+// Simple optimized backtest to cache CSV data for Grid Search
+const runOptimized = async () => {
+  let csvData = cachedCSVData;
+
+  if (csvData.length === 0) {
+    const file = $csvFileInput?.files?.[0];
+    if (!file) {
+      alert('Please load a CSV file first!');
+      return;
+    }
+
+    console.log('Parsing file for optimized backtest...');
+    const results = await new Promise((resolve, reject) => {
+      Papa.parse(file, {
+        header: true,
+        dynamicTyping: true,
+        complete: resolve,
+        error: reject,
+      });
+    });
+    csvData = results.data.filter(row => row && row[EnumMT5OHLC.OPEN]);
+    cachedCSVData = csvData;
+    console.log(`Parsed ${csvData.length} candles from file`);
+  }
+
+  const params = getCurrentParams();
+  console.log(`Running optimized backtest with ${csvData.length} candles...`);
+
+  document.getElementById('loading-element').classList.add('visible');
+  document.getElementById('loading-element').querySelector('.loading-text').textContent = 'Running optimized backtest...';
+
+  setTimeout(() => {
+    const result = runOptimizedBacktest(params, csvData);
+    document.getElementById('loading-element').classList.remove('visible');
+    displayBacktestResult(result);
+    saveResultForComparison(result);
+    audioSuccess.play();
+  }, 50);
+};
 
 // Intelligent parameter optimization using random search + hill climbing
 const runGridSearch = async () => {
-  if (!csvDataLoaded || cachedCSVData.length === 0) {
-    alert('CSV file is still loading... Please wait for the file to finish processing before running Grid Search.');
+  if (cachedCSVData.length === 0) {
+    alert('Please run optimized backtest first to cache the CSV data, then Grid Search will work.');
     return;
   }
   
@@ -3688,4 +3721,5 @@ const runGridSearch = async () => {
 
 
 // Event listeners
+document.getElementById('runOptimized')?.addEventListener('click', runOptimized);
 document.getElementById('runGridSearch')?.addEventListener('click', runGridSearch);
