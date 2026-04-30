@@ -3784,9 +3784,6 @@ const runGridSearch = async () => {
 
   const best = sortedResults[0];
   alert(`Optimization complete!\n\nBest Profit: ${best.moneyEquivalent}$\nWin Rate: ${best.winRate}%\nTrades: ${best.totalTrades}\n\nParameters:\nSL: ${best.params.slSize}\nTP: ${best.params.tpSize}\nTS: ${best.params.tsSize}`);
-
-  // Hide loading indicator after user closes the alert
-  document.getElementById('loading-element').classList.remove('visible');
 };
 
 
