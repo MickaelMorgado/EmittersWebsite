@@ -3650,12 +3650,16 @@ const runGridSearch = async () => {
     tpSize: { min: 0.001, max: 0.01, step: 0.001 },
     tsSize: { min: 0.00001, max: 0.0002, step: 0.00005 },
   };
-  
-  // Helper: generate random parameter set
+
+  // Get all preset names for testing
+  const allPresets = Object.keys(MULTI_POSITION_PRESETS);
+
+  // Helper: generate random parameter set (including random preset)
   const randomParams = () => ({
     slSize: Math.round((ranges.slSize.min + Math.random() * (ranges.slSize.max - ranges.slSize.min)) / ranges.slSize.step) * ranges.slSize.step,
     tpSize: Math.round((ranges.tpSize.min + Math.random() * (ranges.tpSize.max - ranges.tpSize.min)) / ranges.tpSize.step) * ranges.tpSize.step,
     tsSize: Math.round((ranges.tsSize.min + Math.random() * (ranges.tsSize.max - ranges.tsSize.min)) / ranges.tsSize.step) * ranges.tsSize.step,
+    preset: allPresets[Math.floor(Math.random() * allPresets.length)],
   });
   
   // Phase 1: Random Search (broad exploration)
@@ -3698,7 +3702,7 @@ const runGridSearch = async () => {
   for (let iter = 0; iter < maxNeighbors; iter++) {
     let foundBetter = false;
     
-    // Test neighbors around current best
+    // Test neighbors around current best (including preset variations)
     const neighborTests = [
       { param: 'slSize', delta: ranges.slSize.step },
       { param: 'slSize', delta: -ranges.slSize.step },
@@ -3707,21 +3711,44 @@ const runGridSearch = async () => {
       { param: 'tsSize', delta: ranges.tsSize.step },
       { param: 'tsSize', delta: -ranges.tsSize.step },
     ];
+
+    // Also test other presets if current preset isn't tested yet in this iteration
+    const currentPreset = currentBest.preset || baseParams.preset;
+    const otherPresets = allPresets.filter(p => p !== currentPreset);
+    for (const preset of otherPresets) {
+      neighborTests.push({ param: 'preset', preset: preset });
+    }
     
     for (const test of neighborTests) {
-      const newParams = { 
-        ...baseParams, 
-        ...currentBest,
-        [test.param]: Math.max(ranges[test.param].min, Math.min(ranges[test.param].max, currentBest[test.param] + test.delta)),
-        name: `Hill_${iter}_${test.param}_${test.delta > 0 ? 'up' : 'down'}`
-      };
-      
+      let newParams;
+      let testName;
+
+      if (test.preset) {
+        // Test preset change
+        newParams = {
+          ...baseParams,
+          ...currentBest,
+          preset: test.preset,
+          name: `Hill_${iter}_preset_${test.preset}`
+        };
+        testName = `preset_${test.preset}`;
+      } else {
+        // Test parameter adjustment
+        newParams = {
+          ...baseParams,
+          ...currentBest,
+          [test.param]: Math.max(ranges[test.param].min, Math.min(ranges[test.param].max, currentBest[test.param] + test.delta)),
+          name: `Hill_${iter}_${test.param}_${test.delta > 0 ? 'up' : 'down'}`
+        };
+        testName = `${test.param}_${test.delta > 0 ? 'up' : 'down'}`;
+      }
+
       const result = runOptimizedBacktest(newParams, cachedCSVData);
       backtestResults.push(result);
-      
+
       const profit = parseFloat(result.moneyEquivalent);
       neighborsTested++;
-      
+
       if (profit > currentProfit + improvementThreshold) {
         currentBest = { ...newParams };
         currentProfit = profit;
