@@ -3617,7 +3617,7 @@ const runOptimized = async () => {
     document.getElementById('loading-element').classList.remove('visible');
     displayBacktestResult(result);
     saveResultForComparison(result);
-    audioSuccess.play();
+    // Audio is played only by Grid Search when complete, not here
   }, 50);
 };
 
