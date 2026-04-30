@@ -2118,7 +2118,8 @@ const initSciChart = (data) => {
 
         // Display textual result
         // result += `Check console for orders history\n`;
-        result += `Trade Taken: ${ordersHistory.length} (in ${numbDays} days)`;
+        const months = (numbDays / 30).toFixed(1);
+        result += `Trade Taken: ${ordersHistory.length} (in ${numbDays} days / ${months} months)`;
         result += `\nWin Rate (Positive P/L): ${winRatePositive}%`;
         result += `\nWin Rate (TP Hits): ${winRateTP}%\n`;
         result += `\nProfits: `;
