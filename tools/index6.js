@@ -1543,65 +1543,81 @@ const initSciChart = (data) => {
             );
           };
 
-          // Modify SL (Trailing Stop)
-          if (candlesFromBuffer.length < 2) return;
+            // Modify SL (Trailing Stop) - Match Grid Search logic
+            if (candlesFromBuffer.length < 2) return;
 
-          const trailingStopSize =
-            parseFloat($TSIncrementInput.value) || 0.0000;
+            // Calculate current R for this order (same as Grid Search)
+            const currentR = isBull
+              ? (close - order.price) / slSize()
+              : (order.price - close) / slSize();
 
-          const previousCandle =
-            candlesFromBuffer[candlesFromBuffer.length - 2];
+           const trailingStopSize =
+             parseFloat($TSIncrementInput.value) || 0.0000;
 
-          /*if (isBull) {
-            if (
-              getCandleDirectionFromCandle(previousCandle) == EnumDirection.BULL
-            ) {
-              console.log('Moving SL of ', order.id, ' from ', order.sl, ' to ',  order.sl + trailingStopSize);
-              debugger
-              order.sl = order.sl + trailingStopSize; // Move SL by trailingStopSize (up side)
-            //}
-          //} else if (isBear) {
-            if (
-              getCandleDirectionFromCandle(previousCandle) == EnumDirection.BEAR
-            ) {
-              order.sl = order.sl - trailingStopSize; // Move SL by trailingStopSize (down side)
-            //}
-          //}*/
+           const previousCandle =
+             candlesFromBuffer[candlesFromBuffer.length - 2];
 
-          // Candle size calculation:
-          let candleSize = Math.abs(previousCandle["<CLOSE>"] - previousCandle["<OPEN>"]); // Need to be the previous candle, as current candle is not closed yet at this time (in a real scenario).
-          candleSize = Number(candleSize.toFixed(4)); // → 0.0005
+           // Candle size calculation:
+           let candleSize = Math.abs(previousCandle["<CLOSE>"] - previousCandle["<OPEN>"]); // Need to be the previous candle, as current candle is not closed yet at this time (in a real scenario).
+           candleSize = Number(candleSize.toFixed(4)); // → 0.0005
 
-          /*
-            The following might only work for EURUSD like pairs, TODO: I'll need to generalize it later.
-            As for EURUSD I hardcoded two thresholds for candle size:
-            - 0.0005 (50 pips)
-            - 0.0003 (30 pips)
-          */
-          const trailingSizeMultiplier = (candleSize) => {
-            switch (strategy) {
-              case EnumStrategy.CSID_W_MA_DynamicTS:
-                if (candleSize >= 0.0005) return trailingStopSize * 3;
-                else if (candleSize >= 0.0003) return trailingStopSize * 2;
-                else return trailingStopSize;
-              case EnumStrategy.CSID_W_MA:
-              case EnumStrategy.CSID:
-              default:
-                return trailingStopSize;
-            }
-          }
+           /*
+             The following might only work for EURUSD like pairs, TODO: I'll need to generalize it later.
+             As for EURUSD I hardcoded two thresholds for candle size:
+             - 0.0005 (50 pips)
+             - 0.0003 (30 pips)
+           */
+           const trailingSizeMultiplier = (candleSize) => {
+             switch (strategy) {
+               case EnumStrategy.CSID_W_MA_DynamicTS:
+                 if (candleSize >= 0.0005) return trailingStopSize * 3;
+                 else if (candleSize >= 0.0003) return trailingStopSize * 2;
+                 else return trailingStopSize;
+               case EnumStrategy.CSID_W_MA:
+               case EnumStrategy.CSID:
+               default:
+                 return trailingStopSize;
+             }
+           }
+           const trailingSize = trailingSizeMultiplier(candleSize);
 
-          if (order.direction == EnumDirection.BULL) {
-            //console.log('Moving SL of ', order.id, ' from ', order.sl, ' to ',  order.sl + trailingStopSize);
-            /*order.sl < order.price && d[EnumMT5OHLC.OPEN] > order.price ? order.sl = order.price : */
-            order.sl += trailingSizeMultiplier(candleSize);
-            // order.sl = order.sl + trailingStopSize; // Move SL by trailingStopSize (up side)
-          } else if (order.direction == EnumDirection.BEAR) {
-            //console.log('Moving SL of ', order.id, ' from ', order.sl, ' to ',  order.sl - trailingStopSize);
-            // order.sl = order.sl - trailingStopSize; // Move SL by trailingStopSize (down side)
-            /*order.sl > order.price && d[EnumMT5OHLC.OPEN] < order.price ? order.sl = order.price : */
-            order.sl -= trailingSizeMultiplier(candleSize);
-          }
+           // Initialize trailingActive if not exists (for backward compatibility)
+           if (order.trailingActive === undefined) {
+             order.trailingActive = false;
+           }
+
+           // 1. Progressive SL movement (move SL every 0.5R) - from Grid Search
+           if (!order.trailingActive) {
+             const slMoveThreshold = order.slMoveStartR + (order.slMoveCount * 0.5);
+             if (currentR >= slMoveThreshold) {
+               const newSL = isBull
+                 ? order.price + (slMoveThreshold * slSize())
+                 : order.price - (slMoveThreshold * slSize());
+               order.sl = newSL;
+               order.slMoveCount++;
+             }
+           }
+
+           // 2. Activate trailing after trailingStartR - from Grid Search
+           if (currentR >= order.trailingStartR && !order.trailingActive) {
+             order.trailingActive = true;
+           }
+
+           // 3. Apply trailing stop - from Grid Search
+           if (order.trailingActive && candlesFromBuffer.length >= 2) {
+             const newTrailingSL = isBull
+               ? close - trailingSize
+               : close + trailingSize;
+
+             // Only improve SL (never move backwards) - lock in profits
+             const slImproved = isBull
+               ? newTrailingSL > order.sl
+               : newTrailingSL < order.sl;
+
+             if (slImproved) {
+               order.sl = newTrailingSL;
+             }
+           }
 
           // Trailing Stop visual:
           const _isFast = window.location.search.includes('fastmode') ||
