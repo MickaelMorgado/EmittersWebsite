@@ -1,0 +1,30 @@
+[     519ms] [LOG] Loading CSV from: EURUSD_M5_202603020000_202603170000.csv @ http://localhost:8080/tools/index6.js?v=15:431
+[     615ms] [LOG] CSV loaded and cached, length: 190132 rows: 3169 @ http://localhost:8080/tools/index6.js?v=15:445
+[     646ms] [LOG] Defaulting to SciChart Community Edition. Usage constitutes acceptance of our EULA and terms at https://www.scichart.com/community-licensing. See https://store.scichart.com for commercial licensing options. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[     647ms] [LOG] The community license is valid for 6 months from the date the version in use was released.  This version 4.0.933 has 74 days remaining @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[     647ms] [LOG] SciChart is looking for a paid developer activation from the scichart licensing wizard... To disable this call SciChartSurface.UseCommunityLicense() @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[     760ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[    5765ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   10769ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   15773ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   20778ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   22090ms] [LOG] 2026.03.02 @ http://localhost:8080/tools/index6.js?v=15:2519
+[   22091ms] [WARNING] Data Distribution flag (BaseDataSeries.containsNaN = false) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[   22091ms] [WARNING] Data Distribution flag (BaseDataSeries.isSorted = true) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[   22316ms] ReferenceError: getCandleDirection is not defined
+    at getCandleDirectionFromCandle (http://localhost:8080/tools/index6.js?v=15:763:3)
+    at http://localhost:8080/tools/index6.js?v=15:2322:11
+    at Array.map (<anonymous>)
+    at updateCSIDLineAnnotation (http://localhost:8080/tools/index6.js?v=15:2321:11)
+    at CSIDIndicator (http://localhost:8080/tools/index6.js?v=15:2561:3)
+    at appendIndicatorsToChart (http://localhost:8080/tools/index6.js?v=15:2567:3)
+    at step (http://localhost:8080/tools/index6.js?v=15:958:11)
+    at https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js:7:11145
+    at S (https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js:7:17252)
+    at w.parse (https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js:7:15406)
+[   25781ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   30783ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   35786ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   40787ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   45789ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   45789ms] [LOG] Failed to connect to licensing wizard. Refresh page to retry. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0

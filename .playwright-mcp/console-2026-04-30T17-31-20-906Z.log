@@ -1,0 +1,30 @@
+[     117ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/assets/css.css:0
+[     117ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/assets/reusables.css:0
+[     118ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/assets/reusables.js:0
+[     142ms] [LOG] Loading CSV from: EURUSD_M5_202603020000_202603170000.csv @ http://localhost:8080/index6.js?v=7:441
+[     168ms] TypeError: Cannot read properties of undefined (reading 'name')
+    at renderComparisonChart (http://localhost:8080/index6.js?v=7:2944:47)
+    at updateSavedResultsComparison (http://localhost:8080/index6.js?v=7:3123:3)
+    at HTMLDocument.<anonymous> (http://localhost:8080/index6.js?v=7:1065:5)
+[     175ms] [LOG] CSV loaded and cached, length: 190132 rows: 3169 @ http://localhost:8080/index6.js?v=7:455
+[     185ms] [LOG] Defaulting to SciChart Community Edition. Usage constitutes acceptance of our EULA and terms at https://www.scichart.com/community-licensing. See https://store.scichart.com for commercial licensing options. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[     185ms] [LOG] The community license is valid for 6 months from the date the version in use was released.  This version 4.0.933 has 74 days remaining @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[     185ms] [LOG] SciChart is looking for a paid developer activation from the scichart licensing wizard... To disable this call SciChartSurface.UseCommunityLicense() @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[     266ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[    1144ms] [LOG] Fast Mode auto-enabled @ http://localhost:8080/index6.js?v=7:466
+[    4346ms] [LOG] Running optimized backtest with 3169 candles... @ http://localhost:8080/index6.js?v=7:2788
+[    4427ms] [LOG] 📊 SIGNAL DEBUG: TTR=1353, ATR=3040, MA=0, CSID=912, ALL=0 @ http://localhost:8080/index6.js?v=7:316
+[    4429ms] TypeError: Cannot read properties of undefined (reading 'name')
+    at renderComparisonChart (http://localhost:8080/index6.js?v=7:2944:47)
+    at displayBacktestResult (http://localhost:8080/index6.js?v=7:3021:3)
+    at http://localhost:8080/index6.js?v=7:2804:5
+[    5269ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   10272ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   15274ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   20277ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   25279ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   30281ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   35286ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   40290ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   45292ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   45292ms] [LOG] Failed to connect to licensing wizard. Refresh page to retry. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0

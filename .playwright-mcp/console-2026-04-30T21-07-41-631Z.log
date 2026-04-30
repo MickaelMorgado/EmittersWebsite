@@ -1,0 +1,161 @@
+[     136ms] [LOG] Loading CSV from: EURUSD_M5_202603020000_202603170000.csv @ http://localhost:8080/tools/index6.js?v=18:565
+[     220ms] [LOG] CSV loaded and cached, length: 190132 rows: 3169 @ http://localhost:8080/tools/index6.js?v=18:579
+[     230ms] [LOG] Defaulting to SciChart Community Edition. Usage constitutes acceptance of our EULA and terms at https://www.scichart.com/community-licensing. See https://store.scichart.com for commercial licensing options. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[     230ms] [LOG] The community license is valid for 6 months from the date the version in use was released.  This version 4.0.933 has 74 days remaining @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[     230ms] [LOG] SciChart is looking for a paid developer activation from the scichart licensing wizard... To disable this call SciChartSurface.UseCommunityLicense() @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[     325ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[    5329ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   10332ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   15337ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   19398ms] [LOG] 2026.03.02 @ http://localhost:8080/tools/index6.js?v=18:2678
+[   19399ms] [WARNING] Data Distribution flag (BaseDataSeries.containsNaN = false) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[   19399ms] [WARNING] Data Distribution flag (BaseDataSeries.isSorted = true) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[   20295ms] TypeError: Cannot read properties of undefined (reading 'split')
+    at resultToCSV (http://localhost:8080/tools/index6.js?v=18:2071:65)
+    at profitabilityCalculation (http://localhost:8080/tools/index6.js?v=18:2123:37)
+    at closeOrder (http://localhost:8080/tools/index6.js?v=18:1509:13)
+    at http://localhost:8080/tools/index6.js?v=18:1675:13
+    at Array.forEach (<anonymous>)
+    at checkForTPSLHit (http://localhost:8080/tools/index6.js?v=18:1450:22)
+    at step (http://localhost:8080/tools/index6.js?v=18:1103:9)
+    at https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js:7:11145
+    at S (https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js:7:17252)
+    at w.parse (https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js:7:15406)
+[   20339ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   25343ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   30346ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   35348ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   40364ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   45374ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   45374ms] [LOG] Failed to connect to licensing wizard. Refresh page to retry. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[  333172ms] [LOG] Loading CSV from: EURUSD_M5_202603020000_202603170000.csv @ http://localhost:8080/tools/index6.js?v=18:565
+[  333246ms] [LOG] CSV loaded and cached, length: 190132 rows: 3169 @ http://localhost:8080/tools/index6.js?v=18:579
+[  333329ms] [LOG] Defaulting to SciChart Community Edition. Usage constitutes acceptance of our EULA and terms at https://www.scichart.com/community-licensing. See https://store.scichart.com for commercial licensing options. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[  333329ms] [LOG] The community license is valid for 6 months from the date the version in use was released.  This version 4.0.933 has 74 days remaining @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[  333329ms] [LOG] SciChart is looking for a paid developer activation from the scichart licensing wizard... To disable this call SciChartSurface.UseCommunityLicense() @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[  333360ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  338362ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  343366ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  343661ms] [LOG] 2025.05.01 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  343662ms] [WARNING] Data Distribution flag (BaseDataSeries.containsNaN = false) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[  343662ms] [WARNING] Data Distribution flag (BaseDataSeries.isSorted = true) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[  345955ms] [LOG] 2025.05.02 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  348381ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  348699ms] [LOG] 2025.05.05 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  352095ms] [LOG] 2025.05.06 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  353400ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  355605ms] [LOG] 2025.05.07 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  358421ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  359450ms] [LOG] 2025.05.08 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  362612ms] [LOG] 2025.05.09 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  363439ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  365814ms] [LOG] 2025.05.12 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  368454ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  370138ms] [LOG] 2025.05.13 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  373473ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  374520ms] [LOG] 2025.05.14 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  378493ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  378493ms] [LOG] Failed to connect to licensing wizard. Refresh page to retry. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[  379693ms] [LOG] 2025.05.15 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  385079ms] [LOG] 2025.05.16 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  390970ms] [LOG] 2025.05.19 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  395661ms] [LOG] 2025.05.20 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  397523ms] [LOG] 2025.05.21 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  399626ms] [LOG] 2025.05.22 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  402827ms] [LOG] 2025.05.23 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  406544ms] [LOG] 2025.05.26 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  409397ms] [LOG] 2025.05.27 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  414458ms] [LOG] 2025.05.28 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  419836ms] [LOG] Loading CSV from: EURUSD_M5_202603020000_202603170000.csv @ http://localhost:8080/tools/index6.js?v=18:565
+[  419899ms] [LOG] CSV loaded and cached, length: 190132 rows: 3169 @ http://localhost:8080/tools/index6.js?v=18:579
+[  419908ms] [LOG] Defaulting to SciChart Community Edition. Usage constitutes acceptance of our EULA and terms at https://www.scichart.com/community-licensing. See https://store.scichart.com for commercial licensing options. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[  419908ms] [LOG] The community license is valid for 6 months from the date the version in use was released.  This version 4.0.933 has 74 days remaining @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[  419908ms] [LOG] SciChart is looking for a paid developer activation from the scichart licensing wizard... To disable this call SciChartSurface.UseCommunityLicense() @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[  419985ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  424986ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  429991ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  434993ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  435763ms] [LOG] 2025.05.01 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  435763ms] [WARNING] Data Distribution flag (BaseDataSeries.containsNaN = false) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[  435763ms] [WARNING] Data Distribution flag (BaseDataSeries.isSorted = true) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[  438079ms] [LOG] 2025.05.02 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  440003ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  440908ms] [LOG] 2025.05.05 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  443358ms] [LOG] 2025.05.06 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  445019ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  446644ms] [LOG] 2025.05.07 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  450042ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  450325ms] [LOG] 2025.05.08 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  453407ms] [LOG] 2025.05.09 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  455067ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  457051ms] [LOG] 2025.05.12 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  460082ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  461452ms] [LOG] 2025.05.13 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  465113ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  465113ms] [LOG] Failed to connect to licensing wizard. Refresh page to retry. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[  465828ms] [LOG] 2025.05.14 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  469814ms] [LOG] 2025.05.15 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  473978ms] [LOG] 2025.05.16 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  478449ms] [LOG] 2025.05.19 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  483938ms] [LOG] 2025.05.20 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  486544ms] [LOG] 2025.05.21 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  489662ms] [LOG] 2025.05.22 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  492346ms] [LOG] 2025.05.23 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  496212ms] [LOG] 2025.05.26 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  499167ms] [LOG] 2025.05.27 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  502009ms] [LOG] 2025.05.28 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  505606ms] [LOG] 2025.05.29 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  509122ms] [LOG] 2025.05.30 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  512626ms] [LOG] 2025.06.02 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  516382ms] [LOG] 2025.06.03 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  520051ms] [LOG] 2025.06.04 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  523859ms] [LOG] 2025.06.05 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  527850ms] [LOG] 2025.06.06 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  531715ms] [LOG] 2025.06.09 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  534640ms] [LOG] 2025.06.10 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  537546ms] [LOG] 2025.06.11 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  540421ms] [LOG] 2025.06.12 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  543649ms] [LOG] 2025.06.13 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  546875ms] [LOG] 2025.06.16 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  550460ms] [LOG] 2025.06.17 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  553942ms] [LOG] 2025.06.18 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  557501ms] [LOG] 2025.06.19 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  561234ms] [LOG] 2025.06.20 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  564380ms] [LOG] 2025.06.23 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  567778ms] [LOG] 2025.06.24 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  571247ms] [LOG] 2025.06.25 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  574882ms] [LOG] 2025.06.26 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  578570ms] [LOG] 2025.06.27 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  582156ms] [LOG] 2025.06.30 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  585968ms] [LOG] 2025.07.01 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  589713ms] [LOG] 2025.07.02 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  593475ms] [LOG] 2025.07.03 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  597249ms] [LOG] 2025.07.04 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  600866ms] [LOG] 2025.07.07 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  604639ms] [LOG] 2025.07.08 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  608571ms] [LOG] 2025.07.09 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  612850ms] [LOG] 2025.07.10 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  617245ms] [LOG] 2025.07.11 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  621717ms] [LOG] 2025.07.14 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  625876ms] [LOG] 2025.07.15 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  630405ms] [LOG] 2025.07.16 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  635347ms] [LOG] 2025.07.17 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  639652ms] [LOG] 2025.07.18 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  644360ms] [LOG] 2025.07.21 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  648840ms] [LOG] 2025.07.22 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  653504ms] [LOG] 2025.07.23 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  657539ms] [LOG] 2025.07.24 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  661512ms] [LOG] 2025.07.25 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  665710ms] [LOG] 2025.07.28 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  669729ms] [LOG] 2025.07.29 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  673575ms] [LOG] 2025.07.30 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  677540ms] [LOG] 2025.07.31 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  681325ms] [LOG] 2025.08.01 @ http://localhost:8080/tools/index6.js?v=18:2678
+[  685819ms] [LOG] ========== BACKTEST COMPLETE ========== @ http://localhost:8080/tools/index6.js?v=18:1130
+[  685819ms] [LOG] Total candles processed: 19284 @ http://localhost:8080/tools/index6.js?v=18:1131
+[  685819ms] [LOG] Total orders: 243 @ http://localhost:8080/tools/index6.js?v=18:1132
+[  685819ms] [LOG] Closed orders: 243 @ http://localhost:8080/tools/index6.js?v=18:1133
+[  685819ms] [LOG] Wins: 84 | Losses: 126 @ http://localhost:8080/tools/index6.js?v=18:1134
+[  685820ms] [LOG] First 3 orders: [{"id":"1-A","posName":"A","lotMultiplier":1,"time":"2025.05.01 10:20:00","price":1.12871,"sl":1.12941,"initialSL":1.12971,"tp":1.12271,"direction":"BEAR","slMoveStartR":0.5,"slMoveCount":0,"trailingStartR":2,"trailingActive":false,"breakEvenMoved":false,"closed":true,"closedOrderType":"CLOSED_BY_SL","closedPrice":1.12941,"closedTime":"2025.05.01 10:20:00","pnlPoints":-0.0006999999999999229,"tradeResult":"LOSS"},{"id":"2-B","posName":"B","lotMultiplier":0.7,"time":"2025.05.01 10:20:00","price":1.12871,"sl":1.12941,"initialSL":1.12971,"tp":1.12271,"direction":"BEAR","slMoveStartR":1,"slMoveCount":0,"trailingStartR":3,"trailingActive":false,"breakEvenMoved":false,"closed":true,"closedOrderType":"CLOSED_BY_SL","closedPrice":1.12941,"closedTime":"2025.05.01 10:20:00","pnlPoints":-0.0006999999999999229,"tradeResult":"LOSS"},{"id":"3-C","posName":"C","lotMultiplier":0.5,"time":"2025.05.01 10:20:00","price":1.12871,"sl":1.12941,"initialSL":1.12971,"tp":1.12271,"direction":"BEAR","slMoveStartR":1.5,"slMoveCount":0,"trailingStartR":4,"trailingActive":false,"breakEvenMoved":false,"closed":true,"closedOrderType":"CLOSED_BY_SL","closedPrice":1.12941,"closedTime":"2025.05.01 10:20:00","pnlPoints":-0.0006999999999999229,"tradeResult":"LOSS"}] @ http://localhost:8080/tools/index6.js?v=18:1136
+[  685820ms] [LOG] ========================================= @ http://localhost:8080/tools/index6.js?v=18:1140
+[  685820ms] [LOG] CSV cached: 0 candles loaded @ http://localhost:8080/tools/index6.js?v=18:1152

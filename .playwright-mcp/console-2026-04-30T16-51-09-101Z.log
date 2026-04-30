@@ -1,0 +1,52 @@
+[     145ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/assets/reusables.css:0
+[     145ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/assets/css.css:0
+[     148ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/assets/reusables.js:0
+[     258ms] Identifier 'getCandleDirection' has already been declared
+[     281ms] [LOG] Defaulting to SciChart Community Edition. Usage constitutes acceptance of our EULA and terms at https://www.scichart.com/community-licensing. See https://store.scichart.com for commercial licensing options. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[     282ms] [LOG] The community license is valid for 6 months from the date the version in use was released.  This version 4.0.933 has 74 days remaining @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[     282ms] [LOG] SciChart is looking for a paid developer activation from the scichart licensing wizard... To disable this call SciChartSurface.UseCommunityLicense() @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[     312ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[    4305ms] [LOG] 2026.03.02 @ http://localhost:8080/index6.js:2458
+[    4306ms] [WARNING] Data Distribution flag (BaseDataSeries.containsNaN = false) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[    4306ms] [WARNING] Data Distribution flag (BaseDataSeries.isSorted = true) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[    5322ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[    5973ms] [LOG] 2026.03.03 @ http://localhost:8080/index6.js:2458
+[   98697ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   99314ms] [LOG] 2026.03.04 @ http://localhost:8080/index6.js:2458
+[  101236ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/assets/css.css:0
+[  101237ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/assets/reusables.css:0
+[  101237ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/assets/reusables.js:0
+[  101424ms] Identifier 'getCandleDirection' has already been declared
+[  101695ms] [LOG] Defaulting to SciChart Community Edition. Usage constitutes acceptance of our EULA and terms at https://www.scichart.com/community-licensing. See https://store.scichart.com for commercial licensing options. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[  101695ms] [LOG] The community license is valid for 6 months from the date the version in use was released.  This version 4.0.933 has 74 days remaining @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[  101695ms] [LOG] SciChart is looking for a paid developer activation from the scichart licensing wizard... To disable this call SciChartSurface.UseCommunityLicense() @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[  101718ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  106720ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  111724ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  113583ms] [LOG] Found Run Backtest button @ :5
+[  116729ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  121733ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  126736ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  131738ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  136742ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  141744ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  146748ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  146748ms] [LOG] Failed to connect to licensing wizard. Refresh page to retry. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[  183423ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/assets/css.css:0
+[  183423ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/assets/reusables.css:0
+[  183425ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/assets/reusables.js:0
+[  183532ms] Identifier 'getCandleDirection' has already been declared
+[  183553ms] [LOG] Defaulting to SciChart Community Edition. Usage constitutes acceptance of our EULA and terms at https://www.scichart.com/community-licensing. See https://store.scichart.com for commercial licensing options. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[  183553ms] [LOG] The community license is valid for 6 months from the date the version in use was released.  This version 4.0.933 has 74 days remaining @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[  183553ms] [LOG] SciChart is looking for a paid developer activation from the scichart licensing wizard... To disable this call SciChartSurface.UseCommunityLicense() @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[  183583ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  188588ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  193597ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  198602ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  203608ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  208613ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  213616ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  218622ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  223626ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  228632ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  228632ms] [LOG] Failed to connect to licensing wizard. Refresh page to retry. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0

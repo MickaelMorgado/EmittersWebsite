@@ -1,0 +1,29 @@
+[     103ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/assets/css.css:0
+[     104ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/assets/reusables.css:0
+[     104ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/assets/reusables.js:0
+[     131ms] [LOG] Loading CSV from: EURUSD_M5_202603020000_202603170000.csv @ http://localhost:8080/index6.js?v=12:465
+[     177ms] [LOG] CSV loaded and cached, length: 190132 rows: 3169 @ http://localhost:8080/index6.js?v=12:479
+[     244ms] [LOG] Defaulting to SciChart Community Edition. Usage constitutes acceptance of our EULA and terms at https://www.scichart.com/community-licensing. See https://store.scichart.com for commercial licensing options. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[     244ms] [LOG] The community license is valid for 6 months from the date the version in use was released.  This version 4.0.933 has 74 days remaining @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[     244ms] [LOG] SciChart is looking for a paid developer activation from the scichart licensing wizard... To disable this call SciChartSurface.UseCommunityLicense() @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[     266ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[    1132ms] [LOG] Fast Mode auto-enabled @ http://localhost:8080/index6.js?v=12:490
+[    4761ms] [LOG] Running optimized backtest with 3169 candles... @ http://localhost:8080/index6.js?v=12:2812
+[    4816ms] [LOG] 🔺 TRADE #1: BULL at 1.17226, SL=1.1712600000000002, TP=1.17826 @ http://localhost:8080/index6.js?v=12:236
+[    4816ms] [LOG] ✅ Order #1 CLOSED: CLOSED_BY_SL at 1.17336, PnL=0.00110 @ http://localhost:8080/index6.js?v=12:294
+[    4817ms] [LOG] 🔺 TRADE #2: BEAR at 1.17328, SL=1.17428, TP=1.16728 @ http://localhost:8080/index6.js?v=12:236
+[    4818ms] [LOG] 🔺 TRADE #3: BEAR at 1.17037, SL=1.1713699999999998, TP=1.16437 @ http://localhost:8080/index6.js?v=12:236
+[    4818ms] [LOG] ✅ Order #3 CLOSED: CLOSED_BY_SL at 1.1706699999999999, PnL=-0.00030 @ http://localhost:8080/index6.js?v=12:294
+[    4818ms] [LOG] ✅ Order #2 CLOSED: CLOSED_BY_SL at 1.1713800000000003, PnL=0.00190 @ http://localhost:8080/index6.js?v=12:294
+[    4821ms] [LOG] MA debug at idx 500: maArray=1.155260, 1.155008, 1.155067, 1.155437, 1.155865, accel=0.00005833333333349344 @ http://localhost:8080/index6.js?v=12:195
+[    4848ms] [LOG] 📊 SIGNAL DEBUG: TTR=1353, ATR=2942, MA=2084, CSID=912, ALL=245, trades=49, orders=49, maxAccel=0.00119500, minAccel=-0.00110667 @ http://localhost:8080/index6.js?v=12:340
+[    5268ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   10270ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   15273ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   20289ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   25292ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   30294ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   35298ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   40301ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   45303ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   45303ms] [LOG] Failed to connect to licensing wizard. Refresh page to retry. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0

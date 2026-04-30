@@ -1,0 +1,1 @@
+[     187ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/index6.html?csv=EURUSD_M5_202501020200_202509291100.csv&fastmode=1&multipreset=balanced:0

@@ -1,0 +1,433 @@
+- generic [ref=e1]:
+  - generic [ref=e4]:
+    - generic [ref=e5]:
+      - heading "BackTesting" [level=1] [ref=e6]
+      - paragraph [ref=e7]: "Export MT5 bars by using CTRL+U then go to Bars tab, filter the range and export, then upload it here:"
+      - paragraph [ref=e8]:
+        - text: "More info:"
+        - link "Export Historical Data" [ref=e9] [cursor=pointer]:
+          - /url: https://myforex.com/en/mt5guide/export-historicaldata.html
+        - link "Limited History Issue" [ref=e10] [cursor=pointer]:
+          - /url: https://www.mql5.com/en/forum/356227
+    - separator [ref=e11]
+    - text: Upload CSV bars
+    - generic [ref=e12]:
+      - button "Upload CSV bars" [active] [ref=e13]
+      - button "Refresh" [ref=e14]
+    - separator [ref=e16]
+    - separator [ref=e17]
+    - generic [ref=e18]:
+      - generic [ref=e19]:
+        - text: Prev
+        - button "Prev" [ref=e20]
+      - generic [ref=e22]:
+        - text: Navigate trought session
+        - combobox "Navigate trought session" [ref=e24]:
+          - option "2026.03.02 09:50:00" [selected]
+      - generic [ref=e25]:
+        - text: Next
+        - button "Next" [ref=e26]
+    - separator [ref=e28]
+    - text: Application theme
+    - combobox [ref=e30]:
+      - option "-" [selected]
+      - option "Green / Red"
+      - option "Blue / Magenta"
+      - option "Yellow / Cyan"
+      - option "Light Blue / Grey"
+      - option "Volcanic"
+      - option "Devil"
+      - option "Matrix"
+    - separator [ref=e31]
+    - text: Backtesting Controls
+    - generic [ref=e32]:
+      - button "Previous Step (Not implemented)" [disabled] [ref=e33]
+      - button "" [ref=e171]:
+        - generic [ref=e36]: 
+      - button "Next Step (Advance 1 candle)" [ref=e37]
+      - button "Stop Backtesting" [ref=e39]
+    - generic [ref=e42]:
+      - checkbox "Fast Mode (No Chart)" [ref=e43]
+      - generic [ref=e44]: Fast Mode (No Chart)
+    - separator [ref=e45]
+    - generic "Current progression of the current backtesting file reading. (Starting Time - Current Time - Ending Time)" [ref=e46]: File Reading Progression*
+    - generic [ref=e47]: 2026.03.02 - 2026.03.03 - 2026.03.17
+    - separator [ref=e49]
+    - text: CSV Data
+    - textbox [ref=e51]
+  - generic [ref=e52]:
+    - generic [ref=e53]: Running backtest...
+    - generic [ref=e55]:
+      - img
+      - img:
+        - img:
+          - img
+        - img:
+          - img
+        - img:
+          - img
+        - img:
+          - img
+        - img:
+          - img
+        - img:
+          - img
+        - img:
+          - img
+        - img:
+          - img
+        - img:
+          - img
+        - img:
+          - img
+        - img:
+          - img
+        - img:
+          - img
+        - img:
+          - img
+        - img:
+          - img
+        - img:
+          - img:
+            - generic: "1"
+        - img:
+          - img
+        - img:
+          - img
+        - img:
+          - img
+        - img:
+          - img:
+            - generic: "2"
+        - img:
+          - img
+        - img:
+          - img
+        - img:
+          - img
+        - img:
+          - img:
+            - generic: "3"
+        - img:
+          - img
+        - img:
+          - img
+        - img:
+          - img
+        - img:
+          - img
+        - img:
+          - img
+        - img:
+          - img
+        - img:
+          - img
+        - img:
+          - img
+        - img:
+          - img:
+            - generic: "6"
+        - img:
+          - img
+        - img:
+          - img:
+            - generic: "4"
+        - img:
+          - img
+        - img:
+          - img:
+            - generic: "5"
+        - img:
+          - img
+        - img:
+          - img
+        - img:
+          - img
+        - img:
+          - img:
+            - generic: "7"
+        - img:
+          - img
+        - img:
+          - img
+        - img:
+          - img
+        - img:
+          - img:
+            - generic: "8"
+        - img:
+          - img
+        - img:
+          - img
+        - img:
+          - img
+        - img:
+          - img
+        - img:
+          - img
+        - img:
+          - img:
+            - generic: "9"
+        - img:
+          - img
+        - img:
+          - img:
+            - generic: "10"
+        - img:
+          - img
+        - img:
+          - img
+        - img:
+          - img
+        - img:
+          - img:
+            - generic: "11"
+        - img:
+          - img
+        - img:
+          - img
+        - img:
+          - img
+        - img:
+          - img
+        - img:
+          - img
+        - img:
+          - img
+      - img
+    - generic [ref=e57]:
+      - generic [ref=e58]:
+        - button "Backtesting results (Algo)" [ref=e59]
+        - button "Parameter Comparison" [ref=e60]
+        - button "MQL Expert Advisor Generator" [ref=e61]
+        - button "Review From Historical Trades" [disabled] [ref=e62]
+        - button "Backtesting results (Manual)" [disabled] [ref=e63]
+        - 'button "Toggle Layout: Chart ↔ Panel" [ref=e65]'
+      - generic [ref=e67]:
+        - generic [ref=e68]:
+          - heading "MQL5 Generator" [level=3] [ref=e69]
+          - button "Run Backtest" [ref=e70]: Run Backtest
+          - button "Download .mq5" [ref=e72]: Download .mq5
+        - textbox "Load a CSV and run a backtest to generate MQL5 code..." [ref=e75]
+      - generic [ref=e76]:
+        - heading "Backtesting Result (Algo)" [level=5] [ref=e77]
+        - generic [ref=e78]:
+          - generic [ref=e79]:
+            - generic [ref=e80]:
+              - 'generic "CSID: CSID price action breakout with Institutional candle move signal | CSID_W_MA: CSID price action breakout with Institutional candle move signal with moving average | CSID_W_MA_DynamicTS: CSID price action breakout with Institutional candle move signal with moving average and dynamic trailing stop" [ref=e81]': Strategy Selection*
+              - combobox "Strategy Selection*" [ref=e82]:
+                - option "CSID_W_MA_DynamicTS" [selected]
+                - option "CSID_W_MA"
+                - option "CSID"
+              - text: Session Start Time (add 2h to match MT5 data)
+              - textbox "CSV Data Session Start Time (add 2h to match MT5 data)" [ref=e83]: 09:50:00
+            - generic [ref=e84]:
+              - text: Session End Time (add 2h to match MT5 data)
+              - textbox "Session End Time (add 2h to match MT5 data)" [ref=e85]: 20:00:00
+            - generic [ref=e86]:
+              - generic "Period of Moving Average" [ref=e87]: Moving Average Period*
+              - spinbutton "Moving Average Period*" [ref=e88]: "200"
+            - generic [ref=e89]:
+              - generic "How much tilt of moving average for valid acceleration signal" [ref=e90]: Moving Average Threshold*
+              - spinbutton "Moving Average Threshold*" [ref=e91]: "0.003"
+            - generic [ref=e92]:
+              - text: Lot Size (Base)
+              - spinbutton "Lot Size (Base)" [ref=e93]: "1.0"
+              - separator [ref=e94]
+              - generic "Starting account balance" [ref=e95]: Initial Balance ($)*
+              - spinbutton "Initial Balance ($)*" [ref=e96]: "500"
+              - generic "Monthly income to be injected" [ref=e97]: Monthly Income ($)*
+              - spinbutton "Monthly Income ($)*" [ref=e98]: "100"
+              - generic "Monthly lot size growth rate (2% = 0.02)" [ref=e99]: Monthly Growth Rate (%)*
+              - spinbutton "Monthly Growth Rate (%)*" [ref=e100]: "2"
+              - generic [ref=e101]:
+                - strong [ref=e102]: "Monthly System:"
+                - text: Lot size grows with equity. Drawdown capped at 90% of monthly income to ensure growth.
+              - separator [ref=e103]
+              - generic "Use this value for aproximate deduction as fees, swaps or commissions" [ref=e104]: Commission Aprox. Size*
+              - spinbutton "Commission Aprox. Size*" [ref=e105]: "0.00005"
+              - generic "Risk:Reward Ratio in points" [ref=e106]: RR (SL Points | TP Points)*
+              - spinbutton [ref=e107]: "0.001"
+              - spinbutton [ref=e108]: "0.006"
+              - generic "Trailing Stop base increment in points" [ref=e109]: TS Increment*
+              - spinbutton "TS Increment*" [ref=e110]: "0.0001"
+              - generic [ref=e111]:
+                - button "Save Configurations For Next Time" [ref=e112]
+                - generic "Save the current configuration as URLs parameters for future use. Browser URL will refresh with theses new parameters when saving!" [ref=e114]: Save Configurations*
+              - generic [ref=e115]:
+                - button "Load Configurations" [ref=e116]
+                - generic "Load the configuration from URLs parameters. Browser URL will refresh with new parameters when loading!" [ref=e118]: Load Configurations*
+              - generic [ref=e119]:
+                - button "Generate MQL" [ref=e120]
+                - text: Generate MQL
+          - generic [ref=e122]:
+            - generic [ref=e123]: "Performance Results:"
+            - textbox "Performance Results:" [ref=e124]: "Trade Taken: 11 (in 1 days) Win Rate (Positive P/L): 45.45% Win Rate (TP Hits): 0.00% Profits: Money: 135.00$ Profit Factor: 1.41 Total Wins: 5 Total Losses: 5 Consecutive Wins: 3 Consecutive Losses: 3 Max Drawdown: 215.00$ Max Updraw: 165.00$ Lowest Equity: -45.00$ Highest Equity: 265.00$"
+            - generic "Easy way to copy paste the backtest result into a google sheet / excel" [ref=e125]: "CSV Exportable text: *"
+            - 'textbox "CSV Exportable text: *" [ref=e126]': 2026/04/30 EURUSD_M5_202603020000_202603170000 M5 CSID_W_MA_DynamicTS 2026/03/02 2026/03/17 1 09:50:00 20:00:00 11 45.45% 135.00 -0.011000000000000003 1 0.001 0.006 0.0001 200 0.003 1.41 0.00005
+            - separator [ref=e127]
+            - button "Send to Google Sheets" [ref=e129]: Send to Google Sheets
+          - generic [ref=e133]: more stats here
+        - generic [ref=e134]:
+          - heading "Order History" [level=5] [ref=e135]
+          - table [ref=e175]:
+            - rowgroup [ref=e176]:
+              - row "ID Time Direction Price SL TP Closed Price Closed Order Type Closed Time P/L (Points)" [ref=e177]:
+                - columnheader "ID" [ref=e178]
+                - columnheader "Time" [ref=e179]
+                - columnheader "Direction" [ref=e180]
+                - columnheader "Price" [ref=e181]
+                - columnheader "SL" [ref=e182]
+                - columnheader "TP" [ref=e183]
+                - columnheader "Closed Price" [ref=e184]
+                - columnheader "Closed Order Type" [ref=e185]
+                - columnheader "Closed Time" [ref=e186]
+                - columnheader "P/L (Points)" [ref=e187]
+            - rowgroup [ref=e188]:
+              - row "1 2026.03.02 10:25:00 BEAR 1.17040 1.17080 1.16440 1.17080 CLOSED_BY_SL 2026.03.02 10:40:00 -0.00040" [ref=e189] [cursor=pointer]:
+                - cell "1" [ref=e190]
+                - cell "2026.03.02 10:25:00" [ref=e191]
+                - cell "BEAR" [ref=e192]
+                - cell "1.17040" [ref=e193]
+                - cell "1.17080" [ref=e194]
+                - cell "1.16440" [ref=e195]
+                - cell "1.17080" [ref=e196]
+                - cell "CLOSED_BY_SL" [ref=e197]
+                - cell "2026.03.02 10:40:00" [ref=e198]
+                - cell "-0.00040" [ref=e199]
+              - row "2 2026.03.02 11:05:00 BULL 1.17308 1.17378 1.17908 1.17378 CLOSED_BY_SL 2026.03.02 11:25:00 0.00070" [ref=e200] [cursor=pointer]:
+                - cell "2" [ref=e201]
+                - cell "2026.03.02 11:05:00" [ref=e202]
+                - cell "BULL" [ref=e203]
+                - cell "1.17308" [ref=e204]
+                - cell "1.17378" [ref=e205]
+                - cell "1.17908" [ref=e206]
+                - cell "1.17378" [ref=e207]
+                - cell "CLOSED_BY_SL" [ref=e208]
+                - cell "2026.03.02 11:25:00" [ref=e209]
+                - cell "0.00070" [ref=e210]
+              - row "3 2026.03.02 12:20:00 BULL 1.17435 1.17425 1.18035 1.17425 CLOSED_BY_SL 2026.03.02 12:45:00 -0.00010" [ref=e211] [cursor=pointer]:
+                - cell "3" [ref=e212]
+                - cell "2026.03.02 12:20:00" [ref=e213]
+                - cell "BULL" [ref=e214]
+                - cell "1.17435" [ref=e215]
+                - cell "1.17425" [ref=e216]
+                - cell "1.18035" [ref=e217]
+                - cell "1.17425" [ref=e218]
+                - cell "CLOSED_BY_SL" [ref=e219]
+                - cell "2026.03.02 12:45:00" [ref=e220]
+                - cell "-0.00010" [ref=e221]
+              - row "4 2026.03.02 14:10:00 BEAR 1.17269 1.17099 1.16669 1.17099 CLOSED_BY_SL 2026.03.02 15:15:00 0.00170" [ref=e222] [cursor=pointer]:
+                - cell "4" [ref=e223]
+                - cell "2026.03.02 14:10:00" [ref=e224]
+                - cell "BEAR" [ref=e225]
+                - cell "1.17269" [ref=e226]
+                - cell "1.17099" [ref=e227]
+                - cell "1.16669" [ref=e228]
+                - cell "1.17099" [ref=e229]
+                - cell "CLOSED_BY_SL" [ref=e230]
+                - cell "2026.03.02 15:15:00" [ref=e231]
+                - cell "0.00170" [ref=e232]
+              - row "5 2026.03.02 14:45:00 BEAR 1.17139 1.17039 1.16539 1.17039 CLOSED_BY_SL 2026.03.02 15:15:00 0.00100" [ref=e233] [cursor=pointer]:
+                - cell "5" [ref=e234]
+                - cell "2026.03.02 14:45:00" [ref=e235]
+                - cell "BEAR" [ref=e236]
+                - cell "1.17139" [ref=e237]
+                - cell "1.17039" [ref=e238]
+                - cell "1.16539" [ref=e239]
+                - cell "1.17039" [ref=e240]
+                - cell "CLOSED_BY_SL" [ref=e241]
+                - cell "2026.03.02 15:15:00" [ref=e242]
+                - cell "0.00100" [ref=e243]
+              - row "6 2026.03.02 15:10:00 BEAR 1.16977 1.17047 1.16377 1.17047 CLOSED_BY_SL 2026.03.02 15:10:00 -0.00070" [ref=e244] [cursor=pointer]:
+                - cell "6" [ref=e245]
+                - cell "2026.03.02 15:10:00" [ref=e246]
+                - cell "BEAR" [ref=e247]
+                - cell "1.16977" [ref=e248]
+                - cell "1.17047" [ref=e249]
+                - cell "1.16377" [ref=e250]
+                - cell "1.17047" [ref=e251]
+                - cell "CLOSED_BY_SL" [ref=e252]
+                - cell "2026.03.02 15:10:00" [ref=e253]
+                - cell "-0.00070" [ref=e254]
+              - row "7 2026.03.02 16:05:00 BEAR 1.16974 1.17064 1.16374 1.17064 CLOSED_BY_SL 2026.03.02 16:05:00 -0.00090" [ref=e255] [cursor=pointer]:
+                - cell "7" [ref=e256]
+                - cell "2026.03.02 16:05:00" [ref=e257]
+                - cell "BEAR" [ref=e258]
+                - cell "1.16974" [ref=e259]
+                - cell "1.17064" [ref=e260]
+                - cell "1.16374" [ref=e261]
+                - cell "1.17064" [ref=e262]
+                - cell "CLOSED_BY_SL" [ref=e263]
+                - cell "2026.03.02 16:05:00" [ref=e264]
+                - cell "-0.00090" [ref=e265]
+              - row "8 2026.03.02 16:45:00 BULL 1.17175 1.17135 1.17775 1.17135 CLOSED_BY_SL 2026.03.02 17:00:00 -0.00040" [ref=e266] [cursor=pointer]:
+                - cell "8" [ref=e267]
+                - cell "2026.03.02 16:45:00" [ref=e268]
+                - cell "BULL" [ref=e269]
+                - cell "1.17175" [ref=e270]
+                - cell "1.17135" [ref=e271]
+                - cell "1.17775" [ref=e272]
+                - cell "1.17135" [ref=e273]
+                - cell "CLOSED_BY_SL" [ref=e274]
+                - cell "2026.03.02 17:00:00" [ref=e275]
+                - cell "-0.00040" [ref=e276]
+              - row "9 2026.03.02 17:40:00 BEAR 1.16932 1.16792 1.16332 1.16792 CLOSED_BY_SL 2026.03.02 18:20:00 0.00140" [ref=e277] [cursor=pointer]:
+                - cell "9" [ref=e278]
+                - cell "2026.03.02 17:40:00" [ref=e279]
+                - cell "BEAR" [ref=e280]
+                - cell "1.16932" [ref=e281]
+                - cell "1.16792" [ref=e282]
+                - cell "1.16332" [ref=e283]
+                - cell "1.16792" [ref=e284]
+                - cell "CLOSED_BY_SL" [ref=e285]
+                - cell "2026.03.02 18:20:00" [ref=e286]
+                - cell "0.00140" [ref=e287]
+              - row "10 2026.03.02 18:05:00 BEAR 1.16792 1.16782 1.16192 1.16782 CLOSED_BY_SL 2026.03.02 18:25:00 0.00010" [ref=e288] [cursor=pointer]:
+                - cell "10" [ref=e289]
+                - cell "2026.03.02 18:05:00" [ref=e290]
+                - cell "BEAR" [ref=e291]
+                - cell "1.16792" [ref=e292]
+                - cell "1.16782" [ref=e293]
+                - cell "1.16192" [ref=e294]
+                - cell "1.16782" [ref=e295]
+                - cell "CLOSED_BY_SL" [ref=e296]
+                - cell "2026.03.02 18:25:00" [ref=e297]
+                - cell "0.00010" [ref=e298]
+              - row "11 2026.03.02 19:55:00 BULL 1.17042 1.16992 1.17642 1.16992 CLOSED_BY_SL 2026.03.02 20:00:00 -0.00050" [ref=e299] [cursor=pointer]:
+                - cell "11" [ref=e300]
+                - cell "2026.03.02 19:55:00" [ref=e301]
+                - cell "BULL" [ref=e302]
+                - cell "1.17042" [ref=e303]
+                - cell "1.16992" [ref=e304]
+                - cell "1.17642" [ref=e305]
+                - cell "1.16992" [ref=e306]
+                - cell "CLOSED_BY_SL" [ref=e307]
+                - cell "2026.03.02 20:00:00" [ref=e308]
+                - cell "-0.00050" [ref=e309]
+      - generic [ref=e136]:
+        - heading "Review Historical Trade" [level=5] [ref=e137]
+        - generic [ref=e139]:
+          - text: Paste your historical lines (myfxbook for now)
+          - textbox "Paste your historical lines (myfxbook for now)" [ref=e140]: 2025.05.13 10:17:00 2025.05.13 10:18:00 EURUSD Sell 1.00 1.11078 - 1.11064 1.11078 -1.4 -16.60 1m -0.03% -4.0000
+      - generic [ref=e141]:
+        - heading "Parameter Comparison Results" [level=3] [ref=e142]
+        - generic [ref=e143]:
+          - button "Run Optimized" [ref=e144]: Run Optimized
+          - button "Save Params" [ref=e146]: Save Params
+          - button "Run All Saved" [ref=e148]: Run All Saved
+          - button "Grid Search" [ref=e150]: Grid Search
+        - generic [ref=e152]:
+          - text: "Param Set Name:"
+          - textbox "Param Set Name:" [ref=e153]:
+            - /placeholder: e.g., Conservative, Aggressive...
+        - generic [ref=e154]:
+          - button "Export" [ref=e155]: Export
+          - button "Import" [ref=e157]: Import
+          - button "Clear All" [ref=e159]: Clear All
+        - generic [ref=e162]:
+          - checkbox "Fast Mode (No Chart)" [ref=e163]
+          - generic [ref=e164]: Fast Mode (No Chart)
+        - heading "Results Comparison" [level=5] [ref=e165]
+        - paragraph [ref=e167]: No saved results yet. Run a backtest and save parameters to compare.

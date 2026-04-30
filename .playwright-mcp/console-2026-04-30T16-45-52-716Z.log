@@ -1,0 +1,16 @@
+[     110ms] Identifier 'getCandleDirection' has already been declared
+[     136ms] [LOG] Defaulting to SciChart Community Edition. Usage constitutes acceptance of our EULA and terms at https://www.scichart.com/community-licensing. See https://store.scichart.com for commercial licensing options. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[     136ms] [LOG] The community license is valid for 6 months from the date the version in use was released.  This version 4.0.933 has 74 days remaining @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[     198ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[    5203ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   10207ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   15215ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   20220ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   24937ms] [ERROR] Unsafe attempt to load URL file:///Users/mickael/development/EmittersWebsite/tools/index6.html?theme=&btt=09%3A50%3A00&ett=20%3A00%3A00&maperiod=200&lotsize=1.0&commissionsize=0.00005&slpoints=0.001&tppoints=0.006&tsincrement=0.0001&strategy=CSID_W_MA_DynamicTS from frame with URL file:///Users/mickael/development/EmittersWebsite/tools/index6.html?theme=&btt=09%3A50%3A00&ett=20%3A00%3A00&maperiod=200&lotsize=1.0&commissionsize=0.00005&slpoints=0.001&tppoints=0.006&tsincrement=0.0001&strategy=CSID_W_MA_DynamicTS. 'file:' URLs are treated as unique security origins.
+ @ file:///Users/mickael/development/EmittersWebsite/tools/index6.html?theme=&btt=09%3A50%3A00&ett=20%3A00%3A00&maperiod=200&lotsize=1.0&commissionsize=0.00005&slpoints=0.001&tppoints=0.006&tsincrement=0.0001&strategy=CSID_W_MA_DynamicTS:0
+[   25222ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   30227ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   35230ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   40236ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   45241ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   45242ms] [LOG] Failed to connect to licensing wizard. Refresh page to retry. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0

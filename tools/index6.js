@@ -3612,13 +3612,15 @@ const runOptimized = async () => {
   document.getElementById('loading-element').classList.add('visible');
   document.getElementById('loading-element').querySelector('.loading-text').textContent = 'Running optimized backtest...';
 
-  setTimeout(() => {
-    const result = runOptimizedBacktest(params, csvData);
-    document.getElementById('loading-element').classList.remove('visible');
-    displayBacktestResult(result);
-    saveResultForComparison(result);
-    // Audio is played only by Grid Search when complete, not here
-  }, 50);
+  await new Promise(resolve => {
+    setTimeout(() => {
+      const result = runOptimizedBacktest(params, csvData);
+      document.getElementById('loading-element').classList.remove('visible');
+      displayBacktestResult(result);
+      saveResultForComparison(result);
+      resolve();
+    }, 50);
+  });
 };
 
 // Intelligent parameter optimization using random search + hill climbing
@@ -3777,13 +3779,13 @@ const runGridSearch = async () => {
   const sortedResults = [...backtestResults].sort((a, b) => parseFloat(b.moneyEquivalent) - parseFloat(a.moneyEquivalent));
   displayBacktestResult(sortedResults[0]);
 
-  // Update loading indicator to show completion
-  document.getElementById('loading-element').querySelector('.loading-text').textContent = 'Optimization Complete!';
-
-  audioSuccess.play();
+  // Hide loading before showing results
+  document.getElementById('loading-element').classList.remove('visible');
 
   const best = sortedResults[0];
-  alert(`Optimization complete!\n\nBest Profit: ${best.moneyEquivalent}$\nWin Rate: ${best.winRate}%\nTrades: ${best.totalTrades}\n\nParameters:\nSL: ${best.params.slSize}\nTP: ${best.params.tpSize}\nTS: ${best.params.tsSize}`);
+  alert(`Optimization complete!\n\nBest Profit: ${best.moneyEquivalent}$\nWin Rate: ${best.winRate}%\nTrades: ${best.totalTrades}\n\nParameters:\nSL: ${best.params.slSize}\nTP: ${best.params.tpSize}\nTS: ${best.params.tsSize}\nPreset: ${best.params.preset || '-'}`);
+
+  audioSuccess.play();
 };
 
 

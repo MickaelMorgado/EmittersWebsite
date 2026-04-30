@@ -1,0 +1,18 @@
+[     230ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3001/_next/static/chunks/67d57_next_dist_client_844a5239._.js:5949
+[     267ms] [LOG] [Fast Refresh] done in 138ms @ http://localhost:3001/_next/static/chunks/67d57_next_dist_client_844a5239._.js:5809
+[     462ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3001/_next/static/chunks/67d57_next_dist_compiled_react-dom_652cab55._.js:14537
+[  309236ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3001/_next/static/chunks/67d57_next_dist_client_844a5239._.js:5949
+[  309532ms] [LOG] [Fast Refresh] done in 397ms @ http://localhost:3001/_next/static/chunks/67d57_next_dist_client_844a5239._.js:5809
+[  318792ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3001/_next/static/chunks/67d57_next_dist_client_844a5239._.js:5949
+[  319643ms] [LOG] [Fast Refresh] done in 952ms @ http://localhost:3001/_next/static/chunks/67d57_next_dist_client_844a5239._.js:5809
+[  320371ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3001/_next/static/chunks/67d57_next_dist_client_844a5239._.js:5949
+[  320435ms] [LOG] [Fast Refresh] done in 166ms @ http://localhost:3001/_next/static/chunks/67d57_next_dist_client_844a5239._.js:5809
+[  324554ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3001/_next/static/chunks/67d57_next_dist_client_844a5239._.js:5949
+[  324678ms] [LOG] [Fast Refresh] done in 225ms @ http://localhost:3001/_next/static/chunks/67d57_next_dist_client_844a5239._.js:5809
+[  531947ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3001/_next/static/chunks/67d57_next_dist_client_844a5239._.js:5949
+[  532307ms] [LOG] [Fast Refresh] done in 461ms @ http://localhost:3001/_next/static/chunks/67d57_next_dist_client_844a5239._.js:5809
+[  572036ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3001/_next/static/chunks/67d57_next_dist_client_844a5239._.js:5949
+[  572038ms] [LOG] [Fast Refresh] done in 102ms @ http://localhost:3001/_next/static/chunks/67d57_next_dist_client_844a5239._.js:5809
+[  575377ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3001/_next/static/chunks/67d57_next_dist_client_844a5239._.js:5949
+[  575382ms] [LOG] [Fast Refresh] done in 106ms @ http://localhost:3001/_next/static/chunks/67d57_next_dist_client_844a5239._.js:5809
+[  746442ms] [ERROR] WebSocket connection to 'ws://localhost:3001/_next/webpack-hmr' failed:  @ http://localhost:3001/_next/static/chunks/67d57_next_dist_client_844a5239._.js:5696

@@ -1,0 +1,72 @@
+[     213ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/assets/css.css:0
+[     214ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/assets/reusables.css:0
+[     217ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/assets/reusables.js:0
+[     482ms] Identifier 'getCandleDirection' has already been declared
+[     957ms] [LOG] Defaulting to SciChart Community Edition. Usage constitutes acceptance of our EULA and terms at https://www.scichart.com/community-licensing. See https://store.scichart.com for commercial licensing options. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[     957ms] [LOG] The community license is valid for 6 months from the date the version in use was released.  This version 4.0.933 has 74 days remaining @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[     957ms] [LOG] SciChart is looking for a paid developer activation from the scichart licensing wizard... To disable this call SciChartSurface.UseCommunityLicense() @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[     999ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[    6001ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   11005ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   12044ms] [LOG] 2026.03.02 @ http://localhost:8080/index6.js:2458
+[   12044ms] [WARNING] Data Distribution flag (BaseDataSeries.containsNaN = false) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[   12044ms] [WARNING] Data Distribution flag (BaseDataSeries.isSorted = true) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[   13581ms] [LOG] 2026.03.03 @ http://localhost:8080/index6.js:2458
+[   15266ms] [LOG] 2026.03.04 @ http://localhost:8080/index6.js:2458
+[   16669ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   18391ms] [LOG] 2026.03.05 @ http://localhost:8080/index6.js:2458
+[   20629ms] [LOG] 2026.03.06 @ http://localhost:8080/index6.js:2458
+[   21673ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   23038ms] [LOG] 2026.03.09 @ http://localhost:8080/index6.js:2458
+[   24470ms] [LOG] 2026.03.02 @ http://localhost:8080/index6.js:2458
+[   24478ms] [LOG] 2026.03.09 @ http://localhost:8080/index6.js:2458
+[   24479ms] [LOG] 2026.03.02 @ http://localhost:8080/index6.js:2458
+[   24483ms] [LOG] 2026.03.09 @ http://localhost:8080/index6.js:2458
+[   24490ms] [LOG] 2026.03.02 @ http://localhost:8080/index6.js:2458
+[   24494ms] [LOG] 2026.03.09 @ http://localhost:8080/index6.js:2458
+[   24496ms] [LOG] 2026.03.02 @ http://localhost:8080/index6.js:2458
+[   24499ms] [LOG] 2026.03.09 @ http://localhost:8080/index6.js:2458
+[   24503ms] [LOG] 2026.03.02 @ http://localhost:8080/index6.js:2458
+[   24504ms] [LOG] 2026.03.09 @ http://localhost:8080/index6.js:2458
+[   24511ms] [LOG] 2026.03.02 @ http://localhost:8080/index6.js:2458
+[   24512ms] [LOG] 2026.03.09 @ http://localhost:8080/index6.js:2458
+[   24519ms] [LOG] 2026.03.02 @ http://localhost:8080/index6.js:2458
+[   24521ms] [LOG] 2026.03.09 @ http://localhost:8080/index6.js:2458
+[   24528ms] [LOG] 2026.03.02 @ http://localhost:8080/index6.js:2458
+[   24529ms] [LOG] 2026.03.09 @ http://localhost:8080/index6.js:2458
+[   24536ms] [LOG] 2026.03.02 @ http://localhost:8080/index6.js:2458
+[   24537ms] [LOG] 2026.03.09 @ http://localhost:8080/index6.js:2458
+[   24543ms] [LOG] 2026.03.02 @ http://localhost:8080/index6.js:2458
+[   24545ms] [LOG] 2026.03.09 @ http://localhost:8080/index6.js:2458
+[   24550ms] [LOG] 2026.03.02 @ http://localhost:8080/index6.js:2458
+[   24550ms] [LOG] 2026.03.09 @ http://localhost:8080/index6.js:2458
+[   24555ms] [LOG] 2026.03.02 @ http://localhost:8080/index6.js:2458
+[   24556ms] [LOG] 2026.03.09 @ http://localhost:8080/index6.js:2458
+[   24561ms] [LOG] 2026.03.02 @ http://localhost:8080/index6.js:2458
+[   24563ms] TypeError: Cannot read properties of undefined (reading 'append')
+    at updateTrailingStopVisual (http://localhost:8080/index6.js:1442:33)
+    at http://localhost:8080/index6.js:1464:11
+    at Array.forEach (<anonymous>)
+    at checkForTPSLHit (http://localhost:8080/index6.js:1261:22)
+    at step (http://localhost:8080/index6.js:931:9)
+    at m.step (https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js:7:11145)
+    at S (https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js:7:17252)
+    at w.parse (https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js:7:15406)
+    at i.parse (https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js:7:14121)
+    at c.parseChunk (https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js:7:5747)
+[   24563ms] [LOG] 2026.03.09 @ http://localhost:8080/index6.js:2458
+[   24564ms] TypeError: Cannot read properties of undefined (reading 'append')
+    at updateTrailingStopVisual (http://localhost:8080/index6.js:1442:33)
+    at http://localhost:8080/index6.js:1464:11
+    at Array.forEach (<anonymous>)
+    at checkForTPSLHit (http://localhost:8080/index6.js:1261:22)
+    at step (http://localhost:8080/index6.js:931:9)
+    at m.step (https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js:7:11145)
+    at S (https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js:7:17252)
+    at w.parse (https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js:7:15406)
+    at i.parse (https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js:7:14121)
+    at c.parseChunk (https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js:7:5747)
+[   26676ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   31679ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   36682ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   41685ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0

@@ -1,0 +1,1342 @@
+[     130ms] Identifier 'close' has already been declared
+[ 1937679ms] [LOG] Loading CSV from: EURUSD_M5_202603020000_202603170000.csv @ http://localhost:8080/tools/index6.js?v=20:565
+[ 1937849ms] [LOG] CSV loaded and cached, length: 190132 rows: 3169 @ http://localhost:8080/tools/index6.js?v=20:579
+[ 1937938ms] [LOG] Defaulting to SciChart Community Edition. Usage constitutes acceptance of our EULA and terms at https://www.scichart.com/community-licensing. See https://store.scichart.com for commercial licensing options. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 1937938ms] [LOG] The community license is valid for 6 months from the date the version in use was released.  This version 4.0.933 has 74 days remaining @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 1937938ms] [LOG] SciChart is looking for a paid developer activation from the scichart licensing wizard... To disable this call SciChartSurface.UseCommunityLicense() @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 1937983ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 1938682ms] [LOG] Fast Mode auto-enabled @ http://localhost:8080/tools/index6.js?v=20:590
+[ 1942985ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 1947988ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 1952990ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 1957992ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 1962997ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 1968003ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 1973007ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 1978015ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 1983019ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 1983019ms] [LOG] Failed to connect to licensing wizard. Refresh page to retry. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 2029302ms] [LOG] 2025.05.01 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2031324ms] [LOG] 2025.05.02 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2033302ms] [LOG] 2025.05.05 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2035123ms] [LOG] 2025.05.06 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2036798ms] [LOG] 2025.05.07 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2038691ms] [LOG] 2025.05.08 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2040603ms] [LOG] 2025.05.09 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2042545ms] [LOG] 2025.05.12 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2044367ms] [LOG] 2025.05.13 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2046201ms] [LOG] 2025.05.14 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2047782ms] [LOG] 2025.05.15 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2049387ms] [LOG] 2025.05.16 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2050924ms] [LOG] 2025.05.19 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2052489ms] [LOG] 2025.05.20 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2053114ms] [LOG] 2025.05.21 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2053605ms] [LOG] Defaulting to SciChart Community Edition. Usage constitutes acceptance of our EULA and terms at https://www.scichart.com/community-licensing. See https://store.scichart.com for commercial licensing options. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 2053605ms] [LOG] The community license is valid for 6 months from the date the version in use was released.  This version 4.0.933 has 74 days remaining @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 2053605ms] [LOG] SciChart is looking for a paid developer activation from the scichart licensing wizard... To disable this call SciChartSurface.UseCommunityLicense() @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 2053627ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2058637ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2062270ms] [LOG] 2025.05.01 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2062271ms] [WARNING] Data Distribution flag (BaseDataSeries.containsNaN = false) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 2062271ms] [WARNING] Data Distribution flag (BaseDataSeries.isSorted = true) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 2063645ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2064179ms] [LOG] 2025.05.02 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2066270ms] [LOG] 2025.05.05 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2068362ms] [LOG] 2025.05.06 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2068652ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2070910ms] [LOG] 2025.05.07 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2072930ms] [LOG] 2025.05.08 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2073656ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2074985ms] [LOG] 2025.05.09 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2077208ms] [LOG] 2025.05.12 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2078663ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2079674ms] [LOG] 2025.05.13 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2082496ms] [LOG] 2025.05.14 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2083676ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2085600ms] [LOG] 2025.05.15 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2086965ms] [LOG] Defaulting to SciChart Community Edition. Usage constitutes acceptance of our EULA and terms at https://www.scichart.com/community-licensing. See https://store.scichart.com for commercial licensing options. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 2086965ms] [LOG] The community license is valid for 6 months from the date the version in use was released.  This version 4.0.933 has 74 days remaining @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 2086965ms] [LOG] SciChart is looking for a paid developer activation from the scichart licensing wizard... To disable this call SciChartSurface.UseCommunityLicense() @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 2086986ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2091991ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2093025ms] [LOG] 2025.05.01 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2093025ms] [WARNING] Data Distribution flag (BaseDataSeries.containsNaN = false) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 2093025ms] [WARNING] Data Distribution flag (BaseDataSeries.isSorted = true) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 2094901ms] [LOG] 2025.05.02 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2096977ms] [LOG] 2025.05.05 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2096999ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2098991ms] [LOG] 2025.05.06 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2101320ms] [LOG] 2025.05.07 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2102007ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2103790ms] [LOG] 2025.05.08 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2106395ms] [LOG] 2025.05.09 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2107018ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2109259ms] [LOG] 2025.05.12 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2112038ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2112491ms] [LOG] 2025.05.13 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2115974ms] [LOG] 2025.05.14 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2117056ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2119824ms] [LOG] 2025.05.15 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2122065ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2123519ms] [LOG] 2025.05.16 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2127065ms] [LOG] 2025.05.19 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2127087ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2131780ms] [LOG] 2025.05.20 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2132127ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2132127ms] [LOG] Failed to connect to licensing wizard. Refresh page to retry. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 2133850ms] [LOG] 2025.05.21 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2135983ms] [LOG] 2025.05.22 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2138503ms] [LOG] 2025.05.23 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2141153ms] [LOG] 2025.05.26 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2144085ms] [LOG] 2025.05.27 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2146743ms] [LOG] 2025.05.28 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2149826ms] [LOG] 2025.05.29 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2152914ms] [LOG] 2025.05.30 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2156265ms] [LOG] 2025.06.02 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2159460ms] [LOG] 2025.06.03 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2162379ms] [LOG] 2025.06.04 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2166001ms] [LOG] 2025.06.05 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2169510ms] [LOG] 2025.06.06 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2172822ms] [LOG] 2025.06.09 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2175787ms] [LOG] 2025.06.10 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2178792ms] [LOG] 2025.06.11 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2181684ms] [LOG] 2025.06.12 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2184854ms] [LOG] 2025.06.13 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2188018ms] [LOG] 2025.06.16 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2191151ms] [LOG] 2025.06.17 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2194300ms] [LOG] 2025.06.18 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2197527ms] [LOG] 2025.06.19 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2201036ms] [LOG] 2025.06.20 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2203945ms] [LOG] 2025.06.23 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2206738ms] [LOG] 2025.06.24 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2210013ms] [LOG] 2025.06.25 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2212753ms] [LOG] 2025.06.26 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2215878ms] [LOG] 2025.06.27 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2219082ms] [LOG] 2025.06.30 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2222551ms] [LOG] 2025.07.01 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2226079ms] [LOG] 2025.07.02 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2229567ms] [LOG] 2025.07.03 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2233219ms] [LOG] 2025.07.04 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2236676ms] [LOG] 2025.07.07 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2240316ms] [LOG] 2025.07.08 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2244247ms] [LOG] 2025.07.09 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2248010ms] [LOG] 2025.07.10 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2252071ms] [LOG] 2025.07.11 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2255967ms] [LOG] 2025.07.14 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2260104ms] [LOG] 2025.07.15 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2264677ms] [LOG] 2025.07.16 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2269080ms] [LOG] 2025.07.17 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2272985ms] [LOG] 2025.07.18 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2276846ms] [LOG] 2025.07.21 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2280943ms] [LOG] 2025.07.22 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2285487ms] [LOG] 2025.07.23 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2289197ms] [LOG] 2025.07.24 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2292802ms] [LOG] 2025.07.25 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2296609ms] [LOG] 2025.07.28 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2300549ms] [LOG] 2025.07.29 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2304388ms] [LOG] 2025.07.30 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2308009ms] [LOG] 2025.07.31 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2311455ms] [LOG] 2025.08.01 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 2315063ms] [LOG] ========== BACKTEST COMPLETE ========== @ http://localhost:8080/tools/index6.js?v=20:1130
+[ 2315063ms] [LOG] Total candles processed: 19284 @ http://localhost:8080/tools/index6.js?v=20:1131
+[ 2315063ms] [LOG] Total orders: 243 @ http://localhost:8080/tools/index6.js?v=20:1132
+[ 2315063ms] [LOG] Closed orders: 243 @ http://localhost:8080/tools/index6.js?v=20:1133
+[ 2315063ms] [LOG] Wins: 119 | Losses: 124 @ http://localhost:8080/tools/index6.js?v=20:1134
+[ 2315063ms] [LOG] First 3 orders: [{"id":"1-A","posName":"A","lotMultiplier":1,"time":"2025.05.01 10:20:00","price":1.12871,"sl":1.12971,"initialSL":1.12971,"tp":1.12271,"direction":"BEAR","slMoveStartR":0.5,"slMoveCount":0,"trailingStartR":2,"trailingActive":false,"breakEvenMoved":false,"closed":true,"closedOrderType":"CLOSED_BY_SL","closedPrice":1.12971,"closedTime":"2025.05.01 10:30:00","pnlPoints":-0.0009999999999998899,"tradeResult":"LOSS"},{"id":"2-B","posName":"B","lotMultiplier":0.7,"time":"2025.05.01 10:20:00","price":1.12871,"sl":1.12971,"initialSL":1.12971,"tp":1.12271,"direction":"BEAR","slMoveStartR":1,"slMoveCount":0,"trailingStartR":3,"trailingActive":false,"breakEvenMoved":false,"closed":true,"closedOrderType":"CLOSED_BY_SL","closedPrice":1.12971,"closedTime":"2025.05.01 10:30:00","pnlPoints":-0.0009999999999998899,"tradeResult":"LOSS"},{"id":"3-C","posName":"C","lotMultiplier":0.5,"time":"2025.05.01 10:20:00","price":1.12871,"sl":1.12971,"initialSL":1.12971,"tp":1.12271,"direction":"BEAR","slMoveStartR":1.5,"slMoveCount":0,"trailingStartR":4,"trailingActive":false,"breakEvenMoved":false,"closed":true,"closedOrderType":"CLOSED_BY_SL","closedPrice":1.12971,"closedTime":"2025.05.01 10:30:00","pnlPoints":-0.0009999999999998899,"tradeResult":"LOSS"}] @ http://localhost:8080/tools/index6.js?v=20:1136
+[ 2315063ms] [LOG] ========================================= @ http://localhost:8080/tools/index6.js?v=20:1140
+[ 2315063ms] [LOG] CSV cached: 0 candles loaded @ http://localhost:8080/tools/index6.js?v=20:1152
+[ 2468554ms] [LOG] Defaulting to SciChart Community Edition. Usage constitutes acceptance of our EULA and terms at https://www.scichart.com/community-licensing. See https://store.scichart.com for commercial licensing options. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 2468554ms] [LOG] The community license is valid for 6 months from the date the version in use was released.  This version 4.0.933 has 74 days remaining @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 2468554ms] [LOG] SciChart is looking for a paid developer activation from the scichart licensing wizard... To disable this call SciChartSurface.UseCommunityLicense() @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 2468579ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2473584ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2478589ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2483594ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2488600ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2493606ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2498608ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2503618ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2508627ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2513635ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2513635ms] [LOG] Failed to connect to licensing wizard. Refresh page to retry. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 3209420ms] [LOG] Defaulting to SciChart Community Edition. Usage constitutes acceptance of our EULA and terms at https://www.scichart.com/community-licensing. See https://store.scichart.com for commercial licensing options. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 3209420ms] [LOG] The community license is valid for 6 months from the date the version in use was released.  This version 4.0.933 has 74 days remaining @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 3209420ms] [LOG] SciChart is looking for a paid developer activation from the scichart licensing wizard... To disable this call SciChartSurface.UseCommunityLicense() @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 3209446ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 3214451ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 3219456ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 3224467ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 3229479ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 3231255ms] [LOG] 2025.08.01 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 3231259ms] [WARNING] Data Distribution flag (BaseDataSeries.containsNaN = false) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 3231259ms] [WARNING] Data Distribution flag (BaseDataSeries.isSorted = true) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 3233182ms] [LOG] 2025.08.04 @ http://localhost:8080/tools/index6.js?v=20:2705
+[ 3234483ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 3240563ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 3245566ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 3250572ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 3255579ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 3255579ms] [LOG] Failed to connect to licensing wizard. Refresh page to retry. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 3266431ms] [LOG] Defaulting to SciChart Community Edition. Usage constitutes acceptance of our EULA and terms at https://www.scichart.com/community-licensing. See https://store.scichart.com for commercial licensing options. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 3266431ms] [LOG] The community license is valid for 6 months from the date the version in use was released.  This version 4.0.933 has 74 days remaining @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 3266431ms] [LOG] SciChart is looking for a paid developer activation from the scichart licensing wizard... To disable this call SciChartSurface.UseCommunityLicense() @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 3266453ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 3271457ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 3272203ms] [LOG] 2025.08.01 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3272203ms] [WARNING] Data Distribution flag (BaseDataSeries.containsNaN = false) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 3272203ms] [WARNING] Data Distribution flag (BaseDataSeries.isSorted = true) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 3273980ms] [LOG] 2025.08.04 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3276462ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 3331076ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 3336080ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 3341084ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 3346090ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 3351100ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 3356106ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 3361112ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 3361112ms] [LOG] Failed to connect to licensing wizard. Refresh page to retry. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 3371335ms] [LOG] Defaulting to SciChart Community Edition. Usage constitutes acceptance of our EULA and terms at https://www.scichart.com/community-licensing. See https://store.scichart.com for commercial licensing options. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 3371336ms] [LOG] The community license is valid for 6 months from the date the version in use was released.  This version 4.0.933 has 74 days remaining @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 3371336ms] [LOG] SciChart is looking for a paid developer activation from the scichart licensing wizard... To disable this call SciChartSurface.UseCommunityLicense() @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 3371361ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 3376367ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 3377635ms] [LOG] 2025.08.01 @ http://localhost:8080/tools/index6.js?v=20:2700
+[ 3377635ms] [WARNING] Data Distribution flag (BaseDataSeries.containsNaN = false) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 3377635ms] [WARNING] Data Distribution flag (BaseDataSeries.isSorted = true) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 3379365ms] [LOG] 2025.08.04 @ http://localhost:8080/tools/index6.js?v=20:2700
+[ 3381251ms] [LOG] 2025.08.05 @ http://localhost:8080/tools/index6.js?v=20:2700
+[ 3381370ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 3390128ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 3395135ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 3400142ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 3405146ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 3410149ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 3415156ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 3420161ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 3420162ms] [LOG] Failed to connect to licensing wizard. Refresh page to retry. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 3553722ms] [LOG] Defaulting to SciChart Community Edition. Usage constitutes acceptance of our EULA and terms at https://www.scichart.com/community-licensing. See https://store.scichart.com for commercial licensing options. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 3553722ms] [LOG] The community license is valid for 6 months from the date the version in use was released.  This version 4.0.933 has 74 days remaining @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 3553722ms] [LOG] SciChart is looking for a paid developer activation from the scichart licensing wizard... To disable this call SciChartSurface.UseCommunityLicense() @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 3553745ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 3558750ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 3559993ms] [LOG] Defaulting to SciChart Community Edition. Usage constitutes acceptance of our EULA and terms at https://www.scichart.com/community-licensing. See https://store.scichart.com for commercial licensing options. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 3559993ms] [LOG] The community license is valid for 6 months from the date the version in use was released.  This version 4.0.933 has 74 days remaining @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 3559993ms] [LOG] SciChart is looking for a paid developer activation from the scichart licensing wizard... To disable this call SciChartSurface.UseCommunityLicense() @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 3560015ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 3565020ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 3570022ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 3570158ms] [LOG] 2025.08.01 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3570159ms] [WARNING] Data Distribution flag (BaseDataSeries.containsNaN = false) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 3570159ms] [WARNING] Data Distribution flag (BaseDataSeries.isSorted = true) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 3573359ms] [LOG] CSV not cached yet, running optimized backtest first... @ http://localhost:8080/tools/index6.js?v=20:3593
+[ 3573360ms] [LOG] Parsing file for optimized backtest... @ http://localhost:8080/tools/index6.js?v=20:3560
+[ 3573433ms] [LOG] Parsed 29829 candles from file @ http://localhost:8080/tools/index6.js?v=20:3571
+[ 3573433ms] [LOG] Running optimized backtest with 29829 candles... @ http://localhost:8080/tools/index6.js?v=20:3575
+[ 3576958ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3577490ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3577981ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3578480ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3578952ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3579437ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3579896ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3580382ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 3580385ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3580829ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3581273ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3581701ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3582138ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3582586ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3583043ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3583497ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3583973ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3584437ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3584891ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3585371ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3585826ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3586287ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3586727ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3587189ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3587634ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3588116ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3588568ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3589020ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3589466ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 3589467ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3589918ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3590375ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3590808ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3591275ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3591712ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3592175ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3592622ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3593065ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3593503ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3593940ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3594374ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3594798ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3595244ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3595673ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3596114ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 3596116ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3596551ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3596988ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3597445ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3597876ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3598314ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3598745ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3599181ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3599638ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3600078ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3600523ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3600948ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3601389ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3601818ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3602255ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3602703ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3606465ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 3611469ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 3616473ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 3621477ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 3621477ms] [LOG] Failed to connect to licensing wizard. Refresh page to retry. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 3666606ms] [LOG] Defaulting to SciChart Community Edition. Usage constitutes acceptance of our EULA and terms at https://www.scichart.com/community-licensing. See https://store.scichart.com for commercial licensing options. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 3666606ms] [LOG] The community license is valid for 6 months from the date the version in use was released.  This version 4.0.933 has 74 days remaining @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 3666606ms] [LOG] SciChart is looking for a paid developer activation from the scichart licensing wizard... To disable this call SciChartSurface.UseCommunityLicense() @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 3666633ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 3671639ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 3676641ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 3678199ms] [LOG] 2025.08.01 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3678199ms] [WARNING] Data Distribution flag (BaseDataSeries.containsNaN = false) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 3678199ms] [WARNING] Data Distribution flag (BaseDataSeries.isSorted = true) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 3679981ms] [LOG] 2025.08.04 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3681646ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 3681896ms] [LOG] 2025.08.05 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3684505ms] [LOG] 2025.08.06 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3685955ms] [LOG] 2025.08.07 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3686675ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 3687428ms] [LOG] 2025.08.08 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3688782ms] [LOG] 2025.08.11 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3690231ms] [LOG] 2025.08.12 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3691611ms] [LOG] 2025.08.13 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3691700ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 3693074ms] [LOG] 2025.08.14 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3694723ms] [LOG] 2025.08.15 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3696252ms] [LOG] 2025.08.18 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3696742ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 3698141ms] [LOG] 2025.08.19 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3700141ms] [LOG] 2025.08.20 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3701768ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 3701944ms] [LOG] 2025.08.21 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3704879ms] [LOG] 2025.08.22 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3706857ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 3707916ms] [LOG] 2025.08.25 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3710505ms] [LOG] 2025.08.26 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3711932ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 3711933ms] [LOG] Failed to connect to licensing wizard. Refresh page to retry. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 3713308ms] [LOG] 2025.08.27 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3715956ms] [LOG] 2025.08.28 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3718672ms] [LOG] 2025.08.29 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3721474ms] [LOG] 2025.09.01 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3724467ms] [LOG] 2025.09.02 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3726950ms] [LOG] CSV not cached yet, running optimized backtest first... @ http://localhost:8080/tools/index6.js?v=20:3593
+[ 3726951ms] [LOG] Parsing file for optimized backtest... @ http://localhost:8080/tools/index6.js?v=20:3560
+[ 3727057ms] [LOG] Parsed 29829 candles from file @ http://localhost:8080/tools/index6.js?v=20:3571
+[ 3727057ms] [LOG] Running optimized backtest with 29829 candles... @ http://localhost:8080/tools/index6.js?v=20:3575
+[ 3728316ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3728823ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3729322ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3729739ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3730190ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3730641ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3731093ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3731561ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3731997ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3732432ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3732844ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3733270ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3733773ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3734203ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3734633ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3735076ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3735504ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3735978ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3736418ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3736847ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3737281ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3737713ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3739454ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3739988ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3740446ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3740885ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3741309ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3741748ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3742251ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3742699ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3743131ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3743578ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3744032ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3744521ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3744937ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3745380ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3745805ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3746244ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3746713ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3747144ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3747574ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3748008ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3748436ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3748907ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3749337ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3749767ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3750212ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3750642ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3751114ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3751548ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3751978ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3752399ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3752829ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3753272ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3753718ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3754167ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3754617ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3755048ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3755505ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3755926ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3756355ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3756796ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3757219ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3757688ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3758115ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3758550ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3759000ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3759470ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3759970ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3760416ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3760837ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3761287ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3761722ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3762196ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3762634ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3763064ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3763487ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3763926ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3764356ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3764784ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3765215ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3765646ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3766076ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3766533ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3768501ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3768972ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3769427ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3769868ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3770305ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3770782ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3771223ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3771664ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3772100ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3772572ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3773137ms] [LOG] 2025.09.03 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3773145ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3773593ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3774018ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3774450ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3774883ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3775360ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3775814ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3776254ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3776696ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3777129ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3777623ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3778068ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3778498ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3778946ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3779417ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3779865ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3780313ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3780763ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3781202ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3781629ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3782081ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:85
+[ 3787477ms] [LOG] 2025.09.04 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3791215ms] [LOG] 2025.09.05 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3794903ms] [LOG] 2025.09.08 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3797990ms] [LOG] 2025.09.09 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3801402ms] [LOG] 2025.09.10 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3805057ms] [LOG] 2025.09.11 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3808961ms] [LOG] 2025.09.12 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3812988ms] [LOG] 2025.09.15 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3816988ms] [LOG] 2025.09.16 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3820372ms] [LOG] 2025.09.17 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3823013ms] [LOG] 2025.09.18 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3825931ms] [LOG] 2025.09.19 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3829437ms] [LOG] 2025.09.22 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3832260ms] [LOG] 2025.09.23 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3835203ms] [LOG] 2025.09.24 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3838187ms] [LOG] 2025.09.25 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3841120ms] [LOG] 2025.09.26 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3844095ms] [LOG] 2025.09.29 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3847012ms] [LOG] 2025.09.30 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3850923ms] [LOG] 2025.10.01 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3854005ms] [LOG] 2025.10.02 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3857217ms] [LOG] 2025.10.03 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3860111ms] [LOG] 2025.10.06 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3863191ms] [LOG] 2025.10.07 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3866311ms] [LOG] 2025.10.08 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3869322ms] [LOG] 2025.10.09 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3872474ms] [LOG] 2025.10.10 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3875748ms] [LOG] 2025.10.13 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3878835ms] [LOG] 2025.10.14 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3882092ms] [LOG] 2025.10.15 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3885136ms] [LOG] 2025.10.16 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3888485ms] [LOG] 2025.10.17 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3891839ms] [LOG] 2025.10.20 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3895045ms] [LOG] 2025.10.21 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3898378ms] [LOG] 2025.10.22 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3901886ms] [LOG] 2025.10.23 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3905235ms] [LOG] 2025.10.24 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3908972ms] [LOG] 2025.10.26 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3909117ms] [LOG] 2025.10.27 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3912762ms] [LOG] 2025.10.28 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3916429ms] [LOG] 2025.10.29 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3920290ms] [LOG] 2025.10.30 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3924033ms] [LOG] 2025.10.31 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3927705ms] [LOG] 2025.11.03 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3932013ms] [LOG] 2025.11.04 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3936755ms] [LOG] 2025.11.05 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3941381ms] [LOG] 2025.11.06 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3947803ms] [LOG] 2025.11.07 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3953092ms] [LOG] 2025.11.10 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3957951ms] [LOG] 2025.11.11 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3962336ms] [LOG] 2025.11.12 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3966574ms] [LOG] 2025.11.13 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3971155ms] [LOG] 2025.11.14 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3975421ms] [LOG] 2025.11.17 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3980107ms] [LOG] 2025.11.18 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3984624ms] [LOG] 2025.11.19 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3989548ms] [LOG] 2025.11.20 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3994302ms] [LOG] 2025.11.21 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 3999152ms] [LOG] 2025.11.24 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 4004047ms] [LOG] 2025.11.25 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 4009075ms] [LOG] 2025.11.26 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 4014052ms] [LOG] 2025.11.27 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 4019149ms] [LOG] 2025.11.28 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 4024442ms] [LOG] 2025.12.01 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 4030562ms] [LOG] 2025.12.02 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 4037138ms] [LOG] 2025.12.03 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 4042893ms] [LOG] 2025.12.04 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 4048166ms] [LOG] 2025.12.05 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 4055710ms] [LOG] 2025.12.08 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 4062308ms] [LOG] 2025.12.09 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 4068556ms] [LOG] 2025.12.10 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 4075604ms] [LOG] 2025.12.11 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 4082057ms] [LOG] 2025.12.12 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 4088205ms] [LOG] 2025.12.15 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 4095221ms] [LOG] 2025.12.16 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 4101748ms] [LOG] 2025.12.17 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 4108521ms] [LOG] 2025.12.18 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 4115238ms] [LOG] 2025.12.19 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 4121763ms] [LOG] 2025.12.22 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 4128678ms] [LOG] 2025.12.23 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 4135528ms] [LOG] 2025.12.24 @ http://localhost:8080/tools/index6.js?v=20:2695
+[ 4139283ms] [LOG] ========== BACKTEST COMPLETE ========== @ http://localhost:8080/tools/index6.js?v=20:1130
+[ 4139283ms] [LOG] Total candles processed: 29810 @ http://localhost:8080/tools/index6.js?v=20:1131
+[ 4139283ms] [LOG] Total orders: 492 @ http://localhost:8080/tools/index6.js?v=20:1132
+[ 4139283ms] [LOG] Closed orders: 486 @ http://localhost:8080/tools/index6.js?v=20:1133
+[ 4139283ms] [LOG] Wins: 280 | Losses: 206 @ http://localhost:8080/tools/index6.js?v=20:1134
+[ 4139283ms] [LOG] First 3 orders: [{"id":"1-A","posName":"A","lotMultiplier":1,"time":"2025.08.01 10:35:00","price":1.14236,"sl":1.14086,"initialSL":1.14536,"tp":1.1353600000000001,"direction":"BEAR","slMoveStartR":0.5,"slMoveCount":1,"trailingStartR":2,"trailingActive":false,"breakEvenMoved":false,"closed":true,"closedOrderType":"CLOSED_BY_SL","closedPrice":1.14086,"closedTime":"2025.08.01 11:45:00","pnlPoints":0.0015000000000000568,"tradeResult":"WIN"},{"id":"1-B","posName":"B","lotMultiplier":0.7,"time":"2025.08.01 10:35:00","price":1.14236,"sl":1.1393600000000002,"initialSL":1.14536,"tp":1.1353600000000001,"direction":"BEAR","slMoveStartR":1,"slMoveCount":1,"trailingStartR":3,"trailingActive":false,"breakEvenMoved":false,"closed":true,"closedOrderType":"CLOSED_BY_SL","closedPrice":1.1393600000000002,"closedTime":"2025.08.01 12:45:00","pnlPoints":0.0029999999999998916,"tradeResult":"WIN"},{"id":"1-C","posName":"C","lotMultiplier":0.5,"time":"2025.08.01 10:35:00","price":1.14236,"sl":1.14536,"initialSL":1.14536,"tp":1.1353600000000001,"direction":"BEAR","slMoveStartR":1.5,"slMoveCount":0,"trailingStartR":4,"trailingActive":false,"breakEvenMoved":false,"closed":true,"closedOrderType":"CLOSED_BY_SL","closedPrice":1.14536,"closedTime":"2025.08.01 15:30:00","pnlPoints":-0.0029999999999998916,"tradeResult":"LOSS"}] @ http://localhost:8080/tools/index6.js?v=20:1136
+[ 4139283ms] [LOG] ========================================= @ http://localhost:8080/tools/index6.js?v=20:1140
+[ 4139283ms] [LOG] CSV cached: 0 candles loaded @ http://localhost:8080/tools/index6.js?v=20:1152
+[ 4843300ms] [LOG] Defaulting to SciChart Community Edition. Usage constitutes acceptance of our EULA and terms at https://www.scichart.com/community-licensing. See https://store.scichart.com for commercial licensing options. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 4843300ms] [LOG] The community license is valid for 6 months from the date the version in use was released.  This version 4.0.933 has 74 days remaining @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 4843300ms] [LOG] SciChart is looking for a paid developer activation from the scichart licensing wizard... To disable this call SciChartSurface.UseCommunityLicense() @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 4843329ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 4848332ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 4853335ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 4858340ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 4863345ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 4868349ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 4873357ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 4878361ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 4881867ms] [LOG] CSV not cached yet, running optimized backtest first... @ http://localhost:8080/tools/index6.js?v=20:3618
+[ 4883376ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 4888385ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 4888385ms] [LOG] Failed to connect to licensing wizard. Refresh page to retry. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 4890535ms] [LOG] 2025.08.01 @ http://localhost:8080/tools/index6.js?v=20:2717
+[ 4890536ms] [WARNING] Data Distribution flag (BaseDataSeries.containsNaN = false) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 4890537ms] [WARNING] Data Distribution flag (BaseDataSeries.isSorted = true) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 4895998ms] [LOG] CSV not cached yet, running optimized backtest first... @ http://localhost:8080/tools/index6.js?v=20:3618
+[ 4895998ms] [LOG] Parsing file for optimized backtest... @ http://localhost:8080/tools/index6.js?v=20:3585
+[ 4896077ms] [LOG] Parsed 29829 candles from file @ http://localhost:8080/tools/index6.js?v=20:3596
+[ 4896077ms] [LOG] Running optimized backtest with 29829 candles... @ http://localhost:8080/tools/index6.js?v=20:3600
+[ 4897685ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4898182ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4898668ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4899129ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4899572ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4900033ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4900481ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4900957ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4901397ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4901839ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4902258ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4902686ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4903143ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4903573ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4903997ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4904429ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4904854ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4905285ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4905707ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4906128ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4906562ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4906996ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4907414ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4907859ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4908317ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4908745ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4909187ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4909642ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4910082ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4910485ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4910908ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4911335ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4911769ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4912196ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4912619ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4913051ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4913538ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4913988ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4914420ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4914840ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4915291ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4915739ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4916184ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4916624ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4917088ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4917541ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4917976ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4918420ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4918875ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4919306ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4919748ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4920210ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4920659ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4921101ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4921548ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4921977ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4922411ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 4922834ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:104
+[ 5283065ms] [LOG] Defaulting to SciChart Community Edition. Usage constitutes acceptance of our EULA and terms at https://www.scichart.com/community-licensing. See https://store.scichart.com for commercial licensing options. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 5283065ms] [LOG] The community license is valid for 6 months from the date the version in use was released.  This version 4.0.933 has 74 days remaining @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 5283065ms] [LOG] SciChart is looking for a paid developer activation from the scichart licensing wizard... To disable this call SciChartSurface.UseCommunityLicense() @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 5283094ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 5288097ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 5293101ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 5293778ms] [LOG] 2025.08.01 @ http://localhost:8080/tools/index6.js?v=20:2726
+[ 5293779ms] [WARNING] Data Distribution flag (BaseDataSeries.containsNaN = false) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 5293779ms] [WARNING] Data Distribution flag (BaseDataSeries.isSorted = true) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 5295635ms] [LOG] 2025.08.04 @ http://localhost:8080/tools/index6.js?v=20:2726
+[ 5298106ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 5303109ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 5303707ms] [LOG] CSV not cached yet, running optimized backtest first... @ http://localhost:8080/tools/index6.js?v=20:3627
+[ 5303707ms] [LOG] Parsing file for optimized backtest... @ http://localhost:8080/tools/index6.js?v=20:3594
+[ 5303777ms] [LOG] Parsed 29829 candles from file @ http://localhost:8080/tools/index6.js?v=20:3605
+[ 5303777ms] [LOG] Running optimized backtest with 29829 candles... @ http://localhost:8080/tools/index6.js?v=20:3609
+[ 5305210ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5305694ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5306172ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5306607ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5307042ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5307482ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5307934ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5308384ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5308821ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5309257ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5309709ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5310149ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5310606ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 5310606ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5311030ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5311448ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5311897ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5312341ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5312769ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5313196ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5313639ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5314091ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5314545ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5314996ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5315430ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5315858ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5316287ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5316707ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5317146ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5317565ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5317998ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5318432ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5318879ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5319316ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 5319318ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5319749ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5320185ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5320629ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5321055ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5321493ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5321934ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5322426ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5322853ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5323315ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5323766ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5324210ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5324643ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5325096ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5325511ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5325956ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5326405ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5326840ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5327273ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5327706ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5328208ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5328638ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5329065ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5329492ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5329929ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5330364ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5330799ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5331227ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5331657ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5332110ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5332548ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5332968ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5335901ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 5340907ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 5345912ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 5345912ms] [LOG] Failed to connect to licensing wizard. Refresh page to retry. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 5839758ms] [LOG] Defaulting to SciChart Community Edition. Usage constitutes acceptance of our EULA and terms at https://www.scichart.com/community-licensing. See https://store.scichart.com for commercial licensing options. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 5839758ms] [LOG] The community license is valid for 6 months from the date the version in use was released.  This version 4.0.933 has 74 days remaining @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 5839758ms] [LOG] SciChart is looking for a paid developer activation from the scichart licensing wizard... To disable this call SciChartSurface.UseCommunityLicense() @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 5839779ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 5844781ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 5847336ms] [LOG] 2025.08.01 @ http://localhost:8080/tools/index6.js?v=20:2726
+[ 5847337ms] [WARNING] Data Distribution flag (BaseDataSeries.containsNaN = false) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 5847337ms] [WARNING] Data Distribution flag (BaseDataSeries.isSorted = true) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 5849230ms] [LOG] 2025.08.04 @ http://localhost:8080/tools/index6.js?v=20:2726
+[ 5849787ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 5851229ms] [LOG] 2025.08.05 @ http://localhost:8080/tools/index6.js?v=20:2726
+[ 5854790ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 5859796ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 5861489ms] [LOG] CSV not cached yet, running optimized backtest first... @ http://localhost:8080/tools/index6.js?v=20:3627
+[ 5861489ms] [LOG] Parsing file for optimized backtest... @ http://localhost:8080/tools/index6.js?v=20:3594
+[ 5861578ms] [LOG] Parsed 29829 candles from file @ http://localhost:8080/tools/index6.js?v=20:3605
+[ 5861578ms] [LOG] Running optimized backtest with 29829 candles... @ http://localhost:8080/tools/index6.js?v=20:3609
+[ 5863033ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5863502ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5863977ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5864415ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5864854ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5865318ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5865751ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5866199ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5866696ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5867159ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5867591ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5868064ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5868515ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 5868516ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5868958ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5869409ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5869883ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5870337ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5870762ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5871199ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5871620ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5872081ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5872522ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5872985ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5873425ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5873868ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5874301ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5874728ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5875178ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5875610ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5876074ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5876491ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5876966ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5877428ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 5877431ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5877874ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5878310ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5878749ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5879188ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5879609ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5880048ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5880489ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5880937ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5881371ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5881792ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5882221ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5882653ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5883079ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5883515ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5883945ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5884377ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5884813ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5885253ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5885671ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5886174ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5886610ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5887056ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5887483ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5887917ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5888348ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5888760ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5889188ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5889605ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5890037ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5890471ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5890911ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 5948948ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 5953952ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 5958956ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 5958956ms] [LOG] Failed to connect to licensing wizard. Refresh page to retry. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 6203610ms] [LOG] Defaulting to SciChart Community Edition. Usage constitutes acceptance of our EULA and terms at https://www.scichart.com/community-licensing. See https://store.scichart.com for commercial licensing options. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 6203610ms] [LOG] The community license is valid for 6 months from the date the version in use was released.  This version 4.0.933 has 74 days remaining @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 6203610ms] [LOG] SciChart is looking for a paid developer activation from the scichart licensing wizard... To disable this call SciChartSurface.UseCommunityLicense() @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 6203631ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 6208638ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 6210350ms] [LOG] 2025.08.01 @ http://localhost:8080/tools/index6.js?v=20:2726
+[ 6210350ms] [WARNING] Data Distribution flag (BaseDataSeries.containsNaN = false) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 6210351ms] [WARNING] Data Distribution flag (BaseDataSeries.isSorted = true) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 6213641ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 6214126ms] [LOG] CSV not cached yet, running optimized backtest first... @ http://localhost:8080/tools/index6.js?v=20:3627
+[ 6214126ms] [LOG] Parsing file for optimized backtest... @ http://localhost:8080/tools/index6.js?v=20:3594
+[ 6214200ms] [LOG] Parsed 29829 candles from file @ http://localhost:8080/tools/index6.js?v=20:3605
+[ 6214201ms] [LOG] Running optimized backtest with 29829 candles... @ http://localhost:8080/tools/index6.js?v=20:3609
+[ 6215280ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6215777ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6216272ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6216712ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6217150ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6217572ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6218018ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6218511ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6218951ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6219445ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6219936ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6220425ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6220895ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6221393ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6221826ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6222296ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6222719ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6223167ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 6223168ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6223624ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6224065ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6224505ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6224938ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6225380ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6225828ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6226269ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6226690ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6227127ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6227561ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6228018ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6228474ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6228916ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6229353ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6229797ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 6229798ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6230230ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6230670ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6231110ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6231544ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6231981ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6232421ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6232850ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6233272ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6233714ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6234163ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6234601ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6235042ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6235469ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6235898ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6236315ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 6236317ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6236731ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6237161ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6237582ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6238013ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6238449ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6238877ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6239303ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6239729ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6240164ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6240589ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6241009ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6241435ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6241904ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 6241904ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6242381ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6242810ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6243254ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6243678ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6244121ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6244561ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6244990ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6245445ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6245873ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6246297ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6246729ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6247158ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6270261ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 6275265ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 6280269ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 6280269ms] [LOG] Failed to connect to licensing wizard. Refresh page to retry. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 6418080ms] [LOG] Defaulting to SciChart Community Edition. Usage constitutes acceptance of our EULA and terms at https://www.scichart.com/community-licensing. See https://store.scichart.com for commercial licensing options. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 6418080ms] [LOG] The community license is valid for 6 months from the date the version in use was released.  This version 4.0.933 has 74 days remaining @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 6418080ms] [LOG] SciChart is looking for a paid developer activation from the scichart licensing wizard... To disable this call SciChartSurface.UseCommunityLicense() @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 6418103ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 6423109ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 6424595ms] [LOG] 2025.08.01 @ http://localhost:8080/tools/index6.js?v=20:2726
+[ 6424596ms] [WARNING] Data Distribution flag (BaseDataSeries.containsNaN = false) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 6424596ms] [WARNING] Data Distribution flag (BaseDataSeries.isSorted = true) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 6428111ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 6428488ms] [LOG] CSV not cached yet, running optimized backtest first... @ http://localhost:8080/tools/index6.js?v=20:3627
+[ 6428489ms] [LOG] Parsing file for optimized backtest... @ http://localhost:8080/tools/index6.js?v=20:3594
+[ 6428566ms] [LOG] Parsed 29829 candles from file @ http://localhost:8080/tools/index6.js?v=20:3605
+[ 6428566ms] [LOG] Running optimized backtest with 29829 candles... @ http://localhost:8080/tools/index6.js?v=20:3609
+[ 6429622ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6430094ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6430545ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6430987ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6431434ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6431885ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6432338ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6432831ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6433280ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6433751ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6434241ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6434702ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6435171ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6435626ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6436080ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6436550ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6437064ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6437520ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 6437520ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6437961ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6438405ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6438861ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6439307ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6439745ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6440180ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6440600ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6441050ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6441498ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6441979ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6442457ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6442923ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6443408ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6443918ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6444438ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 6444438ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6444881ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6445373ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6445830ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6446276ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6446694ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6447138ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6447562ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6448048ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6448509ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6448949ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6449396ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6449841ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6450292ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6450731ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6451173ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 6451175ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6451668ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6452124ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6452553ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6452987ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6456249ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6456693ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6457135ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6457584ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6458024ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6458487ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6458927ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6459367ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6459839ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6460327ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6460806ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6461263ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6461686ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6465264ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 6465341ms] [LOG] Defaulting to SciChart Community Edition. Usage constitutes acceptance of our EULA and terms at https://www.scichart.com/community-licensing. See https://store.scichart.com for commercial licensing options. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 6465341ms] [LOG] The community license is valid for 6 months from the date the version in use was released.  This version 4.0.933 has 74 days remaining @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 6465341ms] [LOG] SciChart is looking for a paid developer activation from the scichart licensing wizard... To disable this call SciChartSurface.UseCommunityLicense() @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 6465365ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 6468327ms] [LOG] Defaulting to SciChart Community Edition. Usage constitutes acceptance of our EULA and terms at https://www.scichart.com/community-licensing. See https://store.scichart.com for commercial licensing options. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 6468327ms] [LOG] The community license is valid for 6 months from the date the version in use was released.  This version 4.0.933 has 74 days remaining @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 6468327ms] [LOG] SciChart is looking for a paid developer activation from the scichart licensing wizard... To disable this call SciChartSurface.UseCommunityLicense() @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 6468351ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 6473358ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 6477546ms] [LOG] 2025.08.01 @ http://localhost:8080/tools/index6.js?v=20:2726
+[ 6477547ms] [WARNING] Data Distribution flag (BaseDataSeries.containsNaN = false) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 6477547ms] [WARNING] Data Distribution flag (BaseDataSeries.isSorted = true) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 6478366ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 6479449ms] [LOG] 2025.08.04 @ http://localhost:8080/tools/index6.js?v=20:2726
+[ 6483371ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 6483413ms] [LOG] CSV not cached yet, running optimized backtest first... @ http://localhost:8080/tools/index6.js?v=20:3627
+[ 6483413ms] [LOG] Parsing file for optimized backtest... @ http://localhost:8080/tools/index6.js?v=20:3594
+[ 6483485ms] [LOG] Parsed 29829 candles from file @ http://localhost:8080/tools/index6.js?v=20:3605
+[ 6483485ms] [LOG] Running optimized backtest with 29829 candles... @ http://localhost:8080/tools/index6.js?v=20:3609
+[ 6484538ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6485030ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6485489ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6485927ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6486360ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6486784ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6487224ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6487651ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6488079ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6488528ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6488956ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6489375ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6489811ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6490263ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6490693ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6491101ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6491518ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6491959ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 6491959ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6492424ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6492865ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6493296ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6493727ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6494159ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6494604ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6495027ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6495455ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6495886ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6496314ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6496743ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6497171ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6497597ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6498015ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6498447ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 6498450ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6498873ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6499323ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6499760ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6500199ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6500627ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6501051ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6501484ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6501914ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6502344ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6502773ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6503199ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6503622ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6504065ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6504492ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6504920ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 6504921ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6505402ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6505920ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6506344ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6506779ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6507214ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6507640ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6508074ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6508497ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6508935ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6509367ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6509796ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6510223ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6510636ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6511081ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6511511ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6511986ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6561327ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 6566331ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 6571343ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 6571344ms] [LOG] Failed to connect to licensing wizard. Refresh page to retry. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 6581060ms] [LOG] Defaulting to SciChart Community Edition. Usage constitutes acceptance of our EULA and terms at https://www.scichart.com/community-licensing. See https://store.scichart.com for commercial licensing options. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 6581061ms] [LOG] The community license is valid for 6 months from the date the version in use was released.  This version 4.0.933 has 74 days remaining @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 6581061ms] [LOG] SciChart is looking for a paid developer activation from the scichart licensing wizard... To disable this call SciChartSurface.UseCommunityLicense() @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 6581085ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 6586094ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 6591100ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 6594025ms] [LOG] Defaulting to SciChart Community Edition. Usage constitutes acceptance of our EULA and terms at https://www.scichart.com/community-licensing. See https://store.scichart.com for commercial licensing options. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 6594025ms] [LOG] The community license is valid for 6 months from the date the version in use was released.  This version 4.0.933 has 74 days remaining @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 6594025ms] [LOG] SciChart is looking for a paid developer activation from the scichart licensing wizard... To disable this call SciChartSurface.UseCommunityLicense() @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 6594047ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 6598449ms] [LOG] 2025.08.01 @ http://localhost:8080/tools/index6.js?v=20:2726
+[ 6598450ms] [WARNING] Data Distribution flag (BaseDataSeries.containsNaN = false) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 6598450ms] [WARNING] Data Distribution flag (BaseDataSeries.isSorted = true) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 6599052ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 6600321ms] [LOG] 2025.08.04 @ http://localhost:8080/tools/index6.js?v=20:2726
+[ 6602293ms] [LOG] 2025.08.05 @ http://localhost:8080/tools/index6.js?v=20:2726
+[ 6604058ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 6605079ms] [LOG] CSV not cached yet, running optimized backtest first... @ http://localhost:8080/tools/index6.js?v=20:3627
+[ 6605080ms] [LOG] Parsing file for optimized backtest... @ http://localhost:8080/tools/index6.js?v=20:3594
+[ 6605148ms] [LOG] Parsed 29829 candles from file @ http://localhost:8080/tools/index6.js?v=20:3605
+[ 6605148ms] [LOG] Running optimized backtest with 29829 candles... @ http://localhost:8080/tools/index6.js?v=20:3609
+[ 6606121ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6606585ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6607070ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6607530ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6607969ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6608379ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6608799ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6609226ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6609679ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6610122ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6610569ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6611031ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6611455ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 6611456ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6611877ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6612301ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6612722ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6613150ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6613575ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6614023ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6614451ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6614869ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6615292ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6615713ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6616157ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6616586ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6617009ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6617427ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6617863ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6618285ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6618711ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6619128ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6619550ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6619982ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 6619985ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6620429ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6620866ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6621295ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6621724ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6622174ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6622621ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6623061ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6623496ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6623926ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6624373ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6624813ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6625238ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6625669ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6626177ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6626613ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 6626617ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6627042ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6627462ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6627880ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6628311ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6628777ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6629308ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6629804ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6630252ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6630694ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6631135ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6631581ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6632076ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6632574ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 6632575ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6633045ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6633501ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6633964ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6634434ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6634934ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6635393ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6635840ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6636301ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6636765ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6637218ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6637666ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6638135ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6643354ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 6645997ms] [LOG] Defaulting to SciChart Community Edition. Usage constitutes acceptance of our EULA and terms at https://www.scichart.com/community-licensing. See https://store.scichart.com for commercial licensing options. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 6645998ms] [LOG] The community license is valid for 6 months from the date the version in use was released.  This version 4.0.933 has 74 days remaining @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 6645998ms] [LOG] SciChart is looking for a paid developer activation from the scichart licensing wizard... To disable this call SciChartSurface.UseCommunityLicense() @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 6646021ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 6651023ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 6652021ms] [LOG] Defaulting to SciChart Community Edition. Usage constitutes acceptance of our EULA and terms at https://www.scichart.com/community-licensing. See https://store.scichart.com for commercial licensing options. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 6652021ms] [LOG] The community license is valid for 6 months from the date the version in use was released.  This version 4.0.933 has 74 days remaining @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 6652021ms] [LOG] SciChart is looking for a paid developer activation from the scichart licensing wizard... To disable this call SciChartSurface.UseCommunityLicense() @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 6652045ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 6657052ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 6660046ms] [LOG] 2025.08.01 @ http://localhost:8080/tools/index6.js?v=20:2726
+[ 6660046ms] [WARNING] Data Distribution flag (BaseDataSeries.containsNaN = false) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 6660047ms] [WARNING] Data Distribution flag (BaseDataSeries.isSorted = true) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 6661910ms] [LOG] 2025.08.04 @ http://localhost:8080/tools/index6.js?v=20:2726
+[ 6662059ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 6664076ms] [LOG] CSV not cached yet, running optimized backtest first... @ http://localhost:8080/tools/index6.js?v=20:3627
+[ 6664076ms] [LOG] Parsing file for optimized backtest... @ http://localhost:8080/tools/index6.js?v=20:3594
+[ 6664136ms] [LOG] Parsed 29829 candles from file @ http://localhost:8080/tools/index6.js?v=20:3605
+[ 6664136ms] [LOG] Running optimized backtest with 29829 candles... @ http://localhost:8080/tools/index6.js?v=20:3609
+[ 6664992ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6665471ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6665940ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6666437ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6666910ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6667369ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6667819ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6668290ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6668729ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6669204ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6669650ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6670080ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6670507ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 6670508ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6670931ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6671373ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6671795ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6672215ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6672641ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6673076ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6673502ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6673938ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6674375ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6674824ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6675305ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6675760ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6676309ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6676805ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6677258ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6677686ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6678143ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6678577ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6678999ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6679435ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 6679438ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6679918ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6680431ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6680876ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6681329ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6681798ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6682239ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6682723ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6683157ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6683631ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6684077ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6684512ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6684957ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6685376ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6685822ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6686260ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 6686261ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6686735ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6687211ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6687666ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6688109ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6688556ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6689033ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6689456ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6689896ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6690332ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6690764ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6691172ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6691604ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6692050ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6692467ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6692905ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6693337ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 6696198ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 6701204ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 6706212ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 6711217ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 6711217ms] [LOG] Failed to connect to licensing wizard. Refresh page to retry. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 7110466ms] [LOG] Defaulting to SciChart Community Edition. Usage constitutes acceptance of our EULA and terms at https://www.scichart.com/community-licensing. See https://store.scichart.com for commercial licensing options. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 7110466ms] [LOG] The community license is valid for 6 months from the date the version in use was released.  This version 4.0.933 has 74 days remaining @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 7110466ms] [LOG] SciChart is looking for a paid developer activation from the scichart licensing wizard... To disable this call SciChartSurface.UseCommunityLicense() @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 7110495ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 7115499ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 7118398ms] [LOG] 2025.08.01 @ http://localhost:8080/tools/index6.js?v=20:2726
+[ 7118398ms] [WARNING] Data Distribution flag (BaseDataSeries.containsNaN = false) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 7118398ms] [WARNING] Data Distribution flag (BaseDataSeries.isSorted = true) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 7120502ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 7122942ms] [LOG] CSV not cached yet, running optimized backtest first... @ http://localhost:8080/tools/index6.js?v=20:3629
+[ 7122942ms] [LOG] Parsing file for optimized backtest... @ http://localhost:8080/tools/index6.js?v=20:3594
+[ 7123004ms] [LOG] Parsed 29829 candles from file @ http://localhost:8080/tools/index6.js?v=20:3605
+[ 7123004ms] [LOG] Running optimized backtest with 29829 candles... @ http://localhost:8080/tools/index6.js?v=20:3609
+[ 7123055ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7125068ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7125541ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7125992ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7126433ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7126888ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7127341ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7127789ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 7127790ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7128256ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7128696ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7129143ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7129587ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7130030ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7130469ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7130919ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7131394ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7131824ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7132295ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7132726ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7133166ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7133577ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7134051ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7134500ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7134935ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7135370ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7135790ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7136221ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7136658ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 7136661ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7137124ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7137551ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7138000ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7138429ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7138869ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7139327ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7139758ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7140204ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7140646ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7141073ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7141510ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7141943ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7142376ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7142803ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7143237ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 7143239ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7143679ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7144142ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7144577ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7145013ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7145448ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7145909ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7146342ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7146785ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7147230ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7147660ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7148100ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7148535ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7148975ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7149408ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7149841ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7150274ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7150701ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7151142ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7151583ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7152018ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7152438ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=20:113
+[ 7158972ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 7163974ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 7168978ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 7173984ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 7173984ms] [LOG] Failed to connect to licensing wizard. Refresh page to retry. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0

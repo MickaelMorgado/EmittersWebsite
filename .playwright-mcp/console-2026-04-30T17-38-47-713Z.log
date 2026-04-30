@@ -1,0 +1,37 @@
+[     118ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/assets/css.css:0
+[     118ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/assets/reusables.css:0
+[     122ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/assets/reusables.js:0
+[     147ms] [LOG] Loading CSV from: EURUSD_M5_202603020000_202603170000.csv @ http://localhost:8080/index6.js?v=11:461
+[     174ms] TypeError: Cannot read properties of undefined (reading 'name')
+    at renderComparisonChart (http://localhost:8080/index6.js?v=11:2964:47)
+    at updateSavedResultsComparison (http://localhost:8080/index6.js?v=11:3143:3)
+    at HTMLDocument.<anonymous> (http://localhost:8080/index6.js?v=11:1085:5)
+[     181ms] [LOG] CSV loaded and cached, length: 190132 rows: 3169 @ http://localhost:8080/index6.js?v=11:475
+[     250ms] [LOG] Defaulting to SciChart Community Edition. Usage constitutes acceptance of our EULA and terms at https://www.scichart.com/community-licensing. See https://store.scichart.com for commercial licensing options. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[     250ms] [LOG] The community license is valid for 6 months from the date the version in use was released.  This version 4.0.933 has 74 days remaining @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[     250ms] [LOG] SciChart is looking for a paid developer activation from the scichart licensing wizard... To disable this call SciChartSurface.UseCommunityLicense() @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[     274ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[    1148ms] [LOG] Fast Mode auto-enabled @ http://localhost:8080/index6.js?v=11:486
+[    5277ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[    5965ms] [LOG] Running optimized backtest with 3169 candles... @ http://localhost:8080/index6.js?v=11:2808
+[    6019ms] [LOG] 🔺 TRADE #1: BULL at 1.17226, SL=1.1712600000000002, TP=1.17826 @ http://localhost:8080/index6.js?v=11:236
+[    6020ms] [LOG] ✅ Order #1 CLOSED: CLOSED_BY_SL at 1.17336, PnL=0.00110 @ http://localhost:8080/index6.js?v=11:290
+[    6021ms] [LOG] 🔺 TRADE #2: BEAR at 1.17328, SL=1.17428, TP=1.16728 @ http://localhost:8080/index6.js?v=11:236
+[    6021ms] [LOG] 🔺 TRADE #3: BEAR at 1.17037, SL=1.1713699999999998, TP=1.16437 @ http://localhost:8080/index6.js?v=11:236
+[    6021ms] [LOG] ✅ Order #3 CLOSED: CLOSED_BY_TP at 1.1706699999999999, PnL=-0.00030 @ http://localhost:8080/index6.js?v=11:290
+[    6021ms] [LOG] ✅ Order #2 CLOSED: CLOSED_BY_TP at 1.1713800000000003, PnL=0.00190 @ http://localhost:8080/index6.js?v=11:290
+[    6024ms] [LOG] MA debug at idx 500: maArray=1.155260, 1.155008, 1.155067, 1.155437, 1.155865, accel=0.00005833333333349344 @ http://localhost:8080/index6.js?v=11:195
+[    6052ms] [LOG] 📊 SIGNAL DEBUG: TTR=1353, ATR=2942, MA=2084, CSID=912, ALL=245, trades=49, orders=49, maxAccel=0.00119500, minAccel=-0.00110667 @ http://localhost:8080/index6.js?v=11:336
+[    6056ms] TypeError: Cannot read properties of undefined (reading 'name')
+    at renderComparisonChart (http://localhost:8080/index6.js?v=11:2964:47)
+    at displayBacktestResult (http://localhost:8080/index6.js?v=11:3041:3)
+    at http://localhost:8080/index6.js?v=11:2824:5
+[   10279ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   15282ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   20289ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   25292ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   30294ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   35296ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   40300ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   45306ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   45306ms] [LOG] Failed to connect to licensing wizard. Refresh page to retry. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0

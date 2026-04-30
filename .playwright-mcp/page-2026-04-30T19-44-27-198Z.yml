@@ -1,0 +1,119 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e4]:
+    - generic [ref=e5]:
+      - heading "BackTesting" [level=1] [ref=e6]
+      - paragraph [ref=e7]: "Export MT5 bars by using CTRL+U then go to Bars tab, filter the range and export, then upload it here:"
+      - paragraph [ref=e8]:
+        - text: "More info:"
+        - link "Export Historical Data" [ref=e9] [cursor=pointer]:
+          - /url: https://myforex.com/en/mt5guide/export-historicaldata.html
+        - link "Limited History Issue" [ref=e10] [cursor=pointer]:
+          - /url: https://www.mql5.com/en/forum/356227
+    - separator [ref=e11]
+    - generic [ref=e12]: Upload CSV bars
+    - generic [ref=e13]:
+      - button "Upload CSV bars" [ref=e14]
+      - button "Refresh" [ref=e15] [cursor=pointer]
+    - separator [ref=e17]
+    - separator [ref=e18]
+    - generic [ref=e19]:
+      - generic [ref=e20]:
+        - generic [ref=e21]: Prev
+        - button "Prev" [ref=e22] [cursor=pointer]
+      - generic [ref=e24]:
+        - generic [ref=e25]: Navigate trought session
+        - combobox "Navigate trought session" [ref=e27]
+      - generic [ref=e28]:
+        - generic [ref=e29]: Next
+        - button "Next" [ref=e30] [cursor=pointer]
+    - separator [ref=e32]
+    - generic [ref=e33]: Application theme
+    - combobox [ref=e35]:
+      - option "-" [selected]
+      - option "Green / Red"
+      - option "Blue / Magenta"
+      - option "Yellow / Cyan"
+      - option "Light Blue / Grey"
+      - option "Volcanic"
+      - option "Devil"
+      - option "Matrix"
+    - separator [ref=e36]
+    - generic [ref=e37]: Backtesting Controls
+    - generic [ref=e38]:
+      - button "Previous Step (Not implemented)" [disabled] [ref=e39]
+      - button "" [ref=e41] [cursor=pointer]:
+        - generic [ref=e42]: 
+      - button "Next Step (Advance 1 candle)" [ref=e43] [cursor=pointer]
+      - button "Stop Backtesting" [ref=e45] [cursor=pointer]
+    - generic [ref=e49]: Fast Mode (No Chart)
+    - separator [ref=e50]
+    - generic "Current progression of the current backtesting file reading. (Starting Time - Current Time - Ending Time)" [ref=e51]: File Reading Progression*
+    - generic [ref=e52]:
+      - text: "-"
+      - text: "-"
+    - separator [ref=e54]
+    - generic [ref=e55]: CSV Data
+    - textbox [ref=e57]
+  - generic [ref=e58]:
+    - generic [ref=e59]: Backtesting is running ...
+    - generic [ref=e61]:
+      - img
+      - img
+      - img
+    - generic [ref=e63]:
+      - generic [ref=e64]:
+        - button "Backtesting results (Algo)" [ref=e65] [cursor=pointer]
+        - button "Parameter Comparison" [ref=e66] [cursor=pointer]
+        - button "MQL Expert Advisor Generator" [ref=e67] [cursor=pointer]
+        - button "Review From Historical Trades" [disabled] [ref=e68]
+        - button "Backtesting results (Manual)" [disabled] [ref=e69]
+        - 'button "Toggle Layout: Chart ↔ Panel" [ref=e71] [cursor=pointer]'
+      - generic [ref=e73]:
+        - heading "Backtesting Result (Algo)" [level=5] [ref=e74]
+        - generic [ref=e75]:
+          - generic [ref=e76]:
+            - generic [ref=e77]:
+              - 'generic "CSID: CSID price action breakout with Institutional candle move signal | CSID_W_MA: CSID price action breakout with Institutional candle move signal with moving average | CSID_W_MA_DynamicTS: CSID price action breakout with Institutional candle move signal with moving average and dynamic trailing stop" [ref=e78]': Strategy Selection*
+              - combobox "Strategy Selection*" [ref=e79]:
+                - option "CSID_W_MA_DynamicTS" [selected]
+                - option "CSID_W_MA"
+                - option "CSID"
+              - generic [ref=e80]: Session Start Time (add 2h to match MT5 data)
+              - textbox "CSV Data Session Start Time (add 2h to match MT5 data)" [ref=e81]: 09:50:00
+            - generic [ref=e82]:
+              - generic [ref=e83]: Session End Time (add 2h to match MT5 data)
+              - textbox "Session End Time (add 2h to match MT5 data)" [ref=e84]: 20:00:00
+            - generic [ref=e85]:
+              - generic "Period of Moving Average" [ref=e86]: Moving Average Period*
+              - spinbutton "Moving Average Period*" [ref=e87]: "200"
+            - generic [ref=e88]:
+              - generic "How much tilt of moving average for valid acceleration signal" [ref=e89]: Moving Average Threshold*
+              - spinbutton "Moving Average Threshold*" [ref=e90]: "0.003"
+            - generic [ref=e91]:
+              - generic [ref=e92]: Lot Size
+              - spinbutton "Lot Size" [ref=e93]: "1.0"
+              - generic "Use this value for aproximate deduction as fees, swaps or commissions" [ref=e94]: Commission Aprox. Size*
+              - spinbutton "Commission Aprox. Size*" [ref=e95]: "0.00005"
+              - generic "Risk:Reward Ratio in points" [ref=e96]: RR (SL Points | TP Points)*
+              - spinbutton [ref=e97]: "0.001"
+              - spinbutton [ref=e98]: "0.006"
+              - generic "Trailing Stop base increment in points" [ref=e99]: TS Increment*
+              - spinbutton "TS Increment*" [ref=e100]: "0.0001"
+              - generic [ref=e101]:
+                - button "Save Configurations For Next Time" [ref=e102] [cursor=pointer]
+                - generic "Save the current configuration as URLs parameters for future use. Browser URL will refresh with theses new parameters when saving!" [ref=e104]: Save Configurations*
+              - generic [ref=e105]:
+                - button "Load Configurations" [ref=e106] [cursor=pointer]
+                - generic "Load the configuration from URLs parameters. Browser URL will refresh with new parameters when loading!" [ref=e108]: Load Configurations*
+              - generic [ref=e109]:
+                - button "Generate MQL" [ref=e110] [cursor=pointer]
+                - generic [ref=e112]: Generate MQL
+          - generic [ref=e113]:
+            - generic [ref=e114]: "Performance Results:"
+            - textbox "Performance Results:" [ref=e115]
+            - generic "Easy way to copy paste the backtest result into a google sheet / excel" [ref=e116]: "CSV Exportable text: *"
+            - 'textbox "CSV Exportable text: *" [ref=e117]'
+            - separator [ref=e118]
+            - button "Send to Google Sheets" [disabled] [ref=e120]: Send to Google Sheets
+          - generic [ref=e124]: more stats here
+        - heading "Order History" [level=5] [ref=e126]

@@ -1,0 +1,14 @@
+[     106ms] [LOG] Loading CSV from: EURUSD_M5_202603020000_202603170000.csv @ http://localhost:8080/tools/index6.js?v=17-multi-position:559
+[     145ms] [LOG] CSV loaded and cached, length: 190132 rows: 3169 @ http://localhost:8080/tools/index6.js?v=17-multi-position:573
+[     155ms] [LOG] Defaulting to SciChart Community Edition. Usage constitutes acceptance of our EULA and terms at https://www.scichart.com/community-licensing. See https://store.scichart.com for commercial licensing options. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[     155ms] [LOG] The community license is valid for 6 months from the date the version in use was released.  This version 4.0.933 has 74 days remaining @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[     155ms] [LOG] SciChart is looking for a paid developer activation from the scichart licensing wizard... To disable this call SciChartSurface.UseCommunityLicense() @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[     252ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[    1108ms] [LOG] Fast Mode auto-enabled @ http://localhost:8080/tools/index6.js?v=17-multi-position:584
+[    4960ms] [LOG] Running optimized backtest with 3169 candles... @ http://localhost:8080/tools/index6.js?v=17-multi-position:2929
+[    5011ms] [LOG] Multi-position preset: enabled (3 positions) @ http://localhost:8080/tools/index6.js?v=17-multi-position:79
+[    5254ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   10259ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   15261ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   20270ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   25279ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
