@@ -1712,31 +1712,49 @@ const initSciChart = (data) => {
             break;
           case 'TAKE_A_TRADE':
             const definedCandleMoment = EnumMT5OHLC.OPEN;
-            const orderOptionsBasedDirection = (tradeDirection) => {
-              if (tradeDirection == EnumDirection.BULL) {
-                return {
-                  sl: candle[definedCandleMoment] - slSize(),
-                  tp: candle[definedCandleMoment] + tpSize(),
-                  direction: EnumDirection.BULL,
-                };
-              } else {
-                return {
-                  sl: candle[definedCandleMoment] + slSize(),
-                  tp: candle[definedCandleMoment] - tpSize(),
-                  direction: EnumDirection.BEAR,
-                };
-              }
-            };
+            const MULTI_POS_CONFIG = getMultiPositionConfig();
+            const tradeDirectionIsBull = tradeDirection == EnumDirection.BULL;
+            const baseSL = tradeDirectionIsBull ? candle[definedCandleMoment] - slSize() : candle[definedCandleMoment] + slSize();
+            const baseTP = tradeDirectionIsBull ? candle[definedCandleMoment] + tpSize() : candle[definedCandleMoment] - tpSize();
+            const direction = tradeDirectionIsBull ? EnumDirection.BULL : EnumDirection.BEAR;
+            const entryTime = `${candle[EnumMT5OHLC.DATE]} ${candle[EnumMT5OHLC.TIME]}`;
 
-            // Add order to history:
-ordersHistory.push({
-          id: ordersHistory.length + 1,
-          breakEvenMoved: false,
-          time: `${candle[EnumMT5OHLC.DATE]} ${candle[EnumMT5OHLC.TIME]}`,
-          price: candle[definedCandleMoment],
-          closedOrderType: EnumclosedOrderType.PENDING,
-              ...orderOptionsBasedDirection(tradeDirection),
-            });
+            if (MULTI_POS_CONFIG.enabled) {
+              // Create multiple positions at once
+              MULTI_POS_CONFIG.positions.forEach(posConfig => {
+                ordersHistory.push({
+                  id: `${ordersHistory.length + 1}-${posConfig.name}`,
+                  posName: posConfig.name,
+                  lotMultiplier: posConfig.lotMultiplier,
+                  time: entryTime,
+                  price: candle[definedCandleMoment],
+                  sl: baseSL,
+                  initialSL: baseSL,
+                  tp: baseTP,
+                  direction: direction,
+                  slMoveStartR: posConfig.slMoveStartR,
+                  slMoveCount: 0,
+                  trailingStartR: posConfig.trailingStartR,
+                  trailingActive: false,
+                  breakEvenMoved: false,
+                  closed: false,
+                  closedOrderType: EnumclosedOrderType.PENDING,
+                });
+              });
+            } else {
+              // Single position mode (original)
+              ordersHistory.push({
+                id: ordersHistory.length + 1,
+                breakEvenMoved: false,
+                time: entryTime,
+                price: candle[definedCandleMoment],
+                sl: baseSL,
+                tp: baseTP,
+                direction: direction,
+                closed: false,
+                closedOrderType: EnumclosedOrderType.PENDING,
+              });
+            }
             window.ordersHistory = ordersHistory;
 
             // Add annotation for orders history:
