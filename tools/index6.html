@@ -563,6 +563,16 @@
                   <option value="CSID_W_MA">CSID_W_MA</option>
                   <option value="CSID">CSID</option>
                 </select>
+                <label for="multiPositionPreset" title="Multi-Position Strategy: Run multiple positions per trade with progressive SL management"
+                  >Multi-Position Preset</label
+                >
+                <select id="multiPositionPreset" class="h-input-effects">
+                  <option value="balanced" selected>Balanced (1.0+0.7+0.5)</option>
+                  <option value="single">Single Position (off)</option>
+                  <option value="equal">Equal (1.0+1.0+1.0)</option>
+                  <option value="aggressive">Aggressive (1.5+0.7+0.3)</option>
+                  <option value="conservative">Conservative (0.5+0.5+0.5)</option>
+                </select>
                 <label for="backtesting-hour"
                   >Session Start Time (add 2h to match MT5 data)</label
                 >

@@ -26,17 +26,65 @@ const EnumDirection = {
   BEAR: 'BEAR',
 };
 
+// Multi-position strategy presets
+const MULTI_POSITION_PRESETS = {
+  single: {
+    enabled: false,
+    positions: []
+  },
+  balanced: {
+    enabled: true,
+    positions: [
+      { lot: 1.0, name: 'A', slMoveStartR: 0.5, trailingStartR: 2.0, lotMultiplier: 1.0 },
+      { lot: 0.7, name: 'B', slMoveStartR: 1.0, trailingStartR: 3.0, lotMultiplier: 0.7 },
+      { lot: 0.5, name: 'C', slMoveStartR: 1.5, trailingStartR: 4.0, lotMultiplier: 0.5 }
+    ]
+  },
+  equal: {
+    enabled: true,
+    positions: [
+      { lot: 1.0, name: 'A', slMoveStartR: 0.5, trailingStartR: 2.0, lotMultiplier: 1.0 },
+      { lot: 1.0, name: 'B', slMoveStartR: 1.0, trailingStartR: 3.0, lotMultiplier: 1.0 },
+      { lot: 1.0, name: 'C', slMoveStartR: 1.5, trailingStartR: 4.0, lotMultiplier: 1.0 }
+    ]
+  },
+  aggressive: {
+    enabled: true,
+    positions: [
+      { lot: 1.5, name: 'A', slMoveStartR: 0.5, trailingStartR: 2.0, lotMultiplier: 1.5 },
+      { lot: 0.7, name: 'B', slMoveStartR: 1.0, trailingStartR: 3.0, lotMultiplier: 0.7 },
+      { lot: 0.3, name: 'C', slMoveStartR: 1.5, trailingStartR: 4.0, lotMultiplier: 0.3 }
+    ]
+  },
+  conservative: {
+    enabled: true,
+    positions: [
+      { lot: 0.5, name: 'A', slMoveStartR: 0.5, trailingStartR: 1.5, lotMultiplier: 0.5 },
+      { lot: 0.5, name: 'B', slMoveStartR: 1.0, trailingStartR: 2.5, lotMultiplier: 0.5 },
+      { lot: 0.5, name: 'C', slMoveStartR: 1.5, trailingStartR: 3.5, lotMultiplier: 0.5 }
+    ]
+  }
+};
+
+// Get preset from dropdown, URL, or default to 'balanced'
+const getMultiPositionConfig = () => {
+  // First check dropdown value
+  const dropdown = document.getElementById('multiPositionPreset');
+  if (dropdown && dropdown.value) {
+    return MULTI_POSITION_PRESETS[dropdown.value] || MULTI_POSITION_PRESETS.balanced;
+  }
+  // Fall back to URL parameter
+  const urlParams = new URLSearchParams(window.location.search);
+  const preset = urlParams.get('multipreset') || 'balanced';
+  return MULTI_POSITION_PRESETS[preset] || MULTI_POSITION_PRESETS.balanced;
+};
+
 // Run optimized backtest (no chart rendering)
 const runOptimizedBacktest = (params, csvRows) => {
-  // Multi-position strategy configuration
-  const MULTI_POSITION_CONFIG = {
-    enabled: true,  // Set to false for single-position mode
-    positions: [
-      { lot: 1.0, name: 'A', slMoveStartR: 0.5, trailingStartR: 2.0, lotMultiplier: 1.0 },  // Aggressive
-      { lot: 0.7, name: 'B', slMoveStartR: 1.0, trailingStartR: 3.0, lotMultiplier: 0.7 },  // Medium
-      { lot: 0.5, name: 'C', slMoveStartR: 1.5, trailingStartR: 4.0, lotMultiplier: 0.5 }   // Conservative
-    ]
-  };
+  // Get multi-position config based on URL preset
+  const MULTI_POSITION_CONFIG = getMultiPositionConfig();
+  console.log('Multi-position preset:', MULTI_POSITION_CONFIG.enabled ? 
+    `enabled (${MULTI_POSITION_CONFIG.positions.length} positions)` : 'disabled');
   
   // Reset state for new backtest run
   const localOrdersHistory = [];
