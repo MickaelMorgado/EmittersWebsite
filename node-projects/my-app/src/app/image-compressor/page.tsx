@@ -1,14 +1,14 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Upload, X, Download, Image as ImageIcon, Zap, CheckCircle, Loader2, Crop, Video, Scissors } from "lucide-react";
-import Image from "next/image";
 import { VersionBadge } from "@/components/VersionBadge";
 import JSZip from "jszip";
+import { CheckCircle, Crop, Download, Image as ImageIcon, Loader2, Pause, Pencil, Play, Scissors, Upload, Video, X, Zap } from "lucide-react";
+import Image from "next/image";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 type Tab = "images" | "videos";
 
@@ -37,6 +37,9 @@ interface VideoFile {
   status: "pending" | "processing" | "done" | "error";
   progress: number;
   duration?: number;
+  trimStart: number;
+  trimEnd: number;
+  thumbnails?: string[];
 }
 
 const VIDEO_PRESETS = [
@@ -62,13 +65,145 @@ export default function ImageCompressorPage() {
   const [videoWidth, setVideoWidth] = useState(1080);
   const [videoHeight, setVideoHeight] = useState(1920);
   const [isProcessingVideo, setIsProcessingVideo] = useState(false);
+  const [videoDuration, setVideoDuration] = useState(30);
+  const [editingVideoId, setEditingVideoId] = useState<string | null>(null);
+  const [draggingHandle, setDraggingHandle] = useState<"start" | "end" | null>(null);
+  const [isPreviewPlaying, setIsPreviewPlaying] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const timelineRef = useRef<HTMLDivElement>(null);
+  const previewVideoRef = useRef<HTMLVideoElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (draggingHandle) {
+      const handleMouseMove = (e: MouseEvent) => {
+        if (!timelineRef.current) return;
+        const rect = timelineRef.current.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
+        
+        const editingVideo = videos.find(v => v.id === editingVideoId);
+        const vidDuration = editingVideo?.duration || videoDuration;
+        const seekTime = (percentage / 100) * vidDuration;
+        
+        if (previewVideoRef.current) {
+          previewVideoRef.current.currentTime = seekTime;
+        }
+        
+        setVideos(prev => prev.map(v => {
+          if (v.id !== editingVideoId) return v;
+          
+          if (draggingHandle === "start") {
+            const minEnd = v.trimEnd - 1;
+            return { ...v, trimStart: Math.min(percentage, minEnd) };
+          } else {
+            const maxStart = v.trimStart + 1;
+            return { ...v, trimEnd: Math.max(percentage, maxStart) };
+          }
+        }));
+      };
+
+      const handleMouseUp = () => {
+        setDraggingHandle(null);
+      };
+
+      window.addEventListener("mousemove", handleMouseMove);
+      window.addEventListener("mouseup", handleMouseUp);
+      
+      return () => {
+        window.removeEventListener("mousemove", handleMouseMove);
+        window.removeEventListener("mouseup", handleMouseUp);
+      };
+    }
+  }, [draggingHandle, editingVideoId, videos, videoDuration]);
 
   const formatFileSize = (bytes: number): string => {
     if (bytes < 1024) return bytes + " B";
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
     return (bytes / (1024 * 1024)).toFixed(2) + " MB";
+  };
+
+  const formatTime = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    const ms = Math.floor((seconds % 1) * 10);
+    return `${mins}:${secs.toString().padStart(2, "0")}.${ms}`;
+  };
+
+  const generateThumbnails = (file: File): Promise<string[]> => {
+    return new Promise((resolve) => {
+      const video = document.createElement("video");
+      video.preload = "metadata";
+      video.muted = true;
+      video.playsInline = true;
+      video.crossOrigin = "anonymous";
+
+      const thumbs: string[] = [];
+      const numThumbs = 20;
+
+      const cleanup = () => {
+        if (video.src) URL.revokeObjectURL(video.src);
+      };
+
+      const timeoutId = setTimeout(() => {
+        cleanup();
+        resolve(thumbs);
+      }, 15000);
+
+      video.onloadedmetadata = async () => {
+        try {
+          const duration = video.duration;
+          if (!duration || duration === 0 || !isFinite(duration)) {
+            clearTimeout(timeoutId);
+            cleanup();
+            resolve(thumbs);
+            return;
+          }
+
+          const interval = duration / numThumbs;
+
+          for (let i = 0; i < numThumbs; i++) {
+            const time = i * interval;
+            await new Promise<void>((res) => {
+              const seekTimeout = setTimeout(() => res(), 500);
+              video.currentTime = time;
+              video.onseeked = () => {
+                clearTimeout(seekTimeout);
+                try {
+                  const canvas = document.createElement("canvas");
+                  canvas.width = 160;
+                  canvas.height = 90;
+                  const ctx = canvas.getContext("2d");
+                  if (ctx) {
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    thumbs.push(canvas.toDataURL("image/jpeg", 0.6));
+                  }
+                } catch (e) {
+                  console.warn("Thumbnail capture failed:", e);
+                }
+                res();
+              };
+            });
+          }
+
+          clearTimeout(timeoutId);
+          cleanup();
+          resolve(thumbs);
+        } catch (err) {
+          clearTimeout(timeoutId);
+          cleanup();
+          resolve(thumbs);
+        }
+      };
+
+      video.onerror = () => {
+        clearTimeout(timeoutId);
+        cleanup();
+        resolve(thumbs);
+      };
+
+      video.src = URL.createObjectURL(file);
+    });
   };
 
   const generateId = () => Math.random().toString(36).substring(2, 9);
@@ -106,9 +241,63 @@ export default function ImageCompressorPage() {
       originalSize: file.size,
       status: "pending",
       progress: 0,
+      duration: 30,
+      trimStart: 0,
+      trimEnd: 100,
     }));
 
     setVideos((prev) => [...prev, ...newVideos]);
+
+    videoFiles.forEach((file, index) => {
+      const video = document.createElement("video");
+      video.preload = "metadata";
+      video.muted = true;
+      video.playsInline = true;
+
+      const timeoutId = setTimeout(() => {
+        setVideos((prev) => {
+          const updated = [...prev];
+          const idx = updated.findIndex(v => v.file.name === file.name && v.status === "pending");
+          if (idx !== -1) {
+            updated[idx].duration = 30;
+          }
+          return updated;
+        });
+      }, 10000);
+
+      video.onloadedmetadata = async () => {
+        clearTimeout(timeoutId);
+        const duration = video.duration || 30;
+        
+        const thumbs = await generateThumbnails(file);
+
+        setVideos((prev) => {
+          const updated = [...prev];
+          const idx = updated.findIndex(v => v.file.name === file.name && v.status === "pending");
+          if (idx !== -1) {
+            updated[idx].duration = duration;
+            updated[idx].thumbnails = thumbs;
+          }
+          return updated;
+        });
+        
+        if (video.src) URL.revokeObjectURL(video.src);
+      };
+      
+      video.onerror = () => {
+        clearTimeout(timeoutId);
+        setVideos((prev) => {
+          const updated = [...prev];
+          const idx = updated.findIndex(v => v.file.name === file.name && v.status === "pending");
+          if (idx !== -1) {
+            updated[idx].duration = 30;
+          }
+          return updated;
+        });
+      };
+      
+      video.src = URL.createObjectURL(file);
+    });
   }, []);
 
   const handleDrop = useCallback(
@@ -147,6 +336,11 @@ export default function ImageCompressorPage() {
       if (vid) URL.revokeObjectURL(vid.preview);
       return prev.filter((i) => i.id !== id);
     });
+  };
+
+  const handleTimelineMouseDown = (e: React.MouseEvent, handle: "start" | "end") => {
+    e.preventDefault();
+    setDraggingHandle(handle);
   };
 
   const compressImage = async (
@@ -230,7 +424,9 @@ export default function ImageCompressorPage() {
   const cropVideo = async (
     videoFile: VideoFile,
     targetWidth: number,
-    targetHeight: number
+    targetHeight: number,
+    trimStartTime: number = 0,
+    trimEndTime: number = 0
   ): Promise<{ blob: Blob; size: number }> => {
     return new Promise((resolve, reject) => {
       const video = document.createElement("video");
@@ -239,11 +435,21 @@ export default function ImageCompressorPage() {
       video.playsInline = true;
 
       video.onloadedmetadata = () => {
-        video.currentTime = 0;
+        const duration = video.duration;
+        const effectiveEnd = trimEndTime > 0 && trimEndTime > trimStartTime 
+          ? Math.min(trimEndTime, duration) 
+          : duration;
+        video.currentTime = trimStartTime;
       };
 
       video.onloadeddata = async () => {
         try {
+          const duration = video.duration;
+          const effectiveEnd = trimEndTime > 0 && trimEndTime > trimStartTime 
+            ? Math.min(trimEndTime, duration) 
+            : duration;
+          const trimDuration = effectiveEnd - trimStartTime;
+          
           // Create canvas for resizing
           const canvas = document.createElement("canvas");
           canvas.width = targetWidth;
@@ -271,12 +477,14 @@ export default function ImageCompressorPage() {
           // Use MediaRecorder to capture video frames
           const stream = canvas.captureStream(30); // 30 FPS
           
-          // Check supported mime types
-          let mimeType = "video/webm;codecs=vp9";
+          let mimeType = "video/mp4";
           if (!MediaRecorder.isTypeSupported(mimeType)) {
-            mimeType = "video/webm;codecs=vp8";
+            mimeType = "video/webm;codecs=vp9";
             if (!MediaRecorder.isTypeSupported(mimeType)) {
-              mimeType = "video/webm";
+              mimeType = "video/webm;codecs=vp8";
+              if (!MediaRecorder.isTypeSupported(mimeType)) {
+                mimeType = "video/webm";
+              }
             }
           }
 
@@ -293,7 +501,8 @@ export default function ImageCompressorPage() {
           };
 
           recorder.onstop = () => {
-            const blob = new Blob(chunks, { type: mimeType.split(';')[0] });
+            const actualType = mimeType.startsWith("video/mp4") ? "video/mp4" : "video/webm";
+            const blob = new Blob(chunks, { type: actualType });
             URL.revokeObjectURL(video.src);
             resolve({ blob, size: blob.size });
           };
@@ -306,37 +515,35 @@ export default function ImageCompressorPage() {
           recorder.start(100); // Collect data every 100ms
 
           // Play video and draw frames to canvas
-          video.currentTime = 0;
+          video.currentTime = trimStartTime;
           video.play();
 
           const drawFrame = () => {
-            if (video.ended) {
+            if (video.currentTime >= effectiveEnd) {
               setTimeout(() => {
                 if (recorder.state === "recording") {
                   recorder.stop();
+                  video.pause();
                 }
               }, 500);
               return;
             }
             
             if (!video.paused) {
-              // Draw current frame scaled/cropped
               ctx.drawImage(video, sx, sy, sw, sh, 0, 0, targetWidth, targetHeight);
               requestAnimationFrame(drawFrame);
             }
           };
 
-          // Start drawing
           drawFrame();
 
-          // Set timeout to stop recording (max 30 seconds or video duration)
-          const duration = Math.min(video.duration || 10, 30);
+          const maxDuration = Math.min(trimDuration || 30, 30);
           setTimeout(() => {
             if (recorder.state === "recording") {
               recorder.stop();
               video.pause();
             }
-          }, (duration * 1000) + 1000);
+          }, (maxDuration * 1000) + 1000);
 
         } catch (err) {
           reject(err);
@@ -390,7 +597,7 @@ export default function ImageCompressorPage() {
     setIsCompressing(false);
   };
 
-  const handleVideoCrop = async () => {
+  const handleVideoCrop = async (cropEnabled: boolean = true) => {
     setIsProcessingVideo(true);
 
     const updatedVideos = [...videos];
@@ -409,7 +616,13 @@ export default function ImageCompressorPage() {
           setVideos([...updatedVideos]);
         }
 
-        const result = await cropVideo(updatedVideos[i], videoWidth, videoHeight);
+        const vidDuration = updatedVideos[i].duration || videoDuration;
+        const trimStartTime = (updatedVideos[i].trimStart / 100) * vidDuration;
+        const trimEndTime = (updatedVideos[i].trimEnd / 100) * vidDuration;
+        
+        const targetW = cropEnabled ? videoWidth : 1920;
+        const targetH = cropEnabled ? videoHeight : 1080;
+        const result = await cropVideo(updatedVideos[i], targetW, targetH, trimStartTime, trimEndTime);
 
         if (updatedVideos[i].preview) {
           URL.revokeObjectURL(updatedVideos[i].preview);
@@ -456,7 +669,8 @@ export default function ImageCompressorPage() {
   const handleDownloadVideos = () => {
     videos.forEach((vid) => {
       if (vid.croppedBlob && vid.status === "done") {
-        const name = vid.file.name.replace(/\.[^/.]+$/, "") + `_${videoWidth}x${videoHeight}.webm`;
+        const ext = MediaRecorder.isTypeSupported("video/mp4") ? "mp4" : "webm";
+        const name = vid.file.name.replace(/\.[^/.]+$/, "") + `_${videoWidth}x${videoHeight}.${ext}`;
         const url = URL.createObjectURL(vid.croppedBlob);
         const a = document.createElement("a");
         a.href = url;
@@ -642,7 +856,7 @@ export default function ImageCompressorPage() {
                             </div>
                           )}
                           {img.status === "done" && (
-                            <div className="absolute top-2 left-2">
+                            <div className="absolute top-2 center">
                               <Badge className="bg-green-500/80 text-[10px] py-0 h-5">
                                 <CheckCircle className="w-3 h-3 mr-1" />
                                 Done
@@ -947,13 +1161,26 @@ export default function ImageCompressorPage() {
                           >
                             <X className="w-3 h-3" />
                           </button>
+                          <button
+                            onClick={() => {
+                              setEditingVideoId(editingVideoId === vid.id ? null : vid.id);
+                              setVideoDuration(vid.duration || 30);
+                            }}
+                            className={`absolute top-2 left-2 w-6 h-6 rounded-full flex items-center justify-center transition-opacity ${
+                              editingVideoId === vid.id 
+                                ? "bg-purple-500 opacity-100" 
+                                : "bg-black/60 opacity-0 group-hover:opacity-100 hover:bg-purple-500"
+                            }`}
+                          >
+                            <Pencil className="w-3 h-3" />
+                          </button>
                           {vid.status === "processing" && (
                             <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                               <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                             </div>
                           )}
                           {vid.status === "done" && (
-                            <div className="absolute top-2 left-2">
+                            <div className="absolute bottom-2 left-2">
                               <Badge className="bg-green-500/80 text-[10px] py-0 h-5">
                                 <CheckCircle className="w-3 h-3 mr-1" />
                                 Done
@@ -965,6 +1192,268 @@ export default function ImageCompressorPage() {
                     </div>
                   </CardContent>
                 </Card>
+              )}
+
+              {editingVideoId && (
+                (() => {
+                  const editingVideo = videos.find(v => v.id === editingVideoId);
+                  if (!editingVideo) return null;
+                  
+                  const localTrimStart = editingVideo.trimStart;
+                  const localTrimEnd = editingVideo.trimEnd;
+                  
+                  return (
+                    <Card className="bg-white/5 border-purple-500/50">
+                      <CardHeader className="flex flex-row items-center justify-between pb-2">
+                        <CardTitle className="uppercase text-sm flex items-center gap-2">
+                          <Pencil className="w-4 h-4 text-purple-400" />
+                          Trim: {editingVideo.file.name}
+                        </CardTitle>
+                        <button
+                          onClick={() => {
+                            if (previewVideoRef.current) {
+                              previewVideoRef.current.pause();
+                              setIsPreviewPlaying(false);
+                            }
+                            setEditingVideoId(null);
+                          }}
+                          className="text-xs text-white/60 hover:text-white"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+<div className="flex gap-4 items-stretch" style={{ height: '360px' }}>
+                          <div className="flex-1 relative bg-black rounded-lg overflow-hidden border border-white/10">
+                            <video
+                              ref={previewVideoRef}
+                              src={editingVideo.preview}
+                              className="absolute inset-0 w-full h-full object-contain"
+                              muted
+                              onTimeUpdate={(e) => {
+                                const video = e.currentTarget;
+                                const vidDuration = editingVideo.duration || 30;
+                                const trimStartSec = (localTrimStart / 100) * vidDuration;
+                                const trimEndSec = (localTrimEnd / 100) * vidDuration;
+                                if (video.currentTime >= trimEndSec) {
+                                  video.currentTime = trimStartSec;
+                                }
+                                
+                                const canvas = document.createElement("canvas");
+                                canvas.width = videoWidth;
+                                canvas.height = videoHeight;
+                                const ctx = canvas.getContext("2d");
+                                if (ctx) {
+                                  const videoAspect = video.videoWidth / video.videoHeight;
+                                  const targetAspect = videoWidth / videoHeight;
+                                  let sx = 0, sy = 0, sw = video.videoWidth, sh = video.videoHeight;
+                                  if (videoAspect > targetAspect) {
+                                    sw = video.videoHeight * targetAspect;
+                                    sx = (video.videoWidth - sw) / 2;
+                                  } else {
+                                    sh = video.videoWidth / targetAspect;
+                                    sy = (video.videoHeight - sh) / 2;
+                                  }
+                                  ctx.drawImage(video, sx, sy, sw, sh, 0, 0, videoWidth, videoHeight);
+                                  const croppedPreview = document.getElementById("cropped-preview-img") as HTMLImageElement;
+                                  if (croppedPreview) {
+                                    croppedPreview.src = canvas.toDataURL("image/jpeg", 0.7);
+                                  }
+                                }
+                              }}
+                            />
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 hover:opacity-100 transition-opacity">
+                              <button
+                                onClick={() => {
+                                  if (previewVideoRef.current) {
+                                    if (isPreviewPlaying) {
+                                      previewVideoRef.current.pause();
+                                    } else {
+                                      const vidDuration = editingVideo.duration || 30;
+                                      const trimStartSec = (localTrimStart / 100) * vidDuration;
+                                      previewVideoRef.current.currentTime = trimStartSec;
+                                      previewVideoRef.current.play();
+                                    }
+                                    setIsPreviewPlaying(!isPreviewPlaying);
+                                  }
+                                }}
+                                className="w-14 h-14 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/30 transition-colors"
+                              >
+                                {isPreviewPlaying ? (
+                                  <Pause className="w-6 h-6 text-white" />
+                                ) : (
+                                  <Play className="w-6 h-6 text-white ml-1" />
+                                )}
+                              </button>
+                            </div>
+                            <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between">
+                              <div className="text-xs text-white/80 bg-black/60 px-2 py-1 rounded">
+                                Original
+                              </div>
+                            </div>
+                            <button
+                              onClick={() => {
+                                if (previewVideoRef.current) previewVideoRef.current.pause();
+                                setIsPreviewPlaying(false);
+                                const updated = videos.map(v => 
+                                  v.id === editingVideoId ? { ...v, status: "pending" as const } : v
+                                );
+                                setVideos(updated);
+                                setTimeout(() => handleVideoCrop(false), 100);
+                                setEditingVideoId(null);
+                              }}
+                              className="absolute top-2 right-2 text-xs bg-white/20 hover:bg-white/30 backdrop-blur-sm px-2 py-1 rounded text-white"
+                            >
+                              Trim Only
+                            </button>
+                          </div>
+                          
+                          <div className="w-48 flex-shrink-0">
+                            <div className="relative bg-black rounded-lg overflow-hidden border border-purple-500/50" style={{ height: '100%' }}>
+                              <img 
+                                id="cropped-preview-img" 
+                                className="absolute inset-0 w-full h-full object-contain" 
+                                alt="Cropped preview"
+                              />
+                              <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between">
+                                <div className="text-xs text-purple-400 bg-black/60 px-2 py-1 rounded">
+                                  Cropped
+                                </div>
+                              </div>
+                              <button
+                                onClick={() => {
+                                  if (previewVideoRef.current) previewVideoRef.current.pause();
+                                  setIsPreviewPlaying(false);
+                                  const updated = videos.map(v => 
+                                    v.id === editingVideoId ? { ...v, status: "pending" as const } : v
+                                  );
+                                  setVideos(updated);
+                                  setTimeout(() => handleVideoCrop(true), 100);
+                                  setEditingVideoId(null);
+                                }}
+                                className="absolute top-2 right-2 text-xs bg-purple-500/80 hover:bg-purple-500 px-2 py-1 rounded text-white"
+                              >
+                                Trim & Crop
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="relative mt-4">
+                          <div 
+                            ref={timelineRef}
+                            className="relative h-24 rounded-lg overflow-hidden bg-black/40 border border-white/10 select-none"
+                          >
+                            {editingVideo.thumbnails && editingVideo.thumbnails.length > 0 ? (
+                              <>
+                                <div className="flex h-full">
+                                  {editingVideo.thumbnails.map((thumb, i) => (
+                                    <div 
+                                      key={i} 
+                                      className="flex-shrink-0"
+                                      style={{ width: `${100 / editingVideo.thumbnails!.length}%` }}
+                                    >
+                                      <img 
+                                        src={thumb} 
+                                        alt="" 
+                                        className="w-full h-full object-cover"
+                                      />
+                                    </div>
+                                  ))}
+                                </div>
+                                <div 
+                                  className="absolute top-0 bottom-0 bg-purple-500/30 border-l-2 border-r-2 border-purple-400"
+                                  style={{
+                                    left: `${Math.min(localTrimStart, localTrimEnd)}%`,
+                                    width: `${Math.abs(localTrimEnd - localTrimStart)}%`
+                                  }}
+                                />
+                              </>
+                            ) : (
+                              <div className="absolute inset-0 flex items-center justify-center">
+                                <Loader2 className="w-6 h-6 animate-spin text-white/40" />
+                              </div>
+                            )}
+                            
+                            <div 
+                              className="absolute top-0 bottom-0 w-6 -ml-3 cursor-ew-resize hover:bg-purple-500/20 transition-colors"
+                              style={{ left: `${localTrimStart}%` }}
+                              onMouseDown={(e) => handleTimelineMouseDown(e, "start")}
+                            >
+                              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-8 bg-purple-400 rounded-full border-2 border-white shadow-lg" />
+                            </div>
+                            <div 
+                              className="absolute top-0 bottom-0 w-6 -ml-3 cursor-ew-resize hover:bg-pink-500/20 transition-colors"
+                              style={{ left: `${localTrimEnd}%` }}
+                              onMouseDown={(e) => handleTimelineMouseDown(e, "end")}
+                            >
+                              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-8 bg-pink-400 rounded-full border-2 border-white shadow-lg" />
+                            </div>
+                          </div>
+                          
+                          <div className="flex justify-between text-xs text-white/40 mt-1 px-1">
+                            <span>0:00</span>
+                            <span>{formatTime(videoDuration)}</span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between text-xs">
+                          <div className="flex items-center gap-2">
+                            <span className="text-purple-400">Start:</span>
+                            <span className="text-white/80">{formatTime((localTrimStart / 100) * videoDuration)}</span>
+                          </div>
+                          <div className="flex items-center gap-2 bg-green-500/20 px-2 py-1 rounded">
+                            <span className="text-green-400">Duration:</span>
+                            <span className="text-green-300">{formatTime(((localTrimEnd - localTrimStart) / 100) * videoDuration)}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-pink-400">End:</span>
+                            <span className="text-white/80">{formatTime((localTrimEnd / 100) * videoDuration)}</span>
+                          </div>
+                        </div>
+
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => {
+                              setVideos(prev => prev.map(v => 
+                                v.id === editingVideoId 
+                                  ? { ...v, trimStart: 0, trimEnd: 100 }
+                                  : v
+                              ));
+                            }}
+                            className="text-xs px-3 py-1.5 rounded bg-white/10 hover:bg-white/20 transition-colors"
+                          >
+                            Reset
+                          </button>
+                          <button
+                            onClick={() => {
+                              setVideos(prev => prev.map(v => 
+                                v.id === editingVideoId 
+                                  ? { ...v, trimStart: 0, trimEnd: 50 }
+                                  : v
+                              ));
+                            }}
+                            className="text-xs px-3 py-1.5 rounded bg-white/10 hover:bg-white/20 transition-colors"
+                          >
+                            First Half
+                          </button>
+                          <button
+                            onClick={() => {
+                              setVideos(prev => prev.map(v => 
+                                v.id === editingVideoId 
+                                  ? { ...v, trimStart: 50, trimEnd: 100 }
+                                  : v
+                              ));
+                            }}
+                            className="text-xs px-3 py-1.5 rounded bg-white/10 hover:bg-white/20 transition-colors"
+                          >
+                            Last Half
+                          </button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })()
               )}
 
               {isProcessingVideo && (
@@ -994,7 +1483,7 @@ export default function ImageCompressorPage() {
                       <div className="absolute inset-0 flex items-center justify-center">
                         <div className="text-center">
                           <Loader2 className="w-8 h-8 mx-auto mb-2 animate-spin text-white/80" />
-                          <p className="text-sm text-white/60">Cropping videos...</p>
+                          <p className="text-sm text-white/60">Trimming & cropping videos...</p>
                         </div>
                       </div>
                     </div>
@@ -1097,7 +1586,7 @@ export default function ImageCompressorPage() {
                   )}
 
                   <Button
-                    onClick={handleVideoCrop}
+                    onClick={() => handleVideoCrop(true)}
                     disabled={videos.length === 0 || isProcessingVideo}
                     className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500"
                   >
@@ -1109,7 +1598,7 @@ export default function ImageCompressorPage() {
                     ) : (
                       <>
                         <Scissors className="w-4 h-4 mr-2" />
-                        Crop {videos.length > 0 ? `(${videos.length})` : ""}
+                        Trim & Crop {videos.length > 0 ? `(${videos.length})` : ""}
                       </>
                     )}
                   </Button>
