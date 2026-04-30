@@ -28,6 +28,16 @@ const EnumDirection = {
 
 // Run optimized backtest (no chart rendering)
 const runOptimizedBacktest = (params, csvRows) => {
+  // Multi-position strategy configuration
+  const MULTI_POSITION_CONFIG = {
+    enabled: true,  // Set to false for single-position mode
+    positions: [
+      { lot: 1.0, name: 'A', slMoveStartR: 0.5, trailingStartR: 2.0, lotMultiplier: 1.0 },  // Aggressive
+      { lot: 0.7, name: 'B', slMoveStartR: 1.0, trailingStartR: 3.0, lotMultiplier: 0.7 },  // Medium
+      { lot: 0.5, name: 'C', slMoveStartR: 1.5, trailingStartR: 4.0, lotMultiplier: 0.5 }   // Conservative
+    ]
+  };
+  
   // Reset state for new backtest run
   const localOrdersHistory = [];
   let localCSIDLookbackCandleSerie = [];
@@ -192,20 +202,45 @@ const runOptimizedBacktest = (params, csvRows) => {
             localCSIDCoolddownSignal = 5;
           }
           
-          const direction = bullishCSID ? 'BULL' : 'BEAR';
-          const entryPrice = row[EnumMT5OHLC.OPEN];
+const direction = bullishCSID ? 'BULL' : 'BEAR';
+          const entryPrice = Number(row[EnumMT5OHLC.OPEN]);
           
-          localOrdersHistory.push({
-            id: localOrdersHistory.length + 1,
-            breakEvenMoved: false,
-            time: candleDateTime,
-            price: entryPrice,
-            sl: direction === 'BULL' ? entryPrice - localSlSize() : entryPrice + localSlSize(),
-            tp: direction === 'BULL' ? entryPrice + localTpSize() : entryPrice - localTpSize(),
-            direction: direction,
-            closed: false,
-            closedOrderType: 'PENDING',
-          });
+          if (MULTI_POSITION_CONFIG.enabled) {
+            // Create 3 positions at once
+            MULTI_POSITION_CONFIG.positions.forEach(posConfig => {
+              localOrdersHistory.push({
+                id: `${localTradeCount + 1}-${posConfig.name}`,
+                posName: posConfig.name,
+                lotMultiplier: posConfig.lotMultiplier,
+                time: candleDateTime,
+                price: entryPrice,
+                sl: direction === 'BULL' ? entryPrice - localSlSize() : entryPrice + localSlSize(),
+                initialSL: direction === 'BULL' ? entryPrice - localSlSize() : entryPrice + localSlSize(),
+                tp: direction === 'BULL' ? entryPrice + localTpSize() : entryPrice - localTpSize(),
+                direction: direction,
+                slMoveStartR: posConfig.slMoveStartR,
+                slMoveCount: 0,
+                trailingStartR: posConfig.trailingStartR,
+                trailingActive: false,
+                breakEvenMoved: false,
+                closed: false,
+                closedOrderType: 'PENDING',
+              });
+            });
+          } else {
+            // Single position mode (original)
+            localOrdersHistory.push({
+              id: localOrdersHistory.length + 1,
+              breakEvenMoved: false,
+              time: candleDateTime,
+              price: entryPrice,
+              sl: direction === 'BULL' ? entryPrice - localSlSize() : entryPrice + localSlSize(),
+              tp: direction === 'BULL' ? entryPrice + localTpSize() : entryPrice - localTpSize(),
+              direction: direction,
+              closed: false,
+              closedOrderType: 'PENDING',
+            });
+          }
           
           localTradeCount++;
           localListeningATR = true;
@@ -217,42 +252,91 @@ const runOptimizedBacktest = (params, csvRows) => {
     
     const activeOrders = localOrdersHistory.filter(o => !o.closed);
     activeOrders.forEach(order => {
-      const high = row[EnumMT5OHLC.HIGH];
-      const low = row[EnumMT5OHLC.LOW];
-      const close = row[EnumMT5OHLC.CLOSE];
+      const high = Number(row[EnumMT5OHLC.HIGH]);
+      const low = Number(row[EnumMT5OHLC.LOW]);
+      const close = Number(row[EnumMT5OHLC.CLOSE]);
       
-      if (!order.breakEvenMoved) {
-        if ((order.direction === 'BULL' && close >= order.price + localSlSize()) ||
-            (order.direction === 'BEAR' && close <= order.price - localSlSize())) {
-          order.sl = order.price;
-          order.breakEvenMoved = true;
+      // Calculate current R
+      const currentR = order.direction === 'BULL'
+        ? (close - order.price) / localSlSize()
+        : (order.price - close) / localSlSize();
+      
+      if (MULTI_POSITION_CONFIG.enabled) {
+        // Multi-position SL management
+        
+        // 1. Progressive SL movement (move SL every 0.5R)
+        if (!order.trailingActive) {
+          const slMoveThreshold = order.slMoveStartR + (order.slMoveCount * 0.5);
+          if (currentR >= slMoveThreshold) {
+            const newSL = order.direction === 'BULL'
+              ? order.price + (slMoveThreshold * localSlSize())
+              : order.price - (slMoveThreshold * localSlSize());
+            order.sl = newSL;
+            order.slMoveCount++;
+          }
+        }
+        
+        // 2. Activate trailing after trailingStartR
+        if (currentR >= order.trailingStartR && !order.trailingActive) {
+          order.trailingActive = true;
+        }
+        
+        // 3. Apply trailing stop
+        if (order.trailingActive && localCandlesFromBuffer.length >= 2) {
+          const prevCandle = localCandlesFromBuffer[localCandlesFromBuffer.length - 2];
+          let candleSize = Math.abs(Number(prevCandle[EnumMT5OHLC.CLOSE]) - Number(prevCandle[EnumMT5OHLC.OPEN]));
+          let trailingMultiplier = localStrategy === 'CSID_W_MA_DynamicTS'
+            ? (candleSize >= 0.0005 ? 3 : candleSize >= 0.0003 ? 2 : 1)
+            : 1;
+          const trailingSize = localTsSize() * trailingMultiplier;
+          
+          const newTrailingSL = order.direction === 'BULL'
+            ? close - trailingSize
+            : close + trailingSize;
+          
+          // Only improve SL (never move backwards)
+          const slImproved = order.direction === 'BULL'
+            ? newTrailingSL > order.sl
+            : newTrailingSL < order.sl;
+          
+          if (slImproved) {
+            order.sl = newTrailingSL;
+          }
+        }
+      } else {
+        // Single position mode (original logic)
+        if (!order.breakEvenMoved) {
+          if ((order.direction === 'BULL' && close >= order.price + localSlSize()) ||
+              (order.direction === 'BEAR' && close <= order.price - localSlSize())) {
+            order.sl = order.price;
+            order.breakEvenMoved = true;
+          }
+        }
+        
+        if (localCandlesFromBuffer.length >= 2) {
+          const prevCandle = localCandlesFromBuffer[localCandlesFromBuffer.length - 2];
+          let candleSize = Math.abs(Number(prevCandle[EnumMT5OHLC.CLOSE]) - Number(prevCandle[EnumMT5OHLC.OPEN]));
+          
+          let trailingMultiplier = localStrategy === 'CSID_W_MA_DynamicTS' 
+            ? (candleSize >= 0.0005 ? 3 : candleSize >= 0.0003 ? 2 : 1)
+            : 1;
+          
+          const trailingSize = localTsSize() * trailingMultiplier;
+          if (order.direction === 'BULL') {
+            order.sl += trailingSize;
+          } else {
+            order.sl -= trailingSize;
+          }
         }
       }
       
-      if (localCandlesFromBuffer.length >= 2) {
-        const prevCandle = localCandlesFromBuffer[localCandlesFromBuffer.length - 2];
-        let candleSize = Math.abs(prevCandle[EnumMT5OHLC.CLOSE] - prevCandle[EnumMT5OHLC.OPEN]);
-        
-        let trailingMultiplier = localStrategy === 'CSID_W_MA_DynamicTS' 
-          ? (candleSize >= 0.0005 ? 3 : candleSize >= 0.0003 ? 2 : 1)
-          : 1;
-        
-        const trailingSize = localTsSize() * trailingMultiplier;
-        if (order.direction === 'BULL') {
-          order.sl += trailingSize;
-        } else {
-          order.sl -= trailingSize;
-        }
-      }
-      
-      if ((order.direction === 'BULL' && (high >= order.tp || low <= order.sl)) ||
-          (order.direction === 'BEAR' && (low <= order.tp || high >= order.sl))) {
+      // Check for SL hit (or TP if you want - this strategy only uses SL)
+      if ((order.direction === 'BULL' && low <= order.sl) ||
+          (order.direction === 'BEAR' && high >= order.sl)) {
         order.closed = true;
-        order.closedPrice = order.direction === 'BULL' 
-          ? (high >= order.tp ? order.tp : order.sl)
-          : (low <= order.tp ? order.tp : order.sl);
+        order.closedPrice = order.sl;
         order.closedTime = candleDateTime;
-        order.closedOrderType = high >= order.tp ? 'CLOSED_BY_TP' : 'CLOSED_BY_SL';
+        order.closedOrderType = 'CLOSED_BY_SL';
         order.pnlPoints = order.direction === 'BULL'
           ? order.closedPrice - order.price
           : order.price - order.closedPrice;
@@ -274,7 +358,9 @@ const runOptimizedBacktest = (params, csvRows) => {
       if (order.closedOrderType === 'CLOSED_BY_TP') profitsInPoints += localTpSize();
       if (order.closedOrderType === 'CLOSED_BY_SL') profitsInPoints -= localSlSize();
       
-      const tradeMoney = (order.pnlPoints - commissionPoints) * 100000 * localLotSize();
+      // Use lotMultiplier if available (multi-position mode), otherwise use default lotSize
+      const lotSize = order.lotMultiplier ? order.lotMultiplier * localLotSize() : localLotSize();
+      const tradeMoney = (order.pnlPoints - commissionPoints) * 100000 * lotSize;
       equityDataMoney.push((equityDataMoney.at(-1) || 0) + tradeMoney);
       
       if (tradeMoney > 0) {
