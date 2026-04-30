@@ -3589,11 +3589,16 @@ const runOptimized = async () => {
 
 // Intelligent parameter optimization using random search + hill climbing
 const runGridSearch = async () => {
+  // If CSV data not cached yet, run optimized backtest first to cache it
   if (cachedCSVData.length === 0) {
-    alert('Please run optimized backtest first to cache the CSV data, then Grid Search will work.');
-    return;
+    console.log('CSV not cached yet, running optimized backtest first...');
+    await runOptimized();
+    // If still no data after runOptimized, abort
+    if (cachedCSVData.length === 0) {
+      return;
+    }
   }
-  
+
   const baseParams = getCurrentParams();
   
   if (!confirm('Run automatic parameter optimization? This will find the most profitable parameters.')) {
@@ -3721,5 +3726,4 @@ const runGridSearch = async () => {
 
 
 // Event listeners
-document.getElementById('runOptimized')?.addEventListener('click', runOptimized);
 document.getElementById('runGridSearch')?.addEventListener('click', runGridSearch);
