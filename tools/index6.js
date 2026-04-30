@@ -2,6 +2,7 @@
 let cachedCSVData = [];
 let cachedFileInfo = null;
 let cachedFile = null;
+let csvDataLoaded = false; // Flag to track if CSV is fully loaded
 
 // Store backtest results for comparison
 let backtestResults = [];
@@ -959,18 +960,21 @@ window.ordersHistory = ordersHistory;
 
 const handleFileAndInitGraph = (file) => {
   if (file) {
+    // Reset CSV loaded flag when new file is being loaded
+    csvDataLoaded = false;
+
     // Use reinitializeChart to properly reset
     if (typeof reinitializeChart === 'function') {
       reinitializeChart();
     }
-    
+
     // Ensure chart section is visible
     const chartSection = document.querySelector('.chart-section');
     if (chartSection) {
       chartSection.classList.remove('chart-collapsed');
       chartSection.classList.add('chart-expanded');
     }
-    
+
     // Clear orders history
     ordersHistory = [];
     numbDays = 0;
@@ -1149,9 +1153,10 @@ const handleFileAndInitGraph = (file) => {
           lastDate: cachedCSVData[cachedCSVData.length - 1]?.[EnumMT5OHLC.DATE],
           totalCandles: cachedCSVData.length,
         };
-        
+
+        csvDataLoaded = true; // Mark CSV as fully loaded
         console.log(`CSV cached: ${cachedCSVData.length} candles loaded`);
-        
+
         audioSuccess.play();
       },
       error: (error) => {
@@ -3551,8 +3556,8 @@ document.getElementById('runBacktestFromMQLBtn')?.addEventListener('click', runB
 
 // Intelligent parameter optimization using random search + hill climbing
 const runGridSearch = async () => {
-  if (cachedCSVData.length === 0) {
-    alert('Please load a CSV file first!');
+  if (!csvDataLoaded || cachedCSVData.length === 0) {
+    alert('CSV file is still loading... Please wait for the file to finish processing before running Grid Search.');
     return;
   }
   
