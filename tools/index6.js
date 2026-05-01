@@ -3214,19 +3214,77 @@ const saveResultForComparison = (result) => {
   updateSavedResultsComparison();
 };
 
+// Sort preset for comparison table
+let comparisonSortPreset = 'highestProfit';
+
+// Normalize a value array to 0-1 range (higher = better)
+const normalize = (values) => {
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  if (max === min) return values.map(() => 0.5);
+  return values.map(v => (v - min) / (max - min));
+};
+
+// Sort presets: each defines how to compute a composite score (higher = better)
+const SORT_PRESETS = {
+  highestProfit: {
+    label: 'Highest Profit',
+    score: (results) => results.map(r => parseFloat(r.moneyEquivalent)),
+  },
+  bestOverall: {
+    label: 'Best Overall',
+    score: (results) => {
+      const pnl = normalize(results.map(r => parseFloat(r.moneyEquivalent)));
+      const pf  = normalize(results.map(r => parseFloat(r.profitFactor)));
+      const wr  = normalize(results.map(r => parseFloat(r.winRate)));
+      const dd  = normalize(results.map(r => -Math.abs(parseFloat(r.maxDrawdown)))); // lower DD = better
+      return results.map((_, i) => pnl[i] * 0.40 + pf[i] * 0.25 + wr[i] * 0.20 + dd[i] * 0.15);
+    },
+  },
+  bestRiskReward: {
+    label: 'Best Risk/Reward',
+    score: (results) => {
+      const pf = normalize(results.map(r => parseFloat(r.profitFactor)));
+      const dd = normalize(results.map(r => -Math.abs(parseFloat(r.maxDrawdown))));
+      const pnl = normalize(results.map(r => parseFloat(r.moneyEquivalent)));
+      return results.map((_, i) => pf[i] * 0.45 + dd[i] * 0.35 + pnl[i] * 0.20);
+    },
+  },
+  mostConsistent: {
+    label: 'Most Consistent',
+    score: (results) => {
+      const wr = normalize(results.map(r => parseFloat(r.winRate)));
+      const dd = normalize(results.map(r => -Math.abs(parseFloat(r.maxDrawdown))));
+      const pf = normalize(results.map(r => parseFloat(r.profitFactor)));
+      return results.map((_, i) => wr[i] * 0.45 + dd[i] * 0.35 + pf[i] * 0.20);
+    },
+  },
+};
+
 // Update the comparison table
 const updateSavedResultsComparison = () => {
   const container = document.getElementById('savedResultsComparison');
-  
+
   if (backtestResults.length === 0) {
     container.innerHTML = '<p style="color: #666; font-style: italic;">No saved results yet. Run a backtest and save parameters to compare.</p>';
     return;
   }
-  
-  // Sort by money equivalent (best first)
-  const sorted = [...backtestResults].sort((a, b) => parseFloat(b.moneyEquivalent) - parseFloat(a.moneyEquivalent));
-  
+
+  // Compute composite scores and sort
+  const preset = SORT_PRESETS[comparisonSortPreset] || SORT_PRESETS.highestProfit;
+  const scores = preset.score(backtestResults);
+  const indexed = backtestResults.map((r, i) => ({ result: r, score: scores[i] }));
+  indexed.sort((a, b) => b.score - a.score);
+
   container.innerHTML = `
+    <div class="sort-preset-bar">
+      <label for="comparisonSortPreset">Sort by:</label>
+      <select id="comparisonSortPreset" class="h-input-effects">
+        ${Object.entries(SORT_PRESETS).map(([key, p]) =>
+          `<option value="${key}" ${key === comparisonSortPreset ? 'selected' : ''}>${p.label}</option>`
+        ).join('')}
+      </select>
+    </div>
     <table class="comparison-results-table">
       <thead>
         <tr class="comparison-table-header">
@@ -3241,12 +3299,13 @@ const updateSavedResultsComparison = () => {
           <th>P/F</th>
           <th>P/L ($)</th>
           <th>DD ($)</th>
+          <th>Score</th>
           <th>Action</th>
         </tr>
       </thead>
       <tbody>
-        ${sorted.map((r, idx) => `
-          <tr class="comparison-row ${idx === 0 ? 'best-result' : ''} ${idx === sorted.length - 1 && sorted.length > 1 ? 'worst-result' : ''}">
+        ${indexed.map(({ result: r, score }, idx) => `
+          <tr class="comparison-row ${idx === 0 ? 'best-result' : ''} ${idx === indexed.length - 1 && indexed.length > 1 ? 'worst-result' : ''}">
             <td>${idx + 1}</td>
             <td>${r.params.name || '-'}</td>
             <td>${r.params.preset || r.params.strategy}</td>
@@ -3258,6 +3317,7 @@ const updateSavedResultsComparison = () => {
             <td>${r.profitFactor}</td>
             <td class="${parseFloat(r.moneyEquivalent) >= 0 ? 'text-profit' : 'text-loss'}">${r.moneyEquivalent}$</td>
             <td class="text-drawdown">${r.maxDrawdown}$</td>
+            <td>${score.toFixed(2)}</td>
             <td>
               <button class="btn-load-params" data-params='${JSON.stringify(r.params)}' title="Load params & run backtest">▶</button>
               <button class="btn-load-mql" data-params='${JSON.stringify(r.params)}' title="Generate MQL Expert Advisor">MQL</button>
@@ -3267,8 +3327,14 @@ const updateSavedResultsComparison = () => {
       </tbody>
     </table>
   `;
-  
-  // Add event listeners to load buttons
+
+  // Sort preset change handler
+  document.getElementById('comparisonSortPreset')?.addEventListener('change', (e) => {
+    comparisonSortPreset = e.target.value;
+    updateSavedResultsComparison();
+  });
+
+  // Load params button handlers
   container.querySelectorAll('.btn-load-params').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const params = JSON.parse(e.target.dataset.params);
@@ -3282,7 +3348,7 @@ const updateSavedResultsComparison = () => {
       loadParamsAsMQL(params);
     });
   });
-  
+
   // Render comparison chart
   renderComparisonChart();
 };

@@ -644,6 +644,24 @@ table {
   text-overflow: ellipsis;
 }
 
+.sort-preset-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.sort-preset-bar label {
+  font-size: 12px;
+  color: var(--light);
+  white-space: nowrap;
+}
+
+.sort-preset-bar select {
+  flex: 1;
+  max-width: 220px;
+}
+
 .comparison-table-header th:first-child {
   width: 30px;
   text-align: center;
