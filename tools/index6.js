@@ -978,6 +978,7 @@ let processedDays = 0;
 let totalCandles = 0;
 let processedCandles = 0;
 let ordersHistory = [];
+let tradeSetId = 0; // Counter for trade sets (increments per signal, not per position)
 let firstDate = new Date();
 let lastDate = new Date();
 let prevDate = null;
@@ -1449,14 +1450,19 @@ const initSciChart = (data) => {
           arrayOfSignals[EnumArrayOfSignalsIndex.TTR] == true &&
           arrayOfSignals[EnumArrayOfSignalsIndex.ATR] == true &&
           arrayOfSignals[EnumArrayOfSignalsIndex.MADirection] == true;
-        if (takeTradeSignal) {
+        
+        // FIX: Only take trade if we haven't reached max 3 trades for this signal
+        if (takeTradeSignal && tradeCount < 3) {
           tradeCount++;
           AddActionOnChart(d, EnumActionType.TAKE_A_TRADE, direction);
-          listeningATR = true; // Start listening for ATR again once we open position
-          //if (tradeCount >= 3) {
-          // console.log('Reached 3 trades max');
-          arrayOfSignals[EnumArrayOfSignalsIndex.ATR] = false; // Reset ATR signal after 3 trades max
-          //}
+          listeningATR = true;
+          
+          // Reset ATR signal after max 3 trades to prevent further triggers
+          if (tradeCount >= 3) {
+            arrayOfSignals[EnumArrayOfSignalsIndex.ATR] = false;
+            arrayOfSignals[EnumArrayOfSignalsIndex.CSID] = false; // Also reset CSID to prevent new signals in same wave
+            console.log(`Signal completed: ${tradeCount} trades taken`);
+          }
         }
       };
 
@@ -1767,9 +1773,11 @@ const initSciChart = (data) => {
 
             if (MULTI_POS_CONFIG.enabled) {
               // Create multiple positions at once
+              // Increment tradeSetId for this new trade set (only once per signal)
+              tradeSetId++;
               MULTI_POS_CONFIG.positions.forEach(posConfig => {
                 ordersHistory.push({
-                  id: `${ordersHistory.length + 1}-${posConfig.name}`,
+                  id: `${tradeSetId}-${posConfig.name}`,
                   posName: posConfig.name,
                   lotMultiplier: posConfig.lotMultiplier,
                   time: entryTime,
@@ -1790,8 +1798,9 @@ const initSciChart = (data) => {
               });
             } else {
               // Single position mode (original)
+              tradeSetId++;
               ordersHistory.push({
-                id: ordersHistory.length + 1,
+                id: tradeSetId,
                 breakEvenMoved: false,
                 time: entryTime,
                 price: candle[definedCandleMoment],
@@ -2115,7 +2124,19 @@ const initSciChart = (data) => {
 
         // CSV builder
         const resultToCSV = () => {
-          const csvFileName = $csvFileInput.value.split('\\')[2].split('.')[0];
+          // Handle case when CSV is loaded from URL parameter (no file input)
+          let csvFileName = '';
+          if ($csvFileInput && $csvFileInput.value) {
+            csvFileName = $csvFileInput.value.split('\\')[2]?.split('.')[0] || 'unknown';
+          } else if (cachedFileInfo && cachedFileInfo.name) {
+            csvFileName = cachedFileInfo.name.replace('.csv', '');
+          } else if (window.location.search.includes('csv=')) {
+            const urlParams = new URLSearchParams(window.location.search);
+            const csvParam = urlParams.get('csv');
+            csvFileName = csvParam ? csvParam.replace('.csv', '') : 'unknown';
+          } else {
+            csvFileName = 'unknown';
+          }
           const [_, timeframe, sd, ed] = csvFileName.split('_');
           const sdt = `${sd.slice(0, 4)}/${sd.slice(4, 6)}/${sd.slice(6, 8)}`;
           const edt = `${ed.slice(0, 4)}/${ed.slice(4, 6)}/${ed.slice(6, 8)}`;
@@ -2641,6 +2662,7 @@ const initSciChart = (data) => {
           // Update first signal then check signals validation:
           arrayOfSignals[0] = true;
           savedTradeDirectionForNextCandleEntry = direction;
+          tradeCount = 0; // Reset trade count for new signal wave
           //checkSignalsForTrade(d, direction);
           //AddActionOnChart(d, EnumActionType.TAKE_A_TRADE, direction);
         }
