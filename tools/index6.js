@@ -295,6 +295,7 @@ const direction = bullishCSID ? 'BULL' : 'BEAR';
                 initialSL: direction === 'BULL' ? entryPrice - localSlSize() : entryPrice + localSlSize(),
                 tp: direction === 'BULL' ? entryPrice + localTpSize() : entryPrice - localTpSize(),
                 direction: direction,
+                entryCandleIndex: localChartCandleIndex,
                 slMoveStartR: posConfig.slMoveStartR,
                 slMoveCount: 0,
                 trailingStartR: posConfig.trailingStartR,
@@ -312,6 +313,7 @@ const direction = bullishCSID ? 'BULL' : 'BEAR';
               breakEvenMoved: false,
               time: candleDateTime,
               price: entryPrice,
+              entryCandleIndex: localChartCandleIndex,
               sl: direction === 'BULL' ? entryPrice - localSlSize() : entryPrice + localSlSize(),
               tp: direction === 'BULL' ? entryPrice + localTpSize() : entryPrice - localTpSize(),
               direction: direction,
@@ -342,13 +344,19 @@ const direction = bullishCSID ? 'BULL' : 'BEAR';
       if (MULTI_POSITION_CONFIG.enabled) {
         // Multi-position SL management
         
+        // Skip trailing logic on the entry candle
+        if (localChartCandleIndex > order.entryCandleIndex) {
+        
         // 1. Progressive SL movement (move SL every 0.5R)
         if (!order.trailingActive) {
           const slMoveThreshold = order.slMoveStartR + (order.slMoveCount * 0.5);
           if (currentR >= slMoveThreshold) {
+            // For BULL: SL starts at entry - 1R, moves up as profit increases
+            // For BEAR: SL starts at entry + 1R, moves down as profit increases
+            const slAdjustment = slMoveThreshold * localSlSize();
             const newSL = order.direction === 'BULL'
-              ? order.price + (slMoveThreshold * localSlSize())
-              : order.price - (slMoveThreshold * localSlSize());
+              ? order.price - localSlSize() + slAdjustment
+              : order.price + localSlSize() - slAdjustment;
             order.sl = newSL;
             order.slMoveCount++;
           }
@@ -380,7 +388,9 @@ const direction = bullishCSID ? 'BULL' : 'BEAR';
           if (slImproved) {
             order.sl = newTrailingSL;
           }
-        }
+        } // end trailingActive check
+      } // end: skip entry candle check
+      
       } else {
         // Single position mode (original logic)
         if (!order.breakEvenMoved) {
@@ -1313,6 +1323,16 @@ const initSciChart = (data) => {
   SciChartSurface.useWasmFromCDN();
 
   // Initialize SciChartSurface. Don't forget to await!
+  if (window.sciChartSurface) {
+    try {
+      window.sciChartSurface.renderableSeries.clear();
+      window.sciChartSurface = null;
+      console.log('Destroyed old SciChartSurface');
+    } catch (e) {
+      console.warn('Error destroying old surface:', e);
+    }
+  }
+  
   SciChartSurface.create('scichart-root', {
     //theme: new SciChartJsNavyTheme(),
   })
@@ -1496,6 +1516,9 @@ const initSciChart = (data) => {
           }
           const currentTime = `${d[EnumMT5OHLC.DATE]} ${d[EnumMT5OHLC.TIME]}`;
           const orderOpenTime = convertMT5DateToUnix(order.time);
+          
+          // Skip trailing logic on the entry candle
+          const isEntryCandle = order.time === currentTime;
 
           const tradeResult = () => {
             if (order.pnlPoints > 0) {
@@ -1533,6 +1556,15 @@ const initSciChart = (data) => {
 
             // OPTIMIZED: Calculate profitability only when trades close, not every candle
             profitabilityCalculation();
+
+            // Clean up trailing stop visualization
+            if (trailingStopSeriesMap.has(order.id)) {
+              const series = trailingStopSeriesMap.get(order.id);
+              if (series && sciChartSurface) {
+                sciChartSurface.renderableSeries.remove(series);
+              }
+              trailingStopSeriesMap.delete(order.id);
+            }
 
             const orderCloseTime = convertMT5DateToUnix(order.closedTime);
 
@@ -1607,21 +1639,24 @@ const initSciChart = (data) => {
            }
            const trailingSize = trailingSizeMultiplier(candleSize);
 
-           if (isMultiPosOrder) {
-             // === Multi-position SL management (matches fast mode) ===
+            if (isMultiPosOrder && !isEntryCandle) {
+              // === Multi-position SL management (matches fast mode) ===
+              
+              // Initialize trailingActive if not exists (for backward compatibility)
+              if (order.trailingActive === undefined) {
+                order.trailingActive = false;
+              }
 
-             // Initialize trailingActive if not exists (for backward compatibility)
-             if (order.trailingActive === undefined) {
-               order.trailingActive = false;
-             }
-
-             // 1. Progressive SL movement (move SL every 0.5R) — per-position
-             if (!order.trailingActive) {
+              // 1. Progressive SL movement (move SL every 0.5R) — per-position
+              if (!order.trailingActive) {
                const slMoveThreshold = order.slMoveStartR + (order.slMoveCount * 0.5);
                if (currentR >= slMoveThreshold) {
+                 // For BULL: SL starts at entry - 1R, moves up as profit increases
+                 // For BEAR: SL starts at entry + 1R, moves down as profit increases
+                 const slAdjustment = slMoveThreshold * slSize();
                  const newSL = isBull
-                   ? order.price + (slMoveThreshold * slSize())
-                   : order.price - (slMoveThreshold * slSize());
+                   ? order.price - slSize() + slAdjustment
+                   : order.price + slSize() - slAdjustment;
                  order.sl = newSL;
                  order.slMoveCount++;
                }
@@ -1646,14 +1681,14 @@ const initSciChart = (data) => {
                  order.sl = newTrailingSL;
                }
              }
-           } else {
-             // === Single-position trailing (matches fast mode) ===
-             if (isBull) {
-               order.sl += trailingSize;
-             } else {
-               order.sl -= trailingSize;
-             }
-           }
+            } else if (!isEntryCandle) {
+              // === Single-position trailing (matches fast mode) ===
+              if (isBull) {
+                order.sl += trailingSize;
+              } else {
+                order.sl -= trailingSize;
+              }
+            }
 
           // Trailing Stop visual:
           const _isFast = window.location.search.includes('fastmode') ||
@@ -1663,7 +1698,7 @@ const initSciChart = (data) => {
             try {
               // Skip visual update if chart is not initialized
               if (!window.sciChartSurface) return;
-
+              
               const time = new Date(`${d[EnumMT5OHLC.DATE]} ${d[EnumMT5OHLC.TIME]}`);
             const localISO = time.getTime() / 1000;
             const xValue = timeToIndex.get(localISO);
@@ -1766,8 +1801,8 @@ const initSciChart = (data) => {
             const definedCandleMoment = EnumMT5OHLC.OPEN;
             const MULTI_POS_CONFIG = getMultiPositionConfig();
             const tradeDirectionIsBull = tradeDirection == EnumDirection.BULL;
-            const baseSL = tradeDirectionIsBull ? candle[definedCandleMoment] - slSize() : candle[definedCandleMoment] + slSize();
-            const baseTP = tradeDirectionIsBull ? candle[definedCandleMoment] + tpSize() : candle[definedCandleMoment] - tpSize();
+            const entryPrice = candle[definedCandleMoment];
+            const tpDistance = tpSize();
             const direction = tradeDirectionIsBull ? EnumDirection.BULL : EnumDirection.BEAR;
             const entryTime = `${candle[EnumMT5OHLC.DATE]} ${candle[EnumMT5OHLC.TIME]}`;
 
@@ -1775,16 +1810,25 @@ const initSciChart = (data) => {
               // Create multiple positions at once
               // Increment tradeSetId for this new trade set (only once per signal)
               tradeSetId++;
+              // Initial SL is 1R from entry (same for all positions)
+              const initialSL = tradeDirectionIsBull
+                ? entryPrice - slSize()    // BULL: SL below entry
+                : entryPrice + slSize();    // BEAR: SL above entry
+              // TP is same for all
+              const positionTP = tradeDirectionIsBull
+                ? entryPrice + tpDistance   // BULL: TP above entry
+                : entryPrice - tpDistance;  // BEAR: TP below entry
+
               MULTI_POS_CONFIG.positions.forEach(posConfig => {
                 ordersHistory.push({
                   id: `${tradeSetId}-${posConfig.name}`,
                   posName: posConfig.name,
                   lotMultiplier: posConfig.lotMultiplier,
                   time: entryTime,
-                  price: candle[definedCandleMoment],
-                  sl: baseSL,
-                  initialSL: baseSL,
-                  tp: baseTP,
+                  price: entryPrice,
+                  sl: initialSL,
+                  initialSL: initialSL,
+                  tp: positionTP,
                   direction: direction,
                   slMoveStartR: posConfig.slMoveStartR,
                   slMoveCount: 0,
@@ -1797,15 +1841,21 @@ const initSciChart = (data) => {
                 });
               });
             } else {
-              // Single position mode (original)
+              // Single position mode (original) - use 1R SL
               tradeSetId++;
+              const singleSL = tradeDirectionIsBull 
+                ? entryPrice - slSize() 
+                : entryPrice + slSize();
+              const singleTP = tradeDirectionIsBull 
+                ? entryPrice + tpSize() 
+                : entryPrice - tpSize();
               ordersHistory.push({
                 id: tradeSetId,
                 breakEvenMoved: false,
                 time: entryTime,
-                price: candle[definedCandleMoment],
-                sl: baseSL,
-                tp: baseTP,
+                price: entryPrice,
+                sl: singleSL,
+                tp: singleTP,
                 direction: direction,
                 closed: false,
                 closedOrderType: EnumclosedOrderType.PENDING,
@@ -2674,7 +2724,7 @@ const initSciChart = (data) => {
       const reinitializeChart = () => {
         // Clear the select element:
         $navigateTroughtDates.innerHTML = '';
-        //sciChartSurface.annotations.clear();
+        sciChartSurface.annotations.clear();
         //sciChartSurface.renderableSeries.clear() // Clear the series, like chart and indicators
         sciChartSurface.renderableSeries.remove(CSIDHighline);
         sciChartSurface.renderableSeries.remove(CSIDLowline);
@@ -2927,6 +2977,21 @@ const getCurrentParams = () => ({
 
 // Load parameters and run backtest (with chart)
 const loadParamsAndRun = (params) => {
+  // Clean up trailing stop series from previous backtest
+  if (window.sciChartSurface && trailingStopSeriesMap.size > 0) {
+    trailingStopSeriesMap.forEach((series, orderId) => {
+      try {
+        if (series && window.sciChartSurface.renderableSeries.contains(series)) {
+          window.sciChartSurface.renderableSeries.remove(series);
+        }
+      } catch (e) {
+        // Silently skip cleanup errors
+      }
+    });
+    trailingStopSeriesMap.clear();
+    console.log('Cleaned up trailing stop series');
+  }
+  
   // Set values to inputs
   if ($strategyInput) $strategyInput.value = params.strategy;
   const presetDropdown = document.getElementById('multiPositionPreset');
