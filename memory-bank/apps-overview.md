@@ -26,6 +26,7 @@ This document provides a centralized overview of all interactive applications an
 | **Mission Control** | AI agent management dashboard for OpenClaw. | [Mission Control](project-specific/apps/mission-control.md) |
 | **Media Processor** | Compress images and crop videos with preset ratios. | [Media Processor](project-specific/apps/media-processor.md) |
 | **3D Chess** | Multiplayer 3D chess game with Three.js. | [3D Chess](project-specific/apps/chess3d.md) |
+| **MikaBot Dashboard** | AI trading bot performance analytics & self-learning. | [MikaBot](project-specific/apps/mikabot.md) |
 | **Cursor Follower** | Portrait (9:16) live stream centered on mouse cursor. | [Cursor Follower](project-specific/apps/cursor-follower.md) |
 
 ## Infrastructure & Backend

@@ -4,58 +4,53 @@ const { chromium } = require('playwright');
   const browser = await chromium.launch({ headless: false });
   const page = await browser.newPage();
 
-  console.log('=== CHART-BASED BACKTEST ===');
-  await page.setViewportSize({ width: 1400, height: 900 });
+  console.log('=== CHECK PRESET CONFIG ===');
+  await page.goto('http://localhost:8080/tools/index6.html?v=26&csv=EURUSD_M5_202603020000_202603170000.csv&multipreset=balanced', { waitUntil: 'networkidle', timeout: 30000 });
+  await page.waitForTimeout(2000);
 
-  // Load with CSV
-  await page.goto('http://localhost:8080/tools/index6.html?csv=EURUSD_M5_202603020000_202603170000.csv&multipreset=balanced', { waitUntil: 'networkidle' });
-  await page.waitForTimeout(3000);
+  const config = await page.evaluate(() => {
+    const preset = getMultiPositionConfig();
+    const slInput = document.getElementById('SLPoints').value;
+    const tpInput = document.getElementById('TPPoints').value;
+    return {
+      enabled: preset.enabled,
+      positions: preset.positions,
+      slSize: slInput,
+      tpSize: tpInput
+    };
+  });
 
-  // Uncheck fast mode
+  console.log('Preset:', JSON.stringify(config, null, 2));
+
+  console.log('\nRunning backtest...');
   await page.evaluate(() => {
     const checkbox = document.getElementById('fastBacktestMode');
     if (checkbox && checkbox.checked) checkbox.checked = false;
-  });
-
-  // Click Run Backtest
-  console.log('Running backtest...');
-  await page.evaluate(() => {
     const buttons = Array.from(document.querySelectorAll('button'));
     const btn = buttons.find(b => b.textContent.includes('Run Backtest'));
     if (btn) btn.click();
   });
 
-  // Wait more time
-  console.log('Waiting for backtest...');
   await page.waitForTimeout(90000);
 
-  // Get results
-  const results = await page.evaluate(() => {
-    const resultEl = document.getElementById('backtestingResult');
-    const orders = window.ordersHistory || [];
-    return {
-      resultText: resultEl?.value || '',
-      ordersCount: orders.length,
-      orders: orders
-    };
+  const orders = await page.evaluate(() => window.ordersHistory || []);
+
+  console.log('\n=== TRADE 1 (First signal) ===');
+  orders.slice(0, 3).forEach(o => {
+    console.log(`${o.id}: Entry=${o.price} SL=${o.sl} initialSL=${o.initialSL} slMoveStartR=${o.slMoveStartR} trailingStartR=${o.trailingStartR}`);
   });
+  
+  // Check that SL hasn't moved on entry candle
+  const firstOrder = orders[0];
+  if (firstOrder && firstOrder.sl === firstOrder.initialSL) {
+    console.log('\n✅ SUCCESS: SL did not move on entry candle');
+  } else {
+    console.log('\n❌ FAIL: SL moved on entry candle');
+  }
 
-  console.log('\n=== RESULTS ===');
-  console.log('Orders:', results.ordersCount);
-  console.log('\nBacktesting Result:');
-  console.log(results.resultText.substring(0, 800));
+  console.log('\nTaking screenshot...');
+  await page.screenshot({ path: 'backtest-result-v26.png', fullPage: false });
+  console.log('Screenshot saved to backtest-result-v26.png');
 
-  // Summary stats
-  const wins = results.orders.filter(o => o.tradeResult === 'WIN').length;
-  const losses = results.orders.filter(o => o.tradeResult === 'LOSS').length;
-  const bes = results.orders.filter(o => o.tradeResult === 'BE').length;
-  console.log(`\nWins: ${wins}, Losses: ${losses}, BE: ${bes}`);
-  console.log(`Win Rate: ${results.ordersCount > 0 ? ((wins/results.ordersCount)*100).toFixed(1) : 0}%`);
-
-  // Screenshot
-  await page.screenshot({ path: 'backtest-result.png', fullPage: true });
-  console.log('\nScreenshot saved!');
-
-  console.log('\nPress Enter to close...');
-  process.stdin.once('data', () => browser.close());
+  await browser.close();
 })();

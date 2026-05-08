@@ -217,6 +217,12 @@
         background-size: 100%;
         background-repeat: no-repeat;
       }
+
+      /* Institutional Multiplier - Only enabled for C-only preset */
+      #InstitutionalMultiplier[disabled] {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
     </style>
     <link rel="stylesheet" href="index6.css" />
   </head>
@@ -244,6 +250,13 @@
             </p>
           </div>
           <hr class="h-hr" />
+          <div class="h-flex" style="margin-top: 10px;">
+            <label style="display: flex; align-items: center; gap: 5px;">
+              <input type="checkbox" id="fastBacktestMode">
+              <span>Fast Mode (No Chart)</span>
+            </label>
+          </div>
+          <hr class="h-hr" />
           <label for="csvFileInput">Upload CSV bars</label>
           <div class="h-flex">
             <input
@@ -261,7 +274,6 @@
               <i class="fas fa-repeat"></i>
             </button>
           </div>
-          <hr class="h-hr" />
           <hr class="h-hr" />
           <div class="h-flex">
             <div class="h-form-group">
@@ -433,11 +445,15 @@
               <i class="fas fa-stop"></i>
             </button>
           </div>
-          <div class="h-flex" style="margin-top: 10px;">
-            <label style="display: flex; align-items: center; gap: 5px;">
-              <input type="checkbox" id="fastBacktestMode">
-              <span>Fast Mode (No Chart)</span>
-            </label>
+          <div style="display: flex; gap: 10px; margin-top: 10px; align-items: center;">
+            <label for="backtestSpeedInput" title="Control the speed of backtest playback (milliseconds per candle)">Backtest Speed:</label>
+            <select id="backtestSpeedInput" class="myinput" style="flex: 1;">
+              <option value="0">⚡ Instant (Default)</option>
+              <option value="50">🚀 Very Fast</option>
+              <option value="100">⚡ Fast</option>
+              <option value="500">⏱️ Normal</option>
+              <option value="1000">🐌 Slow</option>
+            </select>
           </div>
           <hr class="h-hr" />
           <label title="Current progression of the current backtesting file reading. (Starting Time - Current Time - Ending Time)">File Reading Progression</label>
@@ -567,7 +583,8 @@
                   >Multi-Position Preset</label
                 >
                 <select id="multiPositionPreset" class="h-input-effects">
-                  <option value="balanced" selected>Balanced (1.0+0.7+0.5)</option>
+                  <option value="c-only" selected>C-Only (Position C) ⭐ RECOMMENDED</option>
+                  <option value="balanced">Balanced (1.0+0.7+0.5)</option>
                   <option value="single">Single Position (off)</option>
                   <option value="equal">Equal (1.0+1.0+1.0)</option>
                   <option value="aggressive">Aggressive (1.5+0.7+0.3)</option>
@@ -616,6 +633,31 @@
                 />
               </div>
               <div class="h-flex h-flex--column">
+                <label for="InstitutionalMultiplier" title="Institutional candle size multiplier (0 = disabled, 3.0 = 3x average candle body)">Institutional Multiplier (ATR)</label>
+                <input
+                  id="InstitutionalMultiplier"
+                  type="number"
+                  value="3.0"
+                  step="0.1"
+                  min="0"
+                  max="10.0"
+                  class="h-input-effects"
+                  disabled
+                />
+              </div>
+              <div class="h-flex h-flex--column">
+                <label for="EntryZoneDistance" title="Distance from breakout level to enter before breakout (0.0002 = 20 pips for M5, enter when price is 20 pips away)">Entry Zone Distance (Pips)</label>
+                <input
+                  id="EntryZoneDistance"
+                  type="number"
+                  value="0.0002"
+                  step="0.0001"
+                  min="0.0001"
+                  max="0.01"
+                  class="h-input-effects"
+                />
+              </div>
+              <div class="h-flex h-flex--column">
                 <label for="LotSize">Lot Size (Base)</label>
                 <input
                   id="LotSize"
@@ -660,6 +702,16 @@
                   id="CommissionSize"
                   type="number"
                   value="0.00005"
+                  class="h-input-effects"
+                />
+                <label for="MonthlyMaxLoss" title="Stop trading if monthly loss exceeds this % of account balance">Monthly Max Loss %</label>
+                <input
+                  id="MonthlyMaxLoss"
+                  type="number"
+                  value="5"
+                  min="0"
+                  max="100"
+                  step="0.5"
                   class="h-input-effects"
                 />
                 <label for="" title="Risk:Reward Ratio in points">RR (SL Points | TP Points)</label>
@@ -745,11 +797,48 @@
               <canvas id="myChart" width="700px" height="320px"></canvas>
             </div>
             <div class="fourth-content">
-              more stats here
+              <div style="display: flex; flex-direction: column; gap: 10px; height: 100%;">
+                <label for="tradeHistoryExport" style="font-weight: bold; font-size: 14px;">
+                  Trade History Export
+                </label>
+                <textarea
+                  id="tradeHistoryExport"
+                  readonly
+                  style="
+                    flex: 1;
+                    min-height: 200px;
+                    font-family: monospace;
+                    font-size: 11px;
+                    overflow-y: auto;
+                    white-space: pre-wrap;
+                    word-break: break-word;
+                    resize: none;
+                  "
+                  placeholder="Trade history will appear here after backtest completes..."
+                ></textarea>
+                <button
+                  id="copyTradeHistoryBtn"
+                  class="mybutton h-input-effects"
+                  style="padding: 8px 16px; font-size: 12px;"
+                  title="Copy trade history to clipboard"
+                >
+                  <i class="fas fa-copy"></i> Copy to Clipboard
+                </button>
+              </div>
             </div>
           </div>
           <div>
-            <h5 for="backtesting-hour">Order History</h5>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+              <h5 for="backtesting-hour" style="margin: 0;">Order History</h5>
+              <button
+                id="visualizeResultsBtn"
+                title="Visualize Backtest Results - Build Chart from Trade Data"
+                class="mybutton h-input-effects"
+                style="display: none; background-color: #2e5090; padding: 8px 16px; font-size: 12px;"
+              >
+                <i class="fas fa-chart-line"></i> Visualize Results
+              </button>
+            </div>
             <div id="backtestingResultOrderHistory" class="h-field"></div>
           </div>
         </div>
@@ -796,6 +885,6 @@
     <!-- Using specific version of scichart for working AxisLabels alignments -->
     <script src="https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-<script src="index6.js?v=23"></script>
+<script src="index6.js?v=30"></script>
   </body>
 </html>

@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "next dev --turbopack",
-    "dev:full": "concurrently \"npm run dev\" \"npm run cursor-server\"",
+    "dev:full": "concurrently \"npm run dev\" \"npm run cursor-server\" \"python3 /Users/mickael/development/MikaBot/sync-trades.py\"",
     "cursor-server": "node cursor-follower/server.js",
     "build": "next build",
     "start": "next start",

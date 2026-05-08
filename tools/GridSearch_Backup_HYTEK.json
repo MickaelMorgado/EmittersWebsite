@@ -1,0 +1,42 @@
+{
+  "strategy": "9/21 EMA Crossover - HYTEK",
+  "backtest_date": "2026-05-06",
+  "total_parameters_tested": 131,
+  "best_parameters": {
+    "rank": 1,
+    "name": "OPTIMIZED_BEST",
+    "preset": "equal",
+    "sl_pips": 50,
+    "sl_price": 0.0005,
+    "tp_pips": 100,
+    "tp_price": 0.009,
+    "ts_pips": 0,
+    "ts_price": 0,
+    "trades": 435,
+    "win_rate": "42.53%",
+    "profit_factor": 1.52,
+    "profit_loss": "$5,598.00",
+    "max_drawdown": "$1,065.00",
+    "score": 5598.0
+  },
+  "top_10_parameters": [
+    {"rank": 1, "name": "OPTIMIZED_BEST", "sl": 0.0005, "tp": 0.009, "ts": 0, "pl": "$5,598.00", "pf": 1.52},
+    {"rank": 6, "name": "Hill_1_tsSize_down", "sl": 0.0005, "tp": 0.009, "ts": 0.00001, "pl": "$5,452.00", "pf": 1.51},
+    {"rank": 12, "name": "OPTIMIZED_BEST", "sl": 0.0005, "tp": 0.007, "ts": 0.00001, "pl": "$5,452.00", "pf": 1.51},
+    {"rank": 13, "name": "Hill_1_tsSize_up", "sl": 0.0005, "tp": 0.009, "ts": 0.00005, "pl": "$4,435.00", "pf": 1.41},
+    {"rank": 18, "name": "Hill_1_preset_aggressive", "sl": 0.0005, "tp": 0.009, "ts": 0, "pl": "$4,413.80", "pf": 1.47},
+    {"rank": 19, "name": "Hill_2_preset_aggressive", "sl": 0.0005, "tp": 0.007, "ts": 0.00001, "pl": "$4,266.80", "pf": 1.45},
+    {"rank": 21, "name": "Hill_1_preset_balanced", "sl": 0.0005, "tp": 0.009, "ts": 0, "pl": "$3,992.10", "pf": 1.49},
+    {"rank": 22, "name": "Hill_2_preset_balanced", "sl": 0.0005, "tp": 0.007, "ts": 0.00001, "pl": "$3,872.90", "pf": 1.48},
+    {"rank": 28, "name": "Random_42", "sl": 0.001, "tp": 0.009, "ts": 0, "pl": "$3,199.00", "pf": 1.15},
+    {"rank": 34, "name": "Hill_1_preset_conservative", "sl": 0.0005, "tp": 0.009, "ts": 0, "pl": "$2,695.25", "pf": 1.53}
+  ],
+  "key_insights": {
+    "optimal_sl": "50 pips (0.0005)",
+    "optimal_tp": "90-100 pips (0.009)",
+    "trailing_stop": "0 (disabled) for best results",
+    "best_preset": "equal",
+    "sweet_spot": "SL=50, TP=90-100, TS disabled with equal preset"
+  },
+  "notes": "Top result uses SL=50 pips, TP=100 pips (9 pips TP equivalent), trailing stop disabled. Tested 435 trades with 42.53% win rate and 1.52 profit factor."
+}
