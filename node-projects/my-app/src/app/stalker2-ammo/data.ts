@@ -441,7 +441,7 @@ export const STALKER_AMMO_DATA: AmmoCaliber[] = [
       {
         id: '12x76_slug',
         name: '12x76 Slug',
-        type: 'Regular',
+        type: 'AP',
         weight: 0.045,
         damage: 8,
         penetration: 4,
@@ -454,7 +454,7 @@ export const STALKER_AMMO_DATA: AmmoCaliber[] = [
       {
         id: '12x76_dart',
         name: '12x76 Dart',
-        type: 'AP',
+        type: 'Expansive',
         weight: 0.045,
         damage: 7,
         penetration: 7,
@@ -462,25 +462,6 @@ export const STALKER_AMMO_DATA: AmmoCaliber[] = [
         description: 'Flash-stabilized dart projectile.',
         imageUrl: `${BASE_URL}stalker-2-12x76mm-expanding-dart.png`,
         compatibleWeapons: ['D-10', 'Sawed-off', 'Chaser-13', 'SPSA-14', 'SledgeHammer', 'TOZ-34', 'Boomstick', 'M860 Cracker', 'M860 Monolith', 'Margach D-12MT', 'Predator', 'Ram-2', 'Saiga D-12', 'Texan', 'Drowned'],
-        boxSize: 10
-      }
-    ]
-  },
-  {
-    id: '12-7x55',
-    name: '12.7x55mm',
-    variants: [
-      {
-        id: '12_7x55_ps',
-        name: '12.7x55mm PS-12',
-        type: 'Regular',
-        weight: 0.045,
-        damage: 10,
-        penetration: 8,
-        degradation: 6,
-        description: 'Heavy subsonic assault round.',
-        imageUrl: `${BASE_URL}stalker-2-12_7x55mm-ps-12.png`,
-        compatibleWeapons: ['ASh-12'],
         boxSize: 10
       }
     ]

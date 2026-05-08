@@ -1,5 +1,5 @@
 'use client';
-import { AlertTriangle, ArrowLeft, ArrowRight, BarChart3, Camera, Check, ChevronDown, Eye, ImagePlus, LayoutGrid, Loader2, Minus, Plus, Settings, Trash2, X } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, ArrowRight, BarChart3, Camera, Check, ChevronDown, Eye, ImagePlus, LayoutGrid, Loader2, Minus, Plus, Settings, Tally1, Tally3, Trash2, Volume2, X } from 'lucide-react';
 import { VersionBadge } from "@/components/VersionBadge";
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { AmmoVariant, STALKER_AMMO_DATA } from './data';
@@ -17,7 +17,47 @@ interface CarryingWeapon {
   name: string;
   ammoFilter?: string[];
   minRounds?: number;
+  imageUrl?: string;
 }
+
+interface AppSettings {
+  surplusMultiplierInventory: number;
+  surplusMultiplierLoot: number;
+  openaiKey: string;
+}
+
+const getWeaponImageUrl = (weaponName: string) => {
+  const slug = weaponName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  return `/assets/stalker-weapons/${slug}.png`;
+};
+
+// Map of weapon aliases for weapons that don't have images
+const WEAPON_IMAGE_ALIASES: Record<string, string> = {
+  "skif's pistol": "ptm",
+  "apsb": "ptm",
+  "rat killer": "ptm",
+  "buket s-2": "cavalier",
+  "ptm monolith": "ptm",
+  "labyrinth iv": "viper-5",
+  "fort-12": "pm-m",
+  "shah's mate": "riemann",
+  "model competitor": "cavalier",
+  "m701": "hunter",
+  "m701 super": "hunter",
+  "svdm-2 (lynx)": "lynx",
+};
+
+const getWeaponImageUrlWithFallback = (weaponName: string) => {
+  const slug = weaponName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
+  // Check if we have an alias mapping for this weapon
+  const alias = WEAPON_IMAGE_ALIASES[weaponName.toLowerCase()];
+  if (alias) {
+    return `/assets/stalker-weapons/${alias}.png`;
+  }
+
+  return `/assets/stalker-weapons/${slug}.png`;
+};
 
 interface DetectedAmmo {
   matchedId: string | null;
@@ -79,7 +119,7 @@ const GlobalAudio = {
     if (!this.cache[key]) {
       console.log(`[Audio] Initializing: ${key}`);
       const audio = new Audio(path);
-      audio.volume = key === 'ammo' ? 0.4 : (key === 'hover' ? 0.35 : (key === 'shell' ? 0.25 : 0.5));
+      audio.volume = key === 'ammo' ? 0.4 : (key === 'hover' ? 0.55 : (key === 'shell' ? 0.25 : 0.5));
       audio.preload = 'auto';
       this.cache[key] = audio;
     }
@@ -256,11 +296,11 @@ export default function StalkerAmmoPage() {
   const [showcaseTarget, setShowcaseTarget] = useState<string | null>(null);
   const [dataBackup, setDataBackup] = useState<{ [key: string]: AmmoState } | null>(null);
   const [hwBackup, setHwBackup] = useState<CarryingWeapon[] | null>(null);
+  const [aiSidebarCollapsed, setAiSidebarCollapsed] = useState(false);
   const modalSearchRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
 const [openaiKey, setOpenaiKey] = useState<string>('');
-  const [showApiSettings, setShowApiSettings] = useState(false);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
 const [isProcessing, setIsProcessing] = useState(false);
   const [isChatLoading, setIsChatLoading] = useState(false);
@@ -269,6 +309,11 @@ const [isProcessing, setIsProcessing] = useState(false);
   const [expandedImage, setExpandedImage] = useState<string | null>(null);
   const [accordionLogistics, setAccordionLogistics] = useState(true);
   const [accordionAssistant, setAccordionAssistant] = useState(true);
+  const [confirmingPurge, setConfirmingPurge] = useState(false);
+  const [importJson, setImportJson] = useState('');
+  const [appSettings, setAppSettings] = useState<AppSettings>({ surplusMultiplierInventory: 3, surplusMultiplierLoot: 1.8, openaiKey: '' });
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [settingsActiveTab, setSettingsActiveTab] = useState<'thresholds' | 'api' | 'import'>('thresholds');
 
   const ALL_WEAPONS = useMemo(() => {
     const ws = new Set<string>();
@@ -455,7 +500,7 @@ return JSON.parse(jsonMatch[0]);
   const handleSendMessage = async () => {
     if (!aiChatInput.trim() || isChatLoading) return;
     if (!openaiKey) {
-      setShowApiSettings(true);
+      alert('OpenAI API key not configured. Please set it in the Settings.');
       return;
     }
 
@@ -523,7 +568,7 @@ return JSON.parse(jsonMatch[0]);
 
   const handleImageUpload = (file: File) => {
     if (!openaiKey) {
-      setShowApiSettings(true);
+      alert('OpenAI API key not configured. Please set it in the Settings.');
       return;
     }
 
@@ -684,6 +729,33 @@ return JSON.parse(jsonMatch[0]);
     setCaliberThresholds(initialCaliberThresh);
   };
 
+  // Load app settings
+  useEffect(() => {
+    const savedSettings = localStorage.getItem('stalker_app_settings_v1');
+    if (savedSettings) {
+      try {
+        const settings = JSON.parse(savedSettings);
+        // Ensure all fields exist with defaults
+        setAppSettings({
+          surplusMultiplierInventory: settings.surplusMultiplierInventory ?? 3,
+          surplusMultiplierLoot: settings.surplusMultiplierLoot ?? 1.8,
+          openaiKey: settings.openaiKey ?? ''
+        });
+        if (settings.openaiKey) setOpenaiKey(settings.openaiKey);
+      } catch (e) {
+        console.warn('Failed to load settings:', e);
+      }
+    }
+  }, []);
+
+  // Save app settings
+  useEffect(() => {
+    if (mounted) {
+      const settingsToSave = { ...appSettings, openaiKey };
+      localStorage.setItem('stalker_app_settings_v1', JSON.stringify(settingsToSave));
+    }
+  }, [appSettings, openaiKey, mounted]);
+
   useEffect(() => {
     if (mounted && !isShowcase) {
       localStorage.setItem('stalker_ammo_data_v4', JSON.stringify(data));
@@ -696,7 +768,8 @@ return JSON.parse(jsonMatch[0]);
     if (!name) return;
     const instance: CarryingWeapon = { 
       instanceId: `hw_${Math.random().toString(36).substr(2, 9)}`, 
-      name 
+      name,
+      imageUrl: getWeaponImageUrl(name)
     };
     setCarriedWeapons(prev => [...prev, instance]);
     setWeaponSearch('');
@@ -758,9 +831,48 @@ return JSON.parse(jsonMatch[0]);
   };
 
   const purgeData = () => {
-    if (confirm('Authorize factory reset? All local data will be purged.')) {
-      initializeDefaultData();
+    if (confirmingPurge) {
+      if (confirm('AUTHORIZE FACTORY RESET? All local data will be purged.')) {
+        initializeDefaultData();
+        setConfirmingPurge(false);
+      }
+    } else {
+      setConfirmingPurge(true);
     }
+  };
+
+  const handleImportData = () => {
+    try {
+      const parsed = JSON.parse(importJson);
+      if (parsed.data && typeof parsed.data === 'object') {
+        setData(parsed.data);
+        if (parsed.caliberThresholds) setCaliberThresholds(parsed.caliberThresholds);
+        if (parsed.carriedWeapons) {
+          const weaponsWithImages = parsed.carriedWeapons.map((w: CarryingWeapon) => ({
+            ...w,
+            imageUrl: w.imageUrl || getWeaponImageUrl(w.name)
+          }));
+          setCarriedWeapons(weaponsWithImages);
+        }
+        setShowSettingsModal(false);
+        setImportJson('');
+        playAmmoSound();
+      } else {
+        alert('Invalid data format. Expected object with "data" property.');
+      }
+    } catch (e) {
+      alert('Invalid JSON. Please check your input.');
+    }
+  };
+
+  const exportData = () => {
+    const exportObj = {
+      data,
+      caliberThresholds,
+      carriedWeapons,
+      exportedAt: new Date().toISOString()
+    };
+    return JSON.stringify(exportObj, null, 2);
   };
 
   const allVariants = useMemo(() => STALKER_AMMO_DATA.flatMap(c => c.variants), []);
@@ -1037,21 +1149,35 @@ return JSON.parse(jsonMatch[0]);
           }
         }
 
-        // 1.5 Surplus Check (Refined: Only if removing excess keeps caliber above threshold)
-        if (state.inventoryThreshold > 0 && state.inventory >= state.inventoryThreshold * 3) {
-          const excess = state.inventory - state.inventoryThreshold;
-          const wouldStillMeetCaliberMin = (calStats.inventory - excess) >= (calStats.inventoryThreshold || 0);
-          
-          if (wouldStillMeetCaliberMin) {
-            if (!mainMsg) {
-              mainMsg = {
-                 type: 'info',
-                 text: `SURPLUS DETECTED: ${v.name} inventory is 3x above tactical baseline (Excess: ${excess}).`
-              };
-              subMsgs.push(`ADVICE: Secure surplus in Safe House or liquidate for Zone credits.`);
-            } else {
-              subMsgs.push(`NOTE: Massive surplus detected (${excess} units). Manage weight accordingly.`);
-            }
+        // 1.5 Surplus Check - INVENTORY (Ammo-level: Triggers when inventory exceeds threshold × multiplier)
+        if (state.inventoryThreshold > 0 && state.inventory >= state.inventoryThreshold * appSettings.surplusMultiplierInventory) {
+          const surplusTrigger = state.inventoryThreshold * appSettings.surplusMultiplierInventory;
+          const excess = state.inventory - surplusTrigger;
+
+          if (!mainMsg) {
+            mainMsg = {
+               type: 'info',
+               text: `SURPLUS DETECTED: ${v.name} inventory is ${appSettings.surplusMultiplierInventory}x above tactical baseline (Sellable: ${excess}).`
+            };
+            subMsgs.push(`ADVICE: Secure surplus in Safe House or liquidate for Zone credits.`);
+          } else {
+            subMsgs.push(`NOTE: Massive surplus detected (${excess} units). Manage weight accordingly.`);
+          }
+        }
+
+        // 1.6 Surplus Check - STASH/LOOT (Ammo-level: Triggers when stash exceeds threshold × multiplier)
+        if (state.stashThreshold > 0 && state.stash >= state.stashThreshold * appSettings.surplusMultiplierLoot) {
+          const surplusTrigger = state.stashThreshold * appSettings.surplusMultiplierLoot;
+          const excess = state.stash - surplusTrigger;
+
+          if (!mainMsg) {
+            mainMsg = {
+               type: 'info',
+               text: `SURPLUS DETECTED: ${v.name} stash is ${appSettings.surplusMultiplierLoot}x above tactical baseline (Sellable: ${excess}).`
+            };
+            subMsgs.push(`ADVICE: Secure surplus in Safe House or liquidate for Zone credits.`);
+          } else {
+            subMsgs.push(`NOTE: Stash surplus detected (${excess} units). Consider liquidating excess.`);
           }
         }
 
@@ -1163,7 +1289,7 @@ return JSON.parse(jsonMatch[0]);
     
     const logisticsSeverity = getLogisticsSeverity();
 
-return (
+    return (
       <aside 
         className={`ai-sidebar ${isShowcase && showcaseTarget === 'sidebar' ? 'tutorial-spotlight' : ''} ${isDragOver ? 'is-drag-over' : ''} ${expandedImage ? 'has-expanded' : ''}`}
         onDragOver={handleDragOver}
@@ -1174,14 +1300,6 @@ return (
           <div className="ai-pulse" />
           <h3 className="sidebar-title">KUZNETSOV AI</h3>
           <span className="sidebar-status">ONLINE</span>
-          <button 
-            className={`sidebar-settings-btn ${openaiKey ? 'configured' : ''}`}
-            onClick={() => setShowApiSettings(true)}
-            onMouseEnter={playHoverSound}
-            title={openaiKey ? 'API Key Configured' : 'Configure OpenAI API Key'}
-          >
-            <Settings size={14} />
-          </button>
         </div>
         
         <div className="sidebar-content">
@@ -1558,7 +1676,8 @@ return (
     });
 
     const typeClass = (variant.id === '762x54_7n1' || variant.type === 'Sniper' || variant.type === 'Match') ? 'type-purple' : 
-                     (variant.type === 'AP' || variant.id === '9x19_p') ? 'type-green' : '';
+                     (variant.type === 'AP' || variant.id === '9x19_p') ? 'type-green' : 
+                     (variant.type === 'Expansive') ? 'type-yellow' : '';
     
     return (
       <div 
@@ -1582,10 +1701,14 @@ return (
           className="ammo-qty-badge" 
           style={{ 
             color: hoveringWarningId === variant.id ? (isBelowThreshold ? 'var(--accent-red)' : 'var(--accent-amber)') : '',
-            cursor: 'help'
+            cursor: 'pointer'
           }}
           onMouseEnter={() => setHoveringWarningId(variant.id)}
           onMouseLeave={() => setHoveringWarningId(null)}
+          onClick={(e) => {
+            e.stopPropagation();
+            setActiveAmmoId(variant.id);
+          }}
         >
           {isBelowThreshold && <WarningIcon size={12} />}
           {hoveringWarningId === variant.id ? `> ${state[thresholdField]}` : count}
@@ -1647,13 +1770,13 @@ return (
                           e.stopPropagation();
                           moveAmmo(variant.id, 'inventory', 'stash', 1);
                         }} title="Transfer 1 to Loot">
-                          <span className="transfer-dot">.</span>
+                          <Tally1 size={14} />
                         </button>
                         <button className="btn-tooltip transfer" onMouseEnter={playHoverSound} onClick={(e) => {
                           e.stopPropagation();
                           moveAmmo(variant.id, 'inventory', 'stash', variant.boxSize);
                         }} title={`Transfer ${variant.boxSize} to Loot`}>
-                          <span className="transfer-dots">...</span>
+                          <Tally3 size={14} />
                         </button>
                       </div>
                       <div className="tooltip-divider"></div>
@@ -1665,6 +1788,7 @@ return (
                             value={count}
                             onChange={(e) => updateField(variant.id, section, parseInt(e.target.value) || 0)}
                             onKeyDown={(e) => e.key === 'Enter' && setActiveAmmoId(null)}
+                            autoFocus
                           />
                           <div className="qty-spinner-col">
                             <button className="btn-qty-adj up" onMouseEnter={playHoverSound} onClick={(e) => {
@@ -1693,6 +1817,7 @@ return (
                             value={count}
                             onChange={(e) => updateField(variant.id, section, parseInt(e.target.value) || 0)}
                             onKeyDown={(e) => e.key === 'Enter' && setActiveAmmoId(null)}
+                            autoFocus
                           />
                           <div className="qty-spinner-col">
                             <button className="btn-qty-adj up" onMouseEnter={playHoverSound} onClick={(e) => {
@@ -1716,13 +1841,13 @@ return (
                           e.stopPropagation();
                           moveAmmo(variant.id, 'stash', 'inventory', 1);
                         }} title="Transfer 1 to Backpack">
-                          <span className="transfer-dot">.</span>
+                          <Tally1 size={14} />
                         </button>
                         <button className="btn-tooltip transfer" onMouseEnter={playHoverSound} onClick={(e) => {
                           e.stopPropagation();
                           moveAmmo(variant.id, 'stash', 'inventory', variant.boxSize);
                         }} title={`Transfer ${variant.boxSize} to Backpack`}>
-                          <span className="transfer-dots">...</span>
+                          <Tally3 size={14} />
                         </button>
                       </div>
                     </>
@@ -1776,10 +1901,22 @@ return (
                   const threshPercent = (threshold / maxDisplay) * 100;
                   const isWarning = count < threshold;
 
+                  // Calculate surplus/sellable amount
+                  const sectionMultiplier = isInventory ? appSettings.surplusMultiplierInventory : appSettings.surplusMultiplierLoot;
+                  const surplusTrigger = threshold * sectionMultiplier;
+                  const hasSurplus = count >= surplusTrigger;
+                  const sellableAmount = hasSurplus ? count - surplusTrigger : 0;
+                  const surplusPercent = (surplusTrigger / maxDisplay) * 100;
+
+                  // Type coloring
+                  const typeClass = (v.id === '762x54_7n1' || v.type === 'Sniper' || v.type === 'Match') ? 'type-purple' :
+                                   (v.type === 'AP' || v.id === '9x19_p') ? 'type-green' :
+                                   (v.type === 'Expansive') ? 'type-yellow' : '';
+
                   return (
-                    <div 
-                      key={v.id} 
-                      className={`graph-row ${isActive ? 'is-active' : ''}`} 
+                    <div
+                      key={v.id}
+                      className={`graph-row ${isActive ? 'is-active' : ''} ${typeClass}`}
                       onClick={(e) => {
                         e.stopPropagation();
                         setActiveAmmoId(isActive ? null : v.id);
@@ -1798,17 +1935,31 @@ return (
                           <span className={`graph-item-qty ${isWarning ? 'warning' : ''}`}>
                             {count} <span className="qty-divider">/</span> <span className="qty-thresh">{threshold}</span>
                           </span>
+                          {hasSurplus && (
+                            <span className="graph-item-sellable">
+                              Sellable: {sellableAmount} ({sectionMultiplier}x)
+                            </span>
+                          )}
                         </div>
                       </div>
                       <div className="graph-bar-track">
-                        <div 
-                          className={`graph-bar-fill ${isWarning ? 'warning' : ''}`} 
+                        {threshold > 0 && (
+                          <div
+                            className={`graph-threshold-line ${section === 'inventory' ? 'threshold-inventory' : 'threshold-loot'}`}
+                            style={{ width: `${Math.min(100, threshPercent)}%` }}
+                          />
+                        )}
+                        <div
+                          className={`graph-bar-fill ${isWarning ? 'warning' : ''}`}
                           style={{ width: `${Math.min(100, qtyPercent)}%` }}
                         />
-                        {threshold > 0 && (
-                          <div 
-                            className="graph-threshold-line" 
-                            style={{ left: `${Math.min(99, threshPercent)}%` }}
+                        {hasSurplus && (
+                          <div
+                            className="graph-bar-surplus"
+                            style={{
+                              left: `${Math.min(99, surplusPercent)}%`,
+                              width: `${Math.min(100 - surplusPercent, qtyPercent - surplusPercent)}%`
+                            }}
                           />
                         )}
                       </div>
@@ -1870,28 +2021,18 @@ return (
               <h1 className="stalker-title">Zone-Net <span>Munitions</span></h1>
               <div className="stalker-subtitle">Tactical Asset Management &rlm; &middot; V4.2.1</div>
             </div>
-            {!audioUnlocked && (
-              <button 
-                className="btn-sound-check warning-pulse" 
-                onClick={handleSoundCheck}
-                title="Unlock tactical audio feedback"
-              >
-                UNMUTE PDA
-              </button>
-            )}
-            {audioUnlocked && <div className="sound-active-pda">PDA VOICE ACTIVE</div>}
           <div className="header-controls">
             <div className="header-search-wrapper">
-              <input 
-                type="text" 
-                className="header-search-input" 
+              <input
+                type="text"
+                className="header-search-input"
                 placeholder="Global Scan..."
                 value={globalSearch}
                 onChange={(e) => setGlobalSearch(e.target.value)}
               />
               {globalSearch && (
-                <button 
-                  className="btn-search-clear" 
+                <button
+                  className="btn-search-clear"
                   onClick={() => setGlobalSearch('')}
                   onMouseEnter={playHoverSound}
                 >
@@ -1899,7 +2040,17 @@ return (
                 </button>
               )}
             </div>
-            <button 
+            {!audioUnlocked && (
+              <button
+                className="btn-sound-check warning-pulse"
+                onClick={handleSoundCheck}
+                title="Unlock tactical audio feedback"
+              >
+                <Volume2 size={18} />
+              </button>
+            )}
+            {audioUnlocked && <div className="sound-active-pda">PDA VOICE ACTIVE</div>}
+            <button
               className={`btn-showcase-toggle ${isShowcase ? 'active' : ''}`}
               onClick={isShowcase ? endShowcase : startShowcase}
               onMouseEnter={playHoverSound}
@@ -1924,12 +2075,13 @@ return (
                 <BarChart3 size={16} />
               </button>
             </div>
-            <button 
-              className="btn-purge" 
-              onClick={purgeData}
+            <button
+              className={`btn-header-action btn-settings-menu ${showSettingsModal ? 'active' : ''}`}
+              onClick={() => setShowSettingsModal(true)}
               onMouseEnter={playHoverSound}
+              title="App Settings"
             >
-              <Trash2 size={13} /> TERMINATE DATA
+              <Settings size={16} />
             </button>
           </div>
         </div>
@@ -2148,10 +2300,11 @@ return (
               </div>
             )}
           </div>
+        </div>
 
-          {/* FIXED WEAPONS SECTION */}
-          <div className={`weapons-section sticky-footer ${isShowcase && showcaseTarget === 'weapons' ? 'tutorial-spotlight' : ''}`}>
-            <div className="section-header">
+        {/* CARRYING WEAPONS SECTION */}
+        <div className={`weapons-section ${isShowcase && showcaseTarget === 'weapons' ? 'tutorial-spotlight' : ''}`}>
+          <div className="section-header">
               <h4 className="section-label">Carrying Weapons</h4>
               <div className="weapon-selector-wrap">
                 <input 
@@ -2218,8 +2371,8 @@ return (
                 const isUnderThreshold = hw.minRounds && totalInvRoundsForHw < hw.minRounds;
 
                 return (
-                  <div 
-                    key={hw.instanceId} 
+                  <div
+                    key={hw.instanceId}
                     className={`equipped-weapon-card ${confirmingDeleteWeapon === hw.instanceId ? 'is-confirming' : ''} ${isAmmoCompatible ? 'is-ammo-compatible' : ''} ${isActiveFilter ? 'is-active-filter' : ''}`}
                     onMouseEnter={() => {
                       setHoveredWeaponName(hw.instanceId);
@@ -2231,6 +2384,28 @@ return (
                       playZipperSound();
                     }}
                   >
+                    {/* Background weapon image */}
+                    <img
+                      src={getWeaponImageUrlWithFallback(hw.name)}
+                      alt=""
+                      className="weapon-bg-img"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                      }}
+                    />
+                    {hw.imageUrl && (
+                      <img
+                        src={hw.imageUrl}
+                        alt=""
+                        className="weapon-card-img"
+                        onError={(e) => {
+                          // Fallback to a generic weapon image or hide if all fails
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                        }}
+                      />
+                    )}
                     <div className="weapon-card-main">
                       <span className="weapon-name">
                         {hw.name}
@@ -2289,10 +2464,17 @@ return (
             </div>
           </div>
         </div>
-        </div>
-        {renderAiSidebar()}
       </div>
-
+      <div className={`ai-sidebar-wrapper ${aiSidebarCollapsed ? 'collapsed' : ''}`}>
+        <button
+          className="ai-sidebar-toggle"
+          onClick={() => setAiSidebarCollapsed(!aiSidebarCollapsed)}
+          title={aiSidebarCollapsed ? 'Show AI' : 'Hide AI'}
+        >
+          {aiSidebarCollapsed ? '◀' : '▶'}
+        </button>
+        {!aiSidebarCollapsed && renderAiSidebar()}
+      </div>
       {/* QUICK ADD MODAL */}
       {quickAddTarget && (
         <div className="quick-add-overlay" onClick={() => setQuickAddTarget(null)}>
@@ -2425,46 +2607,44 @@ return (
           <div className="quick-add-overlay" onClick={() => setCalibratingWeaponId(null)}>
               <div className="quick-add-modal" onClick={(e) => e.stopPropagation()}>
                   <div className="modal-header">
-                      <div className="modal-header-main">
-                          <h2 className="modal-title">
-                              Ammo Calibration 
-                              <span className="modal-title-hardware">
-                                  :: {carriedWeapons.find(w => w.instanceId === calibratingWeaponId)?.name}
-                              </span>
-                          </h2>
-                          <div className="modal-search-wrapper">
-                              <input 
-                                type="text" 
-                                className="modal-search-input" 
-                                placeholder="Filter compatible rounds..."
-                                value={calibSearch}
-                                onChange={(e) => setCalibSearch(e.target.value)}
-                                autoFocus
-                              />
-                              {calibSearch && (
-                                <button 
-                                  className="btn-modal-search-clear" 
-                                  onClick={() => setCalibSearch('')}
-                                  onMouseEnter={playHoverSound}
-                                  title="Clear Search"
-                                >
-                                  <Trash2 size={13} />
-                                </button>
-                              )}
-                          </div>
+                      <h2 className="modal-title">
+                          Ammo Calibration 
+                          <span className="modal-title-hardware">
+                              :: {carriedWeapons.find(w => w.instanceId === calibratingWeaponId)?.name}
+                          </span>
+                      </h2>
+                      <button className="btn-close-modal" onClick={() => setCalibratingWeaponId(null)}>&times;</button>
+                  </div>
+                  <div className="modal-header-row">
+                      <div className="modal-search-wrapper">
+                          <input 
+                            type="text" 
+                            className="modal-search-input" 
+                            placeholder="Filter compatible rounds..."
+                            value={calibSearch}
+                            onChange={(e) => setCalibSearch(e.target.value)}
+                            autoFocus
+                          />
+                          {calibSearch && (
+                            <button 
+                              className="btn-modal-search-clear" 
+                              onClick={() => setCalibSearch('')}
+                              onMouseEnter={playHoverSound}
+                              title="Clear Search"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          )}
                       </div>
-                      <div className="modal-header-actions">
-                          <div className="modal-threshold-field">
-                              <span className="modal-field-label">MIN RESERVE</span>
-                              <input 
-                                type="number" 
-                                className="modal-qty-input"
-                                value={carriedWeapons.find(w => w.instanceId === calibratingWeaponId)?.minRounds || 0}
-                                onChange={(e) => updateWeaponMinRounds(calibratingWeaponId!, parseInt(e.target.value) || 0)}
-                                placeholder="0"
-                              />
-                          </div>
-                          <button className="btn-close-modal" onClick={() => setCalibratingWeaponId(null)}>&times;</button>
+                      <div className="modal-threshold-field">
+                          <span className="modal-field-label">MIN RESERVE</span>
+                          <input 
+                            type="number" 
+                            className="modal-qty-input"
+                            value={carriedWeapons.find(w => w.instanceId === calibratingWeaponId)?.minRounds || 0}
+                            onChange={(e) => updateWeaponMinRounds(calibratingWeaponId!, parseInt(e.target.value) || 0)}
+                            placeholder="0"
+                          />
                       </div>
                   </div>
 
@@ -2516,67 +2696,6 @@ return (
            </div>
        )}
 
-      {/* API SETTINGS MODAL */}
-      {showApiSettings && (
-        <div className="quick-add-overlay" onClick={() => setShowApiSettings(false)}>
-          <div className="api-settings-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2 className="modal-title">
-                <Settings size={16} style={{ marginRight: '8px' }} />
-                OpenAI Configuration
-              </h2>
-              <button className="btn-close-modal" onClick={() => setShowApiSettings(false)}>&times;</button>
-            </div>
-            <div className="api-settings-content">
-              <p className="api-settings-info">
-                Enter your OpenAI API key to enable screenshot scanning. 
-                Your key is stored locally and never sent to our servers.
-              </p>
-              <div className="api-key-input-group">
-                <label>API Key</label>
-                <input
-                  type="password"
-                  className="api-key-input"
-                  placeholder="sk-..."
-                  value={openaiKey}
-                  onChange={(e) => setOpenaiKey(e.target.value)}
-                />
-              </div>
-              <div className="api-settings-note">
-                <strong>Note:</strong> Requires a valid OpenAI API key with GPT-4o access.
-                Usage costs approximately $0.01-0.03 per screenshot.
-              </div>
-              <div className="api-settings-actions">
-                <button 
-                  className="btn-api-save"
-                  onClick={() => {
-                    localStorage.setItem('stalker_openai_key_v1', openaiKey);
-                    setShowApiSettings(false);
-                    playBoxSound();
-                  }}
-                  onMouseEnter={playHoverSound}
-                >
-                  Save Key
-                </button>
-                {openaiKey && (
-                  <button 
-                    className="btn-api-clear"
-                    onClick={() => {
-                      setOpenaiKey('');
-                      localStorage.removeItem('stalker_openai_key_v1');
-                      playZipperSound();
-                    }}
-                    onMouseEnter={playHoverSound}
-                  >
-                    Clear Key
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
       {isShowcase && (() => {
         const step = SHOWCASE_STEPS[showcaseStep];
         if (!step) return null;
@@ -2609,9 +2728,151 @@ return (
 
       {renderExpandedImage()}
 
-      <footer>
-        &curren; PROPRIETARY ZONE-NET PDA INTERFACE — ENCRYPTED TRANSMISSION
-      </footer>
+      {showSettingsModal && (
+        <div className="quick-add-overlay" onClick={() => setShowSettingsModal(false)}>
+          <div className="quick-add-modal settings-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="modal-title">
+                <Settings size={16} /> App Settings
+              </h2>
+              <button className="btn-close-modal" onClick={() => setShowSettingsModal(false)}>&times;</button>
+            </div>
+            <div className="settings-tabs">
+              <button
+                className={`settings-tab ${settingsActiveTab === 'thresholds' ? 'active' : ''}`}
+                onClick={() => setSettingsActiveTab('thresholds')}
+              >
+                Thresholds
+              </button>
+              <button
+                className={`settings-tab ${settingsActiveTab === 'api' ? 'active' : ''}`}
+                onClick={() => setSettingsActiveTab('api')}
+              >
+                API/AI
+              </button>
+              <button
+                className={`settings-tab ${settingsActiveTab === 'import' ? 'active' : ''}`}
+                onClick={() => setSettingsActiveTab('import')}
+              >
+                Import/Export
+              </button>
+            </div>
+            <div className="settings-content">
+              {/* Thresholds Tab */}
+              <div className={`settings-section ${settingsActiveTab === 'thresholds' ? 'active' : ''}`}>
+                <div className="settings-multipliers-grid">
+                  <div className="settings-multiplier-col">
+                    <label className="settings-label">Loot Surplus Multiplier</label>
+                    <div className="settings-description">
+                      Safe House/Loot ammo surplus detection.
+                    </div>
+                    <div className="settings-input-group">
+                      <input
+                        type="number"
+                        className="settings-input"
+                        value={appSettings.surplusMultiplierLoot}
+                        onChange={(e) => setAppSettings({ ...appSettings, surplusMultiplierLoot: Math.max(0.1, parseFloat(e.target.value) || 1.8) })}
+                        min="0.1"
+                        max="10"
+                        step="0.1"
+                      />
+                      <span className="settings-input-suffix">x threshold</span>
+                    </div>
+                    <div className="settings-info">
+                      Trigger: {(100 * appSettings.surplusMultiplierLoot).toFixed(0)} rounds
+                    </div>
+                  </div>
+
+                  <div className="settings-multiplier-col">
+                    <label className="settings-label">Inventory Surplus Multiplier</label>
+                    <div className="settings-description">
+                      Backpack ammo surplus detection.
+                    </div>
+                    <div className="settings-input-group">
+                      <input
+                        type="number"
+                        className="settings-input"
+                        value={appSettings.surplusMultiplierInventory}
+                        onChange={(e) => setAppSettings({ ...appSettings, surplusMultiplierInventory: Math.max(1, parseFloat(e.target.value) || 3) })}
+                        min="1"
+                        max="10"
+                        step="0.5"
+                      />
+                      <span className="settings-input-suffix">x threshold</span>
+                    </div>
+                    <div className="settings-info">
+                      Trigger: {(100 * appSettings.surplusMultiplierInventory).toFixed(0)} rounds
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* API/AI Tab */}
+              <div className={`settings-section ${settingsActiveTab === 'api' ? 'active' : ''}`}>
+                <label className="settings-label">OpenAI API Key</label>
+                <div className="settings-description">
+                  For AI-powered ammo detection from screenshots. Leave blank to disable.
+                </div>
+                <input
+                  type="password"
+                  className="settings-input-full"
+                  placeholder="sk-..."
+                  value={openaiKey}
+                  onChange={(e) => setOpenaiKey(e.target.value)}
+                />
+                <div className="settings-info">
+                  Your API key is stored locally and never sent to external servers except OpenAI.
+                </div>
+              </div>
+
+              {/* Import/Export Tab */}
+              <div className={`settings-section ${settingsActiveTab === 'import' ? 'active' : ''}`}>
+                <div className="settings-import-section">
+                  <label className="settings-label">Import JSON</label>
+                  <div className="settings-description">
+                    Paste previously exported data to restore your configuration.
+                  </div>
+                  <textarea
+                    className="settings-textarea"
+                    placeholder="Paste JSON data here..."
+                    value={importJson}
+                    onChange={(e) => setImportJson(e.target.value)}
+                  />
+                  <button
+                    className="btn-tooltip"
+                    onClick={handleImportData}
+                    onMouseEnter={playHoverSound}
+                  >
+                    <Check size={14} /> IMPORT DATA
+                  </button>
+                </div>
+                <div className="settings-export-section">
+                  <label className="settings-label">Export JSON</label>
+                  <div className="settings-description">
+                    Save your current configuration for backup or sharing.
+                  </div>
+                  <textarea
+                    className="settings-textarea"
+                    readOnly
+                    value={exportData()}
+                  />
+                  <button
+                    className="btn-tooltip"
+                    onClick={() => {
+                      navigator.clipboard.writeText(exportData());
+                      playAmmoSound();
+                    }}
+                    onMouseEnter={playHoverSound}
+                  >
+                    COPY TO CLIPBOARD
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <VersionBadge projectName="stalker2-ammo" />
     </div>
   );
