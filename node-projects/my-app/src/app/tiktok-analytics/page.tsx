@@ -178,11 +178,11 @@ export default function TikTokAnalyticsPage() {
     */
   };
 
-  const handleCodeSubmit = async (code: string) => {
+  const handleCodeSubmit = async (_code: string) => {
     // TODO: Fix localStorage - app not finalized
     return;
     /*
-    if (!code) return;
+    if (!_code) return;
     setIsLoadingApi(true);
     setError("");
 

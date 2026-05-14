@@ -92,7 +92,6 @@ export default function FactCheckPage() {
       let transcriptContent = '';
       let videoId = '';
       let videoTitle = '';
-      let imageDesc = '';
 
       if (isYouTube) {
         setTranscribing(true);

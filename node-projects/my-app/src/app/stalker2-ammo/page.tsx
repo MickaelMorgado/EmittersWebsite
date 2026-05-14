@@ -2,6 +2,7 @@
 import { AlertTriangle, ArrowLeft, ArrowRight, BarChart3, Camera, Check, ChevronDown, Eye, ImagePlus, LayoutGrid, Loader2, Minus, Plus, Settings, Tally1, Tally3, Trash2, Volume2, X } from 'lucide-react';
 import { VersionBadge } from "@/components/VersionBadge";
 import { useEffect, useMemo, useRef, useState } from 'react';
+import Image from 'next/image';
 import { AmmoVariant, STALKER_AMMO_DATA } from './data';
 import './styles.css';
 
@@ -1417,7 +1418,7 @@ return JSON.parse(jsonMatch[0]);
                               className="chat-image-preview"
                               onClick={() => setExpandedImage(msg.image!)}
                             >
-                              <img src={msg.image} alt="Uploaded screenshot" />
+                              <Image src={msg.image} alt="Uploaded screenshot" width={200} height={150} />
                               <div className="image-zoom-overlay">
                                 <Eye size={24} />
                                 <span>Zoom</span>
@@ -1445,7 +1446,7 @@ return JSON.parse(jsonMatch[0]);
                                     <div key={idx} className={`detected-item-row ${!item.matchedId ? 'unmatched' : ''}`}>
                                       <div className="detected-item-image">
                                         {variant?.imageUrl ? (
-                                          <img src={variant.imageUrl} alt="" />
+                                          <Image src={variant.imageUrl} alt="" width={60} height={40} />
                                         ) : (
                                           <div className="detected-item-placeholder">
                                             <span>?</span>
@@ -1654,7 +1655,7 @@ return JSON.parse(jsonMatch[0]);
         >
           <X size={18} />
         </button>
-        <img src={expandedImage} alt="Expanded screenshot" />
+        <Image src={expandedImage} alt="Expanded screenshot" width={400} height={300} />
       </div>
     );
   };
@@ -1694,7 +1695,7 @@ return JSON.parse(jsonMatch[0]);
         }}
       >
         {variant.imageUrl && (
-          <img src={variant.imageUrl} alt={variant.name} className="ammo-slot-img" />
+          <Image src={variant.imageUrl} alt={variant.name} className="ammo-slot-img" width={60} height={40} />
         )}
         <div className="ammo-name-label">{variant.name}</div>
         <div 
@@ -1862,9 +1863,6 @@ return JSON.parse(jsonMatch[0]);
   };
 
   const renderGraphicalView = (section: 'inventory' | 'stash', searchQuery: string) => {
-    const searchLower = searchQuery.toLowerCase();
-    const globalLower = globalSearch.toLowerCase();
-    
     return (
       <div className="graph-container">
         {STALKER_AMMO_DATA.map(caliber => {
@@ -1926,7 +1924,7 @@ return JSON.parse(jsonMatch[0]);
                         <div className="graph-item-main">
                           {v.imageUrl && (
                             <div className="graph-item-thumb-container">
-                              <img src={v.imageUrl} alt="" className="graph-item-thumb" />
+                              <Image src={v.imageUrl} alt="" className="graph-item-thumb" width={40} height={30} />
                             </div>
                           )}
                           <span className="graph-item-name">{v.name}</span>
@@ -2130,9 +2128,6 @@ return JSON.parse(jsonMatch[0]);
           <div className="panel-content">
             {viewMode === 'grid' ? (
               STALKER_AMMO_DATA.map(caliber => {
-                const searchLower = stashSearch.toLowerCase();
-                const globalLower = globalSearch.toLowerCase();
-
                 const filteredVariants = caliber.variants.filter(v => {
                   const hasStock = (data[v.id]?.stash || 0) > 0;
                   const matchesGlobal = fuzzyMatch(v.name, globalSearch) || fuzzyMatch(caliber.name, globalSearch);
@@ -2237,9 +2232,6 @@ return JSON.parse(jsonMatch[0]);
           <div className="panel-content">
             {viewMode === 'grid' ? (
               STALKER_AMMO_DATA.map(caliber => {
-                const searchLower = inventorySearch.toLowerCase();
-                const globalLower = globalSearch.toLowerCase();
-
                 const activeVariants = caliber.variants.filter(v => {
                   const hasStock = (data[v.id]?.inventory || 0) > 0;
                   const matchesGlobal = fuzzyMatch(v.name, globalSearch) || fuzzyMatch(caliber.name, globalSearch);
@@ -2385,20 +2377,24 @@ return JSON.parse(jsonMatch[0]);
                     }}
                   >
                     {/* Background weapon image */}
-                    <img
+                    <Image
                       src={getWeaponImageUrlWithFallback(hw.name)}
                       alt=""
                       className="weapon-bg-img"
+                      width={120}
+                      height={80}
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
                         target.style.display = 'none';
                       }}
                     />
                     {hw.imageUrl && (
-                      <img
+                      <Image
                         src={hw.imageUrl}
                         alt=""
                         className="weapon-card-img"
+                        width={80}
+                        height={50}
                         onError={(e) => {
                           // Fallback to a generic weapon image or hide if all fails
                           const target = e.target as HTMLImageElement;
@@ -2531,7 +2527,7 @@ return JSON.parse(jsonMatch[0]);
                       <div key={v.id} className="modal-ammo-row">
                         {v.imageUrl && (
                           <div className="modal-ammo-img-container">
-                            <img src={v.imageUrl} alt={v.name} className="modal-ammo-img" />
+                            <Image src={v.imageUrl} alt={v.name} className="modal-ammo-img" width={50} height={35} />
                           </div>
                         )}
                         <span className="modal-ammo-name">{v.name}</span>
@@ -2673,9 +2669,9 @@ return JSON.parse(jsonMatch[0]);
                                            const isFiltered = filter ? filter.includes(v.id) : isRecommended;
                                           return (
                                                <div key={v.id} className={`modal-ammo-row ${isFiltered ? 'is-active' : ''}`} onClick={() => updateWeaponAmmoFilter(hw.instanceId, v.id)}>
-                                                   <div className="modal-ammo-img-container">
-                                                       {v.imageUrl && <img src={v.imageUrl} alt={v.name} className="modal-ammo-img" />}
-                                                   </div>
+<div className="modal-ammo-img-container">
+                                                        {v.imageUrl && <Image src={v.imageUrl} alt={v.name} className="modal-ammo-img" width={50} height={35} />}
+                                                    </div>
                                                    <div className="modal-ammo-name">
                                                        {v.name}
                                                        {isRecommended && <span className="modal-ammo-tag" title="Standard">STD</span>}
