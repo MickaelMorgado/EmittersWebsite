@@ -23,7 +23,7 @@
 On each parsed candle (`results.data`):
 - **Dynamic Info Update**: `updateDynamicInfos` updates current date, progression bar.
 - **Chart Update**:
-    - `appendDataToChart` calls `addNewCandleToChart` to append to SciChart’s OHLC series.
+    - `appendDataToChart` calls `addNewCandleToChart` to append to SciChart's OHLC series.
     - `addBacktestingDateTimeToChart` adds vertical lines at session boundaries and populates date dropdown.
 - **Indicator Computation & Annotation**:
     - `appendIndicatorsToChart` invokes:
@@ -45,9 +45,22 @@ On each parsed candle (`results.data`):
 ### 4. User Interaction & Controls
 - Toolbar toggles (`revealAlgoEditor`, `revealAlgo`, `revealReview`) switch result-panel views.
 - Controls for session start/end, risk inputs (lot size, SL/TP, trailing stop).
-- “Refresh” button re-runs backtest on the same file.
-- Embedded “Algo Editor” textareas allow dynamic injection of custom JS per candle.
+- "Refresh" button re-runs backtest on the same file.
+- Embedded "Algo Editor" textareas allow dynamic injection of custom JS per candle.
 
 ### 5. Modularity & Event-Driven Flow
 - Core functions are attached to `window` for global access (e.g., `window.calcATR`, `window.profitabilityCalculation`).
-- Event listeners orchestrate pipeline triggers (file input change, button clicks, select “change”).
+- Event listeners orchestrate pipeline triggers (file input change, button clicks, select "change").
+
+## Project Documentation Pattern
+
+### Individual Project Memories
+- **ALWAYS update**: When any sub-app project changes, update its corresponding memory file in `memory-bank/project-specific/apps/`
+- **Location**: Each sub-app gets a markdown file named after its route (e.g., `/fact-check` → `fact-check.md`)
+- **Required fields**:
+  - `# Project Name` - Title
+  - `## Status` - Current status (Active, Deprecated, etc.)
+  - `## Route` - App route path
+  - `## Tech Stack` - Technologies used
+  - `## Notes` - Key information
+- **Trigger**: Update memory on any significant change (new features, status change, bugs, architecture changes)
