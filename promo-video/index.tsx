@@ -1,11 +1,12 @@
 import { registerRoot, Composition } from "remotion";
-import { ImageCompressorPromo } from "./Root";
+import { MediaProcessorPromo } from "./Root";
+import React from "react";
 
 registerRoot(() => (
   <Composition
-    id="ImageCompressorPromo"
-    component={ImageCompressorPromo}
-    durationInFrames={690}
+    id="MediaProcessorPromo"
+    component={MediaProcessorPromo}
+    durationInFrames={1170}
     fps={30}
     width={1920}
     height={1080}
