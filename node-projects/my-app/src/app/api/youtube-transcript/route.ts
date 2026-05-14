@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { YoutubeTranscript } from 'youtube-transcript';
 
-const YOUTUBE_REGEX = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+const YOUTUBE_REGEX = /(?:youtube\.com\/(?:shorts\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
 
 function extractVideoId(url: string): string | null {
   const match = url.match(YOUTUBE_REGEX);
@@ -10,19 +10,31 @@ function extractVideoId(url: string): string | null {
 
 export async function POST(request: NextRequest) {
   try {
-    const { url } = await request.json();
+    let { url } = await request.json();
+    console.log('[youtube-transcript] Received URL:', url);
     
     if (!url) {
       return NextResponse.json({ error: 'URL is required' }, { status: 400 });
     }
 
+    // Convert Shorts URL to regular video URL
+    const shortsMatch = url.match(/youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/);
+    if (shortsMatch) {
+      url = `https://www.youtube.com/watch?v=${shortsMatch[1]}`;
+      console.log('[youtube-transcript] Converted Shorts to:', url);
+    }
+
     const videoId = extractVideoId(url);
+    console.log('[youtube-transcript] Video ID:', videoId);
+    
     if (!videoId) {
       return NextResponse.json({ error: 'Invalid YouTube URL' }, { status: 400 });
     }
 
     try {
+      console.log('[youtube-transcript] Fetching transcript...');
       const transcript = await YoutubeTranscript.fetchTranscript(videoId);
+      console.log('[youtube-transcript] Got', transcript.length, 'segments');
       const text = transcript.map(item => item.text).join(' ');
 
       return NextResponse.json({ 
@@ -32,7 +44,7 @@ export async function POST(request: NextRequest) {
         source: 'transcript'
       });
     } catch (transcriptError) {
-      console.log('Transcript unavailable, trying video info...');
+      console.log('[youtube-transcript] Transcript error:', transcriptError);
       
       // Fallback: fetch video info via oEmbed
       try {

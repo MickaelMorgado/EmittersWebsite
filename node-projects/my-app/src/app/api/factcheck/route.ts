@@ -100,12 +100,25 @@ Respond ONLY in this exact JSON format:
 {"verdict": "true|false|uncertain|mixed", "summary": "Brief summary here", "reasoning": "Reasoning here", "confidence": 85, "sources": []}`;
       result = await chatAI(jsonPrompt);
     } else {
-      const prompt = `You are a fact-checking AI. Analyze the claim below and determine if it's TRUE, FALSE, UNCERTAIN, or MIXED.
+      const isYoutube = type === 'youtube';
+      const prompt = isYoutube
+        ? `You are a fact-checking AI. Analyze the video TRANSCRIPT below for factual claims and determine if they're TRUE, FALSE, UNCERTAIN, or MIXED.
+         
+VIDEO TRANSCRIPT:
+"${content}"
+
+Analyze the claims in this transcript. Look for specific factual statements that can be verified.
+
+Respond ONLY in this exact JSON format (no extra text):
+{"verdict": "true|false|uncertain|mixed", "summary": "Brief summary here", "reasoning": "Reasoning here", "confidence": 85, "sources": ["source1", "source2"]}`
+        : `You are a fact-checking AI. Analyze the claim below and determine if it's TRUE, FALSE, UNCERTAIN, or MIXED.
          
 Claim: "${content}"
 
 Respond ONLY in this exact JSON format (no extra text):
 {"verdict": "true|false|uncertain|mixed", "summary": "Brief summary here", "reasoning": "Reasoning here", "confidence": 85, "sources": ["source1", "source2"]}`;
+      
+      console.log('[factcheck] Content type:', type, 'Content length:', content.length);
       result = await chatAI(prompt);
     }
     console.log('AI result:', result);

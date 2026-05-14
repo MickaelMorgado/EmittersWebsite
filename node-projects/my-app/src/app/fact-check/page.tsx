@@ -3,9 +3,10 @@
 import { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, XCircle, AlertTriangle, Search, Upload, Link as LinkIcon, Loader2, Youtube } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { CheckCircle, XCircle, AlertTriangle, Search, Upload, Link as LinkIcon, Loader2, Youtube, ExternalLink } from 'lucide-react';
+import { isYouTubeUrl, normalizeYouTubeUrl } from '@/lib/youtube';
 
 type Verdict = 'true' | 'false' | 'uncertain' | 'mixed';
 
@@ -30,12 +31,6 @@ const VERDICT_ICONS = {
   uncertain: AlertTriangle,
   mixed: AlertTriangle,
 };
-
-const YOUTUBE_REGEX = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
-
-function isYouTubeUrl(text: string): boolean {
-  return YOUTUBE_REGEX.test(text);
-}
 
 export default function FactCheckPage() {
   const [input, setInput] = useState('');
@@ -79,6 +74,7 @@ export default function FactCheckPage() {
 
       if (isYouTube) {
         setTranscribing(true);
+        console.log('[FactCheck] Fetching transcript for:', input);
         try {
           const transcriptRes = await fetch('/api/youtube-transcript', {
             method: 'POST',
@@ -87,14 +83,22 @@ export default function FactCheckPage() {
           });
           
           const transcriptData = await transcriptRes.json();
+          console.log('[FactCheck] Transcript response status:', transcriptRes.status);
+          console.log('[FactCheck] Transcript response:', transcriptData);
           
           if (transcriptData.error) {
             throw new Error(transcriptData.error);
           }
           
+          if (!transcriptData.transcript) {
+            throw new Error('No transcript content returned');
+          }
+          
           contentToCheck = `YouTube Video Transcript:\n\n${transcriptData.transcript.substring(0, 4000)}`;
           contentType = 'youtube';
+          console.log('[FactCheck] Transcript length:', contentToCheck.length);
         } catch (transcribeErr) {
+          console.error('[FactCheck] Transcript error:', transcribeErr);
           setError(`Failed to transcribe video: ${transcribeErr instanceof Error ? transcribeErr.message : 'Unknown error'}`);
           setLoading(false);
           setTranscribing(false);
@@ -155,21 +159,22 @@ export default function FactCheckPage() {
 
         <Card className="bg-zinc-900/50 border-zinc-800 mb-6">
           <CardContent className="pt-6 space-y-4">
-            <form onSubmit={handleSubmit} className="flex gap-2">
-              <Input
+            <div className="flex gap-2 items-start">
+              <Textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Paste YouTube URL or claim to fact-check..."
-                className="bg-zinc-800 border-zinc-700"
+                className="bg-zinc-800 border-zinc-700 min-h-[80px] resize-y"
+                rows={3}
               />
-              <Button type="submit" disabled={loading || transcribing}>
+              <Button type="submit" disabled={loading || transcribing} className="mt-0 h-auto">
                 {loading || transcribing ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <Search className="h-4 w-4" />
                 )}
               </Button>
-            </form>
+            </div>
             
             {isYouTubeInput && mounted && (
               <div className="flex items-center gap-2 text-yellow-400 text-sm">
@@ -235,11 +240,27 @@ export default function FactCheckPage() {
                 <div>
                   <h3 className="font-semibold mb-1">Sources</h3>
                   <ul className="text-zinc-400 text-sm space-y-1">
-                    {result.sources.map((s, i) => (
-                      <li key={i} className="flex items-center gap-2">
-                        <LinkIcon className="h-3 w-3" /> {s}
-                      </li>
-                    ))}
+                    {result.sources.map((s, i) => {
+                      const isUrl = s.startsWith('http://') || s.startsWith('https://');
+                      return (
+                        <li key={i} className="flex items-center gap-2">
+                          <LinkIcon className="h-3 w-3 flex-shrink-0" />
+                          {isUrl ? (
+                            <a 
+                              href={s} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-blue-400 hover:text-blue-300 hover:underline truncate"
+                            >
+                              {s}
+                              <ExternalLink className="h-3 w-3 inline ml-1" />
+                            </a>
+                          ) : (
+                            <span>{s}</span>
+                          )}
+                        </li>
+                      );
+                    })}
                   </ul>
                 </div>
               )}
