@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { chatAI } from '@/lib/ai';
 
-const OPENAI_KEY = process.env.NEXT_PUBLIC_OPENAI_KEY;
+const OPENAI_KEY = process.env.NEXT_PUBLIC_OPENAI_API_KEY || process.env.NEXT_PUBLIC_OPENAI_KEY;
 const OPENROUTER_KEY = process.env.OPENROUTER_API_KEY || process.env.NEXT_PUBLIC_OPENROUTER_KEY;
 
 async function chatAIVision(imageData: string): Promise<{ content: string; provider: string; error?: string }> {
@@ -76,57 +76,76 @@ async function chatAIVision(imageData: string): Promise<{ content: string; provi
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('[factcheck] Starting fact-check request...');
     const { content, type = 'text' } = await request.json();
-    
+    console.log('[factcheck] Content type:', type, 'Content length:', content.length);
+
     let result: { content: string; provider: string; error?: string };
-    
+
     if (type === 'image') {
+      console.log('[factcheck] Processing image...');
       result = await chatAIVision(content);
-      console.log('Vision result:', result);
-      
+      console.log('[factcheck] Vision result:', { provider: result.provider, hasContent: !!result.content, error: result.error });
+
       if (result.error || !result.content) {
-        console.error('Vision failed:', result.error);
-        return NextResponse.json({ 
-          error: result.error || 'Image analysis failed', 
+        console.error('[factcheck] Vision failed:', result.error);
+        return NextResponse.json({
+          error: result.error || 'Image analysis failed',
           provider: result.provider,
-          isImageError: true 
+          isImageError: true
         }, { status: 500 });
       }
       const jsonPrompt = `Based on this image analysis, determine if there are any factual claims and provide a JSON verdict.
-      
+
 Image description: "${result.content}"
 
 Respond ONLY in this exact JSON format:
 {"verdict": "true|false|uncertain|mixed", "summary": "Brief summary here", "reasoning": "Reasoning here", "confidence": 85, "sources": []}`;
+      console.log('[factcheck] Sending image analysis to chatAI...');
       result = await chatAI(jsonPrompt);
     } else {
       const isYoutube = type === 'youtube';
       const prompt = isYoutube
         ? `You are a fact-checking AI. Analyze the video TRANSCRIPT below for factual claims and determine if they're TRUE, FALSE, UNCERTAIN, or MIXED.
-         
+
 VIDEO TRANSCRIPT:
 "${content}"
 
-Analyze the claims in this transcript. Look for specific factual statements that can be verified.
+Analyze the claims in this transcript. Look for specific factual statements that can be verified. For sources, provide ONLY actual web URLs (https://...) or leave the sources array empty if no URLs can be verified.
 
 Respond ONLY in this exact JSON format (no extra text):
-{"verdict": "true|false|uncertain|mixed", "summary": "Brief summary here", "reasoning": "Reasoning here", "confidence": 85, "sources": ["source1", "source2"]}`
+{"verdict": "true|false|uncertain|mixed", "summary": "Brief summary here", "reasoning": "Reasoning here", "confidence": 85, "sources": ["https://example.com", "https://another-source.com"]}`
         : `You are a fact-checking AI. Analyze the claim below and determine if it's TRUE, FALSE, UNCERTAIN, or MIXED.
-         
+
 Claim: "${content}"
 
+For sources, provide ONLY actual web URLs (https://...) or leave the sources array empty if no URLs can be verified.
+
 Respond ONLY in this exact JSON format (no extra text):
-{"verdict": "true|false|uncertain|mixed", "summary": "Brief summary here", "reasoning": "Reasoning here", "confidence": 85, "sources": ["source1", "source2"]}`;
-      
-      console.log('[factcheck] Content type:', type, 'Content length:', content.length);
+{"verdict": "true|false|uncertain|mixed", "summary": "Brief summary here", "reasoning": "Reasoning here", "confidence": 85, "sources": ["https://example.com", "https://another-source.com"]}`;
+
+      console.log('[factcheck] Sending to chatAI, type:', isYoutube ? 'youtube' : 'text');
       result = await chatAI(prompt);
     }
-    console.log('AI result:', result);
-    
+
+    console.log('[factcheck] AI result:', { provider: result.provider, hasContent: !!result.content, hasError: !!result.error });
+
     if (result.error) {
-      return NextResponse.json({ error: result.error, provider: result.provider }, { status: 500 });
+      console.error('[factcheck] AI error:', result.error);
+      return NextResponse.json({
+        error: `AI failed (${result.provider}): ${result.error}`,
+        provider: result.provider
+      }, { status: 500 });
     }
-    
+
+    if (!result.content) {
+      console.error('[factcheck] AI returned empty content');
+      return NextResponse.json({
+        error: 'AI returned empty response',
+        provider: result.provider
+      }, { status: 500 });
+    }
+
     let jsonStr = result.content.trim();
     if (jsonStr.startsWith('```json')) {
       jsonStr = jsonStr.slice(7);
@@ -138,11 +157,34 @@ Respond ONLY in this exact JSON format (no extra text):
       jsonStr = jsonStr.slice(0, -3);
     }
     jsonStr = jsonStr.trim();
-    
+
+    console.log('[factcheck] Parsing JSON, length:', jsonStr.length);
     const parsed = JSON.parse(jsonStr);
-    return NextResponse.json({ ...parsed, provider: result.provider });
+
+    // Validate and filter sources to only include valid URLs
+    const validatedSources = (parsed.sources || []).filter((source: string) => {
+      try {
+        // Check if it's a valid URL
+        const url = new URL(source);
+        return url.protocol === 'http:' || url.protocol === 'https:';
+      } catch {
+        console.log('[factcheck] Invalid URL source filtered out:', source);
+        return false;
+      }
+    });
+
+    console.log('[factcheck] Success, verdict:', parsed.verdict, 'sources:', validatedSources.length);
+    return NextResponse.json({
+      ...parsed,
+      sources: validatedSources,
+      provider: result.provider
+    });
   } catch (err) {
-    console.error('Factcheck error:', err);
-    return NextResponse.json({ error: 'Failed to process' }, { status: 500 });
+    const errorMsg = err instanceof Error ? err.message : String(err);
+    console.error('[factcheck] Error:', errorMsg, 'Stack:', err instanceof Error ? err.stack : '');
+    return NextResponse.json({
+      error: `Failed to process: ${errorMsg}`,
+      details: errorMsg
+    }, { status: 500 });
   }
 }
