@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, XCircle, AlertTriangle, Search, Upload, Link as LinkIcon, Loader2 } from 'lucide-react';
+import { CheckCircle, XCircle, AlertTriangle, Search, Upload, Link as LinkIcon, Loader2, Youtube } from 'lucide-react';
 
 type Verdict = 'true' | 'false' | 'uncertain' | 'mixed';
 
@@ -31,9 +31,16 @@ const VERDICT_ICONS = {
   mixed: AlertTriangle,
 };
 
+const YOUTUBE_REGEX = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+
+function isYouTubeUrl(text: string): boolean {
+  return YOUTUBE_REGEX.test(text);
+}
+
 export default function FactCheckPage() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [transcribing, setTranscribing] = useState(false);
   const [result, setResult] = useState<FactCheckResult | null>(null);
   const [error, setError] = useState('');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -62,15 +69,48 @@ export default function FactCheckPage() {
     
     setLoading(true);
     setError('');
+    setResult(null);
     
     try {
+      const isYouTube = isYouTubeUrl(input);
+      
+      let contentToCheck = input;
+      let contentType = 'text';
+
+      if (isYouTube) {
+        setTranscribing(true);
+        try {
+          const transcriptRes = await fetch('/api/youtube-transcript', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url: input })
+          });
+          
+          const transcriptData = await transcriptRes.json();
+          
+          if (transcriptData.error) {
+            throw new Error(transcriptData.error);
+          }
+          
+          contentToCheck = `YouTube Video Transcript:\n\n${transcriptData.transcript.substring(0, 4000)}`;
+          contentType = 'youtube';
+        } catch (transcribeErr) {
+          setError(`Failed to transcribe video: ${transcribeErr instanceof Error ? transcribeErr.message : 'Unknown error'}`);
+          setLoading(false);
+          setTranscribing(false);
+          return;
+        } finally {
+          setTranscribing(false);
+        }
+      }
+
       const res = await fetch('/api/factcheck', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(
           selectedImage
             ? { content: selectedImage, type: 'image' }
-            : { content: input, type: 'text' }
+            : { content: contentToCheck, type: contentType }
         )
       });
       
@@ -92,7 +132,7 @@ export default function FactCheckPage() {
       } else {
         setResult(data);
       }
-} catch (err) {
+    } catch (err) {
       setError('Failed to check fact. Try again.');
     } finally {
       setLoading(false);
@@ -105,12 +145,13 @@ export default function FactCheckPage() {
   };
 
   const VerdictIcon = result ? VERDICT_ICONS[result.verdict] : null;
+  const isYouTubeInput = isYouTubeUrl(input);
 
   return (
     <div className="min-h-screen bg-black text-white p-4 lg:p-8">
       <div className="container mx-auto max-w-3xl">
         <h1 className="text-4xl font-bold mb-2 heading-shine uppercase">Fact Check AI</h1>
-        <p className="text-zinc-400 mb-8">Upload a screenshot, paste a URL, or enter text to verify</p>
+        <p className="text-zinc-400 mb-8">Paste a YouTube URL, claim, URL, or text to verify</p>
 
         <Card className="bg-zinc-900/50 border-zinc-800 mb-6">
           <CardContent className="pt-6 space-y-4">
@@ -118,13 +159,24 @@ export default function FactCheckPage() {
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Paste claim, URL, or text to fact-check..."
+                placeholder="Paste YouTube URL or claim to fact-check..."
                 className="bg-zinc-800 border-zinc-700"
               />
-              <Button type="submit" disabled={loading}>
-                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+              <Button type="submit" disabled={loading || transcribing}>
+                {loading || transcribing ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Search className="h-4 w-4" />
+                )}
               </Button>
             </form>
+            
+            {isYouTubeInput && mounted && (
+              <div className="flex items-center gap-2 text-yellow-400 text-sm">
+                <Youtube className="h-4 w-4" />
+                YouTube URL detected - will fetch transcript for analysis
+              </div>
+            )}
             
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => fileRef.current?.click()}>
@@ -151,6 +203,13 @@ export default function FactCheckPage() {
             )}
             
             {error && <p className="text-red-500 text-sm">{error}</p>}
+            
+            {transcribing && (
+              <div className="flex items-center gap-2 text-yellow-400">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Fetching YouTube transcript...
+              </div>
+            )}
           </CardContent>
         </Card>
 
