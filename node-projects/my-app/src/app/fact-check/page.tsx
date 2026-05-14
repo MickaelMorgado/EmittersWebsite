@@ -163,11 +163,21 @@ export default function FactCheckPage() {
               <Textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Paste YouTube URL or claim to fact-check..."
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                    e.preventDefault();
+                    handleSubmit(e as unknown as React.FormEvent);
+                  }
+                }}
+                placeholder="Paste YouTube URL or claim to fact-check... (Ctrl+Enter to submit)"
                 className="bg-zinc-800 border-zinc-700 min-h-[80px] resize-y"
                 rows={3}
               />
-              <Button type="submit" disabled={loading || transcribing} className="mt-0 h-auto">
+              <Button 
+                onClick={() => handleSubmit({ preventDefault: () => {} } as unknown as React.FormEvent)}
+                disabled={loading || transcribing} 
+                className="mt-0 h-auto"
+              >
                 {loading || transcribing ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
