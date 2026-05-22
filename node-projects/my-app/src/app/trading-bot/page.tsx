@@ -1,8 +1,8 @@
 "use client";
 
-import { TrendingUp, TrendingDown, DollarSign, Activity, Target, Brain, RefreshCw, Zap, BarChart3, ArrowUpRight, ArrowDownRight, FileText, Sparkles } from 'lucide-react';
-import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
-import { AreaChart, Area, BarChart, Bar, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, LineChart, Line } from 'recharts';
+import { Activity, ArrowDownRight, ArrowUpRight, BarChart3, Brain, DollarSign, FileText, RefreshCw, Sparkles, Target, TrendingUp, Zap } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Area, AreaChart, Bar, BarChart, Cell, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 // Smooth number animation component
 function AnimatedNumber({ value, className }: { value: number; className: string }) {
