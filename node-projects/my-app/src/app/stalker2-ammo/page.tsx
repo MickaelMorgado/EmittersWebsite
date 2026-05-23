@@ -1990,16 +1990,22 @@ if (excess > 0) {
                                </button>
                              </div>
                            ) : (
-                             <div className="graph-action-buttons">
-                               <button className="btn-graph-action" onClick={() => moveAmmo(v.id, section, isInventory ? 'stash' : 'inventory', v.boxSize)}>
-                                 {isInventory ? <ArrowLeft size={10} /> : <ArrowRight size={10} />}
-                                 TRANSFER {v.boxSize}
-                               </button>
-                               <button className="btn-graph-action" onClick={() => setEditingThreshold(v.id)}>
-                                 <Settings size={10} />
-                                 THRESHOLD
-                               </button>
-                             </div>
+<div className="graph-action-buttons">
+                                <div className="graph-transfer-group">
+                                  <button className="btn-graph-action transfer" onClick={() => moveAmmo(v.id, section, isInventory ? 'stash' : 'inventory', 1)}>
+                                    {isInventory ? <ArrowLeft size={10} /> : <ArrowRight size={10} />}
+                                    1
+                                  </button>
+                                  <button className="btn-graph-action transfer" onClick={() => moveAmmo(v.id, section, isInventory ? 'stash' : 'inventory', v.boxSize)}>
+                                    {isInventory ? <ArrowLeft size={10} /> : <ArrowRight size={10} />}
+                                    {v.boxSize}
+                                  </button>
+                                </div>
+                                <button className="btn-graph-action" onClick={() => setEditingThreshold(v.id)}>
+                                  <Settings size={10} />
+                                  THRESHOLD
+                                </button>
+                              </div>
                            )}
                         </div>
                       )}
