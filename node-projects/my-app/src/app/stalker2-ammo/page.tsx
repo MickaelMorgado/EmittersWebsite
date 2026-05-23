@@ -1946,7 +1946,7 @@ if (excess > 0) {
                           <span className={`graph-item-qty ${isWarning ? 'warning' : ''}`}>
                             {count} <span className="qty-divider">/</span> <span className="qty-thresh">{threshold}</span>
                           </span>
-                          {hasSurplus && (
+                          {sellableAmount > 0 && (
                             <span className="graph-item-sellable">
                               Sellable: {sellableAmount} ({sectionMultiplier}x)
                             </span>
@@ -2687,7 +2687,7 @@ if (excess > 0) {
                                            const isRecommended = possibleIds.includes(v.id);
                                            const isFiltered = filter ? filter.includes(v.id) : isRecommended;
                                           return (
-                                               <div key={v.id} className={`modal-ammo-row ${isFiltered ? 'is-active' : ''}`} onClick={() => updateWeaponAmmoFilter(hw.instanceId, v.id)}>
+                                               <div key={v.id} className={`modal-ammo-row ${isFiltered ? 'is-active' : ''} ${(v.id === '762x54_7n1' || v.type === 'Sniper' || v.type === 'Match') ? 'type-purple' : (v.type === 'AP' || v.id === '9x19_p' || v.id === '9x39_pa') ? 'type-green' : (v.type === 'Expansive') ? 'type-yellow' : ''}`} onClick={() => updateWeaponAmmoFilter(hw.instanceId, v.id)}>
 <div className="modal-ammo-img-container">
                                                         {v.imageUrl && <Image src={v.imageUrl} alt={v.name} className="modal-ammo-img" width={50} height={35} />}
                                                     </div>

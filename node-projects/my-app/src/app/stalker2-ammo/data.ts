@@ -213,7 +213,7 @@ export const STALKER_AMMO_DATA: AmmoCaliber[] = [
         degradation: 6,
         description: 'Tungsten core armor-piercing.',
         imageUrl: `${BASE_URL}stalker-2-556x45mm-m995.png`,
-        compatibleWeapons: ['TRs 301', 'SGI-5k', 'GP 37'],
+        compatibleWeapons: ['TRs 301', 'SGI-5k', 'GP 37', 'KHAROD'],
         boxSize: 30
       },
       {
@@ -226,7 +226,7 @@ export const STALKER_AMMO_DATA: AmmoCaliber[] = [
         degradation: 3,
         description: 'Precision match-grade round.',
         imageUrl: `${BASE_URL}stalker-2-556x45mm-mk-262.png`,
-        compatibleWeapons: ['TRs 301', 'SGI-5k', 'GP 37'],
+        compatibleWeapons: ['TRs 301', 'SGI-5k', 'GP 37', 'KHAROD'],
         boxSize: 30
       }
     ]
@@ -245,7 +245,7 @@ export const STALKER_AMMO_DATA: AmmoCaliber[] = [
         degradation: 2,
         description: 'Standard AK-47 round.',
         imageUrl: `${BASE_URL}stalker-2-762x39mm-ps.png`,
-        compatibleWeapons: ['KHAROD', 'AKM-74', 'SKS', 'Glutton', 'AKM'],
+        compatibleWeapons: ['AKM-74', 'SKS', 'Glutton', 'AKM'],
         boxSize: 30
       },
       {
@@ -270,7 +270,7 @@ export const STALKER_AMMO_DATA: AmmoCaliber[] = [
         degradation: 4,
         description: 'Specialized hunting round.',
         imageUrl: `${BASE_URL}stalker-2-762x39mm-lan.png`,
-        compatibleWeapons: ['KHAROD', 'AKM-74', 'SKS', 'ASh-12'],
+        compatibleWeapons: ['AKM-74', 'SKS', 'ASh-12'],
         boxSize: 30
       }
     ]
@@ -463,43 +463,6 @@ export const STALKER_AMMO_DATA: AmmoCaliber[] = [
         imageUrl: `${BASE_URL}stalker-2-12x76mm-expanding-dart.png`,
         compatibleWeapons: ['D-10', 'Sawed-off', 'Chaser-13', 'SPSA-14', 'SledgeHammer', 'TOZ-34', 'Boomstick', 'M860 Cracker', 'M860 Monolith', 'Margach D-12MT', 'Predator', 'Ram-2', 'Saiga D-12', 'Texan', 'Drowned'],
         boxSize: 10
-      }
-    ]
-  },
-  {
-    id: '338_lapua',
-    name: '.338 Lapua',
-    variants: [
-      {
-        id: '338_lapua_m',
-        name: '.338 Lapua Magnum',
-        type: 'Sniper',
-        weight: 0.055,
-        damage: 10,
-        penetration: 10,
-        degradation: 8,
-        description: 'High-precision long-range projectile.',
-        imageUrl: `${BASE_URL}stalker-2-338-lapua-magnum.png`,
-        compatibleWeapons: ['M701'],
-        boxSize: 5
-      }
-    ]
-  },
-  {
-    id: '762x25',
-    name: '7.62x25mm',
-    variants: [
-      {
-        id: '762x25_p',
-        name: '7.62x25mm P',
-        type: 'Regular',
-        weight: 0.010,
-        damage: 4,
-        penetration: 3,
-        degradation: 1,
-        description: 'Standard Tokarev service round.',
-        imageUrl: `${BASE_URL}stalker-2-762x25mm-p.png`,
-        boxSize: 20
       }
     ]
   },
