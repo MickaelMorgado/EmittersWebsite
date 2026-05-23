@@ -142,7 +142,7 @@ export const STALKER_AMMO_DATA: AmmoCaliber[] = [
         degradation: 2,
         description: 'Standard 5.45mm service round.',
         imageUrl: `${BASE_URL}stalker-2-545x39mm-ps.png`,
-        compatibleWeapons: ['AK-74', 'AKS-74U', 'Obokan'],
+        compatibleWeapons: ['AK-74', 'AKS-74U', 'Obokan', 'AKM-74S'],
         boxSize: 30
       },
       {
@@ -168,7 +168,7 @@ export const STALKER_AMMO_DATA: AmmoCaliber[] = [
         degradation: 5,
         description: 'Increased penetration variant.',
         imageUrl: `${BASE_URL}stalker-2-545x39mm-pp.png`,
-        compatibleWeapons: ['AK-74', 'AKS-74U', 'Obokan'],
+        compatibleWeapons: ['AK-74', 'AKS-74U', 'Obokan', 'AKM-74S'],
         boxSize: 30
       }
     ]

@@ -544,6 +544,12 @@
   text-shadow: 0 2px 4px rgba(0, 0, 0, 1);
 }
 
+.ammo-not-needed-icon {
+  margin-left: 4px;
+  color: #ef4444;
+  vertical-align: middle;
+}
+
 .ammo-slot-tooltip {
   position: absolute;
   top: -2px;

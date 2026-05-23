@@ -1,5 +1,5 @@
 'use client';
-import { AlertTriangle, ArrowLeft, ArrowRight, BarChart3, Camera, Check, ChevronDown, Eye, ImagePlus, LayoutGrid, Loader2, Minus, Plus, Settings, Tally1, Tally3, Trash2, Volume2, X } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, ArrowRight, BarChart3, Camera, Check, ChevronDown, CircleOff, Eye, ImagePlus, LayoutGrid, Loader2, Minus, Plus, Settings, Tally1, Tally3, Trash2, Volume2, X } from 'lucide-react';
 import { VersionBadge } from "@/components/VersionBadge";
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
@@ -1678,6 +1678,11 @@ if (excess > 0) {
       if (hw.ammoFilter) return hw.ammoFilter.includes(variant.id);
       return variant.compatibleWeapons?.some(cw => cw.replace(' (Mod)', '') === hw.name);
     });
+    
+    const isNeededByAnyWeapon = carriedWeapons.length > 0 && carriedWeapons.some(hw => {
+      if (hw.ammoFilter) return hw.ammoFilter.includes(variant.id);
+      return variant.compatibleWeapons?.some(cw => cw.replace(' (Mod)', '') === hw.name);
+    });
 
     const typeClass = (variant.id === '762x54_7n1' || variant.type === 'Sniper' || variant.type === 'Match') ? 'type-purple' : 
                      (variant.type === 'AP' || variant.id === '9x19_p' || variant.id === '9x39_pa') ? 'type-green' : 
@@ -1700,7 +1705,12 @@ if (excess > 0) {
         {variant.imageUrl && (
           <Image src={variant.imageUrl} alt={variant.name} className="ammo-slot-img" width={60} height={40} />
         )}
-        <div className="ammo-name-label">{variant.name}</div>
+        <div className="ammo-name-label">
+          {variant.name}
+          {isInventory && carriedWeapons.length > 0 && !isNeededByAnyWeapon && (
+            <span title="Not needed by any equipped weapon"><CircleOff size={12} className="ammo-not-needed-icon" /></span>
+          )}
+        </div>
         <div 
           className="ammo-qty-badge" 
           style={{ 
