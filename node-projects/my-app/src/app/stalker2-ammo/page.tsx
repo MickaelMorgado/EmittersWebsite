@@ -4,6 +4,7 @@ import { VersionBadge } from "@/components/VersionBadge";
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import { AmmoVariant, STALKER_AMMO_DATA } from './data';
+import { chatAI } from '@/lib/ai';
 import './styles.css';
 
 interface AmmoState {
@@ -425,45 +426,59 @@ const [isProcessing, setIsProcessing] = useState(false);
   }, []);
 
   const analyzeScreenshot = async (imageBase64: string): Promise<AIDetectionResult> => {
-    if (!openaiKey) throw new Error('OpenAI API key not configured');
+    if (!openaiKey) throw new Error('OpenAI API key not configured. Please add your key in Settings.');
     
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${openaiKey}`
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o',
-        messages: [{
-          role: 'user',
-          content: [
-            { type: 'text', text: AI_DETECTION_PROMPT },
-            { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${imageBase64}` }}
-          ]
-        }],
-        max_tokens: 1500
-      })
-    });
+    let lastError = '';
+    
+    const tryOpenAI = async (): Promise<string> => {
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${openaiKey}`
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o',
+          messages: [{
+            role: 'user',
+            content: [
+              { type: 'text', text: AI_DETECTION_PROMPT },
+              { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${imageBase64}` }}
+            ]
+          }],
+          max_tokens: 1500
+        })
+      });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error?.message || 'API request failed');
+      if (!response.ok) {
+        const error = await response.json();
+        lastError = error.error?.message || 'API request failed';
+        throw new Error(lastError);
+      }
+
+      const data = await response.json();
+      const content = data.choices?.[0]?.message?.content;
+      if (!content) throw new Error('No response from AI');
+      return content;
+    };
+
+    try {
+      const content = await tryOpenAI();
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) throw new Error('Could not parse AI response');
+      return JSON.parse(jsonMatch[0]);
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      
+      if (errorMsg.includes('quota') || errorMsg.includes('insufficient_quota') || errorMsg.includes('exceeded')) {
+        throw new Error('OpenAI quota exceeded. Screenshot analysis requires a paid OpenAI plan. Upgrade at platform.openai.com or use text chat with Kuznetsov.');
+      }
+      
+      throw new Error(errorMsg);
     }
-
-    const data = await response.json();
-    const content = data.choices?.[0]?.message?.content;
-    if (!content) throw new Error('No response from AI');
-
-    const jsonMatch = content.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) throw new Error('Could not parse AI response');
-
-return JSON.parse(jsonMatch[0]);
   };
 
   const sendKuznetsovMessage = async (userMessage: string): Promise<string> => {
-    if (!openaiKey) throw new Error('OpenAI API key not configured');
-
     const chatHistory = chatMessages
       .filter(m => m.type === 'user-text' || m.type === 'ai-text')
       .slice(-10)
@@ -472,38 +487,22 @@ return JSON.parse(jsonMatch[0]);
         content: m.content
       })) as Array<{ role: 'user' | 'assistant'; content: string }>;
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${openaiKey}`
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o',
-        messages: [
-          { role: 'system', content: KUZNETSOV_SYSTEM_PROMPT },
-          ...chatHistory,
-          { role: 'user', content: userMessage }
-        ],
-        max_tokens: 500
-      })
-    });
+    const fullPrompt = `${KUZNETSOV_SYSTEM_PROMPT}\n\nConversation:\n${chatHistory.map(m => `${m.role}: ${m.content}`).join('\n')}\n\nUser: ${userMessage}\n\nKuznetsov:`;
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error?.message || 'API request failed');
+    const result = await chatAI(fullPrompt, true);
+    
+    if (!result.content && result.error) {
+      if (result.provider === 'ollama') {
+        throw new Error(`Local AI unavailable. Make sure Ollama is running (${result.error})`);
+      }
+      throw new Error(result.error);
     }
-
-    const data = await response.json();
-    return data.choices?.[0]?.message?.content || 'No response from Kuznetsov.';
+    
+    return result.content || 'No response from Kuznetsov.';
   };
 
   const handleSendMessage = async () => {
     if (!aiChatInput.trim() || isChatLoading) return;
-    if (!openaiKey) {
-      alert('OpenAI API key not configured. Please set it in the Settings.');
-      return;
-    }
 
     const userText = aiChatInput.trim();
     setAiChatInput('');
@@ -899,8 +898,8 @@ return JSON.parse(jsonMatch[0]);
     
     const totals = caliber.variants.reduce((acc, v) => {
       const state = data[v.id] || { inventory: 0, stash: 0 };
-      acc.inventory += state.inventory;
-      acc.stash += state.stash;
+      acc.inventory += Number(state.inventory) || 0;
+      acc.stash += Number(state.stash) || 0;
       return acc;
     }, { inventory: 0, stash: 0 });
 
@@ -1155,30 +1154,34 @@ return JSON.parse(jsonMatch[0]);
           const surplusTrigger = state.inventoryThreshold * appSettings.surplusMultiplierInventory;
           const excess = state.inventory - surplusTrigger;
 
-          if (!mainMsg) {
-            mainMsg = {
-               type: 'info',
-               text: `SURPLUS DETECTED: ${v.name} inventory is ${appSettings.surplusMultiplierInventory}x above tactical baseline (Sellable: ${excess}).`
-            };
-            subMsgs.push(`ADVICE: Secure surplus in Safe House or liquidate for Zone credits.`);
-          } else {
-            subMsgs.push(`NOTE: Massive surplus detected (${excess} units). Manage weight accordingly.`);
+if (excess > 0) {
+            if (!mainMsg) {
+              mainMsg = {
+                 type: 'info',
+                 text: `SURPLUS DETECTED: ${v.name} inventory is ${appSettings.surplusMultiplierInventory}x above tactical baseline (Sellable: ${excess}).`
+               };
+               subMsgs.push(`ADVICE: Secure surplus in Safe House or liquidate for Zone credits.`);
+            } else {
+              subMsgs.push(`NOTE: Massive surplus detected (${excess} units). Manage weight accordingly.`);
+            }
           }
-        }
+         }
 
-        // 1.6 Surplus Check - STASH/LOOT (Ammo-level: Triggers when stash exceeds threshold × multiplier)
+         // 1.6 Surplus Check - STASH/LOOT (Ammo-level: Triggers when stash exceeds threshold × multiplier)
         if (state.stashThreshold > 0 && state.stash >= state.stashThreshold * appSettings.surplusMultiplierLoot) {
           const surplusTrigger = state.stashThreshold * appSettings.surplusMultiplierLoot;
           const excess = state.stash - surplusTrigger;
 
-          if (!mainMsg) {
-            mainMsg = {
-               type: 'info',
-               text: `SURPLUS DETECTED: ${v.name} stash is ${appSettings.surplusMultiplierLoot}x above tactical baseline (Sellable: ${excess}).`
-            };
-            subMsgs.push(`ADVICE: Secure surplus in Safe House or liquidate for Zone credits.`);
-          } else {
-            subMsgs.push(`NOTE: Stash surplus detected (${excess} units). Consider liquidating excess.`);
+          if (excess > 0) {
+            if (!mainMsg) {
+              mainMsg = {
+                 type: 'info',
+                 text: `SURPLUS DETECTED: ${v.name} stash is ${appSettings.surplusMultiplierLoot}x above tactical baseline (Sellable: ${excess}).`
+               };
+               subMsgs.push(`ADVICE: Secure surplus in Safe House or liquidate for Zone credits.`);
+            } else {
+              subMsgs.push(`NOTE: Stash surplus detected (${excess} units). Consider liquidating excess.`);
+            }
           }
         }
 
@@ -1677,7 +1680,7 @@ return JSON.parse(jsonMatch[0]);
     });
 
     const typeClass = (variant.id === '762x54_7n1' || variant.type === 'Sniper' || variant.type === 'Match') ? 'type-purple' : 
-                     (variant.type === 'AP' || variant.id === '9x19_p') ? 'type-green' : 
+                     (variant.type === 'AP' || variant.id === '9x19_p' || variant.id === '9x39_pa') ? 'type-green' : 
                      (variant.type === 'Expansive') ? 'type-yellow' : '';
     
     return (
@@ -1908,7 +1911,7 @@ return JSON.parse(jsonMatch[0]);
 
                   // Type coloring
                   const typeClass = (v.id === '762x54_7n1' || v.type === 'Sniper' || v.type === 'Match') ? 'type-purple' :
-                                   (v.type === 'AP' || v.id === '9x19_p') ? 'type-green' :
+                                   (v.type === 'AP' || v.id === '9x19_p' || v.id === '9x39_pa') ? 'type-green' :
                                    (v.type === 'Expansive') ? 'type-yellow' : '';
 
                   return (
@@ -2524,7 +2527,7 @@ return JSON.parse(jsonMatch[0]);
                   <div key={caliber.id} className="modal-section">
                     <div className="modal-caliber-label">{caliber.name}</div>
                     {filteredVariants.map(v => (
-                      <div key={v.id} className="modal-ammo-row">
+                      <div key={v.id} className={`modal-ammo-row ${(v.id === '762x54_7n1' || v.type === 'Sniper' || v.type === 'Match') ? 'type-purple' : (v.type === 'AP' || v.id === '9x19_p' || v.id === '9x39_pa') ? 'type-green' : (v.type === 'Expansive') ? 'type-yellow' : ''}`}>
                         {v.imageUrl && (
                           <div className="modal-ammo-img-container">
                             <Image src={v.imageUrl} alt={v.name} className="modal-ammo-img" width={50} height={35} />
