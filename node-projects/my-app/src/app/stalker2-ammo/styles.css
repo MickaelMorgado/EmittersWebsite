@@ -28,7 +28,7 @@
 @keyframes bar-fill {
   from {
     width: 0 !important;
-    opacity: 0.5;
+opacity: 0.3;
   }
   to {
     opacity: 1;
@@ -2373,7 +2373,7 @@ letter-spacing: 0.1em;
   border-radius: 2px;
   display: flex;
   flex-direction: column;
-  height: 180px;
+  height: 220px;
   min-height: 0;
   position: relative;
 }
@@ -2494,9 +2494,14 @@ letter-spacing: 0.1em;
   gap: 0.3rem;
   transition: all 0.2s;
   animation: modalPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  min-height: 36px;
+  min-height: 76px;
   position: relative;
   overflow: hidden;
+}
+
+.equipped-weapon-card.inactive {
+  opacity: 0.3;
+  filter: grayscale(0.7);
 }
 
 .weapon-bg-img {
@@ -2646,7 +2651,7 @@ letter-spacing: 0.1em;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 0;
   margin-left: auto;
 }
 
@@ -2664,6 +2669,15 @@ letter-spacing: 0.1em;
 .btn-calib-weapon svg {
   width: 14px;
   height: 14px;
+}
+
+.btn-calib-weapon.inactive {
+  color: #ef4444;
+  opacity: 0.6;
+}
+
+.btn-calib-weapon.inactive:hover {
+  opacity: 1;
 }
 
 .btn-calib-weapon:hover {

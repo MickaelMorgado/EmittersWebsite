@@ -1,5 +1,5 @@
 'use client';
-import { AlertTriangle, ArrowLeft, ArrowRight, BarChart3, Camera, Check, ChevronDown, CircleOff, DollarSign, Eye, ImagePlus, LayoutGrid, Loader2, Minus, Plus, Settings, ShoppingCart, Tally1, Tally3, Trash2, Volume2, X } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, ArrowRight, BarChart3, Camera, Check, ChevronDown, CircleOff, Eye, ImagePlus, LayoutGrid, Loader2, Minus, Plus, Settings, ShoppingCart, Tally1, Tally3, Trash2, Volume2, X } from 'lucide-react';
 import { VersionBadge } from "@/components/VersionBadge";
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
@@ -20,6 +20,7 @@ interface CarryingWeapon {
   ammoFilter?: string[];
   minRounds?: number;
   imageUrl?: string;
+  isActive?: boolean;
 }
 
 interface AppSettings {
@@ -47,6 +48,7 @@ const WEAPON_IMAGE_ALIASES: Record<string, string> = {
   "m701": "hunter",
   "m701 super": "hunter",
   "svdm-2 (lynx)": "lynx",
+  "margach d-12mt": "d-12",
 };
 
 const getWeaponImageUrlWithFallback = (weaponName: string) => {
@@ -169,6 +171,7 @@ const playPageSound = () => GlobalAudio.play('page', '/assets/sounds/389807__krn
 const playGunSound = () => GlobalAudio.play('gun', '/assets/sounds/530225__magnuswaker__chik-chak-1-gun-slide.wav');
 const playZipperSound = () => GlobalAudio.play('zipper', '/assets/sounds/315840__gneube__zipper.wav');
 const playShellSound = () => GlobalAudio.play('shell', '/assets/sounds/647806__penguinpro3383__bullet-shell.m4a');
+  const playToggleSound = () => GlobalAudio.play('toggle', '/assets/sounds/415494__aiwha__opening-a-small-metal-box-2.wav');
 
 const fuzzyMatch = (target: string, query: string) => {
   if (!query) return true;
@@ -766,10 +769,12 @@ const [isProcessing, setIsProcessing] = useState(false);
 
   const addWeapon = (name: string) => {
     if (!name) return;
-    const instance: CarryingWeapon = { 
-      instanceId: `hw_${Math.random().toString(36).substr(2, 9)}`, 
+const instance: CarryingWeapon = {
+      instanceId: `hw_${Math.random().toString(36).substr(2, 9)}`,
       name,
-      imageUrl: getWeaponImageUrl(name)
+      ammoFilter: WEAPON_POSSIBLE_AMMO[name] ? [] : undefined,
+      imageUrl: getWeaponImageUrl(name),
+      isActive: true
     };
     setCarriedWeapons(prev => [...prev, instance]);
     setWeaponSearch('');
@@ -799,6 +804,14 @@ const [isProcessing, setIsProcessing] = useState(false);
       return { ...w, minRounds: Math.max(0, value) };
     }));
     playShellSound();
+  };
+
+  const toggleWeaponActive = (id: string) => {
+    setCarriedWeapons(prev => prev.map(w => {
+      if (w.instanceId !== id) return w;
+      return { ...w, isActive: !w.isActive };
+    }));
+    playToggleSound();
   };
 
   const updateField = (id: string, field: keyof AmmoState, value: number) => {
@@ -1680,6 +1693,7 @@ if (excess > 0) {
     });
     
     const isNeededByAnyWeapon = carriedWeapons.length > 0 && carriedWeapons.some(hw => {
+      if (!hw.isActive) return false;
       if (hw.ammoFilter) return hw.ammoFilter.includes(variant.id);
       return variant.compatibleWeapons?.some(cw => cw.replace(' (Mod)', '') === hw.name);
     });
@@ -2383,14 +2397,14 @@ if (excess > 0) {
                 const isActiveFilter = weaponFilterId === hw.instanceId;
                 
                 const totalInvRoundsForHw = allVariants.reduce((sum, v) => {
-                  return sum + (checkCompatibility(v.id, hw.instanceId) ? (data[v.id]?.inventory || 0) : 0);
+                  return sum + (hw.isActive && checkCompatibility(v.id, hw.instanceId) ? (data[v.id]?.inventory || 0) : 0);
                 }, 0);
-                const isUnderThreshold = hw.minRounds && totalInvRoundsForHw < hw.minRounds;
+                const isUnderThreshold = hw.isActive && hw.minRounds && totalInvRoundsForHw < hw.minRounds;
 
                 return (
                   <div
                     key={hw.instanceId}
-                    className={`equipped-weapon-card ${confirmingDeleteWeapon === hw.instanceId ? 'is-confirming' : ''} ${isAmmoCompatible ? 'is-ammo-compatible' : ''} ${isActiveFilter ? 'is-active-filter' : ''}`}
+                    className={`equipped-weapon-card ${confirmingDeleteWeapon === hw.instanceId ? 'is-confirming' : ''} ${isAmmoCompatible ? 'is-ammo-compatible' : ''} ${isActiveFilter ? 'is-active-filter' : ''} ${!hw.isActive ? 'inactive' : ''}`}
                     onMouseEnter={() => {
                       setHoveredWeaponName(hw.instanceId);
                       playHoverSound();
@@ -2438,6 +2452,17 @@ if (excess > 0) {
                       </div>
                     </div>
                     <div className="weapon-actions">
+                      <button 
+                        className={`btn-calib-weapon ${!hw.isActive ? 'inactive' : ''}`}
+                        onMouseEnter={playHoverSound}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleWeaponActive(hw.instanceId);
+                        }}
+                        title={hw.isActive ? 'Active (Equipped)' : 'Inactive (In Loot)'}
+                      >
+                        {hw.isActive ? <Eye size={10} /> : <CircleOff size={10} />}
+                      </button>
                       <button 
                         className="btn-calib-weapon"
                         onMouseEnter={playHoverSound}
