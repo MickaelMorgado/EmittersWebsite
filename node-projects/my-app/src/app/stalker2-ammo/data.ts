@@ -372,7 +372,7 @@ export const STALKER_AMMO_DATA: AmmoCaliber[] = [
       {
         id: '9x39_pa',
         name: '9x39mm PA',
-        type: 'AP',
+        type: 'Regular',
         weight: 0.023,
         damage: 8,
         penetration: 7,
@@ -407,9 +407,9 @@ export const STALKER_AMMO_DATA: AmmoCaliber[] = [
         boxSize: 20
       },
       {
-        id: '9x39_sp5',
+id: '9x39_sp5',
         name: '9x39mm SP-5',
-        type: 'Regular',
+        type: 'Sniper',
         weight: 0.022,
         damage: 7,
         penetration: 6,

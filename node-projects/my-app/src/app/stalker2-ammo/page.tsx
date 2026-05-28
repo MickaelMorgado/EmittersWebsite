@@ -1685,7 +1685,7 @@ if (excess > 0) {
     });
 
     const typeClass = (variant.id === '762x54_7n1' || variant.type === 'Sniper' || variant.type === 'Match') ? 'type-purple' : 
-                     (variant.type === 'AP' || variant.id === '9x19_p' || variant.id === '9x39_pa') ? 'type-green' : 
+                     (variant.type === 'AP' || variant.id === '9x19_p') ? 'type-green' : 
                      (variant.type === 'Expansive') ? 'type-yellow' : '';
     
     return (
