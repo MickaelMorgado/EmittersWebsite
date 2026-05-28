@@ -134,7 +134,7 @@ const GlobalAudio = {
     if (typeof window === 'undefined') return;
     const audio = new Audio(path);
     audio.volume = key === 'ammo' ? 0.4 : (key === 'hover' ? 0.55 : (key === 'shell' ? 0.25 : 0.5));
-    audio.playbackRate = 1 + (Math.random() - 0.5);
+    if (key === 'ammo') audio.playbackRate = 1 + (Math.random() - 0.5);
     audio.play()
       .then(() => {
         if (this.isBlocked) {
@@ -1131,6 +1131,7 @@ const instance: CarryingWeapon = {
 
         // SKIP LOGISTICS SCAN FOR CALIBER IF NO HARDWARE CARRIED OR COMPATIBLE
         const isAmmoCompatibleWithCarried = carriedWeapons.some(hw => {
+          if (!hw.isActive) return false;
           if (hw.ammoFilter) return hw.ammoFilter.includes(v.id);
           return v.compatibleWeapons?.some(cw => cw.replace(' (Mod)', '') === hw.name);
         });
@@ -1151,6 +1152,7 @@ const instance: CarryingWeapon = {
             };
           } else {
             const carriedCompatible = carriedWeapons.filter(hw => {
+              if (!hw.isActive) return false;
               if (hw.ammoFilter) return hw.ammoFilter.includes(v.id);
               return v.compatibleWeapons?.some(cw => cw.replace(' (Mod)', '') === hw.name);
             });
@@ -1243,6 +1245,8 @@ if (excess > 0) {
     // 5. Hardware/Ammo Mismatch (Special Alerts)
     const hardwareWarnings: { type: 'critical' | 'warning' | 'info', text: string, subMessages: string[], instanceId?: string }[] = [];
     carriedWeapons.forEach(hw => {
+      if (!hw.isActive) return;
+      
       const compatAmmo = STALKER_AMMO_DATA.flatMap(c => c.variants).filter(v => {
         if (hw.ammoFilter) return hw.ammoFilter.includes(v.id);
         return v.compatibleWeapons?.some(cw => cw.replace(' (Mod)', '') === hw.name);
