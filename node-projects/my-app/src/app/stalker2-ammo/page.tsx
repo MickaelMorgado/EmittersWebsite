@@ -129,24 +129,23 @@ const GlobalAudio = {
   },
   
   play(key: string, path: string) {
-    const audio = this.get(key, path);
-    if (audio) {
-      audio.currentTime = 0;
-      audio.play()
-        .then(() => {
-          if (this.isBlocked) {
-            this.isBlocked = false;
-            if (this.onBlockChange) this.onBlockChange(false);
-          }
-        })
-        .catch(e => {
-          console.warn(`[Audio] Blocked: ${key}.`, e);
-          if (!this.isBlocked) {
-            this.isBlocked = true;
-            if (this.onBlockChange) this.onBlockChange(true);
-          }
-        });
-    }
+    if (typeof window === 'undefined') return;
+    const audio = new Audio(path);
+    audio.volume = key === 'ammo' ? 0.4 : (key === 'hover' ? 0.55 : (key === 'shell' ? 0.25 : 0.5));
+    audio.play()
+      .then(() => {
+        if (this.isBlocked) {
+          this.isBlocked = false;
+          if (this.onBlockChange) this.onBlockChange(false);
+        }
+      })
+      .catch(e => {
+        console.warn(`[Audio] Blocked: ${key}.`, e);
+        if (!this.isBlocked) {
+          this.isBlocked = true;
+          if (this.onBlockChange) this.onBlockChange(true);
+        }
+      });
   },
 
   unlockAll() {
