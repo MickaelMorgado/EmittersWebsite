@@ -1,5 +1,5 @@
 'use client';
-import { AlertTriangle, ArrowLeft, ArrowRight, BarChart3, Camera, Check, ChevronDown, CircleOff, Eye, ImagePlus, LayoutGrid, Loader2, Minus, Plus, Settings, Tally1, Tally3, Trash2, Volume2, X } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, ArrowRight, BarChart3, Camera, Check, ChevronDown, CircleOff, DollarSign, Eye, ImagePlus, LayoutGrid, Loader2, Minus, Plus, Settings, ShoppingCart, Tally1, Tally3, Trash2, Volume2, X } from 'lucide-react';
 import { VersionBadge } from "@/components/VersionBadge";
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
@@ -2011,6 +2011,12 @@ if (excess > 0) {
                                     {v.boxSize}
                                   </button>
                                 </div>
+                                {hasSurplus && (
+                                  <button className="btn-graph-action sell" onClick={() => updateField(v.id, section, sellableAmount > 0 ? threshold * sectionMultiplier : count)} title={`Sell ${sellableAmount} units`}>
+                                    <ShoppingCart size={10} />
+                                    {sellableAmount}
+                                  </button>
+                                )}
                                 <button className="btn-graph-action" onClick={() => setEditingThreshold(v.id)}>
                                   <Settings size={10} />
                                   THRESHOLD

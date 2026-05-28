@@ -1817,6 +1817,18 @@ footer {
   border-color: var(--accent-blue);
 }
 
+.btn-graph-action.sell {
+  background: #166534;
+  border-color: #22c55e;
+  color: #bbf7d0;
+}
+
+.btn-graph-action.sell:hover {
+  background: #22c55e;
+  color: #fff;
+  border-color: #4ade80;
+}
+
 .graph-inline-edit {
   display: flex;
   align-items: center;
