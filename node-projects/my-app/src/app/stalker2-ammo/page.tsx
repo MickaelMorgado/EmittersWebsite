@@ -132,6 +132,7 @@ const GlobalAudio = {
     if (typeof window === 'undefined') return;
     const audio = new Audio(path);
     audio.volume = key === 'ammo' ? 0.4 : (key === 'hover' ? 0.55 : (key === 'shell' ? 0.25 : 0.5));
+    audio.playbackRate = 1 + (Math.random() - 0.5);
     audio.play()
       .then(() => {
         if (this.isBlocked) {
