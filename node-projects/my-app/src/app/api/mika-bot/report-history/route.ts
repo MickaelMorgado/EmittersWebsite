@@ -221,7 +221,7 @@ Focus on:
     }
 
     // Merge with previous notes
-    let newItems = previousNotes ? [...previousNotes.items] : [];
+    const newItems = previousNotes ? [...previousNotes.items] : [];
 
     for (const update of updates) {
       if (update.action === 'add') {
@@ -367,7 +367,7 @@ Focus on:
       console.error('[500-trade-notes] Failed to parse AI response');
     }
 
-    let newItems = previousNotes ? [...previousNotes.items] : [];
+    const newItems = previousNotes ? [...previousNotes.items] : [];
 
     for (const update of updates) {
       if (update.action === 'add') {

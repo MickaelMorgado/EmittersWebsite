@@ -495,9 +495,6 @@ const [isProcessing, setIsProcessing] = useState(false);
     const result = await chatAI(fullPrompt, true);
     
     if (!result.content && result.error) {
-      if (result.provider === 'ollama') {
-        throw new Error(`Local AI unavailable. Make sure Ollama is running (${result.error})`);
-      }
       throw new Error(result.error);
     }
     

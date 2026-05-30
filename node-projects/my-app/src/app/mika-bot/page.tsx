@@ -8,7 +8,7 @@ import { AreaChart, Area, BarChart, Bar, Cell, XAxis, YAxis, Tooltip, Responsive
 function AnimatedNumber({ value, className }: { value: number; className: string }) {
   const [displayValue, setDisplayValue] = useState(value);
   const [isUpdating, setIsUpdating] = useState(false);
-  const animationRef = useRef<NodeJS.Timeout>();
+  const animationRef = useRef<NodeJS.Timeout>(undefined);
 
   useEffect(() => {
     if (displayValue !== value) {
@@ -986,14 +986,14 @@ export default function TradingBotDashboard() {
                 )}
 
                 {/* 50-Trade Notes — 1 col */}
-                {reportHistory && reportHistory.notes50?.items?.length > 0 && (
+                {reportHistory && (reportHistory.notes50?.items?.length ?? 0) > 0 && (
                   <div className="lg:col-span-1 bg-white/[0.02] border border-white/[0.05] flex flex-col min-h-0 rounded">
                     <div className="flex items-center gap-2 px-3 py-2 border-b border-white/[0.05] shrink-0">
                       <Target className="w-3 h-3 text-cyan-400/40" />
                       <h3 className="text-[9px] font-semibold text-white/50 tracking-wide">50T</h3>
                     </div>
                     <div className="overflow-y-auto flex-1 min-h-0 p-3 space-y-2">
-                      {reportHistory.notes50.items
+                      {reportHistory.notes50?.items
                         .filter(item => item.status === 'active')
                         .slice(0, 3)
                         .map((item) => (
@@ -1006,14 +1006,14 @@ export default function TradingBotDashboard() {
                 )}
 
                 {/* 500-Trade Notes — 1 col */}
-                {reportHistory && reportHistory.notes500?.items?.length > 0 && (
+                {reportHistory && (reportHistory.notes500?.items?.length ?? 0) > 0 && (
                   <div className="lg:col-span-1 bg-white/[0.02] border border-white/[0.05] flex flex-col min-h-0 rounded">
                     <div className="flex items-center gap-2 px-3 py-2 border-b border-white/[0.05] shrink-0">
                       <TrendingUp className="w-3 h-3 text-amber-400/40" />
                       <h3 className="text-[9px] font-semibold text-white/50 tracking-wide">500T</h3>
                     </div>
                     <div className="overflow-y-auto flex-1 min-h-0 p-3 space-y-2">
-                      {reportHistory.notes500.items
+                      {reportHistory.notes500?.items
                         .filter(item => item.status === 'active')
                         .slice(0, 3)
                         .map((item) => (

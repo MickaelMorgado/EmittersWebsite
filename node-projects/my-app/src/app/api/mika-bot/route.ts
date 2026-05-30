@@ -89,7 +89,7 @@ export async function GET() {
       try {
         const positionsContent = fs.readFileSync(POSITIONS_PATH, 'utf-8');
         const positionsData = JSON.parse(positionsContent);
-        openPositions = (positionsData.openPositions || []).map((pos, idx) => ({
+        openPositions = (positionsData.openPositions || []).map((pos: any, idx: number) => ({
           id: String(pos.ticket || idx),
           type: pos.type,
           price: pos.currentPrice || pos.entryPrice || pos.price || 0,
@@ -111,11 +111,11 @@ export async function GET() {
     const history: Trade[] = (data.history || []).map((trade, idx) => ({
       id: String(trade.ticket || idx),
       type: trade.type,
-      price: trade.exitPrice || trade.closePrice || 0,
-      openPrice: trade.entryPrice || trade.openPrice || 0,
+      price: trade.closePrice || 0,
+      openPrice: trade.openPrice || 0,
       lot: 0.01,
       time: trade.closeTime,
-      result: trade.profit >= 0 ? 'WIN' : 'LOSS',
+      result: (trade.profit ?? 0) >= 0 ? 'WIN' : 'LOSS',
       pnl: trade.profit || 0,
       profit: trade.profit || 0,
       commission: 0,

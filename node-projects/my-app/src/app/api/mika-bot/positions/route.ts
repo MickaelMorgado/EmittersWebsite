@@ -22,7 +22,7 @@ function getPositionsData() {
       try {
         const positionsContent = fs.readFileSync(POSITIONS_PATH, 'utf-8');
         const positionsData = JSON.parse(positionsContent);
-        openPositions = (positionsData.openPositions || []).map((pos, idx) => ({
+        openPositions = (positionsData.openPositions || []).map((pos: any, idx: number) => ({
           id: String(pos.ticket || idx),
           type: pos.type,
           price: pos.currentPrice || pos.entryPrice || pos.price || 0,
