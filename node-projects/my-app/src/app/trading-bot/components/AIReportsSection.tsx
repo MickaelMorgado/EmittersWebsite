@@ -663,43 +663,60 @@ export default function AIReportsSection({
              <div className="overflow-y-auto flex-1 min-h-0 px-3 py-2 flex flex-col gap-2">
                {!report ? (
                  <>
-                   <div className="space-y-1">
-                     <div className="flex items-center justify-between">
-                       <span className="text-[7px] text-white/40 uppercase">50-Trade</span>
-                       <span className="text-[7px] text-white/30 font-mono">{Math.min(history.length, 50)}/50</span>
+                   <div className="space-y-1.5">
+                     <div className="text-[8px] font-bold text-white/60 uppercase">Report Milestones</div>
+
+                     {/* 50-Trade Milestone */}
+                     <div className="bg-white/[0.02] border border-cyan-500/[0.1] p-2 rounded">
+                       <div className="flex items-center justify-between mb-1">
+                         <span className="text-[7px] text-cyan-400/80 uppercase font-semibold">50-Trade</span>
+                         <span className="text-[7px] text-white/30 font-mono">{history.length}/50</span>
+                       </div>
+                       <div className="w-full h-1 bg-white/[0.05] rounded overflow-hidden border border-white/[0.08]">
+                         <div
+                           className="h-full bg-gradient-to-r from-cyan-500 to-cyan-400 transition-all duration-300"
+                           style={{ width: `${Math.min((history.length / 50) * 100, 100)}%` }}
+                         />
+                       </div>
+                       {history.length < 50 && (
+                         <div className="text-[7px] text-white/40 mt-1">
+                           {50 - history.length} trades until report
+                         </div>
+                       )}
+                       {history.length >= 50 && (
+                         <div className="text-[7px] text-cyan-400 mt-1">
+                           ✓ History Agent auto-generating...
+                         </div>
+                       )}
                      </div>
-                     <div className="w-full h-1.5 bg-white/[0.05] rounded overflow-hidden border border-white/[0.08]">
-                       <div
-                         className="h-full bg-gradient-to-r from-cyan-500 to-cyan-400 transition-all duration-300"
-                         style={{ width: `${Math.min((history.length / 50) * 100, 100)}%` }}
-                       />
+
+                     {/* 500-Trade Milestone */}
+                     <div className="bg-white/[0.02] border border-amber-500/[0.1] p-2 rounded">
+                       <div className="flex items-center justify-between mb-1">
+                         <span className="text-[7px] text-amber-400/80 uppercase font-semibold">500-Trade</span>
+                         <span className="text-[7px] text-white/30 font-mono">{history.length}/500</span>
+                       </div>
+                       <div className="w-full h-1 bg-white/[0.05] rounded overflow-hidden border border-white/[0.08]">
+                         <div
+                           className="h-full bg-gradient-to-r from-amber-500 to-amber-400 transition-all duration-300"
+                           style={{ width: `${Math.min((history.length / 500) * 100, 100)}%` }}
+                         />
+                       </div>
+                       {history.length < 500 && (
+                         <div className="text-[7px] text-white/40 mt-1">
+                           {500 - history.length} trades until report
+                         </div>
+                       )}
+                       {history.length >= 500 && (
+                         <div className="text-[7px] text-amber-400 mt-1">
+                           ✓ History Agent auto-generating...
+                         </div>
+                       )}
                      </div>
-                     <button
-                       onClick={() => generateReport(50)}
-                       disabled={reportLoading || history.length < 50}
-                       className="w-full px-3 py-1.5 bg-white/[0.05] hover:bg-white/[0.08] disabled:opacity-40 disabled:cursor-not-allowed border border-white/[0.08] rounded text-[8px] font-semibold text-white/70 transition-colors"
-                     >
-                       {reportLoading ? '⏳ Analyzing...' : history.length >= 50 ? 'Generate Report' : 'Need 50 Trades'}
-                     </button>
                    </div>
-                   <div className="space-y-1">
-                     <div className="flex items-center justify-between">
-                       <span className="text-[7px] text-white/40 uppercase">500-Trade</span>
-                       <span className="text-[7px] text-white/30 font-mono">{Math.min(history.length, 500)}/500</span>
-                     </div>
-                     <div className="w-full h-1.5 bg-white/[0.05] rounded overflow-hidden border border-white/[0.08]">
-                       <div
-                         className="h-full bg-gradient-to-r from-amber-500 to-amber-400 transition-all duration-300"
-                         style={{ width: `${Math.min((history.length / 500) * 100, 100)}%` }}
-                       />
-                     </div>
-                     <button
-                       onClick={() => generateReport(500)}
-                       disabled={reportLoading || history.length < 500}
-                       className="w-full px-3 py-1.5 bg-white/[0.05] hover:bg-white/[0.08] disabled:opacity-40 disabled:cursor-not-allowed border border-white/[0.08] rounded text-[8px] font-semibold text-white/70 transition-colors"
-                     >
-                       {reportLoading ? '⏳ Analyzing...' : history.length >= 500 ? 'Generate Report' : 'Need 500 Trades'}
-                     </button>
+
+                   <div className="pt-1.5 border-t border-white/[0.05] text-[7px] text-white/40">
+                     <p>History Agent automatically generates reports at each milestone.</p>
                    </div>
                  </>
                ) : report.error ? (
