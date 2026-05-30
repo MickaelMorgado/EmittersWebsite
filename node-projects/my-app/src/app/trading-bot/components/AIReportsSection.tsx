@@ -308,6 +308,11 @@ export default function AIReportsSection({
                   border-color: rgba(16,185,129,0.25) !important;
                   box-shadow: inset 0 0 12px rgba(16,185,129,0.08) !important;
                 }
+                .agent-active-master {
+                  background: linear-gradient(to-br, rgba(99,102,241,0.12), rgba(99,102,241,0.04)) !important;
+                  border-color: rgba(99,102,241,0.25) !important;
+                  box-shadow: inset 0 0 12px rgba(99,102,241,0.08) !important;
+                }
               `}</style>
 
               {/* Risk Management Agent */}
@@ -601,6 +606,42 @@ export default function AIReportsSection({
                     }}
                   />
                 </div>
+              </div>
+
+              {/* Master Agent Orchestrator */}
+              <div className={`col-span-2 bg-gradient-to-br from-indigo-500/[0.06] to-blue-500/[0.02] border border-indigo-500/[0.1] p-2 group hover:border-indigo-500/[0.2] transition-colors rounded ${
+                activeAgent === 'master' ? 'agent-active-master' : ''
+              }`}>
+                <div className="flex items-center justify-between gap-1.5 mb-1">
+                  <div className="flex items-center gap-1">
+                    <Bot className="agent-icon w-2.5 h-2.5 text-indigo-400/60" />
+                    <span className="text-[8px] font-bold text-indigo-300/80 uppercase tracking-wider">Master</span>
+                    <span className="text-[7px] text-indigo-400/50 font-mono">{formatTimeAgo(agentLastRun.master)}</span>
+                  </div>
+                  <span className="text-[8px] font-bold text-indigo-400 font-mono">
+                    {(() => {
+                      const riskOk = reports.maxDrawdown <= stats.totalPnl * 0.5 ? 25 : 0;
+                      const trendOk = reports.longestWinStreak > 3 ? 25 : reports.longestLoseStreak > 3 ? 0 : 12;
+                      const newsOk = 25;
+                      const historyOk = stats.totalTrades > 100 ? 25 : stats.totalTrades > 50 ? 15 : 0;
+                      return riskOk + trendOk + newsOk + historyOk;
+                    })()}%
+                  </span>
+                </div>
+                <p className="text-[8px] leading-tight text-white/45">
+                  {(() => {
+                    const riskOk = reports.maxDrawdown <= stats.totalPnl * 0.5 ? 25 : 0;
+                    const trendOk = reports.longestWinStreak > 3 ? 25 : reports.longestLoseStreak > 3 ? 0 : 12;
+                    const newsOk = 25;
+                    const historyOk = stats.totalTrades > 100 ? 25 : stats.totalTrades > 50 ? 15 : 0;
+                    const total = riskOk + trendOk + newsOk + historyOk;
+                    return total >= 75
+                      ? '✓ GATE OPEN: Execute'
+                      : total >= 50
+                      ? '⚠ GATE PARTIAL: Reduced risk'
+                      : '✗ GATE CLOSED: Hold';
+                  })()}
+                </p>
               </div>
 
               {/* Risk/Reward Adjustment based on Trend */}
