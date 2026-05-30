@@ -1,6 +1,6 @@
 "use client";
 
-import { Activity, Brain, Sparkles, Target, TrendingUp, Settings, FileText } from 'lucide-react';
+import { Activity, Brain, Sparkles, Target, TrendingUp, Settings, FileText, Bot } from 'lucide-react';
 import { useState } from 'react';
 import SummarySection from './SummarySection';
 
@@ -216,9 +216,12 @@ export default function AIReportsSection({
             {/* Sub-Agent Reports */}
             <div className="grid grid-cols-2 gap-2">
               {/* Risk Management Agent */}
-              <div className="bg-gradient-to-br from-red-500/[0.06] to-rose-500/[0.02] border border-red-500/[0.1] p-2 rounded group hover:border-red-500/[0.2] transition-colors">
+              <div className="bg-gradient-to-br from-red-500/[0.06] to-rose-500/[0.02] border border-red-500/[0.1] p-2 group hover:border-red-500/[0.2] transition-colors">
                 <div className="flex items-center justify-between gap-1.5 mb-1">
-                  <span className="text-[8px] font-bold text-red-300/80 uppercase tracking-wider">Risk</span>
+                  <div className="flex items-center gap-1">
+                    <Bot className="w-2.5 h-2.5 text-red-400/60" />
+                    <span className="text-[8px] font-bold text-red-300/80 uppercase tracking-wider">Risk</span>
+                  </div>
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => {
@@ -259,16 +262,19 @@ export default function AIReportsSection({
               </div>
 
               {/* Probability & Trend Agent */}
-              <div className="bg-gradient-to-br from-cyan-500/[0.06] to-blue-500/[0.02] border border-cyan-500/[0.1] p-2 rounded group hover:border-cyan-500/[0.2] transition-colors">
+              <div className="bg-gradient-to-br from-cyan-500/[0.06] to-blue-500/[0.02] border border-cyan-500/[0.1] p-2 group hover:border-cyan-500/[0.2] transition-colors">
                 <div className="flex items-center justify-between gap-1.5 mb-1">
-                  <span className="text-[8px] font-bold text-cyan-300/80 uppercase tracking-wider">Trend</span>
+                  <div className="flex items-center gap-1">
+                    <Bot className="w-2.5 h-2.5 text-cyan-400/60" />
+                    <span className="text-[8px] font-bold text-cyan-300/80 uppercase tracking-wider">Trend</span>
+                  </div>
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => {
                         setSelectedAgent('trend');
                         setActiveTab('rules');
                       }}
-                      className="p-0.5 hover:bg-cyan-500/10 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="p-0.5 hover:bg-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity"
                       title="View rules"
                     >
                       <Settings className="w-2.5 h-2.5 text-cyan-400/60" />
@@ -278,7 +284,7 @@ export default function AIReportsSection({
                         setSelectedAgent('trend');
                         setActiveTab('reports');
                       }}
-                      className="p-0.5 hover:bg-cyan-500/10 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="p-0.5 hover:bg-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity"
                       title="View reports"
                     >
                       <FileText className="w-2.5 h-2.5 text-cyan-400/60" />
@@ -288,7 +294,7 @@ export default function AIReportsSection({
                     </span>
                   </div>
                 </div>
-                <div className="h-0.5 bg-white/[0.05] rounded overflow-hidden mb-1">
+                <div className="h-0.5 bg-white/[0.05] overflow-hidden mb-1">
                   <div
                     className="h-full bg-cyan-500"
                     style={{
@@ -308,16 +314,19 @@ export default function AIReportsSection({
               </div>
 
               {/* Economic News Agent */}
-              <div className="bg-gradient-to-br from-violet-500/[0.06] to-purple-500/[0.02] border border-violet-500/[0.1] p-2 rounded group hover:border-violet-500/[0.2] transition-colors">
+              <div className="bg-gradient-to-br from-violet-500/[0.06] to-purple-500/[0.02] border border-violet-500/[0.1] p-2 group hover:border-violet-500/[0.2] transition-colors">
                 <div className="flex items-center justify-between gap-1.5 mb-1">
-                  <span className="text-[8px] font-bold text-violet-300/80 uppercase tracking-wider">News</span>
+                  <div className="flex items-center gap-1">
+                    <Bot className="w-2.5 h-2.5 text-violet-400/60" />
+                    <span className="text-[8px] font-bold text-violet-300/80 uppercase tracking-wider">News</span>
+                  </div>
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => {
                         setSelectedAgent('news');
                         setActiveTab('rules');
                       }}
-                      className="p-0.5 hover:bg-violet-500/10 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="p-0.5 hover:bg-violet-500/10 opacity-0 group-hover:opacity-100 transition-opacity"
                       title="View rules"
                     >
                       <Settings className="w-2.5 h-2.5 text-violet-400/60" />
@@ -327,7 +336,7 @@ export default function AIReportsSection({
                         setSelectedAgent('news');
                         setActiveTab('reports');
                       }}
-                      className="p-0.5 hover:bg-violet-500/10 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="p-0.5 hover:bg-violet-500/10 opacity-0 group-hover:opacity-100 transition-opacity"
                       title="View reports"
                     >
                       <FileText className="w-2.5 h-2.5 text-violet-400/60" />
@@ -335,7 +344,7 @@ export default function AIReportsSection({
                     <span className="text-[8px] font-bold text-violet-400 font-mono">25%</span>
                   </div>
                 </div>
-                <div className="h-0.5 bg-white/[0.05] rounded overflow-hidden mb-1">
+                <div className="h-0.5 bg-white/[0.05] overflow-hidden mb-1">
                   <div className="h-full bg-violet-500" style={{ width: '100%' }} />
                 </div>
                 <p className="text-[8px] leading-tight text-white/45">
@@ -344,9 +353,12 @@ export default function AIReportsSection({
               </div>
 
               {/* History & Reports Agent */}
-              <div className="bg-gradient-to-br from-emerald-500/[0.06] to-green-500/[0.02] border border-emerald-500/[0.1] p-2 rounded group hover:border-emerald-500/[0.2] transition-colors">
+              <div className="bg-gradient-to-br from-emerald-500/[0.06] to-green-500/[0.02] border border-emerald-500/[0.1] p-2 group hover:border-emerald-500/[0.2] transition-colors">
                 <div className="flex items-center justify-between gap-1.5 mb-1">
-                  <span className="text-[8px] font-bold text-emerald-300/80 uppercase tracking-wider">History</span>
+                  <div className="flex items-center gap-1">
+                    <Bot className="w-2.5 h-2.5 text-emerald-400/60" />
+                    <span className="text-[8px] font-bold text-emerald-300/80 uppercase tracking-wider">History</span>
+                  </div>
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => {
@@ -393,7 +405,7 @@ export default function AIReportsSection({
             <div className="bg-gradient-to-br from-amber-500/[0.06] to-orange-500/[0.02] border border-amber-500/[0.08] p-3">
               <div className="flex items-center justify-between gap-2 mb-2">
                 <div className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                  <Bot className="w-3 h-3 text-amber-400/70" />
                   <span className="text-[10px] font-bold text-amber-300/80 uppercase tracking-wider">Master Recommendation</span>
                 </div>
                 <span className={`text-xs font-bold px-2 py-0.5 ${
