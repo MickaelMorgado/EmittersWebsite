@@ -282,42 +282,26 @@ export default function AIReportsSection({
             {/* Sub-Agent Reports */}
             <div className="grid grid-cols-2 gap-2">
               <style>{`
-                @keyframes shineLeft {
-                  0% {
-                    background-position: -100% 0;
-                  }
-                  100% {
-                    background-position: 100% 0;
-                  }
-                }
-                @keyframes spin {
-                  0% { transform: rotate(0deg); }
-                  100% { transform: rotate(360deg); }
-                }
                 .agent-active-risk {
-                  background: linear-gradient(90deg, rgba(239,68,68,0.06), rgba(239,68,68,0.15) 20%, rgba(239,68,68,0.06)) !important;
-                  background-size: 200% 100%;
-                  animation: shineLeft 2s ease-in-out !important;
+                  background: linear-gradient(to-br, rgba(239,68,68,0.12), rgba(239,68,68,0.04)) !important;
+                  border-color: rgba(239,68,68,0.25) !important;
+                  box-shadow: inset 0 0 12px rgba(239,68,68,0.08) !important;
                 }
-                .agent-active-risk .agent-icon { animation: spin 1.5s linear; }
                 .agent-active-trend {
-                  background: linear-gradient(90deg, rgba(34,211,238,0.06), rgba(34,211,238,0.15) 20%, rgba(34,211,238,0.06)) !important;
-                  background-size: 200% 100%;
-                  animation: shineLeft 2s ease-in-out !important;
+                  background: linear-gradient(to-br, rgba(34,211,238,0.12), rgba(34,211,238,0.04)) !important;
+                  border-color: rgba(34,211,238,0.25) !important;
+                  box-shadow: inset 0 0 12px rgba(34,211,238,0.08) !important;
                 }
-                .agent-active-trend .agent-icon { animation: spin 1.5s linear; }
                 .agent-active-news {
-                  background: linear-gradient(90deg, rgba(168,85,247,0.06), rgba(168,85,247,0.15) 20%, rgba(168,85,247,0.06)) !important;
-                  background-size: 200% 100%;
-                  animation: shineLeft 2s ease-in-out !important;
+                  background: linear-gradient(to-br, rgba(168,85,247,0.12), rgba(168,85,247,0.04)) !important;
+                  border-color: rgba(168,85,247,0.25) !important;
+                  box-shadow: inset 0 0 12px rgba(168,85,247,0.08) !important;
                 }
-                .agent-active-news .agent-icon { animation: spin 1.5s linear; }
                 .agent-active-history {
-                  background: linear-gradient(90deg, rgba(16,185,129,0.06), rgba(16,185,129,0.15) 20%, rgba(16,185,129,0.06)) !important;
-                  background-size: 200% 100%;
-                  animation: shineLeft 2s ease-in-out !important;
+                  background: linear-gradient(to-br, rgba(16,185,129,0.12), rgba(16,185,129,0.04)) !important;
+                  border-color: rgba(16,185,129,0.25) !important;
+                  box-shadow: inset 0 0 12px rgba(16,185,129,0.08) !important;
                 }
-                .agent-active-history .agent-icon { animation: spin 1.5s linear; }
               `}</style>
 
               {/* Risk Management Agent */}
