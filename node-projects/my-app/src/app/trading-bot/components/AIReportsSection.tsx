@@ -318,30 +318,58 @@ export default function AIReportsSection({
               {/* Risk/Reward Adjustment based on Trend */}
               <div className="mb-2 pt-2 border-t border-white/[0.05]">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-[8px] text-white/30 uppercase">Risk/Reward</span>
-                  <span className="text-[9px] font-mono text-white/40">
+                  <span className="text-[8px] text-white/30 uppercase">Strategy Mode</span>
+                  <span className="text-[9px] font-mono text-emerald-400/70">
                     {(() => {
                       if (reports.longestWinStreak > 3) {
-                        return `1:${(2 + reports.longestWinStreak * 0.2).toFixed(1)}`;
+                        return 'TRENDING+';
                       } else if (reports.longestLoseStreak > 3) {
-                        return `1:${Math.max(1, 2 - reports.longestLoseStreak * 0.1).toFixed(1)}`;
+                        return 'TRENDING−';
+                      } else {
+                        return 'STATIC';
+                      }
+                    })()}
+                  </span>
+                </div>
+                <p className="text-[7px] text-white/50 mb-1.5">
+                  {(() => {
+                    if (reports.longestWinStreak > 3) {
+                      return `Uptrend detected (${reports.longestWinStreak}W) → Trailing stops + Extended targets`;
+                    } else if (reports.longestLoseStreak > 3) {
+                      return `Downtrend detected (${reports.longestLoseStreak}L) → Trailing stops + Moderate targets`;
+                    } else {
+                      return 'Neutral trend → Static risk/reward';
+                    }
+                  })()}
+                </p>
+                <div className="flex items-center justify-between text-[7px]">
+                  <span className="text-white/30">Target R:R</span>
+                  <span className="font-mono font-bold text-white/60">
+                    {(() => {
+                      if (reports.longestWinStreak > 3) {
+                        return `1:${(6 + Math.min(reports.longestWinStreak * 0.5, 3)).toFixed(0)} (1:9+)`;
+                      } else if (reports.longestLoseStreak > 3) {
+                        return `1:${(3 + Math.min(reports.longestLoseStreak * 0.2, 2)).toFixed(1)}`;
                       } else {
                         return '1:1.5';
                       }
                     })()}
                   </span>
                 </div>
-                <p className="text-[7px] text-white/40">
-                  {(() => {
-                    if (reports.longestWinStreak > 3) {
-                      return `Aggressive: Win streak ${reports.longestWinStreak} → Higher reward ratio`;
-                    } else if (reports.longestLoseStreak > 3) {
-                      return `Conservative: Loss streak ${reports.longestLoseStreak} → Lower reward ratio`;
-                    } else {
-                      return 'Neutral trend: Standard risk/reward ratio';
-                    }
-                  })()}
-                </p>
+                <div className="flex items-center justify-between text-[7px] mt-0.5">
+                  <span className="text-white/30">Position Size</span>
+                  <span className="font-mono font-bold text-white/60">
+                    {(() => {
+                      if (reports.longestWinStreak > 3) {
+                        return 'Aggressive (↑↑)';
+                      } else if (reports.longestLoseStreak > 3) {
+                        return 'Conservative (↓)';
+                      } else {
+                        return 'Standard (→)';
+                      }
+                    })()}
+                  </span>
+                </div>
               </div>
 
               <p className="text-[8px] leading-relaxed text-white/50">
