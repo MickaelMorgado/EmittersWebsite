@@ -315,6 +315,35 @@ export default function AIReportsSection({
                 </div>
               </div>
 
+              {/* Risk/Reward Adjustment based on Trend */}
+              <div className="mb-2 pt-2 border-t border-white/[0.05]">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[8px] text-white/30 uppercase">Risk/Reward</span>
+                  <span className="text-[9px] font-mono text-white/40">
+                    {(() => {
+                      if (reports.longestWinStreak > 3) {
+                        return `1:${(2 + reports.longestWinStreak * 0.2).toFixed(1)}`;
+                      } else if (reports.longestLoseStreak > 3) {
+                        return `1:${Math.max(1, 2 - reports.longestLoseStreak * 0.1).toFixed(1)}`;
+                      } else {
+                        return '1:1.5';
+                      }
+                    })()}
+                  </span>
+                </div>
+                <p className="text-[7px] text-white/40">
+                  {(() => {
+                    if (reports.longestWinStreak > 3) {
+                      return `Aggressive: Win streak ${reports.longestWinStreak} → Higher reward ratio`;
+                    } else if (reports.longestLoseStreak > 3) {
+                      return `Conservative: Loss streak ${reports.longestLoseStreak} → Lower reward ratio`;
+                    } else {
+                      return 'Neutral trend: Standard risk/reward ratio';
+                    }
+                  })()}
+                </p>
+              </div>
+
               <p className="text-[8px] leading-relaxed text-white/50">
                 {(() => {
                   const riskOk = reports.maxDrawdown <= stats.totalPnl * 0.5 ? 25 : 0;
@@ -326,7 +355,7 @@ export default function AIReportsSection({
                   return total >= 75
                     ? '✓ GATE OPEN: All agents aligned for execution'
                     : total >= 50
-                    ? '⚠ GATE PARTIAL: Monitor conditions'
+                    ? '⚠ GATE PARTIAL: Trade with adjusted risk/reward'
                     : '✗ GATE CLOSED: Insufficient confidence';
                 })()}
               </p>
