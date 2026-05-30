@@ -1,12 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import EquityChart from './components/EquityChart';
-import PnLChart from './components/PnLChart';
-import MetricsSection from './components/MetricsSection';
 import AIReportsSection from './components/AIReportsSection';
-import TradeHistorySection from './components/TradeHistorySection';
+import EquityChart from './components/EquityChart';
 import Header from './components/Header';
+import MetricsSection from './components/MetricsSection';
+import PnLChart from './components/PnLChart';
+import TradeHistorySection from './components/TradeHistorySection';
 
 interface Trade {
   id: string;
@@ -373,9 +373,9 @@ export default function TradingBotDashboard() {
         <Header version={version} stats={stats} loading={loading} onRefresh={refreshData} />
 
         {/* Charts Row: Equity (large) + P&L sparkline (small) */}
-        <div className="grid grid-cols-3 gap-2 mb-3 shrink-0" style={{ height: '140px' }}>
+        <div className="grid grid-cols-4 gap-2 mb-3 shrink-0" style={{ height: '35%' }}>
           {/* Equity Curve — 2 cols */}
-          <div className="col-span-2">
+          <div className="col-span-3">
             <EquityChart data={equityData} />
           </div>
 

@@ -70,34 +70,34 @@ export default function SummarySection({ aiAnalysis, stats, reports }: SummarySe
                 <Activity className="w-3.5 h-3.5 text-cyan-400/60" />
                 <span className="text-[10px] font-bold text-white/70 uppercase tracking-wider">Session Summary</span>
               </div>
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-2 gap-6 mb-3">
                 {/* Session Summary Column */}
                 <div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-2">
-                      <div>
-                        <div className="text-[8px] text-white/40 uppercase mb-1">Win Rate</div>
-                        <div className="text-xl font-bold text-emerald-400">{stats.winRate}%</div>
-                      </div>
-                      <div>
-                        <div className="text-[8px] text-white/40 uppercase mb-1">Avg Trade</div>
-                        <div className={`text-base font-bold ${reports.avgTrade >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                          ${reports.avgTrade.toFixed(2)}
-                        </div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+                    <span className="text-[10px] font-bold text-cyan-300/80 uppercase tracking-wider">Performance</span>
+                  </div>
+                  <div className="grid grid-cols-4 gap-3">
+                    <div>
+                      <div className="text-[8px] text-white/40 uppercase mb-1">Win Rate</div>
+                      <div className="text-xl font-bold text-emerald-400">{stats.winRate}%</div>
+                    </div>
+                    <div>
+                      <div className="text-[8px] text-white/40 uppercase mb-1">Avg Trade</div>
+                      <div className={`text-base font-bold ${reports.avgTrade >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                        ${reports.avgTrade.toFixed(2)}
                       </div>
                     </div>
-                    <div className="space-y-2">
-                      <div>
-                        <div className="text-[8px] text-white/40 uppercase mb-1">Today P&L</div>
-                        <div className={`text-xl font-bold ${stats.totalPnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                          {stats.totalPnl >= 0 ? '+' : ''}{stats.totalPnl.toFixed(2)}
-                        </div>
+                    <div>
+                      <div className="text-[8px] text-white/40 uppercase mb-1">Today P&L</div>
+                      <div className={`text-xl font-bold ${stats.totalPnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                        {stats.totalPnl >= 0 ? '+' : ''}{stats.totalPnl.toFixed(2)}
                       </div>
-                      <div>
-                        <div className="text-[8px] text-white/40 uppercase mb-1">Profit Factor</div>
-                        <div className={`text-base font-bold ${reports.profitFactor >= 1 ? 'text-emerald-400' : 'text-red-400'}`}>
-                          {reports.profitFactor === Infinity ? '∞' : reports.profitFactor.toFixed(2)}
-                        </div>
+                    </div>
+                    <div>
+                      <div className="text-[8px] text-white/40 uppercase mb-1">Profit Factor</div>
+                      <div className={`text-base font-bold ${reports.profitFactor >= 1 ? 'text-emerald-400' : 'text-red-400'}`}>
+                        {reports.profitFactor === Infinity ? '∞' : reports.profitFactor.toFixed(2)}
                       </div>
                     </div>
                   </div>
@@ -108,7 +108,7 @@ export default function SummarySection({ aiAnalysis, stats, reports }: SummarySe
                     <div className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
                     <span className="text-[10px] font-bold text-cyan-300/80 uppercase tracking-wider">Trade Analysis</span>
                   </div>
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                  <div className="grid grid-cols-4 gap-x-4 gap-y-2">
                     <div>
                       <div className="text-[9px] text-white/30 uppercase tracking-wider">Best Trade</div>
                       <div className="text-base font-bold font-mono text-emerald-400">+{reports.bestTrade.toFixed(2)}</div>

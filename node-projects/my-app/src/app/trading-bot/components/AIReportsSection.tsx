@@ -121,7 +121,7 @@ export default function AIReportsSection({
   onCloseReport,
 }: AIReportsSectionProps) {
   return (
-    <div className="col-span-4 bg-white/[0.02] border border-white/[0.05] flex flex-col min-h-0 rounded h-full">
+    <div className="col-span-5 bg-white/[0.02] border border-white/[0.05] flex flex-col min-h-0 rounded h-full">
       <div className="flex items-center justify-between px-4 py-2 border-b border-white/[0.05] shrink-0">
         <div className="flex items-center gap-2">
           <Brain className="w-3.5 h-3.5 text-violet-400/60" />
@@ -132,17 +132,6 @@ export default function AIReportsSection({
         <div className="grid grid-cols-6 gap-3 h-auto auto-rows-max">
           {/* Middle: Recommendations + Open Positions — 2 cols */}
           <div className="col-span-3 flex flex-col gap-3">
-            <div className="bg-gradient-to-br from-amber-500/[0.06] to-orange-500/[0.02] border border-amber-500/[0.08] p-3">
-              <div className="flex items-center gap-2 mb-1.5">
-                <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                <span className="text-[10px] font-bold text-amber-300/80 uppercase tracking-wider">Master Recommendation</span>
-              </div>
-              <p className="text-[11px] leading-relaxed text-white/50">
-                {stats.winRate > 55
-                  ? 'Strategy performing above baseline. Continue monitoring for consistency.'
-                  : 'Need more data for reliable pattern analysis. Keep trading to improve accuracy.'}
-              </p>
-            </div>
 
             {/* Sub-Agent Reports */}
             <div className="grid grid-cols-2 gap-2">
@@ -192,9 +181,83 @@ export default function AIReportsSection({
                 </p>
               </div>
             </div>
+            
+            {/* Master Agent */}
+            <div className="bg-gradient-to-br from-amber-500/[0.06] to-orange-500/[0.02] border border-amber-500/[0.08] p-3">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                <span className="text-[10px] font-bold text-amber-300/80 uppercase tracking-wider">Master Recommendation</span>
+              </div>
 
+              {/* Decision Percentile */}
+              <div className="mb-2.5">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[8px] text-white/30 uppercase">Trade Decision</span>
+                  <span className={`text-[10px] font-bold font-mono ${
+                    (() => {
+                      const riskOk = reports.maxDrawdown <= stats.totalPnl * 0.5 ? 25 : 0;
+                      const trendOk = reports.longestWinStreak > 3 ? 25 : reports.longestLoseStreak > 3 ? 0 : 12;
+                      const newsOk = 25;
+                      const historyOk = stats.totalTrades > 100 ? 25 : stats.totalTrades > 50 ? 15 : 0;
+                      const total = riskOk + trendOk + newsOk + historyOk;
+                      return total >= 75 ? 'text-emerald-400' : total >= 50 ? 'text-yellow-400' : 'text-red-400';
+                    })()
+                  }`}>
+                    {(() => {
+                      const riskOk = reports.maxDrawdown <= stats.totalPnl * 0.5 ? 25 : 0;
+                      const trendOk = reports.longestWinStreak > 3 ? 25 : reports.longestLoseStreak > 3 ? 0 : 12;
+                      const newsOk = 25;
+                      const historyOk = stats.totalTrades > 100 ? 25 : stats.totalTrades > 50 ? 15 : 0;
+                      return riskOk + trendOk + newsOk + historyOk;
+                    })()}%
+                  </span>
+                </div>
+                <div className="w-full h-1.5 bg-white/[0.05] rounded overflow-hidden border border-white/[0.08]">
+                  <div
+                    className={`h-full transition-all duration-300 ${
+                      (() => {
+                        const riskOk = reports.maxDrawdown <= stats.totalPnl * 0.5 ? 25 : 0;
+                        const trendOk = reports.longestWinStreak > 3 ? 25 : reports.longestLoseStreak > 3 ? 0 : 12;
+                        const newsOk = 25;
+                        const historyOk = stats.totalTrades > 100 ? 25 : stats.totalTrades > 50 ? 15 : 0;
+                        const total = riskOk + trendOk + newsOk + historyOk;
+                        return total >= 75 ? 'bg-gradient-to-r from-emerald-500 to-emerald-400' : total >= 50 ? 'bg-gradient-to-r from-yellow-500 to-yellow-400' : 'bg-gradient-to-r from-red-500 to-red-400';
+                      })()
+                    }`}
+                    style={{
+                      width: `${(() => {
+                        const riskOk = reports.maxDrawdown <= stats.totalPnl * 0.5 ? 25 : 0;
+                        const trendOk = reports.longestWinStreak > 3 ? 25 : reports.longestLoseStreak > 3 ? 0 : 12;
+                        const newsOk = 25;
+                        const historyOk = stats.totalTrades > 100 ? 25 : stats.totalTrades > 50 ? 15 : 0;
+                        return riskOk + trendOk + newsOk + historyOk;
+                      })()}%`
+                    }}
+                  />
+                </div>
+              </div>
+
+              <p className="text-[9px] leading-relaxed text-white/50">
+                {(() => {
+                  const riskOk = reports.maxDrawdown <= stats.totalPnl * 0.5 ? 25 : 0;
+                  const trendOk = reports.longestWinStreak > 3 ? 25 : reports.longestLoseStreak > 3 ? 0 : 12;
+                  const newsOk = 25;
+                  const historyOk = stats.totalTrades > 100 ? 25 : stats.totalTrades > 50 ? 15 : 0;
+                  const total = riskOk + trendOk + newsOk + historyOk;
+
+                  return total >= 75
+                    ? '✓ APPROVED: High confidence for next trade'
+                    : total >= 50
+                    ? '⚠ CAUTION: Moderate approval, monitor closely'
+                    : '✗ BLOCKED: Low confidence, wait for better conditions';
+                })()}
+              </p>
+            </div>
+          </div>
+
+          <div className="col-span-2">    
             {openPositions.length > 0 && (
-              <div className="bg-white/[0.03] border border-cyan-500/[0.1] p-3 flex-1 min-h-0">
+              <div className="bg-white/[0.03] border border-cyan-500/[0.1] p-3 flex-1 min-h-0 h-full">
                 <style>{`
                   @keyframes slideInGlow {
                     from {
@@ -277,7 +340,7 @@ export default function AIReportsSection({
           </div>
 
            {/* Report — 2 cols */}
-           <div className="col-span-3 bg-white/[0.02] border border-white/[0.05] flex flex-col min-h-0 rounded">
+           <div className="col-span-1 bg-white/[0.02] border border-white/[0.05] flex flex-col min-h-0 rounded">
              <div className="flex items-center gap-1.5 px-4 py-2 border-b border-white/[0.05] shrink-0">
                <Brain className="w-3 h-3 text-violet-400/50" />
                <h3 className="text-[10px] font-semibold text-white/50 tracking-wide">Report</h3>
@@ -404,7 +467,7 @@ export default function AIReportsSection({
 
           {/* Reports Vertical Stack — 1 col, spans full height */}
           {reportHistory && ((reportHistory.notes50?.items?.length ?? 0) > 0 || (reportHistory.notes500?.items?.length ?? 0) > 0) && (
-            <div className="lg:col-span-1 flex flex-col gap-3 min-h-0">
+            <div className="col-span-1 flex flex-col gap-3 min-h-0">
               {/* 50-Trade Notes */}
               {(reportHistory.notes50?.items?.length ?? 0) > 0 && (
                 <div className="bg-white/[0.02] border border-white/[0.05] flex flex-col min-h-0 rounded">
