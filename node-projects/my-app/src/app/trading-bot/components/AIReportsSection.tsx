@@ -120,6 +120,17 @@ interface AgentRules {
   lastModified: string;
 }
 
+function formatTimeAgo(timestamp: string): string {
+  const now = new Date();
+  const then = new Date(timestamp);
+  const seconds = Math.floor((now.getTime() - then.getTime()) / 1000);
+
+  if (seconds < 60) return `${seconds}s ago`;
+  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+  return `${Math.floor(seconds / 86400)}d ago`;
+}
+
 export default function AIReportsSection({
   aiAnalysis,
   openPositions,
@@ -136,6 +147,45 @@ export default function AIReportsSection({
 }: AIReportsSectionProps) {
   const [selectedAgent, setSelectedAgent] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'rules' | 'reports'>('rules');
+  const [agentLastRun, setAgentLastRun] = useState<{ [key: string]: string }>({
+    risk: new Date().toISOString(),
+    trend: new Date().toISOString(),
+    news: new Date().toISOString(),
+    history: new Date().toISOString(),
+    master: new Date().toISOString(),
+  });
+
+  // Update agent last run times when data changes
+  useEffect(() => {
+    // Risk Agent runs when reports/stats change
+    setAgentLastRun(prev => ({ ...prev, risk: new Date().toISOString() }));
+  }, [reports.maxDrawdown, stats.totalPnl]);
+
+  useEffect(() => {
+    // Trend Agent runs when streak data changes
+    setAgentLastRun(prev => ({ ...prev, trend: new Date().toISOString() }));
+  }, [reports.longestWinStreak, reports.longestLoseStreak]);
+
+  useEffect(() => {
+    // News Agent runs periodically (simulated here every 30s)
+    const newsInterval = setInterval(() => {
+      setAgentLastRun(prev => ({ ...prev, news: new Date().toISOString() }));
+    }, 30000);
+    return () => clearInterval(newsInterval);
+  }, []);
+
+  useEffect(() => {
+    // History Agent runs when reports are generated
+    setAgentLastRun(prev => ({ ...prev, history: new Date().toISOString() }));
+  }, [reportHistory?.globalRecommendation?.lastUpdatedAt]);
+
+  useEffect(() => {
+    // Master Agent runs constantly (updates every second for demo)
+    const masterInterval = setInterval(() => {
+      setAgentLastRun(prev => ({ ...prev, master: new Date().toISOString() }));
+    }, 1000);
+    return () => clearInterval(masterInterval);
+  }, []);
 
   // Sample agent reports (would come from backend)
   const agentReportsData: { [key: string]: AgentReport[] } = {
@@ -221,6 +271,7 @@ export default function AIReportsSection({
                   <div className="flex items-center gap-1">
                     <Bot className="w-2.5 h-2.5 text-red-400/60" />
                     <span className="text-[8px] font-bold text-red-300/80 uppercase tracking-wider">Risk</span>
+                    <span className="text-[7px] text-red-400/50 font-mono">{formatTimeAgo(agentLastRun.risk)}</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <button
@@ -267,6 +318,7 @@ export default function AIReportsSection({
                   <div className="flex items-center gap-1">
                     <Bot className="w-2.5 h-2.5 text-cyan-400/60" />
                     <span className="text-[8px] font-bold text-cyan-300/80 uppercase tracking-wider">Trend</span>
+                    <span className="text-[7px] text-cyan-400/50 font-mono">{formatTimeAgo(agentLastRun.trend)}</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <button
@@ -319,6 +371,7 @@ export default function AIReportsSection({
                   <div className="flex items-center gap-1">
                     <Bot className="w-2.5 h-2.5 text-violet-400/60" />
                     <span className="text-[8px] font-bold text-violet-300/80 uppercase tracking-wider">News</span>
+                    <span className="text-[7px] text-violet-400/50 font-mono">{formatTimeAgo(agentLastRun.news)}</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <button
@@ -358,6 +411,7 @@ export default function AIReportsSection({
                   <div className="flex items-center gap-1">
                     <Bot className="w-2.5 h-2.5 text-emerald-400/60" />
                     <span className="text-[8px] font-bold text-emerald-300/80 uppercase tracking-wider">History</span>
+                    <span className="text-[7px] text-emerald-400/50 font-mono">{formatTimeAgo(agentLastRun.history)}</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <button
@@ -407,6 +461,7 @@ export default function AIReportsSection({
                 <div className="flex items-center gap-2">
                   <Bot className="w-3 h-3 text-amber-400/70" />
                   <span className="text-[10px] font-bold text-amber-300/80 uppercase tracking-wider">Master Recommendation</span>
+                  <span className="text-[8px] text-amber-400/50 font-mono">{formatTimeAgo(agentLastRun.master)}</span>
                 </div>
                 <span className={`text-xs font-bold px-2 py-0.5 ${
                   (() => {
