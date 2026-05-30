@@ -134,8 +134,8 @@ export default function AIReportsSection({
   generateReport,
   onCloseReport,
 }: AIReportsSectionProps) {
-  const [selectedAgentRules, setSelectedAgentRules] = useState<string | null>(null);
-  const [selectedAgentReports, setSelectedAgentReports] = useState<string | null>(null);
+  const [selectedAgent, setSelectedAgent] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'rules' | 'reports'>('rules');
 
   // Sample agent reports (would come from backend)
   const agentReportsData: { [key: string]: AgentReport[] } = {
@@ -221,14 +221,20 @@ export default function AIReportsSection({
                   <span className="text-[8px] font-bold text-red-300/80 uppercase tracking-wider">Risk</span>
                   <div className="flex items-center gap-1">
                     <button
-                      onClick={() => setSelectedAgentRules('risk')}
+                      onClick={() => {
+                        setSelectedAgent('risk');
+                        setActiveTab('rules');
+                      }}
                       className="p-0.5 hover:bg-red-500/10 rounded opacity-0 group-hover:opacity-100 transition-opacity"
                       title="View rules"
                     >
                       <Settings className="w-2.5 h-2.5 text-red-400/60" />
                     </button>
                     <button
-                      onClick={() => setSelectedAgentReports('risk')}
+                      onClick={() => {
+                        setSelectedAgent('risk');
+                        setActiveTab('reports');
+                      }}
                       className="p-0.5 hover:bg-red-500/10 rounded opacity-0 group-hover:opacity-100 transition-opacity"
                       title="View reports"
                     >
@@ -258,14 +264,20 @@ export default function AIReportsSection({
                   <span className="text-[8px] font-bold text-cyan-300/80 uppercase tracking-wider">Trend</span>
                   <div className="flex items-center gap-1">
                     <button
-                      onClick={() => setSelectedAgentRules('trend')}
+                      onClick={() => {
+                        setSelectedAgent('trend');
+                        setActiveTab('rules');
+                      }}
                       className="p-0.5 hover:bg-cyan-500/10 rounded opacity-0 group-hover:opacity-100 transition-opacity"
                       title="View rules"
                     >
                       <Settings className="w-2.5 h-2.5 text-cyan-400/60" />
                     </button>
                     <button
-                      onClick={() => setSelectedAgentReports('trend')}
+                      onClick={() => {
+                        setSelectedAgent('trend');
+                        setActiveTab('reports');
+                      }}
                       className="p-0.5 hover:bg-cyan-500/10 rounded opacity-0 group-hover:opacity-100 transition-opacity"
                       title="View reports"
                     >
@@ -301,14 +313,20 @@ export default function AIReportsSection({
                   <span className="text-[8px] font-bold text-violet-300/80 uppercase tracking-wider">News</span>
                   <div className="flex items-center gap-1">
                     <button
-                      onClick={() => setSelectedAgentRules('news')}
+                      onClick={() => {
+                        setSelectedAgent('news');
+                        setActiveTab('rules');
+                      }}
                       className="p-0.5 hover:bg-violet-500/10 rounded opacity-0 group-hover:opacity-100 transition-opacity"
                       title="View rules"
                     >
                       <Settings className="w-2.5 h-2.5 text-violet-400/60" />
                     </button>
                     <button
-                      onClick={() => setSelectedAgentReports('news')}
+                      onClick={() => {
+                        setSelectedAgent('news');
+                        setActiveTab('reports');
+                      }}
                       className="p-0.5 hover:bg-violet-500/10 rounded opacity-0 group-hover:opacity-100 transition-opacity"
                       title="View reports"
                     >
@@ -331,14 +349,20 @@ export default function AIReportsSection({
                   <span className="text-[8px] font-bold text-emerald-300/80 uppercase tracking-wider">History</span>
                   <div className="flex items-center gap-1">
                     <button
-                      onClick={() => setSelectedAgentRules('history')}
+                      onClick={() => {
+                        setSelectedAgent('history');
+                        setActiveTab('rules');
+                      }}
                       className="p-0.5 hover:bg-emerald-500/10 rounded opacity-0 group-hover:opacity-100 transition-opacity"
                       title="View rules"
                     >
                       <Settings className="w-2.5 h-2.5 text-emerald-400/60" />
                     </button>
                     <button
-                      onClick={() => setSelectedAgentReports('history')}
+                      onClick={() => {
+                        setSelectedAgent('history');
+                        setActiveTab('reports');
+                      }}
                       className="p-0.5 hover:bg-emerald-500/10 rounded opacity-0 group-hover:opacity-100 transition-opacity"
                       title="View reports"
                     >
@@ -793,61 +817,77 @@ export default function AIReportsSection({
           <SummarySection aiAnalysis={aiAnalysis} stats={stats} reports={reports} />
         </div>
 
-        {/* Rules Modal */}
-        {selectedAgentRules && agentRulesData[selectedAgentRules] && (
+        {/* Unified Agent Modal with Tabs */}
+        {selectedAgent && agentRulesData[selectedAgent] && agentReportsData[selectedAgent] && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-[#0d1117] border border-white/10 rounded-lg max-w-md w-full max-h-96 overflow-y-auto">
-              <div className="sticky top-0 bg-[#0d1117] border-b border-white/10 px-4 py-3 flex items-center justify-between">
-                <h3 className="text-sm font-bold text-white">{agentRulesData[selectedAgentRules].agentName} Rules</h3>
-                <button
-                  onClick={() => setSelectedAgentRules(null)}
-                  className="text-white/40 hover:text-white/60 text-lg"
-                >
-                  ✕
-                </button>
-              </div>
-              <div className="p-4 space-y-3">
-                {agentRulesData[selectedAgentRules].rules.map((rule, i) => (
-                  <div key={i} className="flex gap-2">
-                    <span className="text-white/30 text-xs mt-1">•</span>
-                    <p className="text-xs text-white/60 leading-relaxed">{rule}</p>
-                  </div>
-                ))}
-                <div className="pt-2 border-t border-white/10 mt-3">
-                  <span className="text-[8px] text-white/30">Last modified: {agentRulesData[selectedAgentRules].lastModified}</span>
+            <div className="bg-[#0d1117] border border-white/10 rounded-lg max-w-md w-full max-h-96 flex flex-col">
+              {/* Header with Tabs */}
+              <div className="border-b border-white/10 px-4 pt-3">
+                <div className="flex items-center justify-between mb-0">
+                  <h3 className="text-sm font-bold text-white">{agentRulesData[selectedAgent].agentName}</h3>
+                  <button
+                    onClick={() => setSelectedAgent(null)}
+                    className="text-white/40 hover:text-white/60 text-lg"
+                  >
+                    ✕
+                  </button>
+                </div>
+                {/* Tabs */}
+                <div className="flex gap-4 mt-3 border-t border-white/[0.05]">
+                  <button
+                    onClick={() => setActiveTab('rules')}
+                    className={`px-3 py-2 text-[11px] font-semibold uppercase tracking-wider border-b-2 transition-colors ${
+                      activeTab === 'rules'
+                        ? 'border-white text-white'
+                        : 'border-transparent text-white/40 hover:text-white/60'
+                    }`}
+                  >
+                    Rules
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('reports')}
+                    className={`px-3 py-2 text-[11px] font-semibold uppercase tracking-wider border-b-2 transition-colors ${
+                      activeTab === 'reports'
+                        ? 'border-white text-white'
+                        : 'border-transparent text-white/40 hover:text-white/60'
+                    }`}
+                  >
+                    Reports
+                  </button>
                 </div>
               </div>
-            </div>
-          </div>
-        )}
 
-        {/* Reports Modal */}
-        {selectedAgentReports && agentReportsData[selectedAgentReports] && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-[#0d1117] border border-white/10 rounded-lg max-w-md w-full max-h-96 overflow-y-auto">
-              <div className="sticky top-0 bg-[#0d1117] border-b border-white/10 px-4 py-3 flex items-center justify-between">
-                <h3 className="text-sm font-bold text-white">
-                  {selectedAgentReports.charAt(0).toUpperCase() + selectedAgentReports.slice(1)} Reports
-                </h3>
-                <button
-                  onClick={() => setSelectedAgentReports(null)}
-                  className="text-white/40 hover:text-white/60 text-lg"
-                >
-                  ✕
-                </button>
-              </div>
-              <div className="p-3 space-y-2">
-                {agentReportsData[selectedAgentReports]
-                  .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-                  .map((rep) => (
-                    <div key={rep.id} className="bg-white/[0.03] border border-white/[0.08] p-2.5 rounded">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-[7px] font-bold text-white/50 uppercase">{rep.type}</span>
-                        <span className="text-[7px] text-white/30 font-mono">{rep.timestamp}</span>
+              {/* Content */}
+              <div className="flex-1 overflow-y-auto p-4">
+                {activeTab === 'rules' ? (
+                  <div className="space-y-3">
+                    {agentRulesData[selectedAgent].rules.map((rule, i) => (
+                      <div key={i} className="flex gap-2">
+                        <span className="text-white/30 text-xs mt-1">•</span>
+                        <p className="text-xs text-white/60 leading-relaxed">{rule}</p>
                       </div>
-                      <p className="text-[8px] text-white/60 leading-relaxed">{rep.content}</p>
+                    ))}
+                    <div className="pt-3 border-t border-white/10 mt-4">
+                      <span className="text-[8px] text-white/30">
+                        Last modified: {agentRulesData[selectedAgent].lastModified}
+                      </span>
                     </div>
-                  ))}
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {agentReportsData[selectedAgent]
+                      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+                      .map((rep) => (
+                        <div key={rep.id} className="bg-white/[0.03] border border-white/[0.08] p-2.5 rounded">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-[7px] font-bold text-white/50 uppercase">{rep.type}</span>
+                            <span className="text-[7px] text-white/30 font-mono">{rep.timestamp}</span>
+                          </div>
+                          <p className="text-[8px] text-white/60 leading-relaxed">{rep.content}</p>
+                        </div>
+                      ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>
