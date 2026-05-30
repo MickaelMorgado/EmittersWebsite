@@ -103,6 +103,29 @@ export default function TradingBotDashboard() {
   const [report, setReport] = useState<any>(null);
   const [reportLoading, setReportLoading] = useState(false);
   const [reportHistory, setReportHistory] = useState<ReportHistory | null>(null);
+  const [debugMode, setDebugMode] = useState(false);
+  const [lastSignal, setLastSignal] = useState<{ signal: string; timestamp: string } | null>(null);
+
+  const generateDebugSignal = useCallback(async () => {
+    const signals = ['BUY', 'SELL', 'NEUTRAL'];
+    const randomSignal = signals[Math.floor(Math.random() * signals.length)];
+    const timestamp = new Date().toISOString();
+
+    try {
+      const res = await fetch('/api/trading-bot/signal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ signal: randomSignal, timestamp, debug: true })
+      });
+
+      if (res.ok) {
+        setLastSignal({ signal: randomSignal, timestamp });
+        console.log(`[DEBUG] Signal sent: ${randomSignal} at ${timestamp}`);
+      }
+    } catch (error) {
+      console.error('Failed to send debug signal:', error);
+    }
+  }, []);
 
   const fetchTrades = useCallback(async () => {
     try {
@@ -251,6 +274,13 @@ export default function TradingBotDashboard() {
     await fetchTrades();
   };
 
+  // Debug mode: Generate random signals on each candle (history change)
+  useEffect(() => {
+    if (debugMode && history.length > 0) {
+      generateDebugSignal();
+    }
+  }, [debugMode, history.length, generateDebugSignal]);
+
   const generateReport = async (tradeCount: number) => {
     setReportLoading(true);
     try {
@@ -370,7 +400,14 @@ export default function TradingBotDashboard() {
 
       <div className="relative flex flex-col flex-1 min-h-0 w-full px-4 sm:px-6 lg:px-8 py-3">
         {/* Header */}
-        <Header version={version} stats={stats} loading={loading} onRefresh={refreshData} />
+        <Header
+          version={version}
+          stats={stats}
+          loading={loading}
+          onRefresh={refreshData}
+          debugMode={debugMode}
+          onDebugToggle={setDebugMode}
+        />
 
         {/* Charts Row: Equity (large) + P&L sparkline (small) */}
         <div className="grid grid-cols-4 gap-2 mb-3 shrink-0" style={{ height: '35%' }}>

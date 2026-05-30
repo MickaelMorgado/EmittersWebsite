@@ -1,6 +1,6 @@
 "use client";
 
-import { Activity, DollarSign, RefreshCw, Target, Zap } from 'lucide-react';
+import { Activity, DollarSign, RefreshCw, Target, Zap, Bug } from 'lucide-react';
 
 interface BotStats {
   totalTrades: number;
@@ -17,6 +17,8 @@ interface HeaderProps {
   stats: BotStats;
   loading: boolean;
   onRefresh: () => void;
+  debugMode?: boolean;
+  onDebugToggle?: (enabled: boolean) => void;
 }
 
 function PulsingDot() {
@@ -28,7 +30,7 @@ function PulsingDot() {
   );
 }
 
-export default function Header({ version, stats, loading, onRefresh }: HeaderProps) {
+export default function Header({ version, stats, loading, onRefresh, debugMode = false, onDebugToggle }: HeaderProps) {
   return (
     <header className="flex items-center justify-between mb-4 shrink-0">
       <div className="flex items-center gap-3">
@@ -39,10 +41,16 @@ export default function Header({ version, stats, loading, onRefresh }: HeaderPro
           <div className="flex items-center gap-2">
             <h1 className="text-lg font-semibold tracking-tight text-white">MikaBot</h1>
             <span className="text-[8px] font-mono px-1 py-0.5 bg-cyan-500/20 text-cyan-400">v{version}</span>
+            {debugMode && (
+              <span className="text-[8px] font-mono px-1.5 py-0.5 bg-orange-500/30 text-orange-400 rounded flex items-center gap-1">
+                <Bug className="w-2.5 h-2.5" />
+                DEBUG
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-2 mt-0.5">
             <PulsingDot />
-            <span className="text-[8px] font-medium text-white/40 uppercase tracking-wider">Live</span>
+            <span className="text-[8px] font-medium text-white/40 uppercase tracking-wider">{debugMode ? 'Debug Mode' : 'Live'}</span>
           </div>
         </div>
       </div>
@@ -70,6 +78,18 @@ export default function Header({ version, stats, loading, onRefresh }: HeaderPro
             </span>
           </div>
         </div>
+
+        <button
+          onClick={() => onDebugToggle?.(!debugMode)}
+          className={`flex items-center justify-center w-7 h-7 border rounded transition-all cursor-pointer ${
+            debugMode
+              ? 'bg-orange-500/20 border-orange-500/30 hover:bg-orange-500/30'
+              : 'bg-white/[0.03] border-white/[0.05] hover:bg-white/[0.06]'
+          }`}
+          title={debugMode ? 'Disable Debug Mode' : 'Enable Debug Mode'}
+        >
+          <Bug className={`w-3 h-3 transition-colors ${debugMode ? 'text-orange-400' : 'text-white/40'}`} />
+        </button>
 
         <button
           onClick={onRefresh}
