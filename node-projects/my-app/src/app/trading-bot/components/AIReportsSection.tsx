@@ -161,6 +161,7 @@ export default function AIReportsSection({
     // Risk Agent runs when reports/stats change
     setActiveAgent('risk');
     setAgentLastRun(prev => ({ ...prev, risk: new Date().toISOString() }));
+    console.log(`[RISK AGENT] 🛡️ Active | Drawdown: ${reports.maxDrawdown.toFixed(2)} | P&L: ${stats.totalPnl.toFixed(2)}`);
     const timer = setTimeout(() => setActiveAgent(null), 2500);
     return () => clearTimeout(timer);
   }, [reports.maxDrawdown, stats.totalPnl]);
@@ -169,6 +170,8 @@ export default function AIReportsSection({
     // Trend Agent runs when streak data changes
     setActiveAgent('trend');
     setAgentLastRun(prev => ({ ...prev, trend: new Date().toISOString() }));
+    const trend = reports.longestWinStreak > 3 ? 'UPTREND' : reports.longestLoseStreak > 3 ? 'DOWNTREND' : 'NEUTRAL';
+    console.log(`[TREND AGENT] 📈 Active | Trend: ${trend} | Win Streak: ${reports.longestWinStreak} | Loss Streak: ${reports.longestLoseStreak}`);
     const timer = setTimeout(() => setActiveAgent(null), 2500);
     return () => clearTimeout(timer);
   }, [reports.longestWinStreak, reports.longestLoseStreak]);
@@ -178,6 +181,7 @@ export default function AIReportsSection({
     const newsInterval = setInterval(() => {
       setActiveAgent('news');
       setAgentLastRun(prev => ({ ...prev, news: new Date().toISOString() }));
+      console.log(`[NEWS AGENT] 📰 Active | Checking economic events & market news`);
       setTimeout(() => setActiveAgent(prev => prev === 'news' ? null : prev), 2500);
     }, 10000);
     return () => clearInterval(newsInterval);
@@ -188,6 +192,7 @@ export default function AIReportsSection({
     if (reportHistory?.globalRecommendation?.lastUpdatedAt) {
       setActiveAgent('history');
       setAgentLastRun(prev => ({ ...prev, history: new Date().toISOString() }));
+      console.log(`[HISTORY AGENT] 📊 Active | Analyzing trading history & generating reports`);
       const timer = setTimeout(() => setActiveAgent(null), 2500);
       return () => clearTimeout(timer);
     }
@@ -198,6 +203,7 @@ export default function AIReportsSection({
     const masterInterval = setInterval(() => {
       setActiveAgent('master');
       setAgentLastRun(prev => ({ ...prev, master: new Date().toISOString() }));
+      console.log(`[MASTER AGENT] 🧠 Active | Aggregating signals from all sub-agents`);
       setTimeout(() => setActiveAgent(prev => prev === 'master' ? null : prev), 2500);
     }, 3000);
     return () => clearInterval(masterInterval);

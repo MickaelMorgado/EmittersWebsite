@@ -120,7 +120,7 @@ export default function TradingBotDashboard() {
 
       if (res.ok) {
         setLastSignal({ signal: randomSignal, timestamp });
-        console.log(`[DEBUG] Signal sent: ${randomSignal} at ${timestamp}`);
+        console.log(`[MASTER AGENT] 🤖 Signal: ${randomSignal} | Time: ${new Date(timestamp).toLocaleTimeString()}`);
       }
     } catch (error) {
       console.error('Failed to send debug signal:', error);
