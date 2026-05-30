@@ -282,21 +282,12 @@ export default function AIReportsSection({
             {/* Sub-Agent Reports */}
             <div className="grid grid-cols-2 gap-2">
               <style>{`
-                @keyframes glassShine {
+                @keyframes shineLeft {
                   0% {
-                    background: linear-gradient(135deg, transparent 0%, transparent 40%, rgba(255,255,255,0.1) 50%, transparent 60%, transparent 100%);
-                    background-position: 0% 0%;
-                    border-color: rgba(255,255,255,0.1);
-                  }
-                  50% {
-                    background: linear-gradient(135deg, transparent 0%, transparent 40%, rgba(255,255,255,0.25) 50%, transparent 60%, transparent 100%);
-                    background-position: 100% 100%;
-                    border-color: rgba(255,255,255,0.25);
+                    background-position: -100% 0;
                   }
                   100% {
-                    background: linear-gradient(135deg, transparent 0%, transparent 40%, rgba(255,255,255,0.1) 50%, transparent 60%, transparent 100%);
-                    background-position: 200% 200%;
-                    border-color: rgba(255,255,255,0.1);
+                    background-position: 100% 0;
                   }
                 }
                 @keyframes spin {
@@ -304,23 +295,27 @@ export default function AIReportsSection({
                   100% { transform: rotate(360deg); }
                 }
                 .agent-active-risk {
-                  animation: glassShine 2s ease-in-out;
-                  border-color: rgba(239, 68, 68, 0.3) !important;
+                  background: linear-gradient(90deg, rgba(239,68,68,0.06), rgba(239,68,68,0.15) 20%, rgba(239,68,68,0.06)) !important;
+                  background-size: 200% 100%;
+                  animation: shineLeft 2s ease-in-out !important;
                 }
                 .agent-active-risk .agent-icon { animation: spin 1.5s linear; }
                 .agent-active-trend {
-                  animation: glassShine 2s ease-in-out;
-                  border-color: rgba(34, 211, 238, 0.3) !important;
+                  background: linear-gradient(90deg, rgba(34,211,238,0.06), rgba(34,211,238,0.15) 20%, rgba(34,211,238,0.06)) !important;
+                  background-size: 200% 100%;
+                  animation: shineLeft 2s ease-in-out !important;
                 }
                 .agent-active-trend .agent-icon { animation: spin 1.5s linear; }
                 .agent-active-news {
-                  animation: glassShine 2s ease-in-out;
-                  border-color: rgba(168, 85, 247, 0.3) !important;
+                  background: linear-gradient(90deg, rgba(168,85,247,0.06), rgba(168,85,247,0.15) 20%, rgba(168,85,247,0.06)) !important;
+                  background-size: 200% 100%;
+                  animation: shineLeft 2s ease-in-out !important;
                 }
                 .agent-active-news .agent-icon { animation: spin 1.5s linear; }
                 .agent-active-history {
-                  animation: glassShine 2s ease-in-out;
-                  border-color: rgba(16, 185, 129, 0.3) !important;
+                  background: linear-gradient(90deg, rgba(16,185,129,0.06), rgba(16,185,129,0.15) 20%, rgba(16,185,129,0.06)) !important;
+                  background-size: 200% 100%;
+                  animation: shineLeft 2s ease-in-out !important;
                 }
                 .agent-active-history .agent-icon { animation: spin 1.5s linear; }
               `}</style>
