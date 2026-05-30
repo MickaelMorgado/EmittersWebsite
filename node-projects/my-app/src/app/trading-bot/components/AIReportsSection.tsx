@@ -223,15 +223,54 @@ export default function AIReportsSection({
             
             {/* Master Agent */}
             <div className="bg-gradient-to-br from-amber-500/[0.06] to-orange-500/[0.02] border border-amber-500/[0.08] p-3">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                <span className="text-[10px] font-bold text-amber-300/80 uppercase tracking-wider">Master Recommendation</span>
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                  <span className="text-[10px] font-bold text-amber-300/80 uppercase tracking-wider">Master Recommendation</span>
+                </div>
+                <span className={`text-xs font-bold px-2 py-0.5 ${
+                  (() => {
+                    const riskOk = reports.maxDrawdown <= stats.totalPnl * 0.5 ? 25 : 0;
+                    const trendOk = reports.longestWinStreak > 3 ? 25 : reports.longestLoseStreak > 3 ? 0 : 12;
+                    const newsOk = 25;
+                    const historyOk = stats.totalTrades > 100 ? 25 : stats.totalTrades > 50 ? 15 : 0;
+                    const total = riskOk + trendOk + newsOk + historyOk;
+
+                    if (total < 75) {
+                      return 'bg-white/10 text-white/40 ring-1 ring-white/10';
+                    } else if (reports.longestWinStreak > 3) {
+                      return 'bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-500/20';
+                    } else if (reports.longestLoseStreak > 3) {
+                      return 'bg-red-500/20 text-red-400 ring-1 ring-red-500/20';
+                    } else {
+                      return 'bg-white/10 text-white/40 ring-1 ring-white/10';
+                    }
+                  })()
+                }`}>
+                  {(() => {
+                    const riskOk = reports.maxDrawdown <= stats.totalPnl * 0.5 ? 25 : 0;
+                    const trendOk = reports.longestWinStreak > 3 ? 25 : reports.longestLoseStreak > 3 ? 0 : 12;
+                    const newsOk = 25;
+                    const historyOk = stats.totalTrades > 100 ? 25 : stats.totalTrades > 50 ? 15 : 0;
+                    const total = riskOk + trendOk + newsOk + historyOk;
+
+                    if (total < 75) {
+                      return 'NEUTRAL';
+                    } else if (reports.longestWinStreak > 3) {
+                      return 'BUY';
+                    } else if (reports.longestLoseStreak > 3) {
+                      return 'SELL';
+                    } else {
+                      return 'NEUTRAL';
+                    }
+                  })()}
+                </span>
               </div>
 
               {/* Decision Percentile */}
               <div className="mb-2.5">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-[8px] text-white/30 uppercase">Trade Decision</span>
+                  <span className="text-[8px] text-white/30 uppercase">Confidence Gate</span>
                   <span className={`text-[10px] font-bold font-mono ${
                     (() => {
                       const riskOk = reports.maxDrawdown <= stats.totalPnl * 0.5 ? 25 : 0;
@@ -276,7 +315,7 @@ export default function AIReportsSection({
                 </div>
               </div>
 
-              <p className="text-[9px] leading-relaxed text-white/50">
+              <p className="text-[8px] leading-relaxed text-white/50">
                 {(() => {
                   const riskOk = reports.maxDrawdown <= stats.totalPnl * 0.5 ? 25 : 0;
                   const trendOk = reports.longestWinStreak > 3 ? 25 : reports.longestLoseStreak > 3 ? 0 : 12;
@@ -285,10 +324,10 @@ export default function AIReportsSection({
                   const total = riskOk + trendOk + newsOk + historyOk;
 
                   return total >= 75
-                    ? '✓ APPROVED: High confidence for next trade'
+                    ? '✓ GATE OPEN: All agents aligned for execution'
                     : total >= 50
-                    ? '⚠ CAUTION: Moderate approval, monitor closely'
-                    : '✗ BLOCKED: Low confidence, wait for better conditions';
+                    ? '⚠ GATE PARTIAL: Monitor conditions'
+                    : '✗ GATE CLOSED: Insufficient confidence';
                 })()}
               </p>
             </div>
