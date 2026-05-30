@@ -1,6 +1,7 @@
 "use client";
 
-import { Activity, Brain, Sparkles, Target, TrendingUp } from 'lucide-react';
+import { Activity, Brain, Sparkles, Target, TrendingUp, Settings, FileText } from 'lucide-react';
+import { useState } from 'react';
 import SummarySection from './SummarySection';
 
 interface AIAnalysis {
@@ -106,6 +107,19 @@ function AnimatedNumber({ value, className }: { value: number; className: string
   );
 }
 
+interface AgentReport {
+  id: string;
+  timestamp: string;
+  content: string;
+  type: 'insight' | 'alert' | 'update';
+}
+
+interface AgentRules {
+  agentName: string;
+  rules: string[];
+  lastModified: string;
+}
+
 export default function AIReportsSection({
   aiAnalysis,
   openPositions,
@@ -120,6 +134,72 @@ export default function AIReportsSection({
   generateReport,
   onCloseReport,
 }: AIReportsSectionProps) {
+  const [selectedAgentRules, setSelectedAgentRules] = useState<string | null>(null);
+  const [selectedAgentReports, setSelectedAgentReports] = useState<string | null>(null);
+
+  // Sample agent reports (would come from backend)
+  const agentReportsData: { [key: string]: AgentReport[] } = {
+    risk: [
+      { id: '1', timestamp: '2026-05-30 14:32', content: 'Drawdown increased to 45% - within limits', type: 'update' },
+      { id: '2', timestamp: '2026-05-30 12:15', content: 'Risk threshold breached temporarily', type: 'alert' },
+    ],
+    trend: [
+      { id: '1', timestamp: '2026-05-30 14:45', content: 'Winning streak reached 5 - strong uptrend detected', type: 'insight' },
+      { id: '2', timestamp: '2026-05-30 11:30', content: 'Trend momentum shifting upward', type: 'update' },
+    ],
+    news: [
+      { id: '1', timestamp: '2026-05-30 14:20', content: 'No major economic news events detected', type: 'update' },
+    ],
+    history: [
+      { id: '1', timestamp: '2026-05-30 13:00', content: '50-trade report: Win rate improved to 62%', type: 'insight' },
+    ],
+  };
+
+  // Sample agent rules
+  const agentRulesData: { [key: string]: AgentRules } = {
+    risk: {
+      agentName: 'Risk Management',
+      rules: [
+        'Max drawdown threshold: 50% of total P&L',
+        'Position size based on volatility',
+        'Stop loss at 2% below entry',
+        'Reduce size on consecutive losses',
+      ],
+      lastModified: '2026-05-28 10:30',
+    },
+    trend: {
+      agentName: 'Probability & Trend',
+      rules: [
+        'Uptrend detection: Win streak > 3',
+        'Downtrend detection: Loss streak > 3',
+        'Neutral zone: Win/loss <= 3',
+        'Trend change requires 2 opposite signals',
+      ],
+      lastModified: '2026-05-25 15:45',
+    },
+    news: {
+      agentName: 'Economic News',
+      rules: [
+        'Poll news feed every 5 minutes',
+        'High impact events: Extend stop loss 2x',
+        'No major events = 25% weight baseline',
+        'Breaking news triggers immediate alert',
+      ],
+      lastModified: '2026-05-20 09:00',
+    },
+    history: {
+      agentName: 'History & Reports',
+      rules: [
+        'Generate 50-trade reports at milestones',
+        'Generate 500-trade reports at milestones',
+        'Analyze win rate vs R:R correlation',
+        'Detect seasonal patterns',
+        'Compare against baseline performance',
+      ],
+      lastModified: '2026-05-22 14:20',
+    },
+  };
+
   return (
     <div className="col-span-5 bg-white/[0.02] border border-white/[0.05] flex flex-col min-h-0 rounded h-full">
       <div className="flex items-center justify-between px-4 py-2 border-b border-white/[0.05] shrink-0">
@@ -136,12 +216,28 @@ export default function AIReportsSection({
             {/* Sub-Agent Reports */}
             <div className="grid grid-cols-2 gap-2">
               {/* Risk Management Agent */}
-              <div className="bg-gradient-to-br from-red-500/[0.06] to-rose-500/[0.02] border border-red-500/[0.1] p-2 rounded">
+              <div className="bg-gradient-to-br from-red-500/[0.06] to-rose-500/[0.02] border border-red-500/[0.1] p-2 rounded group hover:border-red-500/[0.2] transition-colors">
                 <div className="flex items-center justify-between gap-1.5 mb-1">
                   <span className="text-[8px] font-bold text-red-300/80 uppercase tracking-wider">Risk</span>
-                  <span className="text-[8px] font-bold text-red-400 font-mono">
-                    {reports.maxDrawdown > stats.totalPnl * 0.5 ? '0' : '25'}%
-                  </span>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => setSelectedAgentRules('risk')}
+                      className="p-0.5 hover:bg-red-500/10 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                      title="View rules"
+                    >
+                      <Settings className="w-2.5 h-2.5 text-red-400/60" />
+                    </button>
+                    <button
+                      onClick={() => setSelectedAgentReports('risk')}
+                      className="p-0.5 hover:bg-red-500/10 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                      title="View reports"
+                    >
+                      <FileText className="w-2.5 h-2.5 text-red-400/60" />
+                    </button>
+                    <span className="text-[8px] font-bold text-red-400 font-mono">
+                      {reports.maxDrawdown > stats.totalPnl * 0.5 ? '0' : '25'}%
+                    </span>
+                  </div>
                 </div>
                 <div className="h-0.5 bg-white/[0.05] rounded overflow-hidden mb-1">
                   <div
@@ -157,12 +253,28 @@ export default function AIReportsSection({
               </div>
 
               {/* Probability & Trend Agent */}
-              <div className="bg-gradient-to-br from-cyan-500/[0.06] to-blue-500/[0.02] border border-cyan-500/[0.1] p-2 rounded">
+              <div className="bg-gradient-to-br from-cyan-500/[0.06] to-blue-500/[0.02] border border-cyan-500/[0.1] p-2 rounded group hover:border-cyan-500/[0.2] transition-colors">
                 <div className="flex items-center justify-between gap-1.5 mb-1">
                   <span className="text-[8px] font-bold text-cyan-300/80 uppercase tracking-wider">Trend</span>
-                  <span className="text-[8px] font-bold text-cyan-400 font-mono">
-                    {reports.longestWinStreak > 3 ? '25' : reports.longestLoseStreak > 3 ? '0' : '12'}%
-                  </span>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => setSelectedAgentRules('trend')}
+                      className="p-0.5 hover:bg-cyan-500/10 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                      title="View rules"
+                    >
+                      <Settings className="w-2.5 h-2.5 text-cyan-400/60" />
+                    </button>
+                    <button
+                      onClick={() => setSelectedAgentReports('trend')}
+                      className="p-0.5 hover:bg-cyan-500/10 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                      title="View reports"
+                    >
+                      <FileText className="w-2.5 h-2.5 text-cyan-400/60" />
+                    </button>
+                    <span className="text-[8px] font-bold text-cyan-400 font-mono">
+                      {reports.longestWinStreak > 3 ? '25' : reports.longestLoseStreak > 3 ? '0' : '12'}%
+                    </span>
+                  </div>
                 </div>
                 <div className="h-0.5 bg-white/[0.05] rounded overflow-hidden mb-1">
                   <div
@@ -184,10 +296,26 @@ export default function AIReportsSection({
               </div>
 
               {/* Economic News Agent */}
-              <div className="bg-gradient-to-br from-violet-500/[0.06] to-purple-500/[0.02] border border-violet-500/[0.1] p-2 rounded">
+              <div className="bg-gradient-to-br from-violet-500/[0.06] to-purple-500/[0.02] border border-violet-500/[0.1] p-2 rounded group hover:border-violet-500/[0.2] transition-colors">
                 <div className="flex items-center justify-between gap-1.5 mb-1">
                   <span className="text-[8px] font-bold text-violet-300/80 uppercase tracking-wider">News</span>
-                  <span className="text-[8px] font-bold text-violet-400 font-mono">25%</span>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => setSelectedAgentRules('news')}
+                      className="p-0.5 hover:bg-violet-500/10 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                      title="View rules"
+                    >
+                      <Settings className="w-2.5 h-2.5 text-violet-400/60" />
+                    </button>
+                    <button
+                      onClick={() => setSelectedAgentReports('news')}
+                      className="p-0.5 hover:bg-violet-500/10 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                      title="View reports"
+                    >
+                      <FileText className="w-2.5 h-2.5 text-violet-400/60" />
+                    </button>
+                    <span className="text-[8px] font-bold text-violet-400 font-mono">25%</span>
+                  </div>
                 </div>
                 <div className="h-0.5 bg-white/[0.05] rounded overflow-hidden mb-1">
                   <div className="h-full bg-violet-500" style={{ width: '100%' }} />
@@ -198,12 +326,28 @@ export default function AIReportsSection({
               </div>
 
               {/* History & Reports Agent */}
-              <div className="bg-gradient-to-br from-emerald-500/[0.06] to-green-500/[0.02] border border-emerald-500/[0.1] p-2 rounded">
+              <div className="bg-gradient-to-br from-emerald-500/[0.06] to-green-500/[0.02] border border-emerald-500/[0.1] p-2 rounded group hover:border-emerald-500/[0.2] transition-colors">
                 <div className="flex items-center justify-between gap-1.5 mb-1">
                   <span className="text-[8px] font-bold text-emerald-300/80 uppercase tracking-wider">History</span>
-                  <span className="text-[8px] font-bold text-emerald-400 font-mono">
-                    {stats.totalTrades > 100 ? '25' : stats.totalTrades > 50 ? '15' : '0'}%
-                  </span>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => setSelectedAgentRules('history')}
+                      className="p-0.5 hover:bg-emerald-500/10 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                      title="View rules"
+                    >
+                      <Settings className="w-2.5 h-2.5 text-emerald-400/60" />
+                    </button>
+                    <button
+                      onClick={() => setSelectedAgentReports('history')}
+                      className="p-0.5 hover:bg-emerald-500/10 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                      title="View reports"
+                    >
+                      <FileText className="w-2.5 h-2.5 text-emerald-400/60" />
+                    </button>
+                    <span className="text-[8px] font-bold text-emerald-400 font-mono">
+                      {stats.totalTrades > 100 ? '25' : stats.totalTrades > 50 ? '15' : '0'}%
+                    </span>
+                  </div>
                 </div>
                 <div className="h-0.5 bg-white/[0.05] rounded overflow-hidden mb-1">
                   <div
@@ -648,6 +792,66 @@ export default function AIReportsSection({
           {/* Left: Live Analysis or Session Summary — 6 cols */}
           <SummarySection aiAnalysis={aiAnalysis} stats={stats} reports={reports} />
         </div>
+
+        {/* Rules Modal */}
+        {selectedAgentRules && agentRulesData[selectedAgentRules] && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-[#0d1117] border border-white/10 rounded-lg max-w-md w-full max-h-96 overflow-y-auto">
+              <div className="sticky top-0 bg-[#0d1117] border-b border-white/10 px-4 py-3 flex items-center justify-between">
+                <h3 className="text-sm font-bold text-white">{agentRulesData[selectedAgentRules].agentName} Rules</h3>
+                <button
+                  onClick={() => setSelectedAgentRules(null)}
+                  className="text-white/40 hover:text-white/60 text-lg"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="p-4 space-y-3">
+                {agentRulesData[selectedAgentRules].rules.map((rule, i) => (
+                  <div key={i} className="flex gap-2">
+                    <span className="text-white/30 text-xs mt-1">•</span>
+                    <p className="text-xs text-white/60 leading-relaxed">{rule}</p>
+                  </div>
+                ))}
+                <div className="pt-2 border-t border-white/10 mt-3">
+                  <span className="text-[8px] text-white/30">Last modified: {agentRulesData[selectedAgentRules].lastModified}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Reports Modal */}
+        {selectedAgentReports && agentReportsData[selectedAgentReports] && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-[#0d1117] border border-white/10 rounded-lg max-w-md w-full max-h-96 overflow-y-auto">
+              <div className="sticky top-0 bg-[#0d1117] border-b border-white/10 px-4 py-3 flex items-center justify-between">
+                <h3 className="text-sm font-bold text-white">
+                  {selectedAgentReports.charAt(0).toUpperCase() + selectedAgentReports.slice(1)} Reports
+                </h3>
+                <button
+                  onClick={() => setSelectedAgentReports(null)}
+                  className="text-white/40 hover:text-white/60 text-lg"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="p-3 space-y-2">
+                {agentReportsData[selectedAgentReports]
+                  .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+                  .map((rep) => (
+                    <div key={rep.id} className="bg-white/[0.03] border border-white/[0.08] p-2.5 rounded">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-[7px] font-bold text-white/50 uppercase">{rep.type}</span>
+                        <span className="text-[7px] text-white/30 font-mono">{rep.timestamp}</span>
+                      </div>
+                      <p className="text-[8px] text-white/60 leading-relaxed">{rep.content}</p>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
