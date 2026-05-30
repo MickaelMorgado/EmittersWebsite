@@ -161,7 +161,7 @@ export default function AIReportsSection({
     // Risk Agent runs when reports/stats change
     setActiveAgent('risk');
     setAgentLastRun(prev => ({ ...prev, risk: new Date().toISOString() }));
-    const timer = setTimeout(() => setActiveAgent(null), 1500);
+    const timer = setTimeout(() => setActiveAgent(null), 2500);
     return () => clearTimeout(timer);
   }, [reports.maxDrawdown, stats.totalPnl]);
 
@@ -169,17 +169,17 @@ export default function AIReportsSection({
     // Trend Agent runs when streak data changes
     setActiveAgent('trend');
     setAgentLastRun(prev => ({ ...prev, trend: new Date().toISOString() }));
-    const timer = setTimeout(() => setActiveAgent(null), 1500);
+    const timer = setTimeout(() => setActiveAgent(null), 2500);
     return () => clearTimeout(timer);
   }, [reports.longestWinStreak, reports.longestLoseStreak]);
 
   useEffect(() => {
-    // News Agent runs periodically (simulated here every 30s)
+    // News Agent runs periodically (simulated here every 10s for visibility)
     const newsInterval = setInterval(() => {
       setActiveAgent('news');
       setAgentLastRun(prev => ({ ...prev, news: new Date().toISOString() }));
-      setTimeout(() => setActiveAgent(prev => prev === 'news' ? null : prev), 1500);
-    }, 30000);
+      setTimeout(() => setActiveAgent(prev => prev === 'news' ? null : prev), 2500);
+    }, 10000);
     return () => clearInterval(newsInterval);
   }, []);
 
@@ -188,18 +188,18 @@ export default function AIReportsSection({
     if (reportHistory?.globalRecommendation?.lastUpdatedAt) {
       setActiveAgent('history');
       setAgentLastRun(prev => ({ ...prev, history: new Date().toISOString() }));
-      const timer = setTimeout(() => setActiveAgent(null), 1500);
+      const timer = setTimeout(() => setActiveAgent(null), 2500);
       return () => clearTimeout(timer);
     }
   }, [reportHistory?.globalRecommendation?.lastUpdatedAt]);
 
   useEffect(() => {
-    // Master Agent runs constantly (updates every second for demo)
+    // Master Agent runs constantly (updates every 3s for demo)
     const masterInterval = setInterval(() => {
       setActiveAgent('master');
       setAgentLastRun(prev => ({ ...prev, master: new Date().toISOString() }));
-      setTimeout(() => setActiveAgent(prev => prev === 'master' ? null : prev), 1500);
-    }, 1000);
+      setTimeout(() => setActiveAgent(prev => prev === 'master' ? null : prev), 2500);
+    }, 3000);
     return () => clearInterval(masterInterval);
   }, []);
 
@@ -390,10 +390,18 @@ export default function AIReportsSection({
                     transform: scale(1);
                   }
                 }
+                @keyframes spin {
+                  0% { transform: rotate(0deg); }
+                  100% { transform: rotate(360deg); }
+                }
                 .agent-active-risk { animation: riskPulse 2s cubic-bezier(0.36, 0, 0.66, -0.56); }
+                .agent-active-risk .agent-icon { animation: spin 1.5s linear; }
                 .agent-active-trend { animation: trendPulse 2s cubic-bezier(0.36, 0, 0.66, -0.56); }
+                .agent-active-trend .agent-icon { animation: spin 1.5s linear; }
                 .agent-active-news { animation: newsPulse 2s cubic-bezier(0.36, 0, 0.66, -0.56); }
+                .agent-active-news .agent-icon { animation: spin 1.5s linear; }
                 .agent-active-history { animation: historyPulse 2s cubic-bezier(0.36, 0, 0.66, -0.56); }
+                .agent-active-history .agent-icon { animation: spin 1.5s linear; }
               `}</style>
 
               {/* Risk Management Agent */}
@@ -402,7 +410,7 @@ export default function AIReportsSection({
               }`}>
                 <div className="flex items-center justify-between gap-1.5 mb-1">
                   <div className="flex items-center gap-1">
-                    <Bot className="w-2.5 h-2.5 text-red-400/60" />
+                    <Bot className="agent-icon w-2.5 h-2.5 text-red-400/60" />
                     <span className="text-[8px] font-bold text-red-300/80 uppercase tracking-wider">Risk</span>
                     <span className="text-[7px] text-red-400/50 font-mono">{formatTimeAgo(agentLastRun.risk)}</span>
                   </div>
@@ -451,7 +459,7 @@ export default function AIReportsSection({
               }`}>
                 <div className="flex items-center justify-between gap-1.5 mb-1">
                   <div className="flex items-center gap-1">
-                    <Bot className="w-2.5 h-2.5 text-cyan-400/60" />
+                    <Bot className="agent-icon w-2.5 h-2.5 text-cyan-400/60" />
                     <span className="text-[8px] font-bold text-cyan-300/80 uppercase tracking-wider">Trend</span>
                     <span className="text-[7px] text-cyan-400/50 font-mono">{formatTimeAgo(agentLastRun.trend)}</span>
                   </div>
@@ -506,7 +514,7 @@ export default function AIReportsSection({
               }`}>
                 <div className="flex items-center justify-between gap-1.5 mb-1">
                   <div className="flex items-center gap-1">
-                    <Bot className="w-2.5 h-2.5 text-violet-400/60" />
+                    <Bot className="agent-icon w-2.5 h-2.5 text-violet-400/60" />
                     <span className="text-[8px] font-bold text-violet-300/80 uppercase tracking-wider">News</span>
                     <span className="text-[7px] text-violet-400/50 font-mono">{formatTimeAgo(agentLastRun.news)}</span>
                   </div>
@@ -548,7 +556,7 @@ export default function AIReportsSection({
               }`}>
                 <div className="flex items-center justify-between gap-1.5 mb-1">
                   <div className="flex items-center gap-1">
-                    <Bot className="w-2.5 h-2.5 text-emerald-400/60" />
+                    <Bot className="agent-icon w-2.5 h-2.5 text-emerald-400/60" />
                     <span className="text-[8px] font-bold text-emerald-300/80 uppercase tracking-wider">History</span>
                     <span className="text-[7px] text-emerald-400/50 font-mono">{formatTimeAgo(agentLastRun.history)}</span>
                   </div>
