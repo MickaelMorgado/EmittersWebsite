@@ -162,7 +162,15 @@ export default function EquityChart({ data }: EquityChartProps) {
               <YAxis tick={{ fill: 'rgba(255,255,255,0.2)', fontSize: 9 }} axisLine={false} tickLine={false} />
               <Tooltip content={<ChartTooltipContent />} />
               <ReferenceLine y={0} stroke="rgba(255,255,255,0.1)" strokeDasharray="3 3" />
-              <Area type="monotone" dataKey="equity" stroke="rgba(34,211,238,0.8)" strokeWidth={2} fill="url(#equityGradient)" />
+              <Area
+                type="linear"
+                dataKey="equity"
+                stroke="rgba(34,211,238,0.9)"
+                strokeWidth={1.5}
+                fill="url(#equityGradient)"
+                dot={{ fill: 'rgba(34,211,238,0.8)', r: 2 }}
+                activeDot={{ r: 3, fill: 'rgba(34,211,238,1)' }}
+              />
             </AreaChart>
           </ResponsiveContainer>
         )}
