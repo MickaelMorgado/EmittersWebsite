@@ -1,7 +1,7 @@
 "use client";
 
 import { Activity, Brain, Sparkles, Target, TrendingUp, Settings, FileText, Bot } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import SummarySection from './SummarySection';
 
 interface AIAnalysis {
