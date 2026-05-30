@@ -137,8 +137,17 @@ export default function AIReportsSection({
             <div className="grid grid-cols-2 gap-2">
               {/* Risk Management Agent */}
               <div className="bg-gradient-to-br from-red-500/[0.06] to-rose-500/[0.02] border border-red-500/[0.1] p-2 rounded">
-                <div className="flex items-center gap-1.5 mb-1.5">
+                <div className="flex items-center justify-between gap-1.5 mb-1">
                   <span className="text-[8px] font-bold text-red-300/80 uppercase tracking-wider">Risk</span>
+                  <span className="text-[8px] font-bold text-red-400 font-mono">
+                    {reports.maxDrawdown > stats.totalPnl * 0.5 ? '0' : '25'}%
+                  </span>
+                </div>
+                <div className="h-0.5 bg-white/[0.05] rounded overflow-hidden mb-1">
+                  <div
+                    className="h-full bg-red-500"
+                    style={{ width: `${reports.maxDrawdown > stats.totalPnl * 0.5 ? 0 : 100}%` }}
+                  />
                 </div>
                 <p className="text-[8px] leading-tight text-white/45">
                   {reports.maxDrawdown > stats.totalPnl * 0.5
@@ -149,8 +158,21 @@ export default function AIReportsSection({
 
               {/* Probability & Trend Agent */}
               <div className="bg-gradient-to-br from-cyan-500/[0.06] to-blue-500/[0.02] border border-cyan-500/[0.1] p-2 rounded">
-                <div className="flex items-center gap-1.5 mb-1.5">
+                <div className="flex items-center justify-between gap-1.5 mb-1">
                   <span className="text-[8px] font-bold text-cyan-300/80 uppercase tracking-wider">Trend</span>
+                  <span className="text-[8px] font-bold text-cyan-400 font-mono">
+                    {reports.longestWinStreak > 3 ? '25' : reports.longestLoseStreak > 3 ? '0' : '12'}%
+                  </span>
+                </div>
+                <div className="h-0.5 bg-white/[0.05] rounded overflow-hidden mb-1">
+                  <div
+                    className="h-full bg-cyan-500"
+                    style={{
+                      width: `${
+                        reports.longestWinStreak > 3 ? 100 : reports.longestLoseStreak > 3 ? 0 : 48
+                      }%`
+                    }}
+                  />
                 </div>
                 <p className="text-[8px] leading-tight text-white/45">
                   {reports.longestWinStreak > 3
@@ -163,8 +185,12 @@ export default function AIReportsSection({
 
               {/* Economic News Agent */}
               <div className="bg-gradient-to-br from-violet-500/[0.06] to-purple-500/[0.02] border border-violet-500/[0.1] p-2 rounded">
-                <div className="flex items-center gap-1.5 mb-1.5">
+                <div className="flex items-center justify-between gap-1.5 mb-1">
                   <span className="text-[8px] font-bold text-violet-300/80 uppercase tracking-wider">News</span>
+                  <span className="text-[8px] font-bold text-violet-400 font-mono">25%</span>
+                </div>
+                <div className="h-0.5 bg-white/[0.05] rounded overflow-hidden mb-1">
+                  <div className="h-full bg-violet-500" style={{ width: '100%' }} />
                 </div>
                 <p className="text-[8px] leading-tight text-white/45">
                   No major news events
@@ -173,8 +199,21 @@ export default function AIReportsSection({
 
               {/* History & Reports Agent */}
               <div className="bg-gradient-to-br from-emerald-500/[0.06] to-green-500/[0.02] border border-emerald-500/[0.1] p-2 rounded">
-                <div className="flex items-center gap-1.5 mb-1.5">
+                <div className="flex items-center justify-between gap-1.5 mb-1">
                   <span className="text-[8px] font-bold text-emerald-300/80 uppercase tracking-wider">History</span>
+                  <span className="text-[8px] font-bold text-emerald-400 font-mono">
+                    {stats.totalTrades > 100 ? '25' : stats.totalTrades > 50 ? '15' : '0'}%
+                  </span>
+                </div>
+                <div className="h-0.5 bg-white/[0.05] rounded overflow-hidden mb-1">
+                  <div
+                    className="h-full bg-emerald-500"
+                    style={{
+                      width: `${
+                        stats.totalTrades > 100 ? 100 : stats.totalTrades > 50 ? 60 : 0
+                      }%`
+                    }}
+                  />
                 </div>
                 <p className="text-[8px] leading-tight text-white/45">
                   {stats.totalTrades > 100 ? '📊 Sufficient data' : '⏳ Need more trades'}
