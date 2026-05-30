@@ -154,35 +154,51 @@ export default function AIReportsSection({
     history: new Date().toISOString(),
     master: new Date().toISOString(),
   });
+  const [activeAgent, setActiveAgent] = useState<string | null>(null);
 
   // Update agent last run times when data changes
   useEffect(() => {
     // Risk Agent runs when reports/stats change
+    setActiveAgent('risk');
     setAgentLastRun(prev => ({ ...prev, risk: new Date().toISOString() }));
+    const timer = setTimeout(() => setActiveAgent(null), 1500);
+    return () => clearTimeout(timer);
   }, [reports.maxDrawdown, stats.totalPnl]);
 
   useEffect(() => {
     // Trend Agent runs when streak data changes
+    setActiveAgent('trend');
     setAgentLastRun(prev => ({ ...prev, trend: new Date().toISOString() }));
+    const timer = setTimeout(() => setActiveAgent(null), 1500);
+    return () => clearTimeout(timer);
   }, [reports.longestWinStreak, reports.longestLoseStreak]);
 
   useEffect(() => {
     // News Agent runs periodically (simulated here every 30s)
     const newsInterval = setInterval(() => {
+      setActiveAgent('news');
       setAgentLastRun(prev => ({ ...prev, news: new Date().toISOString() }));
+      setTimeout(() => setActiveAgent(prev => prev === 'news' ? null : prev), 1500);
     }, 30000);
     return () => clearInterval(newsInterval);
   }, []);
 
   useEffect(() => {
     // History Agent runs when reports are generated
-    setAgentLastRun(prev => ({ ...prev, history: new Date().toISOString() }));
+    if (reportHistory?.globalRecommendation?.lastUpdatedAt) {
+      setActiveAgent('history');
+      setAgentLastRun(prev => ({ ...prev, history: new Date().toISOString() }));
+      const timer = setTimeout(() => setActiveAgent(null), 1500);
+      return () => clearTimeout(timer);
+    }
   }, [reportHistory?.globalRecommendation?.lastUpdatedAt]);
 
   useEffect(() => {
     // Master Agent runs constantly (updates every second for demo)
     const masterInterval = setInterval(() => {
+      setActiveAgent('master');
       setAgentLastRun(prev => ({ ...prev, master: new Date().toISOString() }));
+      setTimeout(() => setActiveAgent(prev => prev === 'master' ? null : prev), 1500);
     }, 1000);
     return () => clearInterval(masterInterval);
   }, []);
@@ -265,8 +281,33 @@ export default function AIReportsSection({
 
             {/* Sub-Agent Reports */}
             <div className="grid grid-cols-2 gap-2">
+              <style>{`
+                @keyframes riskGlow {
+                  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4), inset 0 0 0 0 rgba(239, 68, 68, 0.1); }
+                  50% { box-shadow: 0 0 15px 3px rgba(239, 68, 68, 0), inset 0 0 8px 2px rgba(239, 68, 68, 0.2); }
+                }
+                @keyframes trendGlow {
+                  0%, 100% { box-shadow: 0 0 0 0 rgba(34, 211, 238, 0.4), inset 0 0 0 0 rgba(34, 211, 238, 0.1); }
+                  50% { box-shadow: 0 0 15px 3px rgba(34, 211, 238, 0), inset 0 0 8px 2px rgba(34, 211, 238, 0.2); }
+                }
+                @keyframes newsGlow {
+                  0%, 100% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.4), inset 0 0 0 0 rgba(168, 85, 247, 0.1); }
+                  50% { box-shadow: 0 0 15px 3px rgba(168, 85, 247, 0), inset 0 0 8px 2px rgba(168, 85, 247, 0.2); }
+                }
+                @keyframes historyGlow {
+                  0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4), inset 0 0 0 0 rgba(16, 185, 129, 0.1); }
+                  50% { box-shadow: 0 0 15px 3px rgba(16, 185, 129, 0), inset 0 0 8px 2px rgba(16, 185, 129, 0.2); }
+                }
+                .agent-active-risk { animation: riskGlow 1.5s ease-out; }
+                .agent-active-trend { animation: trendGlow 1.5s ease-out; }
+                .agent-active-news { animation: newsGlow 1.5s ease-out; }
+                .agent-active-history { animation: historyGlow 1.5s ease-out; }
+              `}</style>
+
               {/* Risk Management Agent */}
-              <div className="bg-gradient-to-br from-red-500/[0.06] to-rose-500/[0.02] border border-red-500/[0.1] p-2 group hover:border-red-500/[0.2] transition-colors">
+              <div className={`bg-gradient-to-br from-red-500/[0.06] to-rose-500/[0.02] border border-red-500/[0.1] p-2 group hover:border-red-500/[0.2] transition-colors rounded ${
+                activeAgent === 'risk' ? 'agent-active-risk' : ''
+              }`}>
                 <div className="flex items-center justify-between gap-1.5 mb-1">
                   <div className="flex items-center gap-1">
                     <Bot className="w-2.5 h-2.5 text-red-400/60" />
@@ -313,7 +354,9 @@ export default function AIReportsSection({
               </div>
 
               {/* Probability & Trend Agent */}
-              <div className="bg-gradient-to-br from-cyan-500/[0.06] to-blue-500/[0.02] border border-cyan-500/[0.1] p-2 group hover:border-cyan-500/[0.2] transition-colors">
+              <div className={`bg-gradient-to-br from-cyan-500/[0.06] to-blue-500/[0.02] border border-cyan-500/[0.1] p-2 group hover:border-cyan-500/[0.2] transition-colors rounded ${
+                activeAgent === 'trend' ? 'agent-active-trend' : ''
+              }`}>
                 <div className="flex items-center justify-between gap-1.5 mb-1">
                   <div className="flex items-center gap-1">
                     <Bot className="w-2.5 h-2.5 text-cyan-400/60" />
@@ -366,7 +409,9 @@ export default function AIReportsSection({
               </div>
 
               {/* Economic News Agent */}
-              <div className="bg-gradient-to-br from-violet-500/[0.06] to-purple-500/[0.02] border border-violet-500/[0.1] p-2 group hover:border-violet-500/[0.2] transition-colors">
+              <div className={`bg-gradient-to-br from-violet-500/[0.06] to-purple-500/[0.02] border border-violet-500/[0.1] p-2 group hover:border-violet-500/[0.2] transition-colors rounded ${
+                activeAgent === 'news' ? 'agent-active-news' : ''
+              }`}>
                 <div className="flex items-center justify-between gap-1.5 mb-1">
                   <div className="flex items-center gap-1">
                     <Bot className="w-2.5 h-2.5 text-violet-400/60" />
@@ -406,7 +451,9 @@ export default function AIReportsSection({
               </div>
 
               {/* History & Reports Agent */}
-              <div className="bg-gradient-to-br from-emerald-500/[0.06] to-green-500/[0.02] border border-emerald-500/[0.1] p-2 group hover:border-emerald-500/[0.2] transition-colors">
+              <div className={`bg-gradient-to-br from-emerald-500/[0.06] to-green-500/[0.02] border border-emerald-500/[0.1] p-2 group hover:border-emerald-500/[0.2] transition-colors rounded ${
+                activeAgent === 'history' ? 'agent-active-history' : ''
+              }`}>
                 <div className="flex items-center justify-between gap-1.5 mb-1">
                   <div className="flex items-center gap-1">
                     <Bot className="w-2.5 h-2.5 text-emerald-400/60" />
