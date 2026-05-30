@@ -156,7 +156,7 @@ export async function GET(request: Request) {
     return NextResponse.json({
       version: data.version || '1.20',
       openPositions,
-      history: history.slice(-20).reverse(),
+      history: history.reverse(),
       stats: {
         totalTrades: finalTotal,
         wins: finalWins,
