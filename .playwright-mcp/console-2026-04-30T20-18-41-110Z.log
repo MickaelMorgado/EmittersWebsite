@@ -1,0 +1,34 @@
+[     221ms] [LOG] Loading CSV from: EURUSD_M5_202501020200_202509291100.csv @ http://localhost:8080/tools/index6.js?v=17-multi-position:559
+[     311ms] [LOG] Defaulting to SciChart Community Edition. Usage constitutes acceptance of our EULA and terms at https://www.scichart.com/community-licensing. See https://store.scichart.com for commercial licensing options. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[     311ms] [LOG] The community license is valid for 6 months from the date the version in use was released.  This version 4.0.933 has 74 days remaining @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[     311ms] [LOG] SciChart is looking for a paid developer activation from the scichart licensing wizard... To disable this call SciChartSurface.UseCommunityLicense() @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[     342ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[     399ms] [LOG] CSV loaded and cached, length: 3319430 rows: 55390 @ http://localhost:8080/tools/index6.js?v=17-multi-position:573
+[    1803ms] [LOG] Fast Mode auto-enabled @ http://localhost:8080/tools/index6.js?v=17-multi-position:584
+[    5366ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[    7899ms] [LOG] Running optimized backtest with 55390 candles... @ http://localhost:8080/tools/index6.js?v=17-multi-position:2929
+[    7953ms] [LOG] Multi-position preset: disabled @ http://localhost:8080/tools/index6.js?v=17-multi-position:79
+[   12336ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   17363ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   22417ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   27456ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   32493ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   37535ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   42573ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   47611ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   47612ms] [LOG] Failed to connect to licensing wizard. Refresh page to retry. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[  208333ms] [LOG] 2025.01.02 @ http://localhost:8080/tools/index6.js?v=17-multi-position:2654
+[  222964ms] [LOG] 2025.01.03 @ http://localhost:8080/tools/index6.js?v=17-multi-position:2654
+[  237465ms] [LOG] 2025.01.06 @ http://localhost:8080/tools/index6.js?v=17-multi-position:2654
+[  253715ms] [LOG] 2025.01.07 @ http://localhost:8080/tools/index6.js?v=17-multi-position:2654
+[  269128ms] [LOG] 2025.01.08 @ http://localhost:8080/tools/index6.js?v=17-multi-position:2654
+[  283109ms] [LOG] 2025.01.09 @ http://localhost:8080/tools/index6.js?v=17-multi-position:2654
+[  299741ms] [LOG] 2025.01.10 @ http://localhost:8080/tools/index6.js?v=17-multi-position:2654
+[  315310ms] [LOG] 2025.01.13 @ http://localhost:8080/tools/index6.js?v=17-multi-position:2654
+[  327048ms] [LOG] 2025.01.14 @ http://localhost:8080/tools/index6.js?v=17-multi-position:2654
+[  337537ms] [LOG] 2025.01.15 @ http://localhost:8080/tools/index6.js?v=17-multi-position:2654
+[  347916ms] [LOG] 2025.01.16 @ http://localhost:8080/tools/index6.js?v=17-multi-position:2654
+[  358713ms] [LOG] 2025.01.17 @ http://localhost:8080/tools/index6.js?v=17-multi-position:2654
+[  369083ms] [LOG] 2025.01.20 @ http://localhost:8080/tools/index6.js?v=17-multi-position:2654
+[  379399ms] [LOG] 2025.01.21 @ http://localhost:8080/tools/index6.js?v=17-multi-position:2654
+[  389974ms] [LOG] 2025.01.22 @ http://localhost:8080/tools/index6.js?v=17-multi-position:2654

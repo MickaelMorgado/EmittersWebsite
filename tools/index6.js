@@ -26,23 +26,130 @@ const EnumDirection = {
   BEAR: 'BEAR',
 };
 
+// Multi-position strategy presets
+const MULTI_POSITION_PRESETS = {
+  single: {
+    enabled: false,
+    positions: []
+  },
+  'c-only': {
+    enabled: true,
+    positions: [
+      { lot: 0.5, name: 'C', slMoveStartR: 1.0, trailingStartR: 2.5, lotMultiplier: 0.5, tpMultiplier: 0.5 }
+    ]
+  },
+  balanced: {
+    enabled: true,
+    positions: [
+      { lot: 0.5, name: 'A', slMoveStartR: 0.3, trailingStartR: 0.8, lotMultiplier: 0.5, tpMultiplier: 1.0 },
+      { lot: 0.7, name: 'B', slMoveStartR: 0.7, trailingStartR: 1.5, lotMultiplier: 0.7, tpMultiplier: 0.7 },
+      { lot: 1.0, name: 'C', slMoveStartR: 1.0, trailingStartR: 2.5, lotMultiplier: 1.0, tpMultiplier: 0.5 }
+    ]
+  },
+  equal: {
+    enabled: true,
+    positions: [
+      { lot: 1.0, name: 'A', slMoveStartR: 0.3, trailingStartR: 0.8, lotMultiplier: 1.0, tpMultiplier: 1.0 },
+      { lot: 1.0, name: 'B', slMoveStartR: 0.7, trailingStartR: 1.5, lotMultiplier: 1.0, tpMultiplier: 1.0 },
+      { lot: 1.0, name: 'C', slMoveStartR: 1.0, trailingStartR: 2.5, lotMultiplier: 1.0, tpMultiplier: 1.0 }
+    ]
+  },
+  aggressive: {
+    enabled: true,
+    positions: [
+      { lot: 0.3, name: 'A', slMoveStartR: 0.3, trailingStartR: 0.8, lotMultiplier: 0.3, tpMultiplier: 1.5 },
+      { lot: 0.7, name: 'B', slMoveStartR: 0.7, trailingStartR: 1.5, lotMultiplier: 0.7, tpMultiplier: 0.7 },
+      { lot: 1.5, name: 'C', slMoveStartR: 1.0, trailingStartR: 2.5, lotMultiplier: 1.5, tpMultiplier: 0.3 }
+    ]
+  },
+  conservative: {
+    enabled: true,
+    positions: [
+      { lot: 0.5, name: 'A', slMoveStartR: 0.25, trailingStartR: 0.6, lotMultiplier: 0.5, tpMultiplier: 0.5 },
+      { lot: 0.5, name: 'B', slMoveStartR: 0.6, trailingStartR: 1.2, lotMultiplier: 0.5, tpMultiplier: 0.5 },
+      { lot: 0.5, name: 'C', slMoveStartR: 1.0, trailingStartR: 2.0, lotMultiplier: 0.5, tpMultiplier: 0.5 }
+    ]
+  },
+  'balanced-runner': {
+    enabled: true,
+    positions: [
+      { lot: 0.5, name: 'A', slMoveStartR: 0.3, trailingStartR: 0.8, lotMultiplier: 0.5, tpMultiplier: 1.0 },
+      { lot: 0.7, name: 'B', slMoveStartR: 0.7, trailingStartR: 1.5, lotMultiplier: 0.7, tpMultiplier: 0.7 },
+      { lot: 1.0, name: 'C', slMoveStartR: 1.0, runToTP: true, lotMultiplier: 1.0, tpMultiplier: 0.5 }
+    ]
+  },
+  'aggressive-runner': {
+    enabled: true,
+    positions: [
+      { lot: 0.3, name: 'A', slMoveStartR: 0.3, trailingStartR: 0.8, lotMultiplier: 0.3, tpMultiplier: 1.5 },
+      { lot: 0.7, name: 'B', slMoveStartR: 0.7, trailingStartR: 1.5, lotMultiplier: 0.7, tpMultiplier: 0.7 },
+      { lot: 1.5, name: 'C', slMoveStartR: 1.0, runToTP: true, lotMultiplier: 1.5, tpMultiplier: 0.3 }
+    ]
+  }
+};
+
+// Get preset from dropdown, URL, or default to 'balanced'
+const getMultiPositionConfig = () => {
+  // First check dropdown value
+  const dropdown = document.getElementById('multiPositionPreset');
+  let presetKey = 'balanced';
+  if (dropdown && dropdown.value) {
+    presetKey = dropdown.value;
+  } else {
+    // Fall back to URL parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    presetKey = urlParams.get('multipreset') || 'balanced';
+  }
+  const config = MULTI_POSITION_PRESETS[presetKey] || MULTI_POSITION_PRESETS.balanced;
+  return { ...config, presetName: presetKey };
+};
+
 // Run optimized backtest (no chart rendering)
 const runOptimizedBacktest = (params, csvRows) => {
-  // Reset state for new backtest run
-  const localOrdersHistory = [];
-  let localCSIDLookbackCandleSerie = [];
-  let localCSIDSignalTriggered = false;
-  let localCSIDCoolddownSignal = 5;
-  let localCandlesFromBuffer = [];
-  let localChartCandleIndex = 0;
-  let localCandleTimes = [];
-  let localTimeToIndex = new Map();
-  let localNumbDays = 0;
-  let localProcessedDays = 0;
-  let localTradeCount = 0;
+  // Get multi-position config from params preset (if provided), otherwise from dropdown
+  let MULTI_POSITION_CONFIG;
+  if (params && params.preset) {
+    // Use preset from params (for Grid Search)
+    const presetKey = params.preset;
+    const config = MULTI_POSITION_PRESETS[presetKey] || MULTI_POSITION_PRESETS.balanced;
+    MULTI_POSITION_CONFIG = { ...config, presetName: presetKey };
+  } else {
+    // Fall back to reading from dropdown
+    MULTI_POSITION_CONFIG = getMultiPositionConfig();
+  }
+  console.log('Multi-position preset:', MULTI_POSITION_CONFIG.enabled ?
+    `enabled (${MULTI_POSITION_CONFIG.positions.length} positions)` : 'disabled');
   
-  // Local state for indicators
-  let localHighestHighLong = [];
+  // Reset state for new backtest run
+   const localOrdersHistory = [];
+   let localCSIDLookbackCandleSerie = [];
+   let localCSIDSignalTriggered = false;
+   let localCSIDCoolddownSignal = 5;
+   let localCandlesFromBuffer = [];
+   let localChartCandleIndex = 0;
+   let localCandleTimes = [];
+   let localTimeToIndex = new Map();
+   let localNumbDays = 0;
+   let localProcessedDays = 0;
+   let localTradeCount = 0;
+   
+       // Monthly max loss tracking
+       let localCurrentMonth = null;
+       let localMonthlyMaxLossPercent = params.monthlyMaxLossPercent || 5; // Default 5%
+       let localMonthlyPnl = 0; // Track monthly P&L in money terms
+       const MONTHLY_START_EQUITY = 10000; // Assume $10k starting equity
+       
+       // Reset monthly P&L on new month
+       const checkMonthlyReset = (candleDate) => {
+         const month = candleDate?.slice(0, 7); // "2026.03"
+         if (month && month !== localCurrentMonth) {
+           localCurrentMonth = month;
+           localMonthlyPnl = 0;
+           console.log(`New month: ${month}, monthly max loss: ${localMonthlyMaxLossPercent}%`);
+         }
+       };
+   // Local state for indicators
+   let localHighestHighLong = [];
   let localLowestLowShort = [];
   let localListeningATR = true;
   let localCanTakeATrade = true;
@@ -72,9 +179,11 @@ const runOptimizedBacktest = (params, csvRows) => {
   };
   
   const inTradingTimeRange = (d) => {
-    const startRangeTime = new Date(`${d[EnumMT5OHLC.DATE]} ${localSessionStart}`);
-    const endRangeTime = new Date(`${d[EnumMT5OHLC.DATE]} ${localSessionEnd}`);
-    const currentTime = new Date(`${d[EnumMT5OHLC.DATE]} ${d[EnumMT5OHLC.TIME]}`);
+    // Convert MT5 date format (YYYY.MM.DD) to JS format (YYYY-MM-DD)
+    const dateFormatted = d[EnumMT5OHLC.DATE].replaceAll('.', '-');
+    const startRangeTime = new Date(`${dateFormatted} ${localSessionStart}`);
+    const endRangeTime = new Date(`${dateFormatted} ${localSessionEnd}`);
+    const currentTime = new Date(`${dateFormatted} ${d[EnumMT5OHLC.TIME]}`);
     localArrayOfSignals[1] = currentTime >= startRangeTime && currentTime <= endRangeTime;
   };
   
@@ -118,7 +227,7 @@ const runOptimizedBacktest = (params, csvRows) => {
     if (candles.length < period) return 0;
     let sum = 0;
     for (let i = candles.length - period; i < candles.length; i++) {
-      sum += candles[i][EnumMT5OHLC.CLOSE];
+      sum += Number(candles[i][EnumMT5OHLC.CLOSE]);
     }
     return sum / period;
   };
@@ -154,6 +263,9 @@ const runOptimizedBacktest = (params, csvRows) => {
       localProcessedDays++;
     }
     
+    // Check for new month and reset monthly P&L
+    checkMonthlyReset(row[EnumMT5OHLC.DATE]);
+    
     inTradingTimeRange(row);
     calcATR(row, dataIndex);
     
@@ -163,19 +275,20 @@ const runOptimizedBacktest = (params, csvRows) => {
       const recentCandles = localCSIDLookbackCandleSerie.slice(-lookbackPeriod - 1);
       if (recentCandles.length >= lookbackPeriod) {
         const highPrices = recentCandles.slice(0, lookbackPeriod).map(c => 
-          getCandleDirection(c[EnumMT5OHLC.OPEN], c[EnumMT5OHLC.CLOSE]) === 'BULL' 
-            ? c[EnumMT5OHLC.CLOSE] : c[EnumMT5OHLC.OPEN]
+          getCandleDirection(Number(c[EnumMT5OHLC.OPEN]), Number(c[EnumMT5OHLC.CLOSE])) === 'BULL' 
+            ? Number(c[EnumMT5OHLC.CLOSE]) : Number(c[EnumMT5OHLC.OPEN])
         );
         const lowPrices = recentCandles.slice(0, lookbackPeriod).map(c => 
-          getCandleDirection(c[EnumMT5OHLC.OPEN], c[EnumMT5OHLC.CLOSE]) === 'BULL' 
-            ? c[EnumMT5OHLC.OPEN] : c[EnumMT5OHLC.CLOSE]
+          getCandleDirection(Number(c[EnumMT5OHLC.OPEN]), Number(c[EnumMT5OHLC.CLOSE])) === 'BULL' 
+            ? Number(c[EnumMT5OHLC.OPEN]) : Number(c[EnumMT5OHLC.CLOSE])
         );
         
         localHighestHighLong.push(Math.max(...highPrices));
         localLowestLowShort.push(Math.min(...lowPrices));
         
-        const bullishCSID = row[EnumMT5OHLC.CLOSE] > localHighestHighLong[localHighestHighLong.length - 2];
-        const bearishCSID = row[EnumMT5OHLC.CLOSE] < localLowestLowShort[localLowestLowShort.length - 2];
+        const currentClose = Number(row[EnumMT5OHLC.CLOSE]);
+        const bullishCSID = currentClose > localHighestHighLong[localHighestHighLong.length - 2];
+        const bearishCSID = currentClose < localLowestLowShort[localLowestLowShort.length - 2];
         
         const maArray = [];
         for (let i = Math.max(0, localCSIDLookbackCandleSerie.length - 10); i < localCSIDLookbackCandleSerie.length; i++) {
@@ -192,20 +305,50 @@ const runOptimizedBacktest = (params, csvRows) => {
             localCSIDCoolddownSignal = 5;
           }
           
-          const direction = bullishCSID ? 'BULL' : 'BEAR';
-          const entryPrice = row[EnumMT5OHLC.OPEN];
+const direction = bullishCSID ? 'BULL' : 'BEAR';
+          const entryPrice = Number(row[EnumMT5OHLC.OPEN]);
           
-          localOrdersHistory.push({
-            id: localOrdersHistory.length + 1,
-            breakEvenMoved: false,
-            time: candleDateTime,
-            price: entryPrice,
-            sl: direction === 'BULL' ? entryPrice - localSlSize() : entryPrice + localSlSize(),
-            tp: direction === 'BULL' ? entryPrice + localTpSize() : entryPrice - localTpSize(),
-            direction: direction,
-            closed: false,
-            closedOrderType: 'PENDING',
-          });
+          if (MULTI_POSITION_CONFIG.enabled) {
+            // Create 3 positions at once (each with per-position TP target)
+            MULTI_POSITION_CONFIG.positions.forEach(posConfig => {
+              // Per-position TP: scale base TP by lot multiplier (e.g., if TP=3R, A gets 3.0R, B gets 2.1R, C gets 1.5R)
+              const positionTpDistance = (posConfig.tpMultiplier || 1.0) * localTpSize();
+              localOrdersHistory.push({
+                id: `${localTradeCount + 1}`,
+                posName: posConfig.name,
+                lotMultiplier: posConfig.lotMultiplier,
+                time: candleDateTime,
+                price: entryPrice,
+                sl: direction === 'BULL' ? entryPrice - localSlSize() : entryPrice + localSlSize(),
+                initialSL: direction === 'BULL' ? entryPrice - localSlSize() : entryPrice + localSlSize(),
+                tp: direction === 'BULL' ? entryPrice + positionTpDistance : entryPrice - positionTpDistance,
+                direction: direction,
+                entryCandleIndex: localChartCandleIndex,
+                slMoveStartR: posConfig.slMoveStartR,
+                slMoveCount: 0,
+                trailingStartR: posConfig.trailingStartR,
+                runToTP: posConfig.runToTP || false,
+                trailingActive: false,
+                breakEvenMoved: false,
+                closed: false,
+                closedOrderType: 'PENDING',
+              });
+            });
+          } else {
+            // Single position mode (original)
+            localOrdersHistory.push({
+              id: localOrdersHistory.length + 1,
+              breakEvenMoved: false,
+              time: candleDateTime,
+              price: entryPrice,
+              entryCandleIndex: localChartCandleIndex,
+              sl: direction === 'BULL' ? entryPrice - localSlSize() : entryPrice + localSlSize(),
+              tp: direction === 'BULL' ? entryPrice + localTpSize() : entryPrice - localTpSize(),
+              direction: direction,
+              closed: false,
+              closedOrderType: 'PENDING',
+            });
+          }
           
           localTradeCount++;
           localListeningATR = true;
@@ -217,42 +360,103 @@ const runOptimizedBacktest = (params, csvRows) => {
     
     const activeOrders = localOrdersHistory.filter(o => !o.closed);
     activeOrders.forEach(order => {
-      const high = row[EnumMT5OHLC.HIGH];
-      const low = row[EnumMT5OHLC.LOW];
-      const close = row[EnumMT5OHLC.CLOSE];
+      const high = Number(row[EnumMT5OHLC.HIGH]);
+      const low = Number(row[EnumMT5OHLC.LOW]);
+      const close = Number(row[EnumMT5OHLC.CLOSE]);
       
-      if (!order.breakEvenMoved) {
-        if ((order.direction === 'BULL' && close >= order.price + localSlSize()) ||
-            (order.direction === 'BEAR' && close <= order.price - localSlSize())) {
-          order.sl = order.price;
-          order.breakEvenMoved = true;
+      // Calculate current R
+      const currentR = order.direction === 'BULL'
+        ? (close - order.price) / localSlSize()
+        : (order.price - close) / localSlSize();
+      
+      if (MULTI_POSITION_CONFIG.enabled) {
+        // Multi-position SL management
+        
+        // Skip trailing logic on the entry candle
+        if (localChartCandleIndex > order.entryCandleIndex) {
+        
+        // 1. Progressive SL movement (move SL every 0.5R)
+        if (!order.trailingActive) {
+          const slMoveThreshold = order.slMoveStartR + (order.slMoveCount * 0.5);
+          if (currentR >= slMoveThreshold) {
+            // For BULL: SL starts at entry - 1R, moves up as profit increases
+            // For BEAR: SL starts at entry + 1R, moves down as profit increases
+            const slAdjustment = slMoveThreshold * localSlSize();
+            const newSL = order.direction === 'BULL'
+              ? order.price - localSlSize() + slAdjustment
+              : order.price + localSlSize() - slAdjustment;
+            order.sl = newSL;
+            order.slMoveCount++;
+          }
+        }
+
+        // 2. Activate trailing after trailingStartR (skip for runToTP positions — they ride to TP)
+        if (!order.runToTP && currentR >= order.trailingStartR && !order.trailingActive) {
+          order.trailingActive = true;
+        }
+
+        // 3. Apply trailing stop
+        if (order.trailingActive && localCandlesFromBuffer.length >= 2) {
+          const prevCandle = localCandlesFromBuffer[localCandlesFromBuffer.length - 2];
+          let candleSize = Math.abs(Number(prevCandle[EnumMT5OHLC.CLOSE]) - Number(prevCandle[EnumMT5OHLC.OPEN]));
+          let trailingMultiplier = localStrategy === 'CSID_W_MA_DynamicTS'
+            ? (candleSize >= 0.0005 ? 3 : candleSize >= 0.0003 ? 2 : 1)
+            : 1;
+          const trailingSize = localTsSize() * trailingMultiplier;
+
+          const newTrailingSL = order.direction === 'BULL'
+            ? close - trailingSize
+            : close + trailingSize;
+
+          // Only improve SL (never move backwards)
+          const slImproved = order.direction === 'BULL'
+            ? newTrailingSL > order.sl
+            : newTrailingSL < order.sl;
+
+          if (slImproved) {
+            order.sl = newTrailingSL;
+          }
+        } // end trailingActive check
+      } // end: skip entry candle check
+      
+      } else {
+        // Single position mode (original logic)
+        if (!order.breakEvenMoved) {
+          if ((order.direction === 'BULL' && close >= order.price + localSlSize()) ||
+              (order.direction === 'BEAR' && close <= order.price - localSlSize())) {
+            order.sl = order.price;
+            order.breakEvenMoved = true;
+          }
+        }
+        
+        if (localCandlesFromBuffer.length >= 2) {
+          const prevCandle = localCandlesFromBuffer[localCandlesFromBuffer.length - 2];
+          let candleSize = Math.abs(Number(prevCandle[EnumMT5OHLC.CLOSE]) - Number(prevCandle[EnumMT5OHLC.OPEN]));
+          
+          let trailingMultiplier = localStrategy === 'CSID_W_MA_DynamicTS' 
+            ? (candleSize >= 0.0005 ? 3 : candleSize >= 0.0003 ? 2 : 1)
+            : 1;
+          
+          const trailingSize = localTsSize() * trailingMultiplier;
+          if (order.direction === 'BULL') {
+            order.sl += trailingSize;
+          } else {
+            order.sl -= trailingSize;
+          }
         }
       }
       
-      if (localCandlesFromBuffer.length >= 2) {
-        const prevCandle = localCandlesFromBuffer[localCandlesFromBuffer.length - 2];
-        let candleSize = Math.abs(prevCandle[EnumMT5OHLC.CLOSE] - prevCandle[EnumMT5OHLC.OPEN]);
-        
-        let trailingMultiplier = localStrategy === 'CSID_W_MA_DynamicTS' 
-          ? (candleSize >= 0.0005 ? 3 : candleSize >= 0.0003 ? 2 : 1)
-          : 1;
-        
-        const trailingSize = localTsSize() * trailingMultiplier;
-        if (order.direction === 'BULL') {
-          order.sl += trailingSize;
-        } else {
-          order.sl -= trailingSize;
-        }
-      }
-      
-      if ((order.direction === 'BULL' && (high >= order.tp || low <= order.sl)) ||
-          (order.direction === 'BEAR' && (low <= order.tp || high >= order.sl))) {
+// Check for SL hit (or TP if you want - this strategy only uses SL)
+      if ((order.direction === 'BULL' && low <= order.sl) ||
+          (order.direction === 'BEAR' && high >= order.sl)) {
         order.closed = true;
-        order.closedPrice = order.direction === 'BULL' 
-          ? (high >= order.tp ? order.tp : order.sl)
-          : (low <= order.tp ? order.tp : order.sl);
+        order.closedPrice = order.sl;
         order.closedTime = candleDateTime;
-        order.closedOrderType = high >= order.tp ? 'CLOSED_BY_TP' : 'CLOSED_BY_SL';
+        if (order.direction === 'BULL') {
+          order.closedOrderType = high >= order.tp ? 'CLOSED_BY_TP' : 'CLOSED_BY_SL';
+        } else {
+          order.closedOrderType = low <= order.tp ? 'CLOSED_BY_TP' : 'CLOSED_BY_SL';
+        }
         order.pnlPoints = order.direction === 'BULL'
           ? order.closedPrice - order.price
           : order.price - order.closedPrice;
@@ -274,7 +478,9 @@ const runOptimizedBacktest = (params, csvRows) => {
       if (order.closedOrderType === 'CLOSED_BY_TP') profitsInPoints += localTpSize();
       if (order.closedOrderType === 'CLOSED_BY_SL') profitsInPoints -= localSlSize();
       
-      const tradeMoney = (order.pnlPoints - commissionPoints) * 100000 * localLotSize();
+      // Use lotMultiplier if available (multi-position mode), otherwise use default lotSize
+      const lotSize = order.lotMultiplier ? order.lotMultiplier * localLotSize() : localLotSize();
+      const tradeMoney = (order.pnlPoints - commissionPoints) * 100000 * lotSize;
       equityDataMoney.push((equityDataMoney.at(-1) || 0) + tradeMoney);
       
       if (tradeMoney > 0) {
@@ -349,6 +555,8 @@ const $CommissionSizeInput = document.getElementById('CommissionSize');
 const $TSIncrementInput = document.getElementById('TSIncrement');
 const $MAPeriodInput = document.getElementById('MAPeriod');
 const $MAThresholdInput = document.getElementById('MAThreshold');
+const $InstitutionalMultiplierInput = document.getElementById('InstitutionalMultiplier');
+const $EntryZoneDistanceInput = document.getElementById('EntryZoneDistance');
 const $textareaHistoricalTradesLines = document.getElementById('textareaHistoricalTradesLines');
 const $firstDate = document.getElementById('firstDate');
 const $lastDate = document.getElementById('lastDate');
@@ -419,7 +627,42 @@ if (urlParams.has('commissionsize')) { $CommissionSizeInput.value = urlParams.ge
 if (urlParams.has('slpoints')) { $SLPointsInput.value = urlParams.get('slpoints') }
 if (urlParams.has('tppoints')) { $TPPointsInput.value = urlParams.get('tppoints') }
 if (urlParams.has('tsincrement')) { $TSIncrementInput.value = urlParams.get('tsincrement') }
+if (urlParams.has('institutionalmultiplier')) { $InstitutionalMultiplierInput.value = urlParams.get('institutionalmultiplier') }
+if (urlParams.has('entryzonedistance')) { $EntryZoneDistanceInput.value = urlParams.get('entryzonedistance') }
 if (urlParams.has('strategy')) { $strategyInput.value = urlParams.get('strategy') }
+
+// Auto-load CSV file from URL parameter
+if (urlParams.has('csv')) {
+  const csvPath = urlParams.get('csv');
+  console.log('Loading CSV from:', csvPath);
+  fetch(csvPath)
+    .then(response => response.text())
+    .then(csvText => {
+      document.getElementById('csvContent').value = csvText;
+      // Also cache the data for Run Backtest button
+      const lines = csvText.split(/\r?\n/).filter(Boolean);
+      const headers = lines[0].split('\t');
+      cachedCSVData = lines.slice(1).map(line => {
+        const values = line.split('\t');
+        const row = {};
+        headers.forEach((h, i) => row[h] = values[i]);
+        return row;
+      }).filter(row => row['<OPEN>']);
+      console.log('CSV loaded and cached, length:', csvText.length, 'rows:', cachedCSVData.length);
+    })
+    .catch(err => console.error('Failed to load CSV:', err));
+}
+
+// Auto-enable Fast Mode from URL parameter
+if (urlParams.has('fastmode')) {
+  setTimeout(() => {
+    const fastModeCheckbox = document.querySelector('input[type="checkbox"][id*="fast"]');
+    if (fastModeCheckbox) {
+      fastModeCheckbox.checked = true;
+      console.log('Fast Mode auto-enabled');
+    }
+  }, 1000);
+}
 
 const saveConfigs = () => {
   const urlParams = new URLSearchParams(window.location.search);
@@ -452,6 +695,35 @@ const loadConfigs = () => {
 
   window.location.search = configuration;
 }
+
+// Generate default MQL5 code on page load
+const generateDefaultMQL = () => {
+  const defaultParams = {
+    slSize: 0.0005,
+    tpSize: 0.0009,
+    lotSize: 1.0,
+    commissionSize: 0.00005,
+    tsSize: 0,
+    maPeriod: 200,
+    maThreshold: 0.003,
+    strategy: 'CSID_W_MA_DynamicTS',
+    sessionStart: '09:50:00',
+    sessionEnd: '11:00:00',
+    monthlyMaxLossPercent: 5,
+    multiPositionPreset: 'c-only'
+  };
+
+  const mqlText = generateMQLFromParams(defaultParams);
+  const textarea = document.getElementById('algoEditorTextareaMain1');
+  if (textarea) {
+    textarea.value = mqlText;
+  }
+};
+
+// Call on page load
+setTimeout(() => {
+  generateDefaultMQL();
+}, 500);
 
 // Panel order in HTML: [0]=MQL5, [1]=Backtesting Algo, [2]=Review, [3]=Comparison
 
@@ -573,7 +845,28 @@ $CommissionSizeInput?.addEventListener('change', () => animateActiveClass($csvRe
 $TSIncrementInput?.addEventListener('change', () => animateActiveClass($csvRefresh));
 $MAPeriodInput?.addEventListener('change', () => animateActiveClass($csvRefresh));
 $MAThresholdInput?.addEventListener('change', () => animateActiveClass($csvRefresh));
+$InstitutionalMultiplierInput?.addEventListener('change', () => animateActiveClass($csvRefresh));
+$EntryZoneDistanceInput?.addEventListener('change', () => animateActiveClass($csvRefresh));
 $strategyInput?.addEventListener('change', () => animateActiveClass($csvRefresh));
+
+// Enable/Disable Institutional Multiplier input based on preset selection
+const $multiPositionPreset = document.getElementById('multiPositionPreset');
+const updateInstitutionalMultiplierState = () => {
+  if ($multiPositionPreset && $InstitutionalMultiplierInput) {
+    const isC_Only = $multiPositionPreset.value === 'c-only';
+    $InstitutionalMultiplierInput.disabled = !isC_Only;
+  }
+};
+
+// Set initial state on page load
+updateInstitutionalMultiplierState();
+
+// Update when preset changes
+$multiPositionPreset?.addEventListener('change', () => {
+  updateInstitutionalMultiplierState();
+  animateActiveClass($csvRefresh);
+});
+
 /* ---- */
 
 // Backtesting Controls - Music Player Style
@@ -617,6 +910,82 @@ $backtestingNext.addEventListener('click', () => {
     document.getElementById('loading-element').classList.add('visible');
   }
 });
+
+// Visualize Results button
+const $visualizeResultsBtn = document.getElementById('visualizeResultsBtn');
+if ($visualizeResultsBtn) {
+  $visualizeResultsBtn.addEventListener('click', () => {
+    visualizeBacktestResults();
+  });
+}
+
+// Show Visualize button only when backtest has results
+const showVisualizeButton = () => {
+  if ($visualizeResultsBtn && ordersHistory.length > 0) {
+    $visualizeResultsBtn.style.display = 'inline-block';
+  }
+};
+
+// Hide Visualize button when starting new backtest
+const hideVisualizeButton = () => {
+  if ($visualizeResultsBtn) {
+    $visualizeResultsBtn.style.display = 'none';
+  }
+};
+
+// Populate trade history textarea for easy sharing
+const populateTradeHistoryTextarea = () => {
+  const $tradeHistoryTextarea = document.getElementById('tradeHistoryExport');
+  if (!$tradeHistoryTextarea) return;
+
+  if (ordersHistory.length === 0) {
+    $tradeHistoryTextarea.value = 'No trades executed';
+    return;
+  }
+
+  // Format trade history as tab-separated for easy copy/paste
+  let tradeHistoryText = 'ID\tPosition\tDirection\tEntry Time\tEntry Price\tClose Time\tClose Price\tTP\tSL\tPnL Points\tPnL Money\tLot Size\tResult\n';
+  tradeHistoryText += '='.repeat(150) + '\n';
+
+  ordersHistory.forEach((order) => {
+    const direction = order.direction === 1 ? 'LONG' : 'SHORT';
+    const closedPrice = order.closedPrice?.toFixed(6) || 'OPEN';
+    const pnlPoints = order.pnlPoints?.toFixed(6) || '0';
+    const pnlMoney = order.pnlMoney?.toFixed(2) || '0';
+    const lotSize = order.lotMultiplier || '1';
+    const result = order.closed ? (order.tradeResult || 'UNKNOWN') : 'OPEN';
+
+    tradeHistoryText += `${order.id}\t${order.posName || 'N/A'}\t${direction}\t${order.time}\t${order.price.toFixed(6)}\t${order.closedTime || 'OPEN'}\t${closedPrice}\t${order.tp.toFixed(6)}\t${order.sl.toFixed(6)}\t${pnlPoints}\t$${pnlMoney}\t${lotSize}\t${result}\n`;
+  });
+
+  $tradeHistoryTextarea.value = tradeHistoryText;
+};
+
+// Copy trade history to clipboard
+const copyTradeHistoryToClipboard = () => {
+  const $tradeHistoryTextarea = document.getElementById('tradeHistoryExport');
+  if (!$tradeHistoryTextarea || !$tradeHistoryTextarea.value) {
+    alert('No trade history to copy');
+    return;
+  }
+
+  $tradeHistoryTextarea.select();
+  document.execCommand('copy');
+
+  // Show feedback
+  const $copyBtn = document.getElementById('copyTradeHistoryBtn');
+  const originalText = $copyBtn.innerHTML;
+  $copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+  setTimeout(() => {
+    $copyBtn.innerHTML = originalText;
+  }, 2000);
+};
+
+// Add event listener for copy button
+const $copyTradeHistoryBtn = document.getElementById('copyTradeHistoryBtn');
+if ($copyTradeHistoryBtn) {
+  $copyTradeHistoryBtn.addEventListener('click', copyTradeHistoryToClipboard);
+}
 
 $backtestingStop.addEventListener('click', () => {
   backTestingPaused = true;
@@ -720,16 +1089,26 @@ const datasets = [
   },
 ];
 
-// Get candle direction based on open and close prices:
-const getCandleDirection = (openPrice = 0, closePrice = 0) => {
-  if (openPrice == 0 || closePrice == 0) {
-    return EnumDirection.BULL; // Default to BULL if no prices are provided
-  }
-  return closePrice > openPrice ? EnumDirection.BULL : EnumDirection.BEAR;
-};
 // Get candle direction from candle object:
 const getCandleDirectionFromCandle = (candle) =>
   getCandleDirection(candle[EnumMT5OHLC.OPEN], candle[EnumMT5OHLC.CLOSE]);
+
+// INSTITUTIONAL CANDLE DETECTION
+// Only take trades on candles with large bodies (strong institutional moves)
+const isInstitutionalCandle = (candle, minBodySize = 0.0003) => {
+  if (!candle) return false;
+  const bodySize = Math.abs(
+    parseFloat(candle[EnumMT5OHLC.CLOSE]) - parseFloat(candle[EnumMT5OHLC.OPEN])
+  );
+  return bodySize >= minBodySize;
+};
+
+// Global getCandleDirection function
+const getCandleDirection = (openPrice = 0, closePrice = 0) => {
+  if (openPrice == 0 || closePrice == 0) return 'BULL';
+  return closePrice > openPrice ? 'BULL' : 'BEAR';
+};
+window.getCandleDirection = getCandleDirection;
 
 const getCandleChartAxisLocationFromDate = (date) =>
   new Date(date).getTime() / 1000;
@@ -764,8 +1143,17 @@ const convertMT5DateToUnix = (candleTime) => {
   return new Date(ct).getTime() / 1000; // - 3600 * 2; // divided by 1000 to convert from milliseconds to seconds as Unix time only accepts seconds, while JS Date is more precise as working with milliseconds.
 };
 
-const readingSpeed = 0; // Speed of reading the CSV file in milliseconds
+let readingSpeed = 0; // Speed of reading the CSV file in milliseconds (0 = instant)
 const strategy = $strategyInput.value || EnumStrategy.CSID_W_MA_DynamicTS; // Current strategy selected
+
+// Speed control for backtesting
+const $backtestSpeedInput = document.getElementById('backtestSpeedInput');
+if ($backtestSpeedInput) {
+  $backtestSpeedInput.addEventListener('change', (e) => {
+    readingSpeed = parseInt(e.target.value);
+    console.log(`Backtest speed set to: ${readingSpeed}ms per candle`);
+  });
+}
 
 const csvData = [];
 let CSIDLookbackCandleSerie = [];
@@ -777,6 +1165,7 @@ let processedDays = 0;
 let totalCandles = 0;
 let processedCandles = 0;
 let ordersHistory = [];
+let tradeSetId = 0; // Counter for trade sets (increments per signal, not per position)
 let firstDate = new Date();
 let lastDate = new Date();
 let prevDate = null;
@@ -785,20 +1174,353 @@ let backtestingDate = `${now.getFullYear()}/${(now.getMonth() + 1).toString().pa
 const trailingStopSeriesMap = new Map();
 window.ordersHistory = ordersHistory;
 
+// CRITICAL: Pending trade state for next-candle entry timing
+// When CSID signal fires, store the trade here. Execute on NEXT candle's OPEN
+let pendingTrade = null; // { direction, timestamp, confidence }
+let tradeCount = 0; // Counter for trades within a signal wave
+let currentATR = 0; // Store current ATR for dynamic SL calculation
+let lastSignalConfidence = 1.0; // Store confidence for current signal
+
+// ============================================
+// SMART EDGE SYSTEM - Intelligent Trading Filters
+// ============================================
+
+// 1. MARKET REGIME DETECTION: Identify trending vs ranging markets
+const detectMarketRegime = (candlesSeries, lookback = 20) => {
+  if (candlesSeries.length < lookback) return 'NEUTRAL';
+
+  const recent = candlesSeries.slice(-lookback);
+  const highs = recent.map(c => Number(c[EnumMT5OHLC.HIGH]));
+  const lows = recent.map(c => Number(c[EnumMT5OHLC.LOW]));
+
+  const maxHigh = Math.max(...highs);
+  const minLow = Math.min(...lows);
+  const range = maxHigh - minLow;
+
+  // Calculate recent trend direction
+  const startPrice = Number(recent[0][EnumMT5OHLC.CLOSE]);
+  const endPrice = Number(recent[recent.length - 1][EnumMT5OHLC.CLOSE]);
+  const trend = endPrice > startPrice ? 1 : -1;
+
+  // Measure trend strength: if range is large and trend is clear, it's trending
+  const avgCandle = recent.reduce((sum, c) => sum + (Number(c[EnumMT5OHLC.CLOSE]) - Number(c[EnumMT5OHLC.OPEN])), 0) / lookback;
+  const trendStrength = Math.abs(avgCandle) > (range / lookback / 3) ? 'STRONG' : 'WEAK';
+
+  if (trendStrength === 'STRONG') {
+    return trend > 0 ? 'UPTREND' : 'DOWNTREND';
+  }
+  return 'RANGING';
+};
+
+// 2. SIGNAL CONFIRMATION: Require MA alignment + momentum
+const confirmSignal = (candlesSeries, direction, maValue) => {
+  if (candlesSeries.length < 2) return false;
+
+  const current = Number(candlesSeries[candlesSeries.length - 1][EnumMT5OHLC.CLOSE]);
+  const close = current;
+
+  // MA confirmation: Price should be in direction of trade (BULL: above MA, BEAR: below MA)
+  const maConfirms = direction === 'BULL'
+    ? close > maValue
+    : close < maValue;
+
+  // Momentum confirmation: Recent candles should show directional bias
+  const recent3 = candlesSeries.slice(-3);
+  const closes = recent3.map(c => Number(c[EnumMT5OHLC.CLOSE]));
+
+  let momentumConfirms = false;
+  if (direction === 'BULL') {
+    momentumConfirms = closes[1] > closes[0] || closes[2] > closes[1]; // Recent higher closes
+  } else {
+    momentumConfirms = closes[1] < closes[0] || closes[2] < closes[1]; // Recent lower closes
+  }
+
+  return maConfirms && momentumConfirms;
+};
+
+// 3. DYNAMIC STOP LOSS (ATR-based instead of fixed 1R)
+const calculateDynamicSL = (entryPrice, direction, atrValue, riskMultiplier = 1.0) => {
+  // Use ATR * 1.5 as dynamic SL instead of fixed 1R
+  const dynamicSlSize = atrValue * riskMultiplier;
+
+  if (direction === 'BULL') {
+    return entryPrice - dynamicSlSize;
+  } else {
+    return entryPrice + dynamicSlSize;
+  }
+};
+
+// 4. SMART POSITION SIZING: Size based on R:R ratio and equity drawdown
+const calculateSmartLotSize = (baseLot, rewardRatio, currentEquity, initialEquity, maxDrawdownPercent = 20) => {
+  // Reduce size if we're in significant drawdown
+  const equityPercent = (currentEquity / initialEquity) * 100;
+  const drawdownPercent = 100 - equityPercent;
+
+  let sizeMultiplier = 1.0;
+
+  // If in significant drawdown, reduce position size
+  if (drawdownPercent > maxDrawdownPercent) {
+    sizeMultiplier = Math.max(0.5, 1.0 - (drawdownPercent - maxDrawdownPercent) / 50);
+  }
+
+  // Increase size for better R:R setups (if reward >= 2R, take full size)
+  if (rewardRatio >= 2.0) {
+    sizeMultiplier *= 1.2; // 20% increase for excellent setups
+  } else if (rewardRatio < 1.5) {
+    sizeMultiplier *= 0.8; // 20% reduction for poor R:R
+  }
+
+  return baseLot * sizeMultiplier;
+};
+
+// 5. TRADE QUALITY FILTER: Skip weak setups + CONFIDENCE SCORING
+const calculateSignalConfidence = (candlesSeries, direction, consecutiveLosses) => {
+  let confidence = 1.0; // Base confidence
+
+  // Penalty for consecutive losses
+  if (consecutiveLosses > 0) {
+    confidence -= (consecutiveLosses * 0.1); // 0.1 per loss
+  }
+
+  // Bonus for trending market
+  if (candlesSeries.length >= 20) {
+    const recent20 = candlesSeries.slice(-20);
+    const closes = recent20.map(c => Number(c[EnumMT5OHLC.CLOSE]));
+
+    // Check if candles are consistently moving in direction
+    let trendStrength = 0;
+    for (let i = 1; i < closes.length; i++) {
+      if (direction === 'BULL' && closes[i] > closes[i-1]) trendStrength++;
+      if (direction === 'BEAR' && closes[i] < closes[i-1]) trendStrength++;
+    }
+
+    // Bonus if >60% of candles move in direction
+    if (trendStrength / closes.length > 0.6) {
+      confidence += 0.3;
+    }
+  }
+
+  return Math.max(0.5, Math.min(1.5, confidence)); // Range: 0.5 to 1.5
+};
+
+const isHighQualitySetup = (candlesSeries, direction, currentTradeCount, consecutiveLosses, isAfterStop = false) => {
+  // Only hard reject on extreme market conditions
+  if (consecutiveLosses > 7) {
+    return false; // Only skip after many losses
+  }
+
+  return true; // Allow most setups, confidence scoring will size them
+};
+
+// Execute Pending Trade (Next Candle Entry): ========================================
+// CRITICAL: This executes trades on the NEXT candle's OPEN after signal detection
+// This ensures we're not entering on a candle that's already closed (realistic trading)
+const executePendingTrade = (currentCandle, currentTime, isFastMode) => {
+  if (!pendingTrade) return; // No pending trade
+
+  // ============================================
+  // CRITICAL: TTR VALIDATION AT EXECUTION TIME
+  // Ensures trades only execute within trading window, accounting for next-candle entry
+  // ============================================
+  const validateExecutionTimeRange = (dateTimeStr) => {
+    // Parse currentTime format: "YYYY.MM.DD HH:MM"
+    const parts = dateTimeStr.split(' ');
+    const dateFormatted = parts[0].replaceAll('.', '-'); // Convert YYYY.MM.DD to YYYY-MM-DD
+    const timeStr = parts[1];
+
+    const startRangeTime = new Date(`${dateFormatted} ${$sessionStartInput.value}`);
+    const endRangeTime = new Date(`${dateFormatted} ${$sessionEndInput.value}`);
+    const currentCheckTime = new Date(`${dateFormatted} ${timeStr}`);
+
+    const isInWindow = currentCheckTime >= startRangeTime && currentCheckTime <= endRangeTime;
+
+    // DEBUG: Log execution time validation
+    console.log(`[TTR VALIDATION @ EXECUTION] Time: ${timeStr} | Range: ${$sessionStartInput.value}-${$sessionEndInput.value} | Valid: ${isInWindow}`);
+
+    return isInWindow;
+  };
+
+  // Check if execution time is within trading window
+  if (!validateExecutionTimeRange(currentTime)) {
+    console.log(`[TRADE REJECTED] Pending signal triggered outside trading hours. Signal detected at: ${pendingTrade.detectedTime || 'unknown'}, Execution attempted at: ${currentTime}`);
+    // Keep the pending trade alive - it may execute on a later candle within the window
+    // OR clear it if you want to skip the trade completely
+    pendingTrade = null; // Discard the pending trade if it misses the window
+    return;
+  }
+
+  // Execute the trade at this candle's OPEN price
+  const MULTI_POS_CONFIG = getMultiPositionConfig();
+  const direction = pendingTrade.direction;
+  const entryPrice = currentCandle[EnumMT5OHLC.OPEN];
+  const tpDistance = tpSize();
+  const entryTime = currentTime;
+
+  console.log(`[NEXT CANDLE ENTRY] Direction: ${direction === EnumDirection.BULL ? 'LONG' : 'SHORT'} | Price: ${entryPrice.toFixed(6)} | Time: ${entryTime}`);
+
+  if (MULTI_POS_CONFIG.enabled) {
+    // Create multiple positions at once (each with per-position TP target)
+    tradeSetId++;
+
+    // ===== SMART FEATURES =====
+    // 1. DYNAMIC SL: Use ATR-based SL instead of fixed 1R
+    const dynamicSL = currentATR > 0
+      ? calculateDynamicSL(entryPrice, direction, currentATR, 1.0)
+      : (direction === EnumDirection.BULL
+          ? entryPrice - slSize()    // Fallback to fixed SL
+          : entryPrice + slSize());
+
+    // 2. SMART POSITION SIZING: Adjust lot size based on equity and R:R
+    const rewardInPips = Math.abs(tpDistance);
+    const riskInPips = Math.abs(dynamicSL - entryPrice);
+    const riskRewardRatio = rewardInPips > 0 ? rewardInPips / riskInPips : 1.0;
+
+    const initialSL = dynamicSL;
+    const confidence = pendingTrade.confidence || 1.0;
+    console.log(`[SMART SL] ATR: ${currentATR.toFixed(6)} | Dynamic SL: ${initialSL.toFixed(6)} | R:R: ${riskRewardRatio.toFixed(2)} | Confidence: ${confidence.toFixed(2)}x`);
+
+    // Handle variable number of positions (1 for c-only, 3 for multi-position)
+    const positionLabels = MULTI_POS_CONFIG.positions.map((p, i) => `${p.name}:${p.lotMultiplier}`).join('/');
+    console.log(`[ADAPTIVE LOTS] Base (${positionLabels}) → Scaled by ${confidence.toFixed(2)}x`);
+
+    MULTI_POS_CONFIG.positions.forEach((posConfig, index) => {
+      // Per-position TP: scale base TP by lot multiplier
+      const positionTpDistance = (posConfig.tpMultiplier || 1.0) * tpDistance;
+      const positionTP = direction === EnumDirection.BULL
+        ? entryPrice + positionTpDistance   // BULL: TP above entry
+        : entryPrice - positionTpDistance;  // BEAR: TP below entry
+
+      // Adaptive lot sizing: Scale by confidence (0.5x to 3x)
+      // High confidence = larger position, low confidence = smaller position
+      const confidenceMultiplier = pendingTrade.confidence || 1.0;
+      const adaptiveLot = posConfig.lotMultiplier * confidenceMultiplier;
+
+      // Additional R:R based sizing
+      const smartLot = calculateSmartLotSize(adaptiveLot, riskRewardRatio, 100, 100, 20);
+
+      // Apply CSID breakout distance-based lot multiplier
+      const csidBreakoutMultiplier = pendingTrade.csidBreakoutLotMultiplier || 1.0;
+      const finalLot = smartLot * csidBreakoutMultiplier;
+
+      ordersHistory.push({
+        id: `${tradeSetId}`,
+        posName: posConfig.name,
+        lotMultiplier: finalLot,  // Use adaptive lot sizing × CSID breakout distance multiplier
+        time: entryTime,
+        price: entryPrice,
+        sl: initialSL,
+        initialSL: initialSL,
+        tp: positionTP,
+        direction: direction,
+        slMoveStartR: posConfig.slMoveStartR,
+        slMoveCount: 0,
+        trailingStartR: posConfig.trailingStartR,
+        runToTP: posConfig.runToTP || false,
+        trailingActive: false,
+        breakEvenMoved: false,
+        closed: false,
+        closedOrderType: EnumclosedOrderType.PENDING,
+      });
+    });
+  } else {
+    // Single position mode
+    tradeSetId++;
+    const singleSL = direction === EnumDirection.BULL
+      ? entryPrice - slSize()
+      : entryPrice + slSize();
+    const singleTP = direction === EnumDirection.BULL
+      ? entryPrice + tpSize()
+      : entryPrice - tpSize();
+
+    // Apply CSID breakout distance-based lot multiplier to single position
+    const csidBreakoutMultiplier = pendingTrade.csidBreakoutLotMultiplier || 1.0;
+
+    ordersHistory.push({
+      id: tradeSetId,
+      lotMultiplier: csidBreakoutMultiplier,  // Apply CSID breakout distance multiplier
+      breakEvenMoved: false,
+      time: entryTime,
+      price: entryPrice,
+      sl: singleSL,
+      tp: singleTP,
+      direction: direction,
+      closed: false,
+      closedOrderType: EnumclosedOrderType.PENDING,
+    });
+  }
+
+  window.ordersHistory = ordersHistory;
+
+  // Add chart annotation for entry (only if not in fast mode)
+  if (!isFastMode && window.sciChartSurface && typeof timeToIndex !== 'undefined') {
+    try {
+      const { CustomAnnotation, EVerticalAnchorPoint, EHorizontalAnchorPoint } = SciChart;
+      const entryUnix = convertMT5DateToUnix(entryTime);
+      let candlePosition = timeToIndex.get(entryUnix);
+
+      // If exact time not found, try to find closest match
+      if (candlePosition === undefined) {
+        console.warn(`[ANNOTATION] Exact time not found: ${entryTime}, searching for closest match...`);
+        let closestPosition = undefined;
+        let closestDiff = Infinity;
+        timeToIndex.forEach((pos, unix) => {
+          const diff = Math.abs(unix - entryUnix);
+          if (diff < closestDiff) {
+            closestDiff = diff;
+            closestPosition = pos;
+          }
+        });
+        candlePosition = closestPosition;
+        console.log(`[ANNOTATION] Found closest match at diff: ${closestDiff}ms`);
+      }
+
+      console.log(`[ANNOTATION] Entry Time: ${entryTime} | Unix: ${entryUnix} | Position: ${candlePosition} | Aligned: ${Math.round(candlePosition)}`);
+
+      if (candlePosition !== undefined && window.signalAnnotation) {
+        // Use exact position (don't round) - same as exit line positioning
+        window.sciChartSurface.annotations.add(
+          new CustomAnnotation({
+            x1: candlePosition,
+            y1: entryPrice,
+            verticalAnchorPoint: EVerticalAnchorPoint.Center,
+            horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
+            svgString: direction === EnumDirection.BULL
+              ? window.signalAnnotation.svgString.orderEntryBuy
+              : window.signalAnnotation.svgString.orderEntrySell,
+          })
+        );
+      } else {
+        console.warn(`[ANNOTATION] Could not find position for time: ${entryTime}`);
+      }
+    } catch (err) {
+      console.warn('Could not add entry annotation:', err);
+    }
+  }
+
+  // Increment trade count for this signal wave
+  tradeCount++;
+  console.log(`[TRADE EXECUTED] Trade ${tradeCount} for current signal wave`);
+
+  // Clear pending trade - this prevents multiple entries on the same signal
+  // Only one trade set (A+B+C positions) per signal
+  pendingTrade = null;
+};
+// End of Execute Pending Trade ========================================
+
 const handleFileAndInitGraph = (file) => {
   if (file) {
     // Use reinitializeChart to properly reset
     if (typeof reinitializeChart === 'function') {
       reinitializeChart();
     }
-    
+
     // Ensure chart section is visible
     const chartSection = document.querySelector('.chart-section');
     if (chartSection) {
       chartSection.classList.remove('chart-collapsed');
       chartSection.classList.add('chart-expanded');
     }
-    
+
     // Clear orders history
     ordersHistory = [];
     numbDays = 0;
@@ -811,6 +1533,9 @@ const handleFileAndInitGraph = (file) => {
     // Reset portfolio graph and order history display
     $backTestingResult.value = '';
     document.getElementById('backtestingResultOrderHistory').innerHTML = '';
+
+    // Hide Visualize button when starting new backtest
+    hideVisualizeButton();
 
     // Add visible class to loading element
     const loadingEl = document.getElementById('loading-element');
@@ -916,19 +1641,37 @@ const handleFileAndInitGraph = (file) => {
         parser.pause();
         // Dynamic infos:
         updateDynamicInfos(results.data, csvDataIndex);
-        
+
+        // CRITICAL: Populate timeToIndex BEFORE calculating indicators
+        // This ensures signal markers are placed at the correct chart position
+        const unixTime = convertMT5DateToUnix(`${results.data[EnumMT5OHLC.DATE]} ${results.data[EnumMT5OHLC.TIME]}`);
+        if (!timeToIndex.has(unixTime)) {
+          timeToIndex.set(unixTime, chartCandleIndex);
+          candleTimes.push(unixTime);
+          chartCandleIndex++;
+        }
+
+        // CRITICAL: Execute any pending trade from PREVIOUS candle at THIS candle's OPEN
+        // This ensures entries happen on next candle open, not current candle close (realistic trading)
+        const currentTime = `${results.data[EnumMT5OHLC.DATE]} ${results.data[EnumMT5OHLC.TIME]}`;
+        executePendingTrade(results.data, currentTime, isFastMode);
+
         // Only update chart if NOT in fast mode
+        // CRITICAL: Calculate indicators ALWAYS (even in Fast Mode) - only skip chart rendering
+        // Indicators must be calculated to generate signals for trading
+        calculateIndicators(results.data, csvDataIndex);
+
         if (!isFastMode) {
           // Append data to the chart:
           appendDataToChart(results.data);
           // Backtesting date time logics (annotation on chart and select element population):
           addBacktestingDateTimeToChart(results.data, csvDataIndex);
-          // Plot real-time indicators:
+          // Plot real-time indicators (chart visualization only):
           appendIndicatorsToChart(results.data, csvDataIndex);
         }
-        
+
         // Run the Check for TP/SL hit function on every candle (always run this - it's the core logic)
-        checkForTPSLHit(results.data, csvDataIndex);
+        checkForTPSLHit(results.data, csvDataIndex, isFastMode);
         // Note: profitabilityCalculation() is now called only when trades close (in closeOrder function)
 
         // Handle single-step mode
@@ -950,7 +1693,38 @@ const handleFileAndInitGraph = (file) => {
         currentParser = null;
         // Remove visible class from loading element
         document.getElementById('loading-element').classList.remove('visible');
-        
+
+        // CRITICAL: Calculate profitability once at end if in Fast Mode
+        // In Fast Mode, we skipped profitabilityCalculation on every trade close
+        const isFastMode = $fastBacktestMode?.checked;
+        if (isFastMode) {
+          // Auto-visualize results in Fast Mode - build chart automatically
+          visualizeBacktestResults();
+        }
+
+        // Backtest summary
+        const totalOrders = ordersHistory.length;
+        const closedOrders = ordersHistory.filter(o => o.closed).length;
+        const wins = ordersHistory.filter(o => o.closed && o.tradeResult === 'WIN').length;
+        const losses = ordersHistory.filter(o => o.closed && o.tradeResult === 'LOSS').length;
+        console.log('========== BACKTEST COMPLETE ==========');
+        console.log('Total candles processed:', processedCandles);
+        console.log('Total orders:', totalOrders);
+        console.log('Closed orders:', closedOrders);
+        console.log('Wins:', wins, '| Losses:', losses);
+        if (ordersHistory.length > 0) {
+          console.log('First 3 orders:', JSON.stringify(ordersHistory.slice(0, 3)));
+        } else {
+          console.log('No orders taken - check strategy signals and time range');
+        }
+        console.log('=========================================');
+
+        // Populate trade history textarea
+        populateTradeHistoryTextarea();
+
+        // Show Visualize button in BRAlgo panel if we have trade results
+        showVisualizeButton();
+
         // Cache the CSV data for optimized backtest
         cachedCSVData = results.data.filter(row => row && row[EnumMT5OHLC.OPEN]);
         cachedFile = file;
@@ -960,9 +1734,9 @@ const handleFileAndInitGraph = (file) => {
           lastDate: cachedCSVData[cachedCSVData.length - 1]?.[EnumMT5OHLC.DATE],
           totalCandles: cachedCSVData.length,
         };
-        
+
         console.log(`CSV cached: ${cachedCSVData.length} candles loaded`);
-        
+
         audioSuccess.play();
       },
       error: (error) => {
@@ -1030,16 +1804,6 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Keyboard shortcuts
   document.addEventListener('keydown', (e) => {
-    // Ctrl+Enter: Run optimized backtest
-    if (e.ctrlKey && e.key === 'Enter') {
-      e.preventDefault();
-      runOptimizedBacktestUI();
-    }
-    // Ctrl+S: Save current params
-    if (e.ctrlKey && e.key === 's') {
-      e.preventDefault();
-      saveCurrentParams();
-    }
     // Ctrl+Shift+G: Run grid search
     if (e.ctrlKey && e.shiftKey && e.key === 'G') {
       e.preventDefault();
@@ -1104,6 +1868,16 @@ const initSciChart = (data) => {
   SciChartSurface.useWasmFromCDN();
 
   // Initialize SciChartSurface. Don't forget to await!
+  if (window.sciChartSurface) {
+    try {
+      window.sciChartSurface.renderableSeries.clear();
+      window.sciChartSurface = null;
+      console.log('Destroyed old SciChartSurface');
+    } catch (e) {
+      console.warn('Error destroying old surface:', e);
+    }
+  }
+  
   SciChartSurface.create('scichart-root', {
     //theme: new SciChartJsNavyTheme(),
   })
@@ -1185,7 +1959,7 @@ const initSciChart = (data) => {
       // Variables initialization =========================
       let annotations = [];
       let arrayOfSignals = [false, true, false, false]; // [CSID, TTR, ATR, boolean if ma has a strong direction]
-      let tradeCount = 0;
+      // NOTE: tradeCount is now declared at global scope
       // Variables initialization for CSID:
       let rollingHighestHighDataSeries = null;
       let rollingLowestLowDataSeries = null;
@@ -1210,6 +1984,8 @@ const initSciChart = (data) => {
           circle: `<svg id="Capa_1" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" style="fill:#${bullishColor};fill-opacity:0.34117647;stroke:#${bullishColor};stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" /></svg>`,
         },
       };
+      // Make signalAnnotation globally available for next-candle entry
+      window.signalAnnotation = signalAnnotation;
 
       RRToolStyles = {
         ...RRToolStyles,
@@ -1236,42 +2012,37 @@ const initSciChart = (data) => {
 
       // Take trades when signals are valid:
       const checkSignalsForTrade = (d, direction) => {
+        // NOTE: Monthly max loss checking is only for grid search mode, not main backtest
+        // Removed localMonthlyPnl check to avoid reference errors
+
         const takeTradeSignal =
           arrayOfSignals[EnumArrayOfSignalsIndex.CSID] == true &&
           arrayOfSignals[EnumArrayOfSignalsIndex.TTR] == true &&
           arrayOfSignals[EnumArrayOfSignalsIndex.ATR] == true &&
           arrayOfSignals[EnumArrayOfSignalsIndex.MADirection] == true;
-        if (takeTradeSignal) {
+        
+        // FIX: Only take trade if we haven't reached max 3 trades for this signal
+        if (takeTradeSignal && tradeCount < 3) {
           tradeCount++;
           AddActionOnChart(d, EnumActionType.TAKE_A_TRADE, direction);
-          listeningATR = true; // Start listening for ATR again once we open position
-          //if (tradeCount >= 3) {
-          // console.log('Reached 3 trades max');
-          arrayOfSignals[EnumArrayOfSignalsIndex.ATR] = false; // Reset ATR signal after 3 trades max
-          //}
+          listeningATR = true;
+          
+          // Reset ATR signal after max 3 trades to prevent further triggers
+          if (tradeCount >= 3) {
+            arrayOfSignals[EnumArrayOfSignalsIndex.ATR] = false;
+            arrayOfSignals[EnumArrayOfSignalsIndex.CSID] = false; // Also reset CSID to prevent new signals in same wave
+            console.log(`Signal completed: ${tradeCount} trades taken`);
+          }
         }
       };
 
       // TP/SL Validation: ========================================
       // Function to check all TP/SL hit:
       // OPTIMIZED: Only process active orders instead of filtering through all orders
-      const checkForTPSLHit = (d, dataIndex) => {
+      const checkForTPSLHit = (d, dataIndex, isFastMode = false) => {
         // Only check active (non-closed) orders to reduce processing overhead
         const activeOrders = ordersHistory.filter(order => !order.closed);
         activeOrders.forEach((order) => {
-
-          // break-even at SL distance (1R)
-          if (!order.breakEvenMoved) {
-            const closePrice = d[EnumMT5OHLC.CLOSE];
-            const slDistance = slSize();
-            if (
-              (order.direction === EnumDirection.BULL && closePrice >= order.price + slDistance) ||
-              (order.direction === EnumDirection.BEAR && closePrice <= order.price - slDistance)
-            ) {
-              order.sl = order.price;
-              order.breakEvenMoved = true;
-            }
-          }
 
           const isBull = order.direction === EnumDirection.BULL;
           const isBear = order.direction === EnumDirection.BEAR;
@@ -1279,8 +2050,25 @@ const initSciChart = (data) => {
           const low = d[EnumMT5OHLC.LOW];
           const close = d[EnumMT5OHLC.CLOSE];
           const open = d[EnumMT5OHLC.OPEN];
+
+          // break-even at SL distance (1R) — single-position only
+          // Multi-position orders use progressive SL movement instead (below)
+          const isMultiPosOrder = order.slMoveStartR !== undefined;
+          if (!isMultiPosOrder && !order.breakEvenMoved) {
+            const slDistance = slSize();
+            if (
+              (isBull && close >= order.price + slDistance) ||
+              (isBear && close <= order.price - slDistance)
+            ) {
+              order.sl = order.price;
+              order.breakEvenMoved = true;
+            }
+          }
           const currentTime = `${d[EnumMT5OHLC.DATE]} ${d[EnumMT5OHLC.TIME]}`;
           const orderOpenTime = convertMT5DateToUnix(order.time);
+          
+          // Skip trailing logic on the entry candle
+          const isEntryCandle = order.time === currentTime;
 
           const tradeResult = () => {
             if (order.pnlPoints > 0) {
@@ -1315,108 +2103,181 @@ const initSciChart = (data) => {
                 ? level - order.price
                 : order.price - level;
             order.tradeResult = tradeResult();
+            
+            // Calculate money P&L
+            const lotMult = order.lotMultiplier || 1;
+            order.pnlMoney = order.pnlPoints * 100000 * lotMult; // Approx for EURUSD
 
-            // OPTIMIZED: Calculate profitability only when trades close, not every candle
-            profitabilityCalculation();
+            // NOTE: Monthly P&L tracking is only used in grid search mode, not in main backtest
+            // Skipping monthly P&L update since localCurrentMonth is not defined in backtest scope
 
-            const orderCloseTime = convertMT5DateToUnix(order.closedTime);
+            // DEBUG: Skip logging in Fast Mode (expensive console operations)
+            if (!isFastMode && order.slMoveStartR !== undefined) {
+              const isTP = Math.abs(level - order.tp) < 0.00001;
+              const isSL = Math.abs(level - order.sl) < 0.00001;
+              console.log(`[MultiPos] ${order.id} closes at ${level.toFixed(6)} | Entry: ${order.price.toFixed(6)} | SL: ${order.sl.toFixed(6)} | TP: ${order.tp.toFixed(6)} | Type: ${isTP ? 'TP' : isSL ? 'SL' : '?'} | Status: ${status} | PnL: ${order.pnlPoints.toFixed(6)}`);
+            }
 
-            // Marker + Label
-            sciChartSurface.annotations.add(
-              new CustomAnnotation({
-                x1: timeToIndex.get(orderCloseTime),
-                y1: level,
-                verticalAnchorPoint: EVerticalAnchorPoint.Center,
-                horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
-                svgString: signalAnnotation.svgString.sell,
-              }),
-              new TextAnnotation({
-                text: order.id,
-                horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
-                verticalAnchorPoint: EVerticalAnchorPoint.Bottom,
-                x1: timeToIndex.get(orderCloseTime),
-                y1: level,
-              })
-            );
+            // CRITICAL OPTIMIZATION: Skip profitability calculation in Fast Mode
+            // In Fast Mode, calculate only at the end, not on every trade close (O(n²) to O(1))
+            if (!isFastMode) {
+              profitabilityCalculation();
+            }
 
-            // Line
-            const tradeResultedColor = tradeResultColor();
-            sciChartSurface.annotations.add(
-              new LineAnnotation({
-                stroke: `#${tradeResultedColor}`,
-                strokeThickness: 1,
-                strokeDashArray: [5, 5],
-                x1: timeToIndex.get(orderOpenTime),
-                x2: timeToIndex.get(orderCloseTime),
-                y1: order.price,
-                y2: level,
-              })
-            );
+            // OPTIMIZATION: Skip chart annotations in Fast Mode (expensive SciChart operations)
+            if (!isFastMode) {
+              // Clean up trailing stop visualization
+              if (trailingStopSeriesMap.has(order.id)) {
+                const series = trailingStopSeriesMap.get(order.id);
+                if (series && sciChartSurface) {
+                  sciChartSurface.renderableSeries.remove(series);
+                }
+                trailingStopSeriesMap.delete(order.id);
+              }
+
+              const orderCloseTime = convertMT5DateToUnix(order.closedTime);
+
+              // Marker (close arrow)
+              sciChartSurface.annotations.add(
+                new CustomAnnotation({
+                  x1: timeToIndex.get(orderCloseTime),
+                  y1: level,
+                  verticalAnchorPoint: EVerticalAnchorPoint.Center,
+                  horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
+                  svgString: signalAnnotation.svgString.sell,
+                })
+              );
+
+              // Text label
+              sciChartSurface.annotations.add(
+                new TextAnnotation({
+                  text: order.id,
+                  horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
+                  verticalAnchorPoint: EVerticalAnchorPoint.Bottom,
+                  x1: timeToIndex.get(orderCloseTime),
+                  y1: level,
+                })
+              );
+
+              // Line - trade entry to close
+              const tradeResultedColor = tradeResultColor();
+              sciChartSurface.annotations.add(
+                new LineAnnotation({
+                  stroke: `#${tradeResultedColor}`,
+                  strokeThickness: 1,
+                  strokeDashArray: [5, 5],
+                  x1: timeToIndex.get(orderOpenTime),
+                  x2: timeToIndex.get(orderCloseTime),
+                  y1: order.price,
+                  y2: level,
+                })
+              );
+            }
           };
 
-          // Modify SL (Trailing Stop)
-          if (candlesFromBuffer.length < 2) return;
+            // Modify SL (Trailing Stop) - Match Grid Search logic
+            if (candlesFromBuffer.length < 2) return;
 
-          const trailingStopSize =
-            parseFloat($TSIncrementInput.value) || 0.0000;
+            // Calculate current R for this order (same as Grid Search)
+            const currentR = isBull
+              ? (close - order.price) / slSize()
+              : (order.price - close) / slSize();
 
-          const previousCandle =
-            candlesFromBuffer[candlesFromBuffer.length - 2];
+           const trailingStopSize =
+             parseFloat($TSIncrementInput.value) || 0.0000;
 
-          /*if (isBull) {
-            if (
-              getCandleDirectionFromCandle(previousCandle) == EnumDirection.BULL
-            ) {
-              console.log('Moving SL of ', order.id, ' from ', order.sl, ' to ',  order.sl + trailingStopSize);
-              debugger
-              order.sl = order.sl + trailingStopSize; // Move SL by trailingStopSize (up side)
-            //}
-          //} else if (isBear) {
-            if (
-              getCandleDirectionFromCandle(previousCandle) == EnumDirection.BEAR
-            ) {
-              order.sl = order.sl - trailingStopSize; // Move SL by trailingStopSize (down side)
-            //}
-          //}*/
+           const previousCandle =
+             candlesFromBuffer[candlesFromBuffer.length - 2];
 
-          // Candle size calculation:
-          let candleSize = Math.abs(previousCandle["<CLOSE>"] - previousCandle["<OPEN>"]); // Need to be the previous candle, as current candle is not closed yet at this time (in a real scenario).
-          candleSize = Number(candleSize.toFixed(4)); // → 0.0005
+           // Candle size calculation:
+           let candleSize = Math.abs(previousCandle["<CLOSE>"] - previousCandle["<OPEN>"]); // Need to be the previous candle, as current candle is not closed yet at this time (in a real scenario).
+           candleSize = Number(candleSize.toFixed(4)); // → 0.0005
 
-          /*
-            The following might only work for EURUSD like pairs, TODO: I'll need to generalize it later.
-            As for EURUSD I hardcoded two thresholds for candle size:
-            - 0.0005 (50 pips)
-            - 0.0003 (30 pips)
-          */
-          const trailingSizeMultiplier = (candleSize) => {
-            switch (strategy) {
-              case EnumStrategy.CSID_W_MA_DynamicTS:
-                if (candleSize >= 0.0005) return trailingStopSize * 3;
-                else if (candleSize >= 0.0003) return trailingStopSize * 2;
-                else return trailingStopSize;
-              case EnumStrategy.CSID_W_MA:
-              case EnumStrategy.CSID:
-              default:
-                return trailingStopSize;
+           /*
+             The following might only work for EURUSD like pairs, TODO: I'll need to generalize it later.
+             As for EURUSD I hardcoded two thresholds for candle size:
+             - 0.0005 (50 pips)
+             - 0.0003 (30 pips)
+           */
+           const trailingSizeMultiplier = (candleSize) => {
+             switch (strategy) {
+               case EnumStrategy.CSID_W_MA_DynamicTS:
+                 if (candleSize >= 0.0005) return trailingStopSize * 3;
+                 else if (candleSize >= 0.0003) return trailingStopSize * 2;
+                 else return trailingStopSize;
+               case EnumStrategy.CSID_W_MA:
+               case EnumStrategy.CSID:
+               default:
+                 return trailingStopSize;
+             }
+           }
+           const trailingSize = trailingSizeMultiplier(candleSize);
+
+            if (isMultiPosOrder && !isEntryCandle) {
+              // === Multi-position SL management (matches fast mode) ===
+
+              // Initialize trailingActive if not exists (for backward compatibility)
+              if (order.trailingActive === undefined) {
+                order.trailingActive = false;
+              }
+
+              // 1. Progressive SL movement (move SL every 0.5R) — per-position
+              if (!order.trailingActive) {
+               const slMoveThreshold = order.slMoveStartR + (order.slMoveCount * 0.5);
+               if (currentR >= slMoveThreshold) {
+                 // For BULL: SL starts at entry - 1R, moves up as profit increases
+                 // For BEAR: SL starts at entry + 1R, moves down as profit increases
+                 const slAdjustment = slMoveThreshold * slSize();
+                 const newSL = isBull
+                   ? order.price - slSize() + slAdjustment
+                   : order.price + slSize() - slAdjustment;
+                 const oldSL = order.sl;
+                 order.sl = newSL;
+                 order.slMoveCount++;
+
+                 // DEBUG: Log SL moves for B and C
+                 if (order.posName && order.posName !== 'A') {
+                   console.log(`[SL MOVE] ${order.id} | currentR: ${currentR.toFixed(2)}R | threshold: ${slMoveThreshold.toFixed(2)}R | oldSL: ${oldSL.toFixed(6)} -> newSL: ${newSL.toFixed(6)} | count: ${order.slMoveCount}`);
+                 }
+               }
+             }
+
+             // 2. Activate trailing after per-position trailingStartR (skip for runToTP — they ride to TP)
+             if (!order.runToTP && currentR >= order.trailingStartR && !order.trailingActive) {
+               order.trailingActive = true;
+             }
+
+             // 3. Apply trailing stop with profit-lock (only improve SL)
+             if (order.trailingActive && candlesFromBuffer.length >= 2) {
+               const newTrailingSL = isBull
+                 ? close - trailingSize
+                 : close + trailingSize;
+
+               const slImproved = isBull
+                 ? newTrailingSL > order.sl
+                 : newTrailingSL < order.sl;
+
+               if (slImproved) {
+                 order.sl = newTrailingSL;
+               }
+             }
+            } else if (!isEntryCandle) {
+              // === Single-position trailing (matches fast mode) ===
+              if (isBull) {
+                order.sl += trailingSize;
+              } else {
+                order.sl -= trailingSize;
+              }
             }
-          }
 
-          if (order.direction == EnumDirection.BULL) {
-            //console.log('Moving SL of ', order.id, ' from ', order.sl, ' to ',  order.sl + trailingStopSize);
-            /*order.sl < order.price && d[EnumMT5OHLC.OPEN] > order.price ? order.sl = order.price : */
-            order.sl += trailingSizeMultiplier(candleSize);
-            // order.sl = order.sl + trailingStopSize; // Move SL by trailingStopSize (up side)
-          } else if (order.direction == EnumDirection.BEAR) {
-            //console.log('Moving SL of ', order.id, ' from ', order.sl, ' to ',  order.sl - trailingStopSize);
-            // order.sl = order.sl - trailingStopSize; // Move SL by trailingStopSize (down side)
-            /*order.sl > order.price && d[EnumMT5OHLC.OPEN] < order.price ? order.sl = order.price : */
-            order.sl -= trailingSizeMultiplier(candleSize);
-          }
-
-          // Trailing Stop visual:
+          // Trailing Stop visual (skip in Fast Mode to avoid SciChart overhead):
+          if (!isFastMode) {
           const updateTrailingStopVisual = (order, d) => {
-            const time = new Date(`${d[EnumMT5OHLC.DATE]} ${d[EnumMT5OHLC.TIME]}`);
+            try {
+              // Skip visual update if chart is not initialized
+              if (!window.sciChartSurface) return;
+
+              const time = new Date(`${d[EnumMT5OHLC.DATE]} ${d[EnumMT5OHLC.TIME]}`);
             const localISO = time.getTime() / 1000;
             const xValue = timeToIndex.get(localISO);
 
@@ -1439,7 +2300,9 @@ const initSciChart = (data) => {
             if (trailingStopSeriesMap.has(order.id)) {
               // update existing series by appending new candle data
               const series = trailingStopSeriesMap.get(order.id);
-              series.dataSeries.append(xValue, yValue, y1Value);
+              if (series && series.dataSeries) {
+                series.dataSeries.append(xValue, yValue, y1Value);
+              }
             } else {
               // first time -> create a new series with 1 point
               const dataSeries = new XyyDataSeries(wasmContext, {
@@ -1460,16 +2323,28 @@ const initSciChart = (data) => {
               sciChartSurface.renderableSeries.add(newSeries);
               trailingStopSeriesMap.set(order.id, newSeries);
             }
+            } catch (e) {
+              // Silently skip visual update errors
+            }
           };
           updateTrailingStopVisual(order, d);
+          } // end if (!isFastMode)
 
-          // Check TP
-          if ((isBull && high >= order.tp) || (!isBull && low <= order.tp)) {
+          // Check TP (only if not already closed)
+          if (!order.closed && ((isBull && high >= order.tp) || (!isBull && low <= order.tp))) {
+            // DEBUG: Log TP hit
+            if (order.slMoveStartR !== undefined) {
+              console.log(`[TP HIT] ${order.id} at candle high/low | high: ${high.toFixed(6)}, TP: ${order.tp.toFixed(6)}, SL: ${order.sl.toFixed(6)}`);
+            }
             closeOrder(order.tp, EnumclosedOrderType.CLOSED_BY_TP);
           }
 
-          // Check SL
-          if ((isBull && low <= order.sl) || (!isBull && high >= order.sl)) {
+          // Check SL (only if not already closed)
+          if (!order.closed && ((isBull && low <= order.sl) || (!isBull && high >= order.sl))) {
+            // DEBUG: Log SL hit
+            if (order.slMoveStartR !== undefined) {
+              console.log(`[SL HIT] ${order.id} at candle low | low: ${low.toFixed(6)}, SL: ${order.sl.toFixed(6)}, TP: ${order.tp.toFixed(6)}`);
+            }
             closeOrder(order.sl, EnumclosedOrderType.CLOSED_BY_SL);
           }
         });
@@ -1510,31 +2385,70 @@ const initSciChart = (data) => {
             break;
           case 'TAKE_A_TRADE':
             const definedCandleMoment = EnumMT5OHLC.OPEN;
-            const orderOptionsBasedDirection = (tradeDirection) => {
-              if (tradeDirection == EnumDirection.BULL) {
-                return {
-                  sl: candle[definedCandleMoment] - slSize(),
-                  tp: candle[definedCandleMoment] + tpSize(),
-                  direction: EnumDirection.BULL,
-                };
-              } else {
-                return {
-                  sl: candle[definedCandleMoment] + slSize(),
-                  tp: candle[definedCandleMoment] - tpSize(),
-                  direction: EnumDirection.BEAR,
-                };
-              }
-            };
+            const MULTI_POS_CONFIG = getMultiPositionConfig();
+            const tradeDirectionIsBull = tradeDirection == EnumDirection.BULL;
+            const entryPrice = candle[definedCandleMoment];
+            const tpDistance = tpSize();
+            const direction = tradeDirectionIsBull ? EnumDirection.BULL : EnumDirection.BEAR;
+            const entryTime = `${candle[EnumMT5OHLC.DATE]} ${candle[EnumMT5OHLC.TIME]}`;
 
-            // Add order to history:
-ordersHistory.push({
-          id: ordersHistory.length + 1,
-          breakEvenMoved: false,
-          time: `${candle[EnumMT5OHLC.DATE]} ${candle[EnumMT5OHLC.TIME]}`,
-          price: candle[definedCandleMoment],
-          closedOrderType: EnumclosedOrderType.PENDING,
-              ...orderOptionsBasedDirection(tradeDirection),
-            });
+            if (MULTI_POS_CONFIG.enabled) {
+              // Create multiple positions at once (each with per-position TP target)
+              // Increment tradeSetId for this new trade set (only once per signal)
+              tradeSetId++;
+              // Initial SL is 1R from entry (same for all positions)
+              const initialSL = tradeDirectionIsBull
+                ? entryPrice - slSize()    // BULL: SL below entry
+                : entryPrice + slSize();    // BEAR: SL above entry
+
+              MULTI_POS_CONFIG.positions.forEach(posConfig => {
+                // Per-position TP: scale base TP by lot multiplier (e.g., if TP=3R, A gets 3.0R, B gets 2.1R, C gets 1.5R)
+                const positionTpDistance = (posConfig.tpMultiplier || 1.0) * tpDistance;
+                const positionTP = tradeDirectionIsBull
+                  ? entryPrice + positionTpDistance   // BULL: TP above entry
+                  : entryPrice - positionTpDistance;  // BEAR: TP below entry
+
+                ordersHistory.push({
+                  id: `${tradeSetId}-${posConfig.name}`,
+                  posName: posConfig.name,
+                  lotMultiplier: posConfig.lotMultiplier,
+                  time: entryTime,
+                  price: entryPrice,
+                  sl: initialSL,
+                  initialSL: initialSL,
+                  tp: positionTP,
+                  direction: direction,
+                  slMoveStartR: posConfig.slMoveStartR,
+                  slMoveCount: 0,
+                  trailingStartR: posConfig.trailingStartR,
+                  runToTP: posConfig.runToTP || false,
+                  trailingActive: false,
+                  breakEvenMoved: false,
+                  closed: false,
+                  closedOrderType: EnumclosedOrderType.PENDING,
+                });
+              });
+            } else {
+              // Single position mode (original) - use 1R SL
+              tradeSetId++;
+              const singleSL = tradeDirectionIsBull 
+                ? entryPrice - slSize() 
+                : entryPrice + slSize();
+              const singleTP = tradeDirectionIsBull 
+                ? entryPrice + tpSize() 
+                : entryPrice - tpSize();
+              ordersHistory.push({
+                id: tradeSetId,
+                breakEvenMoved: false,
+                time: entryTime,
+                price: entryPrice,
+                sl: singleSL,
+                tp: singleTP,
+                direction: direction,
+                closed: false,
+                closedOrderType: EnumclosedOrderType.PENDING,
+              });
+            }
             window.ordersHistory = ordersHistory;
 
             // Add annotation for orders history:
@@ -1596,6 +2510,10 @@ ordersHistory.push({
       let canTakeATrade = true;
       let inRange = false;
       let savedTradeDirectionForNextCandleEntry = null;
+
+      // NOTE: pendingTrade is now declared at global scope (before Papa.parse)
+      // This allows both the main backtest loop and SciChart promise to access it
+
       let swingHighLowHistory = [];
       let fvgHistory = [];
       const offsetCandleDateTimeStamp = (candleDateTimeStamp) =>
@@ -1704,6 +2622,14 @@ ordersHistory.push({
       const profitabilityCalculation = () => {
         let result = '';
 
+        // Guard: If no closed orders, add placeholder data to prevent SciChart NaN errors
+        if (ordersHistory.filter(o => o.closed).length === 0) {
+          labels = ['No trades'];
+          pnlData = [0];
+          equityData = [0];
+          return; // Skip further calculations
+        }
+
         // Total profits in points (strategy)
         const profitsInPoints = ordersHistory.reduce((acc, order) => {
           if (order.closedOrderType === EnumclosedOrderType.CLOSED_BY_TP)
@@ -1751,7 +2677,7 @@ ordersHistory.push({
         pnlData = [];
         equityData.length = 0;
 
-        for (const { id, pnlPoints } of ordersHistory) {
+        for (const { id, pnlPoints, lotMultiplier } of ordersHistory) {
           labels.push(id);
 
           // Strategy cumulative (points)
@@ -1763,7 +2689,9 @@ ordersHistory.push({
           equityData.push(equitySumPoints);
 
           // Equity in $ (money equivalent, per trade)
-          const tradeMoney = (+pnlPoints - commissionPoints) * 100000 * lotSize();
+          // Use lotMultiplier if available (multi-position mode), otherwise use default lotSize
+          const actualLotSize = lotMultiplier ? lotMultiplier * lotSize() : lotSize();
+          const tradeMoney = (+pnlPoints - commissionPoints) * 100000 * actualLotSize;
           equityDataMoney.push(
             (equityDataMoney.at(-1) || 0) + tradeMoney // cumulative series
           );
@@ -1846,12 +2774,30 @@ ordersHistory.push({
 
         //console.table([profitsInPoints, moneyEquivalent]);
 
-        // CSV builder
-        const resultToCSV = () => {
-          const csvFileName = $csvFileInput.value.split('\\')[2].split('.')[0];
-          const [_, timeframe, sd, ed] = csvFileName.split('_');
-          const sdt = `${sd.slice(0, 4)}/${sd.slice(4, 6)}/${sd.slice(6, 8)}`;
-          const edt = `${ed.slice(0, 4)}/${ed.slice(4, 6)}/${ed.slice(6, 8)}`;
+          // CSV builder
+          const resultToCSV = () => {
+            // Handle case when CSV is loaded from URL parameter (no file input)
+            let csvFileName = '';
+            if ($csvFileInput && $csvFileInput.value) {
+              csvFileName = $csvFileInput.value.split('\\')[2]?.split('.')[0] || 'unknown';
+            } else if (cachedFileInfo && cachedFileInfo.name) {
+              csvFileName = cachedFileInfo.name.replace('.csv', '');
+            } else if (window.location.search.includes('csv=')) {
+              const urlParams = new URLSearchParams(window.location.search);
+              const csvParam = urlParams.get('csv');
+              csvFileName = csvParam ? csvParam.replace('.csv', '') : 'unknown';
+            } else {
+              csvFileName = 'unknown';
+            }
+            
+            // Safely parse filename
+            const parts = csvFileName.split('_');
+            const timeframe = parts[1] || 'M5';
+            const sd = parts[2] || '20250101';
+            const ed = parts[3] || '20251231';
+            
+            const sdt = `${sd.slice(0, 4)}/${sd.slice(4, 6)}/${sd.slice(6, 8)}`;
+            const edt = `${ed.slice(0, 4)}/${ed.slice(4, 6)}/${ed.slice(6, 8)}`;
 
           return [
             `\t`,
@@ -1881,7 +2827,9 @@ ordersHistory.push({
 
         // Display textual result
         // result += `Check console for orders history\n`;
-        result += `Trade Taken: ${ordersHistory.length} (in ${numbDays} days)`;
+        // CRITICAL: Use processedDays instead of numbDays (processedDays is incremented in both Fast and Normal mode)
+        const months = (processedDays / 30).toFixed(1);
+        result += `Trade Taken: ${ordersHistory.length} (in ${processedDays} days / ${months} months)`;
         result += `\nWin Rate (Positive P/L): ${winRatePositive}%`;
         result += `\nWin Rate (TP Hits): ${winRateTP}%\n`;
         result += `\nProfits: `;
@@ -1910,10 +2858,19 @@ ordersHistory.push({
           window.existingChart.data.datasets[0].data.pop();
           window.existingChart.data.datasets[1].data.pop();
         */
-        window.existingChart.data.labels = labels;
-        window.existingChart.data.datasets[0].data = pnlData;
-        window.existingChart.data.datasets[1].data = equityDataMoney;
-        window.existingChart.update('none');
+        // Guard: Ensure we have valid chart data
+        if (labels.length > 0 && pnlData.length > 0 && equityDataMoney.length > 0) {
+          window.existingChart.data.labels = labels;
+          window.existingChart.data.datasets[0].data = pnlData;
+          window.existingChart.data.datasets[1].data = equityDataMoney;
+          window.existingChart.update('none');
+        } else {
+          // No valid trade data
+          window.existingChart.data.labels = ['No trades generated'];
+          window.existingChart.data.datasets[0].data = [0];
+          window.existingChart.data.datasets[1].data = [0];
+          window.existingChart.update('none');
+        }
 
         // Historical Orders Table with clickable rows for chart navigation
         document.getElementById('backtestingResultOrderHistory').innerHTML = `
@@ -1921,6 +2878,7 @@ ordersHistory.push({
       <thead>
         <tr class="historical-order-table-header">
           <th>ID</th>
+          <th>Size</th>
           <th>Time</th>
           <th>Direction</th>
           <th>Price</th>
@@ -1938,6 +2896,7 @@ ordersHistory.push({
             (order) => `
           <tr class="historical-order-line clickable-row" data-trade-time="${order.time}" title="Click to navigate to this trade on chart">
             <td>${order.id}</td>
+            <td>${(order.lotMultiplier || 1.0).toFixed(1)}</td>
             <td>${order.time}</td>
             <td>${order.direction}</td>
             <td>${order.price.toFixed(5)}</td>
@@ -2019,6 +2978,40 @@ ordersHistory.push({
       };
 
       window.profitabilityCalculation = profitabilityCalculation;
+
+      // Visualize Results from Fast Mode backtest (without re-running)
+      const visualizeBacktestResults = () => {
+        if (ordersHistory.length === 0) {
+          alert('No backtest results to visualize. Please run a backtest first.');
+          return;
+        }
+
+        // Calculate and display profitability
+        profitabilityCalculation();
+
+        // Ensure chart section is visible
+        const chartSection = document.querySelector('.chart-section');
+        if (chartSection) {
+          chartSection.classList.remove('chart-collapsed');
+          chartSection.classList.add('chart-expanded');
+        }
+
+        // Scroll to results panel
+        const resultPanel = document.getElementById('result-panel');
+        if (resultPanel) {
+          resultPanel.classList.add('active');
+          resultPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        console.log('✅ Backtest results visualized:', {
+          totalOrders: ordersHistory.length,
+          closedOrders: ordersHistory.filter(o => o.closed).length,
+          wins: ordersHistory.filter(o => o.closed && o.tradeResult === 'WIN').length,
+          losses: ordersHistory.filter(o => o.closed && o.tradeResult === 'LOSS').length,
+        });
+      };
+
+      window.visualizeBacktestResults = visualizeBacktestResults;
 
       const ohlcDataSeries = new OhlcDataSeries(wasmContext);
 
@@ -2117,6 +3110,7 @@ ordersHistory.push({
         });
 
         const atr = tr.reduce((acc, val) => acc + val, 0) / ATRLength;
+        currentATR = atr; // Store for dynamic SL calculation
 
         // Calculate True Range (TR) for the last candle
         const lastIndex = candlesFromBuffer.length - 1;
@@ -2164,18 +3158,27 @@ ordersHistory.push({
 
       // TTR Indicator: ========================================
       const inTradingTimeRange = (d) => {
+        // Convert MT5 date format (YYYY.MM.DD) to JS format (YYYY-MM-DD)
+        const dateFormatted = d[EnumMT5OHLC.DATE].replaceAll('.', '-');
         const startRangeTime = new Date(
-          `${d[EnumMT5OHLC.DATE]} ${$sessionStartInput.value}`
+          `${dateFormatted} ${$sessionStartInput.value}`
         );
         const endRangeTime = new Date(
-          `${d[EnumMT5OHLC.DATE]} ${$sessionEndInput.value}`
+          `${dateFormatted} ${$sessionEndInput.value}`
         );
         const currentTime = new Date(
-          `${d[EnumMT5OHLC.DATE]} ${d[EnumMT5OHLC.TIME]}`
+          `${dateFormatted} ${d[EnumMT5OHLC.TIME]}`
         );
         const inTradingTimeRange =
           currentTime >= startRangeTime && currentTime <= endRangeTime;
-        //console.table([startRangeTime, currentTime, endRangeTime, currentTime >= startRangeTime && currentTime <= endRangeTime, inTradingTimeRange, arrayOfSignals]);
+
+        // DEBUG: Log TTR checks (comment out after verification)
+        // Uncomment to verify trading hours filter is working
+        // const time = d[EnumMT5OHLC.TIME];
+        // if (time && (time.includes('09:50') || time.includes('11:00') || time.includes('11:05'))) {
+        //   console.log(`TTR Check @ ${time}: ${inTradingTimeRange} (range: ${$sessionStartInput.value}-${$sessionEndInput.value})`);
+        // }
+
         arrayOfSignals[1] = inTradingTimeRange;
       };
       window.inTradingTimeRange = inTradingTimeRange;
@@ -2241,13 +3244,10 @@ ordersHistory.push({
 
       const updateCSIDLineAnnotation = (d, dataIndex) => {
         const index = dataIndex || 0;
-        // This validation to fake next candle:
-        if (arrayOfSignals[0] == true) {
-          checkSignalsForTrade(d, savedTradeDirectionForNextCandleEntry);
-          arrayOfSignals[0] = false;
-        } else {
-          arrayOfSignals[0] = false;
-        }
+
+        // NOTE: Trade execution (executePendingTrade) is now handled in the main backtest loop
+        // This ensures entries happen on next candle's OPEN, not current candle's close
+        // arrayOfSignals[0] is no longer used for trade execution timing
 
         if (index < lookbackPeriod) return; // Ensure we have enough data for CSID calculation
 
@@ -2322,20 +3322,36 @@ ordersHistory.push({
         arrayOfSignals[EnumArrayOfSignalsIndex.MADirection] = Math.abs(accel) > ACCEL_THRESHOLD;
 
         // CSID Graph Related Annotations: ========================================
-        // Add a new CSID Data for our line annotations:
-        const currentUnixTime = convertMT5DateToUnix(d[EnumMT5OHLC.DATE] + ' ' + d[EnumMT5OHLC.TIME]);
-        CSIDDataSerieFromHighs.append(
-          timeToIndex.get(currentUnixTime),
-          highestHighLong[highestHighLong.length - 1]
-        );
-        CSIDDataSerieFromLows.append(
-          timeToIndex.get(currentUnixTime),
-          lowestLowShort[lowestLowShort.length - 1]
-        );
-        maDataSeries.append(
-          timeToIndex.get(currentUnixTime),
-          simpleMA(CSIDLookbackCandleSerie, maPeriod())[CSIDLookbackCandleSerie.length - 1]
-        );
+        // Skip chart rendering in Fast Mode - only append to chart if NOT in fast mode
+        const isFastMode = $fastBacktestMode?.checked;
+        if (!isFastMode) {
+          // Add a new CSID Data for our line annotations:
+          const currentUnixTime = convertMT5DateToUnix(d[EnumMT5OHLC.DATE] + ' ' + d[EnumMT5OHLC.TIME]);
+          const xIndex = timeToIndex.get(currentUnixTime);
+
+          // Guard: Only append valid data (not NaN, Infinity, or undefined)
+          if (xIndex !== undefined && highestHighLong.length > 0) {
+            const highValue = highestHighLong[highestHighLong.length - 1];
+            if (Number.isFinite(highValue)) {
+              CSIDDataSerieFromHighs.append(xIndex, highValue);
+            }
+          }
+
+          if (xIndex !== undefined && lowestLowShort.length > 0) {
+            const lowValue = lowestLowShort[lowestLowShort.length - 1];
+            if (Number.isFinite(lowValue)) {
+              CSIDDataSerieFromLows.append(xIndex, lowValue);
+            }
+          }
+
+          if (xIndex !== undefined && CSIDLookbackCandleSerie.length > 0) {
+            const maValues = simpleMA(CSIDLookbackCandleSerie, maPeriod());
+            const maValue = maValues[maValues.length - 1];
+            if (Number.isFinite(maValue)) {
+              maDataSeries.append(xIndex, maValue);
+            }
+          }
+        }
 
         // If previous candle was a breakout candle, we will not draw this new annotation,
         // I m gonna use a cooldown system rather than checking and modifying CSIDLookbackCandleSerie, for code simplicity (for now):
@@ -2349,32 +3365,154 @@ ordersHistory.push({
           }
         }
 
-        if (bullishCSID || bearishCSID) {
+        // MOMENTUM CONFIRMATION: Only take signals with MA momentum accelerating in trade direction
+        const momentumAligned = (bullishCSID && accel > 0) || (bearishCSID && accel < 0);
+        const momentumAggressive = (bullishCSID && accel > ACCEL_THRESHOLD) || (bearishCSID && accel < -ACCEL_THRESHOLD);
+
+        // INSTITUTIONAL CANDLE CONFIRMATION: Check for candles 3x larger than average volatility
+        // This adapts dynamically to market conditions like ATR
+        const avgCandleBody = CSIDLookbackCandleSerie.reduce((sum, candle) => {
+          const body = Math.abs(parseFloat(candle[EnumMT5OHLC.CLOSE]) - parseFloat(candle[EnumMT5OHLC.OPEN]));
+          return sum + body;
+        }, 0) / Math.max(CSIDLookbackCandleSerie.length, 1);
+
+        const institutionalMultiplier = parseFloat($InstitutionalMultiplierInput?.value || 3.0);
+
+        // If multiplier is 0, disable the institutional candle filter (always pass)
+        let hasInstitutionalCandleInTTR;
+        if (institutionalMultiplier === 0) {
+          hasInstitutionalCandleInTTR = true; // Disabled - all signals pass
+        } else {
+          const institutionalThreshold = avgCandleBody * institutionalMultiplier; // Dynamic multiplier = institutional move
+
+          hasInstitutionalCandleInTTR = CSIDLookbackCandleSerie.some(candle => {
+            const candleTime = candle[EnumMT5OHLC.TIME];
+            const [hour, minute] = candleTime.split(':').map(Number);
+            const candleMinutes = hour * 60 + minute;
+
+            const [startHour, startMin] = $sessionStartInput.value.split(':').map(Number);
+            const [endHour, endMin] = $sessionEndInput.value.split(':').map(Number);
+            const startMinutes = startHour * 60 + startMin;
+            const endMinutes = endHour * 60 + endMin;
+
+            // Check if candle is within TTR
+            const isInTTR = candleMinutes >= startMinutes && candleMinutes <= endMinutes;
+
+            // Check if candle has institutional body (ATR-style dynamic threshold)
+            const candleBody = Math.abs(parseFloat(candle[EnumMT5OHLC.CLOSE]) - parseFloat(candle[EnumMT5OHLC.OPEN]));
+            const isInstitutional = candleBody >= institutionalThreshold;
+
+            return isInTTR && isInstitutional;
+          });
+        }
+
+        // ===== ENTRY ZONE SIGNAL: Enter BEFORE breakout, not after =====
+        // NEW LOGIC: Check which breakout level price is approaching + validate with momentum
+        const entryZoneDistance = parseFloat($EntryZoneDistanceInput?.value || 0.0050);
+        const currentPrice = parseFloat(d[EnumMT5OHLC.CLOSE]);
+        let entryZoneSignalTriggered = false;
+        let entryZoneDirection = null;
+        let distanceToBreakout = 0;
+
+        // Calculate distances to BOTH breakout levels
+        let bullDistance = null;
+        let bearDistance = null;
+
+        if (highestHighLong.length > 1) {
+          const bullBreakoutLevel = highestHighLong[highestHighLong.length - 2];
+          bullDistance = bullBreakoutLevel - currentPrice; // How far below highest high
+        }
+
+        if (lowestLowShort.length > 1) {
+          const bearBreakoutLevel = lowestLowShort[lowestLowShort.length - 2];
+          bearDistance = currentPrice - bearBreakoutLevel; // How far above lowest low
+        }
+
+        // Determine which direction is valid: must be within zone AND price moving in that direction
+        // Get previous candle close for direction check
+        const prevCandle = CSIDLookbackCandleSerie.length > 1
+          ? CSIDLookbackCandleSerie[CSIDLookbackCandleSerie.length - 2]
+          : null;
+        const prevClose = prevCandle ? parseFloat(prevCandle[EnumMT5OHLC.CLOSE]) : currentPrice;
+        const priceMovement = currentPrice - prevClose; // Positive = up, negative = down
+
+        // BULL: price within zone of highest high AND price is moving UP
+        if (bullDistance !== null && bullDistance > 0 && bullDistance <= entryZoneDistance && priceMovement >= 0) {
+          // Price is approaching highest high from below = BULL signal
+          entryZoneSignalTriggered = true;
+          entryZoneDirection = EnumDirection.BULL;
+          distanceToBreakout = bullDistance;
+          console.log(`[ENTRY ZONE ${d[EnumMT5OHLC.DATE]} ${d[EnumMT5OHLC.TIME]}] ✓ BULL SIGNAL: distance=${bullDistance.toFixed(6)}, accel=${accel.toFixed(6)}, priceMovement=${priceMovement.toFixed(6)}`);
+        }
+        // BEAR: price within zone of lowest low AND price is moving DOWN
+        else if (bearDistance !== null && bearDistance > 0 && bearDistance <= entryZoneDistance && priceMovement <= 0) {
+          // Price is approaching lowest low from above = BEAR signal
+          entryZoneSignalTriggered = true;
+          entryZoneDirection = EnumDirection.BEAR;
+          distanceToBreakout = bearDistance;
+          console.log(`[ENTRY ZONE ${d[EnumMT5OHLC.DATE]} ${d[EnumMT5OHLC.TIME]}] ✓ BEAR SIGNAL: distance=${bearDistance.toFixed(6)}, accel=${accel.toFixed(6)}, priceMovement=${priceMovement.toFixed(6)}`);
+        }
+
+        // Calculate lot multiplier based on TWO factors:
+        // 1. MOMENTUM ALIGNMENT: accel direction matches trade direction
+        // 2. DISTANCE TO BREAKOUT: how close price is to actual breakout
+        let csidBreakoutLotMultiplier = 1.0;
+        if (entryZoneSignalTriggered) {
+          // 1. Momentum-based multiplier
+          const momentumAligned = (entryZoneDirection === EnumDirection.BULL && accel > 0) ||
+                                  (entryZoneDirection === EnumDirection.BEAR && accel < 0);
+          const momentumMultiplier = momentumAligned ? 1.0 : 0.5; // Aligned = 1.0, Against = 0.5
+
+          // 2. Distance-based multiplier
+          const midpoint = entryZoneDistance * 0.5;
+          const distanceMultiplier = distanceToBreakout < midpoint ? 0.5 : 1.0; // Close = 0.5, Far = 1.0
+
+          // Final lot = momentum confidence × distance confidence
+          csidBreakoutLotMultiplier = momentumMultiplier * distanceMultiplier;
+
+          const distanceInPips = distanceToBreakout / 0.0001; // EURUSD: 1 pip = 0.0001
+          console.log(`[LOT SIZING] Momentum: ${momentumAligned ? 'ALIGNED' : 'AGAINST'} (${momentumMultiplier.toFixed(1)}x) | Distance: ${distanceToBreakout < midpoint ? 'CLOSE' : 'FAR'} (${distanceMultiplier.toFixed(1)}x) | Final: ${csidBreakoutLotMultiplier.toFixed(2)}x | Distance: ${distanceInPips.toFixed(1)} pips`);
+        }
+
+        if (entryZoneSignalTriggered && arrayOfSignals[EnumArrayOfSignalsIndex.TTR] && hasInstitutionalCandleInTTR) {
+          // CRITICAL: Only process signal if within trading hours AND institutional candle confirms
+          // NEW: Don't wait for CSID breakout - enter when approaching with all confirmations
+
+          const direction = entryZoneDirection;
+          const momentumQuality = momentumAggressive ? 'AGGRESSIVE' : 'ALIGNED';
+          console.log(`[ENTRY ZONE SIGNAL] ${direction} | Distance to breakout: ${(distanceToBreakout * 100000).toFixed(0)} pips | ${momentumQuality} MA + Institutional activity in TTR | Lot Multiplier: ${csidBreakoutLotMultiplier}`);
+
+          // ===== SMART EDGE FILTERS (MINIMAL - MAXIMUM FLEXIBILITY) =====
+          // Only hard reject on extreme market crisis, accept everything else
+
+          // ONLY HARD STOP: Skip after many consecutive losses (market in crisis)
+          const consecutiveLosses = ordersHistory.filter(o => o.closed && o.tradeResult === 'LOSS').slice(-10).length;
+          if (consecutiveLosses > 10) {
+            console.log(`[SIGNAL REJECTED - CRISIS] ${consecutiveLosses} consecutive losses - extreme market crisis - SKIP`);
+            return;
+          }
+
+          // Calculate confidence score for adaptive lot sizing
+          const regime = detectMarketRegime(CSIDLookbackCandleSerie, 20);
+          const confidence = calculateSignalConfidence(
+            CSIDLookbackCandleSerie,
+            direction === EnumDirection.BULL ? 'BULL' : 'BEAR',
+            consecutiveLosses
+          );
+
+          // ===== SIGNAL ACCEPTED (ENTER BEFORE BREAKOUT) =====
           CSIDSignalTriggered = true;
 
-          const isBull = bullishCSID;
-          const svgString = isBull
-            ? signalAnnotation.svgString.bullish
-            : signalAnnotation.svgString.bearish;
-          const svgCandleLocation = isBull ? EnumMT5OHLC.LOW : EnumMT5OHLC.HIGH;
-          const direction = isBull ? EnumDirection.BULL : EnumDirection.BEAR;
+          // CRITICAL: Store pending trade for NEXT candle execution
+          // Entry on NEXT candle ensures we catch the breakout move
+          const detectionTime = `${d[EnumMT5OHLC.DATE]} ${d[EnumMT5OHLC.TIME]}`;
+          pendingTrade = { direction, confidence, detectedTime: detectionTime, csidBreakoutLotMultiplier };
+          lastSignalConfidence = confidence;
+          tradeCount = 0; // Reset trade count for this new signal wave
+          console.log(`[SIGNAL ACCEPTED] ${direction === EnumDirection.BULL ? 'BULLISH' : 'BEARISH'} Entry Zone | Confidence: ${confidence.toFixed(2)}x | Regime: ${regime} | Price ${(distanceToBreakout * 100000).toFixed(0)} pips before breakout | Entry on NEXT candle`);
 
-          const signal = new CustomAnnotation({
-            x1: timeToIndex.get(convertMT5DateToUnix(
-              d[EnumMT5OHLC.DATE] + ' ' + d[EnumMT5OHLC.TIME]
-            )),
-            y1: d[svgCandleLocation],
-            verticalAnchorPoint: EVerticalAnchorPoint.Center,
-            horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
-            svgString,
-          });
-          sciChartSurface.annotations.add(signal);
-
-          // Update first signal then check signals validation:
-          arrayOfSignals[0] = true;
-          savedTradeDirectionForNextCandleEntry = direction;
-          //checkSignalsForTrade(d, direction);
-          //AddActionOnChart(d, EnumActionType.TAKE_A_TRADE, direction);
+          // Signal detected - actual entry annotation will be drawn on the entry candle in executePendingTrade()
+          // No need to draw annotation here since entry happens on next candle anyway
         }
         // End of CSID Graph Related Annotations ========================================
       };
@@ -2384,7 +3522,7 @@ ordersHistory.push({
       const reinitializeChart = () => {
         // Clear the select element:
         $navigateTroughtDates.innerHTML = '';
-        //sciChartSurface.annotations.clear();
+        sciChartSurface.annotations.clear();
         //sciChartSurface.renderableSeries.clear() // Clear the series, like chart and indicators
         sciChartSurface.renderableSeries.remove(CSIDHighline);
         sciChartSurface.renderableSeries.remove(CSIDLowline);
@@ -2455,18 +3593,34 @@ const updateFileReadingProgression = (valueInPercentage) => {
 window.updateFileReadingProgression = updateFileReadingProgression;
 
 const updateDynamicInfos = (d) => {
-  if (prevDate !== d[EnumMT5OHLC.DATE]) {
-    console.log(d[EnumMT5OHLC.DATE]);
-    processedDays++;
-    $currentReadingDate.innerText = d[EnumMT5OHLC.DATE];
+  const isFastMode = $fastBacktestMode?.checked;
 
-    animateActiveClass($currentReadingDate);
+  if (prevDate !== d[EnumMT5OHLC.DATE]) {
+    if (!isFastMode) {
+      console.log(d[EnumMT5OHLC.DATE]);
+    }
+    processedDays++;
+
+    if (!isFastMode) {
+      $currentReadingDate.innerText = d[EnumMT5OHLC.DATE];
+      animateActiveClass($currentReadingDate);
+    }
+
+    // Update loading text with current date for progress visibility
+    const loadingTextEl = document.querySelector('.loading-text');
+    if (loadingTextEl) {
+      loadingTextEl.textContent = `Running backtest... ${d[EnumMT5OHLC.DATE]}`;
+    }
+
     prevDate = d[EnumMT5OHLC.DATE];
   }
 
-  // Update progression bar for each candle processed:
+  // Update progression bar only every 100 candles in fast mode, every time in normal mode
   if (totalCandles > 0) {
-    updateFileReadingProgression((processedCandles * 100) / totalCandles);
+    const shouldUpdateProgress = isFastMode ? (processedCandles % 100 === 0) : true;
+    if (shouldUpdateProgress) {
+      updateFileReadingProgression((processedCandles * 100) / totalCandles);
+    }
   }
 };
 
@@ -2482,10 +3636,12 @@ const addBacktestingDateTimeToChart = (d) => {
   let candleTime = candleDateTime.split(' ')[1]; // get the time from the date string (00:00:00)
   let backTestTime = getCandleChartAxisLocationFromDate(candleDateTime); // + 3600; // Actually the same as above (candleDateTimeStamp)
 
+  // NOTE: Day counting is now handled in updateDynamicInfos() which increments processedDays
+  // This works in both Fast Mode and Normal Mode
+
   var selectedTime = document.getElementById('backtesting-hour').value;
 
   if (candleTime == selectedTime) {
-    numbDays = numbDays + 1;
     let btt = backTestTime; // * 1000;
     //let formatedDate = formatDateFromUnix(btt);
 
@@ -2500,9 +3656,33 @@ const CSIDIndicator = (d, dataIndex) => {
   updateCSIDLineAnnotation(d, dataIndex);
 };
 
+// CRITICAL: Indicator calculations only (no chart rendering)
+// This MUST run in both normal and Fast Mode to generate trade signals
+const calculateIndicators = (d, dataIndex) => {
+  // Populate candlesFromBuffer needed by calcATR (usually done in addNewCandleToChart)
+  if (candlesFromBuffer.length >= MAX_BUFFER_SIZE) {
+    candlesFromBuffer.shift(); // Remove oldest if buffer full
+  }
+  candlesFromBuffer.push(d);
+
+  // NOTE: timeToIndex is now populated BEFORE calculateIndicators is called
+  // This ensures signal markers are positioned correctly on the chart
+
+  // CRITICAL: Check trading time range BEFORE updating CSID signals
+  // This ensures TTR signal is fresh for the current candle, not stale from previous
+  inTradingTimeRange(d);
+
+  // Update CSID signals and MA direction (required for trade logic)
+  // Now checks the current candle's TTR value (just calculated above)
+  updateCSIDLineAnnotation(d, dataIndex);
+
+  // Calculate ATR signal (required for trade logic)
+  calcATR(d, dataIndex);
+};
+
 const appendIndicatorsToChart = (d, dataIndex) => {
-  // Example of appending indicators to the chart
-  // This is a placeholder function, you can implement your own logic
+  // Chart rendering only - calculations are now in calculateIndicators()
+  // This function is skipped in Fast Mode to improve performance
   CSIDIndicator(d, dataIndex);
   inTradingTimeRange(d);
   calcATR(d, dataIndex);
@@ -2623,6 +3803,7 @@ $exportableCSVField.addEventListener('input', updateGoogleSheetsButtonState);
 // Get current parameters from inputs
 const getCurrentParams = () => ({
   strategy: $strategyInput?.value || 'CSID_W_MA_DynamicTS',
+  preset: getMultiPositionConfig().presetName,
   sessionStart: $sessionStartInput?.value || '09:50:00',
   sessionEnd: $sessionEndInput?.value || '11:00:00',
   slSize: parseFloat($SLPointsInput?.value) || 0.0001,
@@ -2632,12 +3813,30 @@ const getCurrentParams = () => ({
   tsSize: parseFloat($TSIncrementInput?.value) || 0.0001,
   maPeriod: parseFloat($MAPeriodInput?.value) || 200,
   maThreshold: parseFloat($MAThresholdInput?.value) || 0.003,
+  monthlyMaxLossPercent: parseFloat(document.getElementById('MonthlyMaxLoss')?.value) || 5,
 });
 
 // Load parameters and run backtest (with chart)
 const loadParamsAndRun = (params) => {
+  // Clean up trailing stop series from previous backtest
+  if (window.sciChartSurface && trailingStopSeriesMap.size > 0) {
+    trailingStopSeriesMap.forEach((series, orderId) => {
+      try {
+        if (series && window.sciChartSurface.renderableSeries.contains(series)) {
+          window.sciChartSurface.renderableSeries.remove(series);
+        }
+      } catch (e) {
+        // Silently skip cleanup errors
+      }
+    });
+    trailingStopSeriesMap.clear();
+    console.log('Cleaned up trailing stop series');
+  }
+  
   // Set values to inputs
   if ($strategyInput) $strategyInput.value = params.strategy;
+  const presetDropdown = document.getElementById('multiPositionPreset');
+  if (presetDropdown && params.preset) presetDropdown.value = params.preset;
   if ($sessionStartInput) $sessionStartInput.value = params.sessionStart;
   if ($sessionEndInput) $sessionEndInput.value = params.sessionEnd;
   if ($SLPointsInput) $SLPointsInput.value = params.slSize;
@@ -2656,6 +3855,22 @@ const loadParamsAndRun = (params) => {
   // Collapse result panel to show chart
   const resultPanel = document.getElementById('result-panel');
   if (resultPanel) resultPanel.classList.remove('active');
+  
+  // If we have cached data from URL load (no file object), create a blob and run chart
+  if (!cachedFile && cachedCSVData.length > 0) {
+    // Convert cached data back to CSV string
+    const headers = Object.keys(cachedCSVData[0]);
+    const csvRows = cachedCSVData.map(row => headers.map(h => row[h]).join('\t'));
+    const csvString = [headers.join('\t'), ...csvRows].join('\n');
+    
+    // Create a blob and treat as file
+    const blob = new Blob([csvString], { type: 'text/csv' });
+    const mockFile = new File([blob], 'cached.csv', { type: 'text/csv' });
+    
+    // Use the existing file handling
+    handleFileAndInitGraph(mockFile);
+    return;
+  }
   
   // Run the full backtest with chart - reuse the file that was uploaded
   handleFileAndInitGraph(cachedFile);
@@ -2684,60 +3899,6 @@ const loadAndCacheCSV = (file) => new Promise((resolve, reject) => {
   });
 
 // Run optimized backtest (no chart rendering)
-const runOptimizedBacktestUI = async () => {
-  // Check if we have cached data or if there's a file in the input
-  let csvData = cachedCSVData;
-  
-  // If no cached data, try to get from file input
-  if (csvData.length === 0) {
-    const file = $csvFileInput?.files?.[0];
-    if (file) {
-      // Parse the file directly for optimized backtest
-      console.log('Parsing file for optimized backtest...');
-      const results = await new Promise((resolve, reject) => {
-        Papa.parse(file, {
-          header: true,
-          dynamicTyping: true,
-          complete: resolve,
-          error: reject,
-        });
-      });
-      csvData = results.data.filter(row => row && row[EnumMT5OHLC.OPEN]);
-      cachedCSVData = csvData;
-      console.log(`Parsed ${csvData.length} candles from file`);
-    }
-  }
-  
-  if (csvData.length === 0) {
-    alert('Please load a CSV file first! The data will be cached for fast backtesting.');
-    return;
-  }
-  
-  const params = getCurrentParams();
-  
-  console.log(`Running optimized backtest with ${csvData.length} candles...`);
-  
-  // Show loading
-  document.getElementById('loading-element').classList.add('visible');
-  document.getElementById('loading-element').querySelector('.loading-text').textContent = 'Running optimized backtest...';
-  
-  // Use setTimeout to allow UI to update
-  setTimeout(() => {
-    const result = runOptimizedBacktest(params, csvData);
-    
-    // Hide loading
-    document.getElementById('loading-element').classList.remove('visible');
-    document.getElementById('loading-element').querySelector('.loading-text').textContent = 'Backtesting is running ...';
-    
-    // Display results
-    displayBacktestResult(result);
-    
-    // Auto-save to comparison
-    saveResultForComparison(result);
-    
-    audioSuccess.play();
-  }, 50);
-};
 
 // Monte Carlo simulation for equity curves
 const runMonteCarloSimulation = (orders, params, numSimulations = 50) => {
@@ -2848,18 +4009,50 @@ const renderComparisonChart = () => {
     options: {
       responsive: false,
       animation: false,
+      maintainAspectRatio: false,
       plugins: {
-        legend: { 
+        legend: {
           display: true,
-          position: 'right',
-          labels: { color: '#888', font: { size: 9 }, boxWidth: 1 }
+          position: 'top',
+          labels: {
+            color: '#aaa',
+            font: { size: 11, weight: 'normal' },
+            boxWidth: 15,
+            padding: 15,
+            usePointStyle: false,
+          },
+          align: 'center'
+        },
+        tooltip: {
+          enabled: true,
+          backgroundColor: 'rgba(0,0,0,0.8)',
+          titleColor: '#fff',
+          bodyColor: '#ddd',
+          borderColor: '#555',
+          borderWidth: 1,
+          padding: 8,
+          font: { size: 10 }
         },
       },
       scales: {
-        x: { display: false },
+        x: {
+          display: false,
+          grid: { display: false }
+        },
         y: {
-          ticks: { color: '#888', font: { size: 10 } },
-          grid: { color: '#333' },
+          ticks: {
+            color: '#888',
+            font: { size: 10 },
+            stepSize: 'auto',
+            callback: function(value) {
+              return '$' + Math.round(value);
+            }
+          },
+          grid: {
+            color: 'rgba(100, 100, 100, 0.2)',
+            drawBorder: false,
+          },
+          beginAtZero: true,
         },
       },
     },
@@ -2869,10 +4062,21 @@ const renderComparisonChart = () => {
   const best = resultsWithEquity[0];
   const worst = resultsWithEquity[resultsWithEquity.length - 1];
   document.getElementById('monteCarloStats').innerHTML = `
-    <div style="display: flex; gap: 15px; flex-wrap: wrap; font-size: 11px;">
-      <span style="color: #5f5;">Best: ${best.name} (${best.money}$)</span>
-      <span style="color: #f55;">Worst: ${worst.name} (${worst.money}$)</span>
-      <span style="color: #fff;">Runs: ${resultsWithEquity.length}</span>
+    <div style="display: flex; gap: 20px; flex-wrap: wrap; font-size: 12px; padding: 10px 0; border-top: 1px solid #333;">
+      ${best && worst ? `
+        <div>
+          <span style="color: #888;">Best Run:</span>
+          <span style="color: #6f6; font-weight: 500; margin-left: 8px;">${best.name} ($${best.money.toFixed(0)})</span>
+        </div>
+        <div>
+          <span style="color: #888;">Worst Run:</span>
+          <span style="color: #f77; font-weight: 500; margin-left: 8px;">${worst.name} ($${worst.money.toFixed(0)})</span>
+        </div>
+      ` : '<span style="color: #666;">No equity curves to compare</span>'}
+      <div style="margin-left: auto;">
+        <span style="color: #888;">Total Runs:</span>
+        <span style="color: #aaa; font-weight: 500; margin-left: 8px;">${resultsWithEquity.length}</span>
+      </div>
     </div>
   `;
 };
@@ -2929,7 +4133,7 @@ const displayBacktestResult = (result) => {
     `\t`,
     `${backtestingDate}\t`,
     `${csvFileName}\t`,
-    `${result.params.strategy}\t`,
+    `${result.params.preset || result.params.strategy}\t`,
     `${result.params.sessionStart}\t`,
     `${result.params.sessionEnd}\t`,
     `${result.totalTrades}\t`,
@@ -2979,25 +4183,83 @@ const saveResultForComparison = (result) => {
   updateSavedResultsComparison();
 };
 
+// Sort preset for comparison table
+let comparisonSortPreset = 'highestProfit';
+
+// Normalize a value array to 0-1 range (higher = better)
+const normalize = (values) => {
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  if (max === min) return values.map(() => 0.5);
+  return values.map(v => (v - min) / (max - min));
+};
+
+// Sort presets: each defines how to compute a composite score (higher = better)
+const SORT_PRESETS = {
+  highestProfit: {
+    label: 'Highest Profit',
+    score: (results) => results.map(r => parseFloat(r.moneyEquivalent)),
+  },
+  bestOverall: {
+    label: 'Best Overall',
+    score: (results) => {
+      const pnl = normalize(results.map(r => parseFloat(r.moneyEquivalent)));
+      const pf  = normalize(results.map(r => parseFloat(r.profitFactor)));
+      const wr  = normalize(results.map(r => parseFloat(r.winRate)));
+      const dd  = normalize(results.map(r => -Math.abs(parseFloat(r.maxDrawdown)))); // lower DD = better
+      return results.map((_, i) => pnl[i] * 0.40 + pf[i] * 0.25 + wr[i] * 0.20 + dd[i] * 0.15);
+    },
+  },
+  bestRiskReward: {
+    label: 'Best Risk/Reward',
+    score: (results) => {
+      const pf = normalize(results.map(r => parseFloat(r.profitFactor)));
+      const dd = normalize(results.map(r => -Math.abs(parseFloat(r.maxDrawdown))));
+      const pnl = normalize(results.map(r => parseFloat(r.moneyEquivalent)));
+      return results.map((_, i) => pf[i] * 0.45 + dd[i] * 0.35 + pnl[i] * 0.20);
+    },
+  },
+  mostConsistent: {
+    label: 'Most Consistent',
+    score: (results) => {
+      const wr = normalize(results.map(r => parseFloat(r.winRate)));
+      const dd = normalize(results.map(r => -Math.abs(parseFloat(r.maxDrawdown))));
+      const pf = normalize(results.map(r => parseFloat(r.profitFactor)));
+      return results.map((_, i) => wr[i] * 0.45 + dd[i] * 0.35 + pf[i] * 0.20);
+    },
+  },
+};
+
 // Update the comparison table
 const updateSavedResultsComparison = () => {
   const container = document.getElementById('savedResultsComparison');
-  
+
   if (backtestResults.length === 0) {
     container.innerHTML = '<p style="color: #666; font-style: italic;">No saved results yet. Run a backtest and save parameters to compare.</p>';
     return;
   }
-  
-  // Sort by money equivalent (best first)
-  const sorted = [...backtestResults].sort((a, b) => parseFloat(b.moneyEquivalent) - parseFloat(a.moneyEquivalent));
-  
+
+  // Compute composite scores and sort
+  const preset = SORT_PRESETS[comparisonSortPreset] || SORT_PRESETS.highestProfit;
+  const scores = preset.score(backtestResults);
+  const indexed = backtestResults.map((r, i) => ({ result: r, score: scores[i] }));
+  indexed.sort((a, b) => b.score - a.score);
+
   container.innerHTML = `
+    <div class="sort-preset-bar">
+      <label for="comparisonSortPreset">Sort by:</label>
+      <select id="comparisonSortPreset" class="h-input-effects">
+        ${Object.entries(SORT_PRESETS).map(([key, p]) =>
+          `<option value="${key}" ${key === comparisonSortPreset ? 'selected' : ''}>${p.label}</option>`
+        ).join('')}
+      </select>
+    </div>
     <table class="comparison-results-table">
       <thead>
         <tr class="comparison-table-header">
           <th>#</th>
           <th>Name</th>
-          <th>Strategy</th>
+          <th>Preset</th>
           <th>SL</th>
           <th>TP</th>
           <th>TS</th>
@@ -3006,15 +4268,16 @@ const updateSavedResultsComparison = () => {
           <th>P/F</th>
           <th>P/L ($)</th>
           <th>DD ($)</th>
+          <th>Score</th>
           <th>Action</th>
         </tr>
       </thead>
       <tbody>
-        ${sorted.map((r, idx) => `
-          <tr class="comparison-row ${idx === 0 ? 'best-result' : ''} ${idx === sorted.length - 1 && sorted.length > 1 ? 'worst-result' : ''}">
+        ${indexed.map(({ result: r, score }, idx) => `
+          <tr class="comparison-row ${idx === 0 ? 'best-result' : ''} ${idx === indexed.length - 1 && indexed.length > 1 ? 'worst-result' : ''}">
             <td>${idx + 1}</td>
             <td>${r.params.name || '-'}</td>
-            <td>${r.params.strategy}</td>
+            <td>${r.params.preset || r.params.strategy}</td>
             <td>${r.params.slSize}</td>
             <td>${r.params.tpSize}</td>
             <td>${r.params.tsSize}</td>
@@ -3023,6 +4286,7 @@ const updateSavedResultsComparison = () => {
             <td>${r.profitFactor}</td>
             <td class="${parseFloat(r.moneyEquivalent) >= 0 ? 'text-profit' : 'text-loss'}">${r.moneyEquivalent}$</td>
             <td class="text-drawdown">${r.maxDrawdown}$</td>
+            <td>${score.toFixed(2)}</td>
             <td>
               <button class="btn-load-params" data-params='${JSON.stringify(r.params)}' title="Load params & run backtest">▶</button>
               <button class="btn-load-mql" data-params='${JSON.stringify(r.params)}' title="Generate MQL Expert Advisor">MQL</button>
@@ -3032,8 +4296,14 @@ const updateSavedResultsComparison = () => {
       </tbody>
     </table>
   `;
-  
-  // Add event listeners to load buttons
+
+  // Sort preset change handler
+  document.getElementById('comparisonSortPreset')?.addEventListener('change', (e) => {
+    comparisonSortPreset = e.target.value;
+    updateSavedResultsComparison();
+  });
+
+  // Load params button handlers
   container.querySelectorAll('.btn-load-params').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const params = JSON.parse(e.target.dataset.params);
@@ -3047,253 +4317,496 @@ const updateSavedResultsComparison = () => {
       loadParamsAsMQL(params);
     });
   });
-  
+
   // Render comparison chart
   renderComparisonChart();
 };
 
 // Save current parameters
-const saveCurrentParams = () => {
-  const params = getCurrentParams();
-  params.id = Date.now();
-  params.timestamp = new Date().toISOString();
-  params.name = document.getElementById('paramSetName')?.value || `Config ${savedParamSets.length + 1}`;
-  savedParamSets.push(params);
-  window.savedParamSets = savedParamSets;
-  alert(`Parameters "${params.name}" saved! Total saved: ${savedParamSets.length}`);
-};
 
 // Generate MQL from parameters
 const generateMQLFromParams = (params) => {
   const template = `//+------------------------------------------------------------------+
-//|                   CSID + TTR + MADirection EA                    |
+//|                     HYTEK TRADING SYSTEM                         |
+//|                    9/21 EMA CROSSOVER EA                         |
+//|                   MQL5 Version - MetaTrader 5                     |
+//|                 Optimized Parameters v1.0                        |
 //+------------------------------------------------------------------+
-#property strict
+
+#property copyright "HYTEK"
 #property version   "1.00"
+#property description "9/21 EMA Crossover with optimized SL/TP/TS"
+#property strict
 
-// Hardcoded parameters - no inputs to avoid MT5 cache issues
-const int LOOKBACK_PERIOD = 20;
-const string SESSION_START = "${params.sessionStart || '09:50:00'}";
-const string SESSION_END = "${params.sessionEnd || '11:00:00'}";
-const int MA_PERIOD = ${Math.floor(params.maPeriod)};
-const double MA_THRESHOLD = ${params.maThreshold ? params.maThreshold.toFixed(6) : 0.003};
-const int ATR_PERIOD = 20;
-const double ATR_MULTIPLIER = 1.2;
-const double LOT_SIZE = ${params.lotSize.toFixed(2)};
-const double SL_PRICE = ${params.slSize ? params.slSize.toFixed(6) : 0.0003};
-const double TP_PRICE = ${params.tpSize ? params.tpSize.toFixed(6) : 0.0009};
+#include <Trade\\Trade.mqh>
 
-#include <Trade/Trade.mqh>
+//+------------------------------------------------------------------+
+//| INPUT PARAMETERS                                                 |
+//+------------------------------------------------------------------+
 
-string csid_high_name = "CSID_High";
-string csid_low_name = "CSID_Low";
-string ttr_start_name = "TTR_Start";
-string ttr_end_name = "TTR_End";
+input double SL_Pips = 50;               // Stop Loss: 50 pips (broker minimum safe)
+input double TP_Pips = 100;              // Take Profit: 100 pips (2:1 risk/reward)
+input double TS_Pips = 0;                // Trailing Stop: 0 (disabled)
+input double LotSize = 1.0;              // Fixed lot size
+input double RiskPercent = 2.0;          // Alternative: risk % per trade
+input int EMA_Fast = 9;                  // Fast EMA period
+input int EMA_Slow = 21;                 // Slow EMA period
+input string TradeStartHour = "${params.sessionStart || '09:50'}";   // Trade start time HH:MM
+input string TradeEndHour = "${params.sessionEnd || '11:00'}";     // Trade end time HH:MM
+input bool TradeAllHours = false;        // If true, ignore time filter
+input int MaxTradesPerDay = 10;          // Maximum trades per day
+input double MaxDailyLoss = 500;         // Max loss in $ per day
+input bool CloseAllOnMaxLoss = false;    // Close all if max loss hit
 
-int ma_handle = INVALID_HANDLE;
-int atr_handle = INVALID_HANDLE;
+//+------------------------------------------------------------------+
+//| GLOBAL VARIABLES                                                 |
+//+------------------------------------------------------------------+
+
 CTrade trade;
-bool atr_triggered = false;
-double prev_highest = 0;
-double prev_lowest = 0;
+int handleEMA9 = INVALID_HANDLE;
+int handleEMA21 = INVALID_HANDLE;
+int tradesToday = 0;
+double dailyPnL = 0;
+datetime lastTradeDay = 0;
+const int MAGIC_NUMBER = 12345;
+
+//+------------------------------------------------------------------+
+//| EXPERT INITIALIZATION                                            |
+//+------------------------------------------------------------------+
 
 int OnInit()
 {
-   Print("=== CSID EA Started ===");
-   Print("MA_Period: ", MA_PERIOD, ", MA_Threshold: ", MA_THRESHOLD);
-   Print("SL: ", SL_PRICE, ", TP: ", TP_PRICE, ", Lot: ", LOT_SIZE);
-   Print("Session: ", SESSION_START, " - ", SESSION_END);
-   
-   ma_handle = iMA(_Symbol, _Period, MA_PERIOD, 0, MODE_SMA, PRICE_CLOSE);
-   if(ma_handle == INVALID_HANDLE) { Print("Failed to create MA"); return(INIT_FAILED); }
-   atr_handle = iATR(_Symbol, _Period, ATR_PERIOD);
-   if(atr_handle == INVALID_HANDLE) { Print("Failed to create ATR"); return(INIT_FAILED); }
-   trade.SetExpertMagicNumber(12345);
-   trade.SetDeviationInPoints(10);
-   return(INIT_SUCCEEDED);
+    handleEMA9 = iMA(_Symbol, _Period, EMA_Fast, 0, MODE_EMA, PRICE_CLOSE);
+    handleEMA21 = iMA(_Symbol, _Period, EMA_Slow, 0, MODE_EMA, PRICE_CLOSE);
+
+    if(handleEMA9 == INVALID_HANDLE || handleEMA21 == INVALID_HANDLE)
+    {
+        Alert("Failed to create indicator handles");
+        return INIT_FAILED;
+    }
+
+    trade.SetExpertMagicNumber(MAGIC_NUMBER);
+    trade.SetDeviationInPoints(30);
+
+    Print("HYTEK EA Initialized");
+    Print("Entry: 9/21 EMA Crossover");
+    Print("SL: ", SL_Pips, " pips | TP: ", TP_Pips, " pips");
+
+    // Check broker's minimum stop distance requirement
+    int minStopsPoints = (int)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
+    if(minStopsPoints > 0)
+    {
+        int minStopsPips = minStopsPoints / 10;  // Convert points to pips (for 5-digit broker)
+        Print("=== BROKER INFO ===");
+        Print("Broker minimum stop distance: ", minStopsPoints, " points (", minStopsPips, " pips)");
+        Print("Your configured SL: ", SL_Pips, " pips");
+        if(SL_Pips < minStopsPips)
+        {
+            Print("WARNING: SL_Pips (", SL_Pips, ") is less than broker minimum (", minStopsPips, ")");
+            Print("Trades may be rejected. Consider increasing SL_Pips to at least ", minStopsPips);
+        }
+    }
+
+    lastTradeDay = 0;
+    return INIT_SUCCEEDED;
 }
+
+//+------------------------------------------------------------------+
+//| EXPERT DEINITIALIZATION                                          |
+//+------------------------------------------------------------------+
 
 void OnDeinit(const int reason)
 {
-   if(ma_handle != INVALID_HANDLE) IndicatorRelease(ma_handle);
-   if(atr_handle != INVALID_HANDLE) IndicatorRelease(atr_handle);
-   ObjectDelete(0, csid_high_name);
-   ObjectDelete(0, csid_low_name);
-   ObjectDelete(0, ttr_start_name);
-   ObjectDelete(0, ttr_end_name);
+    if(handleEMA9 != INVALID_HANDLE) IndicatorRelease(handleEMA9);
+    if(handleEMA21 != INVALID_HANDLE) IndicatorRelease(handleEMA21);
+    Print("HYTEK EA Deinitialized");
 }
 
-bool IsBullish(double o, double c) { return(c > o); }
-
-bool IsInTradingTime()
-{
-   datetime t = TimeCurrent();
-   MqlDateTime dt; TimeToStruct(t, dt);
-   int current_min = dt.hour * 60 + dt.min;
-   int sh = (int)StringSubstr(SESSION_START, 0, 2);
-   int sm = (int)StringSubstr(SESSION_START, 3, 2);
-   int eh = (int)StringSubstr(SESSION_END, 0, 2);
-   int em = (int)StringSubstr(SESSION_END, 3, 2);
-   return(current_min >= sh * 60 + sm && current_min <= eh * 60 + em);
-}
-
-double GetHighestHigh(int lb)
-{
-   int total = Bars(_Symbol, _Period);
-   if(total < lb + 1) return(0);
-   double highest = 0;
-   for(int i = 1; i <= lb; i++)
-   {
-      double o = iOpen(_Symbol, _Period, i);
-      double c = iClose(_Symbol, _Period, i);
-      if(o <= 0 || c <= 0) continue;
-      double price = IsBullish(o, c) ? c : o;
-      if(price > highest || highest == 0) highest = price;
-   }
-   return(highest);
-}
-
-double GetLowestLow(int lb)
-{
-   int total = Bars(_Symbol, _Period);
-   if(total < lb + 1) return(0);
-   double lowest = 0;
-   for(int i = 1; i <= lb; i++)
-   {
-      double o = iOpen(_Symbol, _Period, i);
-      double c = iClose(_Symbol, _Period, i);
-      if(o <= 0 || c <= 0) continue;
-      double price = IsBullish(o, c) ? o : c;
-      if(price < lowest || lowest == 0) lowest = price;
-   }
-   return(lowest);
-}
-
-void UpdatePreviousCSIDLevels()
-{
-   double current_high = GetHighestHigh(LOOKBACK_PERIOD);
-   double current_low = GetLowestLow(LOOKBACK_PERIOD);
-   if(current_high > 0) prev_highest = current_high;
-   if(current_low > 0) prev_lowest = current_low;
-}
-
-double GetMA()
-{
-   if(ma_handle == INVALID_HANDLE) return(0);
-   double ma[];
-   if(CopyBuffer(ma_handle, 0, 0, 2, ma) < 2) return(0);
-   return(ma[0]);
-}
-
-int GetMADirection()
-{
-   int total = Bars(_Symbol, _Period);
-   if(total < LOOKBACK_PERIOD + 3) return(0);
-   double ma_now = 0, ma_past = 0, ma_past2 = 0;
-   for(int j = 0; j < LOOKBACK_PERIOD; j++) ma_now += iClose(_Symbol, _Period, j);
-   ma_now /= LOOKBACK_PERIOD;
-   for(int j = LOOKBACK_PERIOD; j < LOOKBACK_PERIOD * 2; j++) ma_past += iClose(_Symbol, _Period, j);
-   ma_past /= LOOKBACK_PERIOD;
-   for(int j = LOOKBACK_PERIOD * 2; j < LOOKBACK_PERIOD * 3; j++) ma_past2 += iClose(_Symbol, _Period, j);
-   ma_past2 /= LOOKBACK_PERIOD;
-   if(ma_now <= 0 || ma_past <= 0 || ma_past2 <= 0) return(0);
-   double accel = ma_now - 2 * ma_past + ma_past2;
-   if(accel > MA_THRESHOLD) return(1);
-   if(accel < -MA_THRESHOLD) return(-1);
-   return(0);
-}
-
-bool CheckCSIDSignal(double &direction)
-{
-   int total = Bars(_Symbol, _Period);
-   if(total < LOOKBACK_PERIOD + 2) return(false);
-   double current_close = iClose(_Symbol, _Period, 0);
-   double highest = prev_highest;
-   double lowest = prev_lowest;
-   if(highest <= 0 || lowest <= 0) return(false);
-   if(current_close > highest) { direction = 1; return(true); }
-   if(current_close < lowest) { direction = -1; return(true); }
-   return(false);
-}
-
-bool CheckATRSignal()
-{
-   if(atr_handle == INVALID_HANDLE) return(false);
-   double atr[];
-   if(CopyBuffer(atr_handle, 0, 0, 1, atr) < 1) return(false);
-   double current_atr = atr[0];
-   if(current_atr <= 0) return(false);
-   
-   // Use previous closed candle (index 1) - index 0 is current incomplete candle
-   double high = iHigh(_Symbol, _Period, 1);
-   double low = iLow(_Symbol, _Period, 1);
-   double prev_close = iClose(_Symbol, _Period, 2);
-   
-   double tr = MathMax(high - low, MathMax(MathAbs(high - prev_close), MathAbs(low - prev_close)));
-   
-   // Match BT: TR must exceed ATR (not ATR * 1.2)
-   return(tr > current_atr);
-}
-
-void ExecuteTrade(double direction)
-{
-   double price = NormalizeDouble(iClose(_Symbol, _Period, 0), _Digits);
-   double sl = 0, tp = 0;
-   Print("ExecuteTrade - price: ", price, " direction: ", direction);
-   
-   if(direction > 0) { 
-      sl = NormalizeDouble(price - SL_PRICE, _Digits); 
-      tp = NormalizeDouble(price + TP_PRICE, _Digits); 
-   }
-   else { 
-      sl = NormalizeDouble(price + SL_PRICE, _Digits); 
-      tp = NormalizeDouble(price - TP_PRICE, _Digits); 
-   }
-   Print("ExecuteTrade - SL_PRICE: ", SL_PRICE, " TP_PRICE: ", TP_PRICE, " sl: ", sl, " tp: ", tp);
-   if(direction > 0) { trade.Buy(LOT_SIZE, _Symbol, price, sl, tp); }
-   else { trade.Sell(LOT_SIZE, _Symbol, price, sl, tp); }
-}
+//+------------------------------------------------------------------+
+//| EXPERT TICK FUNCTION                                             |
+//+------------------------------------------------------------------+
 
 void OnTick()
 {
-   static datetime last_bar = 0;
-   datetime current_bar = iTime(_Symbol, _Period, 0);
-   if(current_bar == last_bar) return;
-   last_bar = current_bar;
-   
-   int total = Bars(_Symbol, _Period);
-   if(total < LOOKBACK_PERIOD + 2 || total < ATR_PERIOD + 2) return;
-   
-   // Check CSID first using previous candle's levels (like backtest)
-   double direction = 0;
-   bool csid_signal = CheckCSIDSignal(direction);
-   
-   // Then update levels for next candle's comparison
-   UpdatePreviousCSIDLevels();
-   
-   bool in_session = IsInTradingTime();
-   static bool was_in_session = false;
-   if(!was_in_session && in_session) atr_triggered = false;
-   was_in_session = in_session;
-   
-   int ma_dir = GetMADirection();
-   bool atr_signal = CheckATRSignal();
-   
-   if(in_session && !atr_triggered && atr_signal) atr_triggered = true;
-   
-   //bool ma_ok = (direction > 0 && ma_dir > 0) || (direction < 0 && ma_dir < 0);
-   bool ma_ok = true; // Disable MA check for now
-   
-   bool all_signals = in_session && csid_signal && atr_triggered;
-   Print("in_session | csid_signal | atr_triggered: ", in_session, " ", csid_signal, " ", atr_triggered);
-   Print("ma_dir: ", ma_dir, " direction: ", direction, " ma_ok: ", ma_ok);
-   
-   if(all_signals && ma_ok) {
-      Print(">>> EXECUTING TRADE >>> direction: ", direction);
-      ExecuteTrade(direction);
-      atr_triggered = false;
-   }
+    MqlDateTime dt;
+    TimeToStruct(TimeCurrent(), dt);
+
+    if(dt.day_of_week == 0 || dt.day_of_week == 6)
+        return;
+
+    MqlDateTime lastDt;
+    TimeToStruct(lastTradeDay, lastDt);
+
+    if(dt.day != lastDt.day)
+    {
+        tradesToday = 0;
+        dailyPnL = 0;
+        lastTradeDay = TimeCurrent();
+    }
+
+    UpdateDailyPnL();
+
+    if(MaxDailyLoss > 0 && dailyPnL < -MaxDailyLoss)
+    {
+        if(CloseAllOnMaxLoss) CloseAllPositions();
+        return;
+    }
+
+    if(!TradeAllHours && !IsInTradingHours())
+        return;
+
+    if(tradesToday >= MaxTradesPerDay)
+        return;
+
+    double ema9Array[2], ema21Array[2];
+
+    if(CopyBuffer(handleEMA9, 0, 0, 2, ema9Array) != 2)
+        return;
+    if(CopyBuffer(handleEMA21, 0, 0, 2, ema21Array) != 2)
+        return;
+
+    double ema9Prev = ema9Array[1];
+    double ema9Curr = ema9Array[0];
+    double ema21Prev = ema21Array[1];
+    double ema21Curr = ema21Array[0];
+
+    bool bullishCrossover = (ema9Prev <= ema21Prev) && (ema9Curr > ema21Curr);
+    bool bearishCrossover = (ema9Prev >= ema21Prev) && (ema9Curr < ema21Curr);
+
+    if(bullishCrossover && HasOpenShorts())
+        ClosePositionsByType(POSITION_TYPE_SELL);
+
+    if(bearishCrossover && HasOpenLongs())
+        ClosePositionsByType(POSITION_TYPE_BUY);
+
+    if(bullishCrossover && !HasOpenTrade())
+        OpenBuyOrder();
+
+    if(bearishCrossover && !HasOpenTrade())
+        OpenSellOrder();
+
+    if(TS_Pips > 0)
+        ManageTrailingStop();
 }
+
+//+------------------------------------------------------------------+
+//| OPEN BUY ORDER                                                    |
+//+------------------------------------------------------------------+
+
+void OpenBuyOrder()
+{
+    double lotSize = CalculateLotSize(LotSize, RiskPercent);
+
+    // Execute at market price without SL/TP
+    if(trade.Buy(lotSize, _Symbol, 0, 0, 0, "HYTEK_BUY"))
+    {
+        ulong ticket = trade.ResultOrder();
+        Print("BUY executed: Ticket=", ticket);
+
+        // Small delay for position to settle
+        Sleep(100);
+
+        // Get actual fill price from the position
+        if(PositionSelectByTicket(ticket))
+        {
+            double fillPrice = PositionGetDouble(POSITION_PRICE_OPEN);
+            double stopLoss = NormalizeDouble(fillPrice - (SL_Pips * _Point), _Digits);
+            double takeProfit = NormalizeDouble(fillPrice + (TP_Pips * _Point), _Digits);
+
+            Print("BUY Fill Price: ", fillPrice, " SL calc: ", stopLoss, " TP calc: ", takeProfit);
+            Print("BUY SL distance: ", (fillPrice - stopLoss) / _Point, " pips, TP distance: ", (takeProfit - fillPrice) / _Point, " pips");
+
+            // Modify with calculated stops based on actual fill
+            if(trade.PositionModify(ticket, stopLoss, takeProfit))
+            {
+                Print("BUY Order Opened: Ticket=", ticket, " Fill=", fillPrice, " SL=", stopLoss, " TP=", takeProfit);
+                tradesToday++;
+            }
+            else
+            {
+                Print("BUY Modify Failed: Ticket=", ticket, " Error=", GetLastError(), " RetCode=", trade.ResultRetcode());
+            }
+        }
+        else
+        {
+            Print("BUY Position select failed: Ticket=", ticket);
+        }
+    }
+    else
+    {
+        Print("BUY Order Failed: Error=", GetLastError(), " RetCode=", trade.ResultRetcode());
+    }
+}
+
+//+------------------------------------------------------------------+
+//| OPEN SELL ORDER                                                   |
+//+------------------------------------------------------------------+
+
+void OpenSellOrder()
+{
+    double lotSize = CalculateLotSize(LotSize, RiskPercent);
+
+    // Execute at market price without SL/TP
+    if(trade.Sell(lotSize, _Symbol, 0, 0, 0, "HYTEK_SELL"))
+    {
+        ulong ticket = trade.ResultOrder();
+        Print("SELL executed: Ticket=", ticket);
+
+        // Small delay for position to settle
+        Sleep(100);
+
+        // Get actual fill price from the position
+        if(PositionSelectByTicket(ticket))
+        {
+            double fillPrice = PositionGetDouble(POSITION_PRICE_OPEN);
+            double stopLoss = NormalizeDouble(fillPrice + (SL_Pips * _Point), _Digits);
+            double takeProfit = NormalizeDouble(fillPrice - (TP_Pips * _Point), _Digits);
+
+            Print("SELL Fill Price: ", fillPrice, " SL calc: ", stopLoss, " TP calc: ", takeProfit);
+            Print("SELL SL distance: ", (stopLoss - fillPrice) / _Point, " pips, TP distance: ", (fillPrice - takeProfit) / _Point, " pips");
+
+            // Modify with calculated stops based on actual fill
+            if(trade.PositionModify(ticket, stopLoss, takeProfit))
+            {
+                Print("SELL Order Opened: Ticket=", ticket, " Fill=", fillPrice, " SL=", stopLoss, " TP=", takeProfit);
+                tradesToday++;
+            }
+            else
+            {
+                Print("SELL Modify Failed: Ticket=", ticket, " Error=", GetLastError(), " RetCode=", trade.ResultRetcode());
+            }
+        }
+        else
+        {
+            Print("SELL Position select failed: Ticket=", ticket);
+        }
+    }
+    else
+    {
+        Print("SELL Order Failed: Error=", GetLastError(), " RetCode=", trade.ResultRetcode());
+    }
+}
+
+//+------------------------------------------------------------------+
+//| CLOSE POSITIONS BY TYPE                                          |
+//+------------------------------------------------------------------+
+
+void ClosePositionsByType(ENUM_POSITION_TYPE posType)
+{
+    for(int i = PositionsTotal() - 1; i >= 0; i--)
+    {
+        ulong ticket = PositionGetTicket(i);
+        if(ticket == 0) continue;
+
+        if(PositionGetInteger(POSITION_MAGIC) != MAGIC_NUMBER) continue;
+        if(PositionGetString(POSITION_SYMBOL) != _Symbol) continue;
+        if(PositionGetInteger(POSITION_TYPE) != posType) continue;
+
+        if(!trade.PositionClose(ticket))
+            Print("Position Close Failed: Ticket=", ticket, " Error=", GetLastError());
+        else
+            Print("Position Closed: Ticket=", ticket);
+    }
+}
+
+//+------------------------------------------------------------------+
+//| CLOSE ALL POSITIONS                                              |
+//+------------------------------------------------------------------+
+
+void CloseAllPositions()
+{
+    for(int i = PositionsTotal() - 1; i >= 0; i--)
+    {
+        ulong ticket = PositionGetTicket(i);
+        if(ticket == 0) continue;
+
+        if(PositionGetInteger(POSITION_MAGIC) != MAGIC_NUMBER) continue;
+        if(PositionGetString(POSITION_SYMBOL) != _Symbol) continue;
+
+        trade.PositionClose(ticket);
+    }
+}
+
+//+------------------------------------------------------------------+
+//| MANAGE TRAILING STOP                                             |
+//+------------------------------------------------------------------+
+
+void ManageTrailingStop()
+{
+    for(int i = PositionsTotal() - 1; i >= 0; i--)
+    {
+        ulong ticket = PositionGetTicket(i);
+        if(ticket == 0) continue;
+
+        if(PositionGetInteger(POSITION_MAGIC) != MAGIC_NUMBER) continue;
+        if(PositionGetString(POSITION_SYMBOL) != _Symbol) continue;
+
+        int posType = (int)PositionGetInteger(POSITION_TYPE);
+        double stopLoss = PositionGetDouble(POSITION_SL);
+        double trailingStop = TS_Pips * _Point;
+        double newSL = 0;
+        bool modify = false;
+
+        if(posType == POSITION_TYPE_BUY)
+        {
+            newSL = SymbolInfoDouble(_Symbol, SYMBOL_BID) - trailingStop;
+            if(newSL > stopLoss)
+                modify = true;
+        }
+        else if(posType == POSITION_TYPE_SELL)
+        {
+            newSL = SymbolInfoDouble(_Symbol, SYMBOL_ASK) + trailingStop;
+            if(newSL < stopLoss)
+                modify = true;
+        }
+
+        if(modify)
+        {
+            double currentTP = PositionGetDouble(POSITION_TP);
+            trade.PositionModify(ticket, newSL, currentTP);
+        }
+    }
+}
+
+//+------------------------------------------------------------------+
+//| CALCULATE LOT SIZE                                               |
+//+------------------------------------------------------------------+
+
+double CalculateLotSize(double fixedLot, double riskPercent)
+{
+    if(fixedLot > 0)
+        return NormalizeDouble(fixedLot, 2);
+
+    if(riskPercent <= 0)
+        return 0.1;
+
+    double balance = AccountInfoDouble(ACCOUNT_BALANCE);
+    double riskAmount = balance * (riskPercent / 100);
+    double tickValue = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_VALUE);
+    double tickSize = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
+
+    double pipValue = tickValue / tickSize;
+    double lotSize = NormalizeDouble(riskAmount / (SL_Pips * pipValue), 2);
+
+    double minLot = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MIN);
+    double maxLot = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MAX);
+
+    lotSize = MathMax(lotSize, minLot);
+    lotSize = MathMin(lotSize, maxLot);
+
+    return lotSize;
+}
+
+//+------------------------------------------------------------------+
+//| CHECK TRADING HOURS                                              |
+//+------------------------------------------------------------------+
+
+bool IsInTradingHours()
+{
+    MqlDateTime dt;
+    TimeToStruct(TimeCurrent(), dt);
+
+    int hour = dt.hour;
+    int minute = dt.min;
+
+    int startHour = (int)StringToInteger(StringSubstr(TradeStartHour, 0, 2));
+    int startMin = (int)StringToInteger(StringSubstr(TradeStartHour, 3, 2));
+    int endHour = (int)StringToInteger(StringSubstr(TradeEndHour, 0, 2));
+    int endMin = (int)StringToInteger(StringSubstr(TradeEndHour, 3, 2));
+
+    int currentTime = hour * 60 + minute;
+    int startTime = startHour * 60 + startMin;
+    int endTime = endHour * 60 + endMin;
+
+    return (currentTime >= startTime && currentTime <= endTime);
+}
+
+//+------------------------------------------------------------------+
+//| UPDATE DAILY P&L                                                  |
+//+------------------------------------------------------------------+
+
+void UpdateDailyPnL()
+{
+    dailyPnL = 0;
+
+    MqlDateTime currentDt;
+    TimeToStruct(TimeCurrent(), currentDt);
+
+    for(int i = 0; i < HistoryDealsTotal(); i++)
+    {
+        ulong ticket = HistoryDealGetTicket(i);
+        if(ticket == 0) continue;
+
+        datetime dealTime = (datetime)HistoryDealGetInteger(ticket, DEAL_TIME);
+        MqlDateTime dealDt;
+        TimeToStruct(dealTime, dealDt);
+
+        if(dealDt.day != currentDt.day) continue;
+
+        if(HistoryDealGetInteger(ticket, DEAL_MAGIC) != MAGIC_NUMBER) continue;
+        if(HistoryDealGetString(ticket, DEAL_SYMBOL) != _Symbol) continue;
+
+        int dealEntry = (int)HistoryDealGetInteger(ticket, DEAL_ENTRY);
+        if(dealEntry != DEAL_ENTRY_OUT) continue;
+
+        double profit = HistoryDealGetDouble(ticket, DEAL_PROFIT);
+        double commission = HistoryDealGetDouble(ticket, DEAL_COMMISSION);
+        double swap = HistoryDealGetDouble(ticket, DEAL_SWAP);
+
+        dailyPnL += profit + commission + swap;
+    }
+}
+
+//+------------------------------------------------------------------+
+//| CHECK POSITION STATUS                                            |
+//+------------------------------------------------------------------+
+
+bool HasOpenTrade()
+{
+    for(int i = 0; i < PositionsTotal(); i++)
+    {
+        ulong ticket = PositionGetTicket(i);
+        if(ticket == 0) continue;
+
+        if(PositionGetInteger(POSITION_MAGIC) == MAGIC_NUMBER && PositionGetString(POSITION_SYMBOL) == _Symbol)
+            return true;
+    }
+    return false;
+}
+
+bool HasOpenLongs()
+{
+    for(int i = 0; i < PositionsTotal(); i++)
+    {
+        ulong ticket = PositionGetTicket(i);
+        if(ticket == 0) continue;
+
+        if(PositionGetInteger(POSITION_MAGIC) == MAGIC_NUMBER &&
+           PositionGetString(POSITION_SYMBOL) == _Symbol &&
+           PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY)
+            return true;
+    }
+    return false;
+}
+
+bool HasOpenShorts()
+{
+    for(int i = 0; i < PositionsTotal(); i++)
+    {
+        ulong ticket = PositionGetTicket(i);
+        if(ticket == 0) continue;
+
+        if(PositionGetInteger(POSITION_MAGIC) == MAGIC_NUMBER &&
+           PositionGetString(POSITION_SYMBOL) == _Symbol &&
+           PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_SELL)
+            return true;
+    }
+    return false;
+}
+
+//+------------------------------------------------------------------+
+//| END OF EA                                                         |
+//+------------------------------------------------------------------+
 `;
   return template;
 };
@@ -3355,68 +4868,60 @@ const runBacktestFromMQL = () => {
 };
 document.getElementById('runBacktestFromMQLBtn')?.addEventListener('click', runBacktestFromMQL);
 
-// Run all saved parameter sets
-const runAllSavedParams = async () => {
-  if (cachedCSVData.length === 0) {
-    alert('Please load a CSV file first!');
-    return;
-  }
-  
-  if (savedParamSets.length === 0) {
-    alert('No saved parameter sets! Save some parameters first.');
-    return;
-  }
-  
-  // Show loading
-  document.getElementById('loading-element').classList.add('visible');
-  document.getElementById('loading-element').querySelector('.loading-text').textContent = 'Running multiple backtests...';
-  
-  // Clear previous results
-  backtestResults = [];
-  
-  setTimeout(() => {
-    savedParamSets.forEach((params, idx) => {
-      const result = runOptimizedBacktest(params, cachedCSVData);
-      result.params.name = params.name || `Config ${idx + 1}`;
-      backtestResults.push(result);
-    });
-    
-    // Update comparison
-    updateSavedResultsComparison();
-    
-    // Show best result
-    const best = [...backtestResults].sort((a, b) => parseFloat(b.moneyEquivalent) - parseFloat(a.moneyEquivalent))[0];
-    displayBacktestResult(best);
-    
-    // Hide loading
-    document.getElementById('loading-element').classList.remove('visible');
-    document.getElementById('loading-element').querySelector('.loading-text').textContent = 'Backtesting is running ...';
-    
-    audioSuccess.play();
-    alert(`Completed ${savedParamSets.length} backtests! Best result: ${best.moneyEquivalent}$`);
-  }, 50);
-};
+// Simple optimized backtest to cache CSV data for Grid Search
+const runOptimized = async () => {
+  let csvData = cachedCSVData;
 
-// Clear saved results
-const clearSavedResults = () => {
-  if (confirm('Clear all saved results?')) {
-    backtestResults = [];
-    savedParamSets = [];
-    window.backtestResults = backtestResults;
-    window.savedParamSets = savedParamSets;
-    localStorage.removeItem('backtestResults');
-    updateSavedResultsComparison();
-    renderComparisonChart();
+  if (csvData.length === 0) {
+    const file = $csvFileInput?.files?.[0];
+    if (!file) {
+      alert('Please load a CSV file first!');
+      return;
+    }
+
+    console.log('Parsing file for optimized backtest...');
+    const results = await new Promise((resolve, reject) => {
+      Papa.parse(file, {
+        header: true,
+        dynamicTyping: true,
+        complete: resolve,
+        error: reject,
+      });
+    });
+    csvData = results.data.filter(row => row && row[EnumMT5OHLC.OPEN]);
+    cachedCSVData = csvData;
+    console.log(`Parsed ${csvData.length} candles from file`);
   }
+
+  const params = getCurrentParams();
+  console.log(`Running optimized backtest with ${csvData.length} candles...`);
+
+  document.getElementById('loading-element').classList.add('visible');
+  document.getElementById('loading-element').querySelector('.loading-text').textContent = 'Running optimized backtest...';
+
+  await new Promise(resolve => {
+    setTimeout(() => {
+      const result = runOptimizedBacktest(params, csvData);
+      document.getElementById('loading-element').classList.remove('visible');
+      displayBacktestResult(result);
+      saveResultForComparison(result);
+      resolve();
+    }, 50);
+  });
 };
 
 // Intelligent parameter optimization using random search + hill climbing
 const runGridSearch = async () => {
+  // If CSV data not cached yet, run optimized backtest first to cache it
   if (cachedCSVData.length === 0) {
-    alert('Please load a CSV file first!');
-    return;
+    console.log('CSV not cached yet, running optimized backtest first...');
+    await runOptimized();
+    // If still no data after runOptimized, abort
+    if (cachedCSVData.length === 0) {
+      return;
+    }
   }
-  
+
   const baseParams = getCurrentParams();
   
   if (!confirm('Run automatic parameter optimization? This will find the most profitable parameters.')) {
@@ -3434,12 +4939,16 @@ const runGridSearch = async () => {
     tpSize: { min: 0.001, max: 0.01, step: 0.001 },
     tsSize: { min: 0.00001, max: 0.0002, step: 0.00005 },
   };
-  
-  // Helper: generate random parameter set
+
+  // Get all preset names for testing
+  const allPresets = Object.keys(MULTI_POSITION_PRESETS);
+
+  // Helper: generate random parameter set (including random preset)
   const randomParams = () => ({
     slSize: Math.round((ranges.slSize.min + Math.random() * (ranges.slSize.max - ranges.slSize.min)) / ranges.slSize.step) * ranges.slSize.step,
     tpSize: Math.round((ranges.tpSize.min + Math.random() * (ranges.tpSize.max - ranges.tpSize.min)) / ranges.tpSize.step) * ranges.tpSize.step,
     tsSize: Math.round((ranges.tsSize.min + Math.random() * (ranges.tsSize.max - ranges.tsSize.min)) / ranges.tsSize.step) * ranges.tsSize.step,
+    preset: allPresets[Math.floor(Math.random() * allPresets.length)],
   });
   
   // Phase 1: Random Search (broad exploration)
@@ -3482,7 +4991,7 @@ const runGridSearch = async () => {
   for (let iter = 0; iter < maxNeighbors; iter++) {
     let foundBetter = false;
     
-    // Test neighbors around current best
+    // Test neighbors around current best (including preset variations)
     const neighborTests = [
       { param: 'slSize', delta: ranges.slSize.step },
       { param: 'slSize', delta: -ranges.slSize.step },
@@ -3491,21 +5000,44 @@ const runGridSearch = async () => {
       { param: 'tsSize', delta: ranges.tsSize.step },
       { param: 'tsSize', delta: -ranges.tsSize.step },
     ];
+
+    // Also test other presets if current preset isn't tested yet in this iteration
+    const currentPreset = currentBest.preset || baseParams.preset;
+    const otherPresets = allPresets.filter(p => p !== currentPreset);
+    for (const preset of otherPresets) {
+      neighborTests.push({ param: 'preset', preset: preset });
+    }
     
     for (const test of neighborTests) {
-      const newParams = { 
-        ...baseParams, 
-        ...currentBest,
-        [test.param]: Math.max(ranges[test.param].min, Math.min(ranges[test.param].max, currentBest[test.param] + test.delta)),
-        name: `Hill_${iter}_${test.param}_${test.delta > 0 ? 'up' : 'down'}`
-      };
-      
+      let newParams;
+      let testName;
+
+      if (test.preset) {
+        // Test preset change
+        newParams = {
+          ...baseParams,
+          ...currentBest,
+          preset: test.preset,
+          name: `Hill_${iter}_preset_${test.preset}`
+        };
+        testName = `preset_${test.preset}`;
+      } else {
+        // Test parameter adjustment
+        newParams = {
+          ...baseParams,
+          ...currentBest,
+          [test.param]: Math.max(ranges[test.param].min, Math.min(ranges[test.param].max, currentBest[test.param] + test.delta)),
+          name: `Hill_${iter}_${test.param}_${test.delta > 0 ? 'up' : 'down'}`
+        };
+        testName = `${test.param}_${test.delta > 0 ? 'up' : 'down'}`;
+      }
+
       const result = runOptimizedBacktest(newParams, cachedCSVData);
       backtestResults.push(result);
-      
+
       const profit = parseFloat(result.moneyEquivalent);
       neighborsTested++;
-      
+
       if (profit > currentProfit + improvementThreshold) {
         currentBest = { ...newParams };
         currentProfit = profit;
@@ -3533,65 +5065,16 @@ const runGridSearch = async () => {
   // Show best result
   const sortedResults = [...backtestResults].sort((a, b) => parseFloat(b.moneyEquivalent) - parseFloat(a.moneyEquivalent));
   displayBacktestResult(sortedResults[0]);
-  
+
+  // Hide loading before showing results
   document.getElementById('loading-element').classList.remove('visible');
-  
-  audioSuccess.play();
-  
+
   const best = sortedResults[0];
-  alert(`Optimization complete!\n\nBest Profit: ${best.moneyEquivalent}$\nWin Rate: ${best.winRate}%\nTrades: ${best.totalTrades}\n\nParameters:\nSL: ${best.params.slSize}\nTP: ${best.params.tpSize}\nTS: ${best.params.tsSize}`);
+  alert(`Optimization complete!\n\nBest Profit: ${best.moneyEquivalent}$\nWin Rate: ${best.winRate}%\nTrades: ${best.totalTrades}\n\nParameters:\nSL: ${best.params.slSize}\nTP: ${best.params.tpSize}\nTS: ${best.params.tsSize}\nPreset: ${best.params.preset || '-'}`);
+
+  audioSuccess.play();
 };
 
-// Export parameters
-const exportParams = () => {
-  const data = {
-    paramSets: savedParamSets,
-    results: backtestResults,
-    exportedAt: new Date().toISOString(),
-  };
-  
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `backtest_params_${Date.now()}.json`;
-  a.click();
-  URL.revokeObjectURL(url);
-};
-
-// Import parameters
-const importParams = (event) => {
-  const file = event.target.files[0];
-  if (!file) return;
-  
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    try {
-      const data = JSON.parse(e.target.result);
-      if (data.paramSets) {
-        savedParamSets = data.paramSets;
-        window.savedParamSets = savedParamSets;
-      }
-      if (data.results) {
-        backtestResults = data.results;
-        window.backtestResults = backtestResults;
-        updateSavedResultsComparison();
-      }
-      alert(`Imported ${savedParamSets.length} parameter sets and ${backtestResults.length} results!`);
-    } catch (err) {
-      alert('Error importing file: ' + err.message);
-    }
-  };
-  reader.readAsText(file);
-  event.target.value = '';
-};
 
 // Event listeners
-document.getElementById('runOptimizedBacktest')?.addEventListener('click', runOptimizedBacktestUI);
-document.getElementById('saveParamSet')?.addEventListener('click', saveCurrentParams);
-document.getElementById('runAllSavedParams')?.addEventListener('click', runAllSavedParams);
-document.getElementById('clearSavedResults')?.addEventListener('click', clearSavedResults);
 document.getElementById('runGridSearch')?.addEventListener('click', runGridSearch);
-document.getElementById('exportParams')?.addEventListener('click', exportParams);
-document.getElementById('importParams')?.addEventListener('click', () => document.getElementById('importParamsInput').click());
-document.getElementById('importParamsInput')?.addEventListener('change', importParams);

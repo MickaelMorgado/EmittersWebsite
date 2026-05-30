@@ -26,17 +26,8 @@ This document provides a centralized overview of all interactive applications an
 | **Mission Control** | AI agent management dashboard for OpenClaw. | [Mission Control](project-specific/apps/mission-control.md) |
 | **Media Processor** | Compress images and crop videos with preset ratios. | [Media Processor](project-specific/apps/media-processor.md) |
 | **3D Chess** | Multiplayer 3D chess game with Three.js. | [3D Chess](project-specific/apps/chess3d.md) |
-| **Fact Check** | AI-powered fact-checking tool. | [Fact Check](project-specific/apps/fact-check.md) |
-| **Image Compressor** | Client-side image compression. | [Image Compressor](project-specific/apps/image-compressor.md) |
-| **Investments** | Investment portfolio tracking. | [Investments](project-specific/apps/investments.md) |
-| **Sketcher** | Drawing and sketching canvas. | [Sketcher](project-specific/apps/sketcher.md) |
-| **Strudel** | Music pattern creation tool. | [Strudel](project-specific/apps/strudel.md) |
-| **Three.js Playground** | 3D rendering experiments. | [Three.js](project-specific/apps/threejs.md) |
-| **Remotion Videos** | Programmatic video generation. | [Remotion Videos](project-specific/apps/remotion-videos.md) |
-| **Mika** | AI assistant interface. | [Mika](project-specific/apps/mika.md) |
-| **Promo Video** | Video promotion creation. | [Promo Video](project-specific/apps/promo-video.md) |
-| **Contact** | Contact information page. | [Contact](project-specific/apps/contact.md) |
-| **About** | About page. | [About](project-specific/apps/about.md) |
+| **MikaBot Dashboard** | AI trading bot performance analytics & self-learning. | [MikaBot](project-specific/apps/mikabot.md) |
+| **Cursor Follower** | Portrait (9:16) live stream centered on mouse cursor. | [Cursor Follower](project-specific/apps/cursor-follower.md) |
 
 ## Infrastructure & Backend
 

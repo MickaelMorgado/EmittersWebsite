@@ -1,0 +1,431 @@
+[     135ms] [LOG] Defaulting to SciChart Community Edition. Usage constitutes acceptance of our EULA and terms at https://www.scichart.com/community-licensing. See https://store.scichart.com for commercial licensing options. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[     135ms] [LOG] The community license is valid for 6 months from the date the version in use was released.  This version 4.0.933 has 74 days remaining @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[     173ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[    3613ms] [ERROR] Unsafe attempt to load URL file:///Users/mickael/development/EmittersWebsite/tools/index6.html from frame with URL file:///Users/mickael/development/EmittersWebsite/tools/index6.html. 'file:' URLs are treated as unique security origins.
+ @ file:///Users/mickael/development/EmittersWebsite/tools/index6.html:0
+[    5176ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   10179ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   15185ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   20191ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   23446ms] [WARNING] Data Distribution flag (BaseDataSeries.containsNaN = false) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[   23446ms] [WARNING] Data Distribution flag (BaseDataSeries.isSorted = true) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[   25202ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   30213ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   35227ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   40240ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   45253ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[   45254ms] [LOG] Failed to connect to licensing wizard. Refresh page to retry. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[  269631ms] [LOG] Defaulting to SciChart Community Edition. Usage constitutes acceptance of our EULA and terms at https://www.scichart.com/community-licensing. See https://store.scichart.com for commercial licensing options. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[  269631ms] [LOG] The community license is valid for 6 months from the date the version in use was released.  This version 4.0.933 has 74 days remaining @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[  269667ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  274671ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  276796ms] [WARNING] Data Distribution flag (BaseDataSeries.containsNaN = false) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[  276796ms] [WARNING] Data Distribution flag (BaseDataSeries.isSorted = true) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[  279706ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  284724ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  289761ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  294777ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  299808ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  304826ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  309856ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  314901ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  314902ms] [LOG] Failed to connect to licensing wizard. Refresh page to retry. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[  380238ms] [LOG] Defaulting to SciChart Community Edition. Usage constitutes acceptance of our EULA and terms at https://www.scichart.com/community-licensing. See https://store.scichart.com for commercial licensing options. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[  380238ms] [LOG] The community license is valid for 6 months from the date the version in use was released.  This version 4.0.933 has 74 days remaining @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[  380275ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  385282ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  390285ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  391560ms] [WARNING] Data Distribution flag (BaseDataSeries.containsNaN = false) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[  391560ms] [WARNING] Data Distribution flag (BaseDataSeries.isSorted = true) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[  395327ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  400363ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  405398ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  410431ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  415454ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  420479ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  425499ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  425500ms] [LOG] Failed to connect to licensing wizard. Refresh page to retry. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[  495633ms] [LOG] Orders History: [Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object] @ file:///Users/mickael/development/EmittersWebsite/tools/index6.html:1648
+[  495731ms] [LOG] Orders History: [Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object] @ file:///Users/mickael/development/EmittersWebsite/tools/index6.html:1648
+[  495757ms] [LOG] All candles processed @ file:///Users/mickael/development/EmittersWebsite/tools/index6.html:1948
+[  495790ms] ReferenceError: finalizeChart is not defined
+    at processCandleProgressively (file:///Users/mickael/development/EmittersWebsite/tools/index6.html:1950:17)
+[  495769ms] [LOG] All candles processed @ file:///Users/mickael/development/EmittersWebsite/tools/index6.html:1948
+[  495791ms] ReferenceError: finalizeChart is not defined
+    at processCandleProgressively (file:///Users/mickael/development/EmittersWebsite/tools/index6.html:1950:17)
+[  620326ms] [LOG] Defaulting to SciChart Community Edition. Usage constitutes acceptance of our EULA and terms at https://www.scichart.com/community-licensing. See https://store.scichart.com for commercial licensing options. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[  620326ms] [LOG] The community license is valid for 6 months from the date the version in use was released.  This version 4.0.933 has 74 days remaining @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[  620368ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  625372ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  630378ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  635385ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  640392ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  643478ms] [LOG] Defaulting to SciChart Community Edition. Usage constitutes acceptance of our EULA and terms at https://www.scichart.com/community-licensing. See https://store.scichart.com for commercial licensing options. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[  643479ms] [LOG] The community license is valid for 6 months from the date the version in use was released.  This version 4.0.933 has 74 days remaining @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[  643514ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  648520ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  649846ms] [WARNING] Data Distribution flag (BaseDataSeries.containsNaN = false) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[  649847ms] [WARNING] Data Distribution flag (BaseDataSeries.isSorted = true) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[  653553ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  658572ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  663599ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  668617ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  673649ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  678680ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  683712ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  688749ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  688749ms] [LOG] Failed to connect to licensing wizard. Refresh page to retry. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[  760262ms] [LOG] Orders History: [Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object] @ file:///Users/mickael/development/EmittersWebsite/tools/index6.html:1648
+[  760302ms] [LOG] Orders History: [Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object] @ file:///Users/mickael/development/EmittersWebsite/tools/index6.html:1648
+[  760329ms] [LOG] All candles processed @ file:///Users/mickael/development/EmittersWebsite/tools/index6.html:1948
+[  760330ms] ReferenceError: finalizeChart is not defined
+    at processCandleProgressively (file:///Users/mickael/development/EmittersWebsite/tools/index6.html:1950:17)
+[  760339ms] [LOG] All candles processed @ file:///Users/mickael/development/EmittersWebsite/tools/index6.html:1948
+[  760340ms] ReferenceError: finalizeChart is not defined
+    at processCandleProgressively (file:///Users/mickael/development/EmittersWebsite/tools/index6.html:1950:17)
+[  860581ms] TypeError: Cannot read properties of null (reading 'addEventListener')
+    at file:///Users/mickael/development/EmittersWebsite/tools/index6.html:829:20
+[  860662ms] [LOG] Defaulting to SciChart Community Edition. Usage constitutes acceptance of our EULA and terms at https://www.scichart.com/community-licensing. See https://store.scichart.com for commercial licensing options. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[  860662ms] [LOG] The community license is valid for 6 months from the date the version in use was released.  This version 4.0.933 has 74 days remaining @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[  860704ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  860706ms] [ERROR] Error initializing SciChart: TypeError: Cannot read properties of undefined (reading 'length')
+    at buildChartData (file:///Users/mickael/development/EmittersWebsite/tools/index6.html:1117:43)
+    at file:///Users/mickael/development/EmittersWebsite/tools/index6.html:1924:11 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.html:2219
+[  865710ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  869384ms] Uncaught ReferenceError: handleFileAndInitGraph is not defined
+    at <anonymous> (file:///Users/mickael/development/EmittersWebsite/tools/index6.js:915:2)
+[  870713ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  875719ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  880034ms] TypeError: Cannot read properties of null (reading 'addEventListener')
+    at file:///Users/mickael/development/EmittersWebsite/tools/index6.html:829:20
+[  880093ms] [LOG] Defaulting to SciChart Community Edition. Usage constitutes acceptance of our EULA and terms at https://www.scichart.com/community-licensing. See https://store.scichart.com for commercial licensing options. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[  880094ms] [LOG] The community license is valid for 6 months from the date the version in use was released.  This version 4.0.933 has 74 days remaining @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[  880126ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  880129ms] [ERROR] Error initializing SciChart: TypeError: Cannot read properties of undefined (reading 'length')
+    at buildChartData (file:///Users/mickael/development/EmittersWebsite/tools/index6.html:1117:43)
+    at file:///Users/mickael/development/EmittersWebsite/tools/index6.html:1924:11 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.html:2219
+[  885131ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  890134ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  895136ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  898979ms] Uncaught ReferenceError: handleFileAndInitGraph is not defined
+    at <anonymous> (file:///Users/mickael/development/EmittersWebsite/tools/index6.js:915:2)
+[  900140ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  905147ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  910152ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  915159ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  920163ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  925168ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[  925168ms] [LOG] Failed to connect to licensing wizard. Refresh page to retry. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 1155826ms] Identifier 'getCandleDirection' has already been declared
+[ 1155866ms] [LOG] Defaulting to SciChart Community Edition. Usage constitutes acceptance of our EULA and terms at https://www.scichart.com/community-licensing. See https://store.scichart.com for commercial licensing options. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 1155866ms] [LOG] The community license is valid for 6 months from the date the version in use was released.  This version 4.0.933 has 74 days remaining @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 1155918ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 1160925ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 1165933ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 1168135ms] [LOG] 2025.01.02 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1168136ms] [WARNING] Data Distribution flag (BaseDataSeries.containsNaN = false) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 1168136ms] [WARNING] Data Distribution flag (BaseDataSeries.isSorted = true) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 1169937ms] [LOG] 2025.01.03 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1170938ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 1171702ms] [LOG] 2025.01.06 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1174764ms] [LOG] 2025.01.07 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1175942ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 1178281ms] [LOG] 2025.01.08 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1180957ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 1183216ms] [LOG] 2025.01.09 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1185978ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 1186939ms] [LOG] 2025.01.10 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1190983ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 1191272ms] [LOG] 2025.01.13 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1195162ms] [LOG] CSV cached: 0 candles loaded @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:963
+[ 1195989ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 1200992ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 1200992ms] [LOG] Failed to connect to licensing wizard. Refresh page to retry. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 1270047ms] Identifier 'getCandleDirection' has already been declared
+[ 1270075ms] [LOG] Defaulting to SciChart Community Edition. Usage constitutes acceptance of our EULA and terms at https://www.scichart.com/community-licensing. See https://store.scichart.com for commercial licensing options. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 1270075ms] [LOG] The community license is valid for 6 months from the date the version in use was released.  This version 4.0.933 has 74 days remaining @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 1270106ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 1275112ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 1280021ms] [LOG] 2025.01.02 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1280022ms] [WARNING] Data Distribution flag (BaseDataSeries.containsNaN = false) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 1280022ms] [WARNING] Data Distribution flag (BaseDataSeries.isSorted = true) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 1280118ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 1281711ms] [LOG] 2025.01.03 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1283837ms] [LOG] 2025.01.06 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1285130ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 1286009ms] [LOG] 2025.01.07 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1288061ms] [LOG] 2025.01.08 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1290136ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 1291126ms] [LOG] 2025.01.09 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1293899ms] [LOG] 2025.01.10 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1295145ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 1296143ms] [LOG] 2025.01.13 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1298643ms] [LOG] CSV cached: 0 candles loaded @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:963
+[ 1300160ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 1305168ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 1310174ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 1315181ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 1315181ms] [LOG] Failed to connect to licensing wizard. Refresh page to retry. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 1588174ms] Identifier 'getCandleDirection' has already been declared
+[ 1588206ms] [LOG] Defaulting to SciChart Community Edition. Usage constitutes acceptance of our EULA and terms at https://www.scichart.com/community-licensing. See https://store.scichart.com for commercial licensing options. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 1588206ms] [LOG] The community license is valid for 6 months from the date the version in use was released.  This version 4.0.933 has 74 days remaining @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 1588257ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 1593259ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 1598263ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 1603271ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 1605226ms] [LOG] 2025.05.01 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1605226ms] [WARNING] Data Distribution flag (BaseDataSeries.containsNaN = false) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 1605227ms] [WARNING] Data Distribution flag (BaseDataSeries.isSorted = true) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 1607162ms] [LOG] 2025.05.02 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1608281ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 1609219ms] [LOG] 2025.05.05 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1611373ms] [LOG] 2025.05.06 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1613291ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 1613826ms] [LOG] 2025.05.07 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1617175ms] [LOG] 2025.05.08 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1618305ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 1620427ms] [LOG] 2025.05.09 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1623323ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 1623462ms] [LOG] 2025.05.12 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1627219ms] [LOG] 2025.05.13 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1628354ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 1631534ms] [LOG] 2025.05.14 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1633386ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 1633386ms] [LOG] Failed to connect to licensing wizard. Refresh page to retry. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 1635783ms] [LOG] 2025.05.15 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1640952ms] [LOG] 2025.05.16 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1645833ms] [LOG] 2025.05.19 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1650540ms] [LOG] 2025.05.20 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1652759ms] [LOG] 2025.05.21 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1655296ms] [LOG] 2025.05.22 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1658029ms] [LOG] 2025.05.23 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1660799ms] [LOG] 2025.05.26 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1663874ms] [LOG] 2025.05.27 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1667010ms] [LOG] 2025.05.28 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1670184ms] [LOG] 2025.05.29 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1673506ms] [LOG] 2025.05.30 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1676755ms] [LOG] 2025.06.02 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1680112ms] [LOG] 2025.06.03 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1683588ms] [LOG] 2025.06.04 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1687212ms] [LOG] 2025.06.05 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1690878ms] [LOG] 2025.06.06 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1694517ms] [LOG] 2025.06.09 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1697485ms] [LOG] 2025.06.10 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1700593ms] [LOG] 2025.06.11 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1703602ms] [LOG] 2025.06.12 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1706802ms] [LOG] 2025.06.13 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1709801ms] [LOG] 2025.06.16 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1712943ms] [LOG] 2025.06.17 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1716137ms] [LOG] 2025.06.18 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1719375ms] [LOG] 2025.06.19 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1722812ms] [LOG] 2025.06.20 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1725522ms] [LOG] 2025.06.23 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1728477ms] [LOG] 2025.06.24 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1731621ms] [LOG] 2025.06.25 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1735006ms] [LOG] 2025.06.26 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1738191ms] [LOG] 2025.06.27 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1741661ms] [LOG] 2025.06.30 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1745126ms] [LOG] 2025.07.01 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1748640ms] [LOG] 2025.07.02 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1752303ms] [LOG] 2025.07.03 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1756179ms] [LOG] 2025.07.04 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1760101ms] [LOG] 2025.07.07 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1763919ms] [LOG] 2025.07.08 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1767871ms] [LOG] 2025.07.09 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1772055ms] [LOG] 2025.07.10 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1776025ms] [LOG] 2025.07.11 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1780239ms] [LOG] 2025.07.14 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1784038ms] [LOG] 2025.07.15 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1788001ms] [LOG] 2025.07.16 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1792124ms] [LOG] 2025.07.17 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1796108ms] [LOG] 2025.07.18 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1800330ms] [LOG] 2025.07.21 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1804831ms] [LOG] 2025.07.22 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1809210ms] [LOG] 2025.07.23 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1812814ms] [LOG] 2025.07.24 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1816714ms] [LOG] 2025.07.25 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1820834ms] [LOG] 2025.07.28 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1824610ms] [LOG] 2025.07.29 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1828473ms] [LOG] 2025.07.30 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1832318ms] [LOG] 2025.07.31 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1835760ms] [LOG] 2025.08.01 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1839104ms] [LOG] CSV cached: 0 candles loaded @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:963
+[ 1938282ms] Identifier 'getCandleDirection' has already been declared
+[ 1938309ms] [LOG] Defaulting to SciChart Community Edition. Usage constitutes acceptance of our EULA and terms at https://www.scichart.com/community-licensing. See https://store.scichart.com for commercial licensing options. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 1938309ms] [LOG] The community license is valid for 6 months from the date the version in use was released.  This version 4.0.933 has 74 days remaining @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 1938352ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 1943354ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 1944315ms] [LOG] 2025.05.01 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1944316ms] [WARNING] Data Distribution flag (BaseDataSeries.containsNaN = false) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 1944316ms] [WARNING] Data Distribution flag (BaseDataSeries.isSorted = true) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 1946859ms] [LOG] 2025.05.02 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1948362ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 1950089ms] [LOG] 2025.05.05 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1953376ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 1953807ms] [LOG] 2025.05.06 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1958409ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 1958622ms] [LOG] 2025.05.07 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1963257ms] [LOG] 2025.05.08 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1963426ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 1967509ms] [LOG] 2025.05.09 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1968453ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 1971712ms] [LOG] 2025.05.12 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1973490ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 1976025ms] [LOG] 2025.05.13 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1978521ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 1980278ms] [LOG] 2025.05.14 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1983569ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 1983569ms] [LOG] Failed to connect to licensing wizard. Refresh page to retry. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 1984958ms] [LOG] 2025.05.15 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1989987ms] [LOG] 2025.05.16 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 1995203ms] [LOG] 2025.05.19 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2011665ms] [LOG] 2025.05.20 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2054979ms] Identifier 'getCandleDirection' has already been declared
+[ 2055009ms] [LOG] Defaulting to SciChart Community Edition. Usage constitutes acceptance of our EULA and terms at https://www.scichart.com/community-licensing. See https://store.scichart.com for commercial licensing options. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 2055009ms] [LOG] The community license is valid for 6 months from the date the version in use was released.  This version 4.0.933 has 74 days remaining @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 2055051ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2059709ms] [LOG] 2025.05.01 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2059710ms] [WARNING] Data Distribution flag (BaseDataSeries.containsNaN = false) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 2059711ms] [WARNING] Data Distribution flag (BaseDataSeries.isSorted = true) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 2060056ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2062206ms] [LOG] 2025.05.02 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2065082ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2066003ms] [LOG] 2025.05.05 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2070067ms] [LOG] 2025.05.06 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2070095ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2074153ms] [LOG] 2025.05.07 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2075099ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2078169ms] [LOG] 2025.05.08 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2080122ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2082373ms] [LOG] 2025.05.09 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2085161ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2086769ms] [LOG] 2025.05.12 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2090180ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2091686ms] [LOG] 2025.05.13 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2095214ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2097514ms] [LOG] 2025.05.14 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2100233ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2100233ms] [LOG] Failed to connect to licensing wizard. Refresh page to retry. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 2103349ms] Identifier 'getCandleDirection' has already been declared
+[ 2103375ms] [LOG] Defaulting to SciChart Community Edition. Usage constitutes acceptance of our EULA and terms at https://www.scichart.com/community-licensing. See https://store.scichart.com for commercial licensing options. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 2103375ms] [LOG] The community license is valid for 6 months from the date the version in use was released.  This version 4.0.933 has 74 days remaining @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 2103411ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2108414ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2113205ms] Identifier 'getCandleDirection' has already been declared
+[ 2113229ms] [LOG] Defaulting to SciChart Community Edition. Usage constitutes acceptance of our EULA and terms at https://www.scichart.com/community-licensing. See https://store.scichart.com for commercial licensing options. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 2113229ms] [LOG] The community license is valid for 6 months from the date the version in use was released.  This version 4.0.933 has 74 days remaining @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 2113269ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2117892ms] [LOG] 2025.05.01 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2117892ms] [WARNING] Data Distribution flag (BaseDataSeries.containsNaN = false) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 2117893ms] [WARNING] Data Distribution flag (BaseDataSeries.isSorted = true) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 2118273ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2120235ms] [LOG] 2025.05.02 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2123258ms] [LOG] 2025.05.05 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2123290ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2126931ms] [LOG] 2025.05.06 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2128299ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2130779ms] [LOG] 2025.05.07 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2133326ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2135622ms] [LOG] 2025.05.08 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2138336ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2139449ms] [LOG] 2025.05.09 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2143356ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2143598ms] [LOG] 2025.05.12 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2147805ms] [LOG] 2025.05.13 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2148378ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2153398ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2153735ms] [LOG] 2025.05.14 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2158416ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2158416ms] [LOG] Failed to connect to licensing wizard. Refresh page to retry. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 2160291ms] [LOG] 2025.05.15 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2165670ms] [LOG] 2025.05.16 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2171220ms] [LOG] 2025.05.19 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2177345ms] Identifier 'getCandleDirection' has already been declared
+[ 2177372ms] [LOG] Defaulting to SciChart Community Edition. Usage constitutes acceptance of our EULA and terms at https://www.scichart.com/community-licensing. See https://store.scichart.com for commercial licensing options. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 2177372ms] [LOG] The community license is valid for 6 months from the date the version in use was released.  This version 4.0.933 has 74 days remaining @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 2177415ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2182420ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2187424ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2189884ms] [LOG] 2025.05.01 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2189884ms] [WARNING] Data Distribution flag (BaseDataSeries.containsNaN = false) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 2189884ms] [WARNING] Data Distribution flag (BaseDataSeries.isSorted = true) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 2192243ms] [LOG] 2025.05.02 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2192426ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2195762ms] [LOG] 2025.05.05 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2197430ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2199634ms] [LOG] 2025.05.06 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2202451ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2203861ms] [LOG] 2025.05.07 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2207477ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2209469ms] [LOG] 2025.05.08 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2212610ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2213964ms] [LOG] 2025.05.09 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2217627ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2218353ms] [LOG] 2025.05.12 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2222653ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2222653ms] [LOG] Failed to connect to licensing wizard. Refresh page to retry. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 2222704ms] [LOG] 2025.05.13 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2227018ms] [LOG] 2025.05.14 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2231730ms] [LOG] 2025.05.15 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2236790ms] [LOG] 2025.05.16 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2242487ms] [LOG] 2025.05.19 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2248824ms] [LOG] 2025.05.20 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2251943ms] [LOG] 2025.05.21 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2255908ms] [LOG] 2025.05.22 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2259967ms] [LOG] 2025.05.23 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2264382ms] [LOG] 2025.05.26 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2269469ms] [LOG] 2025.05.27 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2284435ms] Identifier 'getCandleDirection' has already been declared
+[ 2284463ms] [LOG] Defaulting to SciChart Community Edition. Usage constitutes acceptance of our EULA and terms at https://www.scichart.com/community-licensing. See https://store.scichart.com for commercial licensing options. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 2284464ms] [LOG] The community license is valid for 6 months from the date the version in use was released.  This version 4.0.933 has 74 days remaining @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 2284504ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2288326ms] [LOG] 2025.05.01 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2288327ms] [WARNING] Data Distribution flag (BaseDataSeries.containsNaN = false) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 2288327ms] [WARNING] Data Distribution flag (BaseDataSeries.isSorted = true) can be applied to improve performance. Read this website article https://www.scichart.com/documentation/js/current/DataSeries_Resampling.html for more info. To disable this warning set SciChartDefaults.performanceWarnings = false @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 2289523ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2290650ms] [LOG] 2025.05.02 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2294530ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2294766ms] [LOG] 2025.05.05 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2299175ms] [LOG] 2025.05.06 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2299537ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2303977ms] [LOG] 2025.05.07 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2304559ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2308868ms] [LOG] 2025.05.08 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2309577ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2314233ms] [LOG] 2025.05.09 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2314612ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2319624ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2319842ms] [LOG] 2025.05.12 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2324547ms] [LOG] 2025.05.13 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2324672ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2329682ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2329682ms] [LOG] Failed to connect to licensing wizard. Refresh page to retry. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 2330546ms] [LOG] 2025.05.14 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2337064ms] [LOG] 2025.05.15 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2344404ms] [LOG] 2025.05.16 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2350612ms] [LOG] 2025.05.19 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2356509ms] [LOG] 2025.05.20 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2359764ms] [LOG] 2025.05.21 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2363903ms] [LOG] 2025.05.22 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2368100ms] [LOG] 2025.05.23 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2372740ms] [LOG] 2025.05.26 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2377654ms] [LOG] 2025.05.27 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2382431ms] [LOG] 2025.05.28 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2387787ms] [LOG] 2025.05.29 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2393409ms] [LOG] 2025.05.30 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2398886ms] [LOG] 2025.06.02 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2404816ms] [LOG] 2025.06.03 @ file:///Users/mickael/development/EmittersWebsite/tools/index6.js:2458
+[ 2408162ms] Identifier 'getCandleDirection' has already been declared
+[ 2408188ms] [LOG] Defaulting to SciChart Community Edition. Usage constitutes acceptance of our EULA and terms at https://www.scichart.com/community-licensing. See https://store.scichart.com for commercial licensing options. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 2408188ms] [LOG] The community license is valid for 6 months from the date the version in use was released.  This version 4.0.933 has 74 days remaining @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0
+[ 2408225ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2413232ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2418238ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2423241ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2428247ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2433252ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2438259ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2443267ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2448272ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2453276ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:24278/license:0
+[ 2453276ms] [LOG] Failed to connect to licensing wizard. Refresh page to retry. @ https://cdn.jsdelivr.net/npm/scichart@4.0.933/index.min.js:0

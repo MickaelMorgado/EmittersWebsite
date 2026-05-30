@@ -8,14 +8,13 @@
     "preview": "remotion preview"
   },
   "dependencies": {
-    "@remotion/cli": "^4.0.455",
-    "@types/react-dom": "^19.2.3",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "remotion": "^4.0.455"
+    "@remotion/cli": "^4.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "remotion": "^4.0.0"
   },
   "devDependencies": {
-    "@types/react": "^18.3.28",
-    "typescript": "^5.9.3"
+    "@types/react": "^18.2.0",
+    "typescript": "^5.0.0"
   }
 }

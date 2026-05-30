@@ -1,0 +1,85 @@
+[     542ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3001/_next/static/chunks/67d57_next_dist_compiled_react-dom_652cab55._.js:14537
+[  155846ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3001/_next/static/chunks/67d57_next_dist_client_844a5239._.js:5949
+[  156153ms] [LOG] [Fast Refresh] done in 366ms @ http://localhost:3001/_next/static/chunks/67d57_next_dist_client_844a5239._.js:5809
+[  159461ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3001/_next/static/chunks/67d57_next_dist_client_844a5239._.js:5949
+[  159537ms] [LOG] [Fast Refresh] done in 156ms @ http://localhost:3001/_next/static/chunks/67d57_next_dist_client_844a5239._.js:5809
+[  167307ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3001/_next/static/chunks/67d57_next_dist_client_844a5239._.js:5949
+[  167374ms] [ERROR] ./development/EmittersWebsite/node-projects/my-app/src/app/image-compressor/page.tsx:1250:36
+Parsing ecmascript source code failed
+  1248 |                           <X className="w-4 h-4" />
+  1249 |                         </button>
+> 1250 |                       </CardHeader>
+       |                                    ^
+> 1251 |                       <CardContent className="space-y-4">
+       | ^^^^^^^^^^^^^^^^^^^^^^^
+  1252 | <div className="flex gap-4 items-stretch" style={{ height: '360px' }}>
+  1253 |                           <div className="flex-1 relative bg-black rounded-lg overflow-hidden border border-white/10">
+  1254 |                             <video
+
+Expected '</', got 'jsx text (
+                      )'
+
+Import traces:
+  Client Component Browser:
+    ./development/EmittersWebsite/node-projects/my-app/src/app/image-compressor/page.tsx [Client Component Browser]
+    ./development/EmittersWebsite/node-projects/my-app/src/app/image-compressor/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./development/EmittersWebsite/node-projects/my-app/src/app/image-compressor/page.tsx [Client Component SSR]
+    ./development/EmittersWebsite/node-projects/my-app/src/app/image-compressor/page.tsx [Server Component] @ http://localhost:3001/_next/static/chunks/67d57_next_dist_a1a39c7a._.js:2359
+[  167388ms] [LOG] {file: Object} @ http://localhost:3001/_next/static/chunks/67d57_next_dist_compiled_next-devtools_index_17e16d92.js:16058
+[  172253ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3001/_next/static/chunks/67d57_next_dist_client_844a5239._.js:5949
+[  172370ms] [ERROR] ./development/EmittersWebsite/node-projects/my-app/src/app/image-compressor/page.tsx:1250:36
+Parsing ecmascript source code failed
+  1248 |                           <X className="w-4 h-4" />
+  1249 |                         </button>
+> 1250 |                       </CardHeader>
+       |                                    ^
+> 1251 |                       <CardContent className="space-y-4">
+       | ^^^^^^^^^^^^^^^^^^^^^^^
+  1252 | <div className="flex gap-4 items-stretch" style={{ height: '360px' }}>
+  1253 |                           <div className="flex-1 relative bg-black rounded-lg overflow-hidden border border-white/10">
+  1254 |                             <video
+
+Expected '</', got 'jsx text (
+                      )'
+
+Import traces:
+  Client Component Browser:
+    ./development/EmittersWebsite/node-projects/my-app/src/app/image-compressor/page.tsx [Client Component Browser]
+    ./development/EmittersWebsite/node-projects/my-app/src/app/image-compressor/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./development/EmittersWebsite/node-projects/my-app/src/app/image-compressor/page.tsx [Client Component SSR]
+    ./development/EmittersWebsite/node-projects/my-app/src/app/image-compressor/page.tsx [Server Component] @ http://localhost:3001/_next/static/chunks/67d57_next_dist_a1a39c7a._.js:2359
+[  180093ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3001/_next/static/chunks/67d57_next_dist_client_844a5239._.js:5949
+[  180248ms] [ERROR] ./development/EmittersWebsite/node-projects/my-app/src/app/image-compressor/page.tsx:1263:36
+Parsing ecmascript source code failed
+  1261 |                           <X className="w-4 h-4" />
+  1262 |                         </button>
+> 1263 |                       </CardHeader>
+       |                                    ^
+> 1264 |                       <CardContent className="space-y-4">
+       | ^^^^^^^^^^^^^^^^^^^^^^^
+  1265 | <div className="flex gap-4 items-stretch" style={{ height: '360px' }}>
+  1266 |                           <div className="flex-1 relative bg-black rounded-lg overflow-hidden border border-white/10">
+  1267 |                             <video
+
+Expected '</', got 'jsx text (
+                      )'
+
+Import traces:
+  Client Component Browser:
+    ./development/EmittersWebsite/node-projects/my-app/src/app/image-compressor/page.tsx [Client Component Browser]
+    ./development/EmittersWebsite/node-projects/my-app/src/app/image-compressor/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./development/EmittersWebsite/node-projects/my-app/src/app/image-compressor/page.tsx [Client Component SSR]
+    ./development/EmittersWebsite/node-projects/my-app/src/app/image-compressor/page.tsx [Server Component] @ http://localhost:3001/_next/static/chunks/67d57_next_dist_a1a39c7a._.js:2359
+[  180250ms] [LOG] {file: Object} @ http://localhost:3001/_next/static/chunks/67d57_next_dist_compiled_next-devtools_index_17e16d92.js:16058
+[  207232ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3001/_next/static/chunks/67d57_next_dist_client_844a5239._.js:5949
+[  207514ms] [LOG] [Fast Refresh] done in 362ms @ http://localhost:3001/_next/static/chunks/67d57_next_dist_client_844a5239._.js:5809
+[  221565ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3001/_next/static/chunks/67d57_next_dist_client_844a5239._.js:5949
+[  221635ms] [LOG] [Fast Refresh] done in 150ms @ http://localhost:3001/_next/static/chunks/67d57_next_dist_client_844a5239._.js:5809
+[  225838ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3001/_next/static/chunks/67d57_next_dist_client_844a5239._.js:5949
+[  225898ms] [LOG] [Fast Refresh] done in 143ms @ http://localhost:3001/_next/static/chunks/67d57_next_dist_client_844a5239._.js:5809

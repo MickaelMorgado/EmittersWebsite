@@ -90,8 +90,6 @@ export const metadata: Metadata = {
   },
 };
 
-import { JsonLdSchema } from '@/components/JsonLdSchema';
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -100,7 +98,24 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
       <head>
-        <JsonLdSchema />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              name: "Emitters",
+              url: "https://emitters.app",
+              description:
+                "Free developer tools and web applications",
+              potentialAction: {
+                "@type": "SearchAction",
+                target: "https://emitters.app/{search_term_string}",
+                "query-input": "required name=search_term_string",
+              },
+            }),
+          }}
+        />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`} suppressHydrationWarning>
         {children}

@@ -776,7 +776,7 @@ function StrudelLive() {
         clearTimeout(autoPlayTimeoutRef.current);
       }
     };
-  }, [code, isPlaying, isValidCode, startPlayback]);
+  }, [code]);
 
   const getCategoryColor = (category: string) => {
     const colors: Record<string, string> = {

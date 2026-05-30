@@ -1,0 +1,40 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - generic [ref=e5]:
+      - heading "Media Processor" [level=1] [ref=e6]
+      - paragraph [ref=e7]: Compress images and crop videos with preset ratios
+    - generic [ref=e8]:
+      - generic [ref=e9]:
+        - button "Images" [ref=e10]:
+          - img [ref=e11]
+          - text: Images
+        - button "Videos" [ref=e15]:
+          - img [ref=e16]
+          - text: Videos
+      - button [ref=e19]:
+        - img
+  - generic [ref=e20]:
+    - generic [ref=e22]:
+      - generic [ref=e24]:
+        - img [ref=e25]
+        - text: Upload Images
+      - generic [ref=e30] [cursor=pointer]:
+        - img [ref=e32]
+        - generic [ref=e36]:
+          - paragraph [ref=e37]: Drop images here or click to browse
+          - paragraph [ref=e38]: Supports JPG, PNG, WebP, GIF
+    - generic [ref=e40]:
+      - generic [ref=e42]: Image Settings
+      - generic [ref=e43]:
+        - generic [ref=e44]:
+          - generic [ref=e45]: Target Size (MB per image)
+          - generic [ref=e46]:
+            - slider [ref=e47] [cursor=pointer]: "1"
+            - spinbutton [ref=e48]: "1"
+        - generic [ref=e50] [cursor=pointer]:
+          - checkbox "Resize to specific resolution" [ref=e51]
+          - img [ref=e52]
+          - text: Resize to specific resolution
+        - button "Compress" [disabled]:
+          - img
+          - text: Compress

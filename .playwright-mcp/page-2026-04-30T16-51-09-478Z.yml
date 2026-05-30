@@ -1,0 +1,163 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e4]:
+    - generic [ref=e5]:
+      - heading "BackTesting" [level=1] [ref=e6]
+      - paragraph [ref=e7]: "Export MT5 bars by using CTRL+U then go to Bars tab, filter the range and export, then upload it here:"
+      - paragraph [ref=e8]:
+        - text: "More info:"
+        - link "Export Historical Data" [ref=e9] [cursor=pointer]:
+          - /url: https://myforex.com/en/mt5guide/export-historicaldata.html
+        - link "Limited History Issue" [ref=e10] [cursor=pointer]:
+          - /url: https://www.mql5.com/en/forum/356227
+    - separator [ref=e11]
+    - text: Upload CSV bars
+    - generic [ref=e12]:
+      - button "Upload CSV bars" [ref=e13]
+      - button "Refresh" [ref=e14]
+    - separator [ref=e16]
+    - separator [ref=e17]
+    - generic [ref=e18]:
+      - generic [ref=e19]:
+        - text: Prev
+        - button "Prev" [ref=e20]
+      - generic [ref=e22]:
+        - text: Navigate trought session
+        - combobox "Navigate trought session" [ref=e24]
+      - generic [ref=e25]:
+        - text: Next
+        - button "Next" [ref=e26]
+    - separator [ref=e28]
+    - text: Application theme
+    - combobox [ref=e30]:
+      - option "-" [selected]
+      - option "Green / Red"
+      - option "Blue / Magenta"
+      - option "Yellow / Cyan"
+      - option "Light Blue / Grey"
+      - option "Volcanic"
+      - option "Devil"
+      - option "Matrix"
+    - separator [ref=e31]
+    - text: Backtesting Controls
+    - generic [ref=e32]:
+      - button "Previous Step (Not implemented)" [disabled] [ref=e33]
+      - button "" [ref=e35]:
+        - generic [ref=e36]: 
+      - button "Next Step (Advance 1 candle)" [ref=e37]
+      - button "Stop Backtesting" [ref=e39]
+    - generic [ref=e42]:
+      - checkbox "Fast Mode (No Chart)" [ref=e43]
+      - generic [ref=e44]: Fast Mode (No Chart)
+    - separator [ref=e45]
+    - generic "Current progression of the current backtesting file reading. (Starting Time - Current Time - Ending Time)" [ref=e46]: File Reading Progression*
+    - generic [ref=e47]:
+      - text: "-"
+      - text: "-"
+    - separator [ref=e49]
+    - text: CSV Data
+    - textbox [ref=e51]
+  - generic [ref=e52]:
+    - generic [ref=e53]: Backtesting is running ...
+    - generic [ref=e55]:
+      - img
+      - img
+      - img
+    - generic [ref=e57]:
+      - generic [ref=e58]:
+        - button "Backtesting results (Algo)" [ref=e59]
+        - button "Parameter Comparison" [ref=e60]
+        - button "MQL Expert Advisor Generator" [ref=e61]
+        - button "Review From Historical Trades" [disabled] [ref=e62]
+        - button "Backtesting results (Manual)" [disabled] [ref=e63]
+        - 'button "Toggle Layout: Chart ↔ Panel" [ref=e65]'
+      - generic [ref=e67]:
+        - generic [ref=e68]:
+          - heading "MQL5 Generator" [level=3] [ref=e69]
+          - button "Run Backtest" [ref=e70]: Run Backtest
+          - button "Download .mq5" [ref=e72]: Download .mq5
+        - textbox "Load a CSV and run a backtest to generate MQL5 code..." [ref=e75]
+      - generic [ref=e76]:
+        - heading "Backtesting Result (Algo)" [level=5] [ref=e77]
+        - generic [ref=e78]:
+          - generic [ref=e79]:
+            - generic [ref=e80]:
+              - 'generic "CSID: CSID price action breakout with Institutional candle move signal | CSID_W_MA: CSID price action breakout with Institutional candle move signal with moving average | CSID_W_MA_DynamicTS: CSID price action breakout with Institutional candle move signal with moving average and dynamic trailing stop" [ref=e81]': Strategy Selection*
+              - combobox "Strategy Selection*" [ref=e82]:
+                - option "CSID_W_MA_DynamicTS" [selected]
+                - option "CSID_W_MA"
+                - option "CSID"
+              - text: Session Start Time (add 2h to match MT5 data)
+              - textbox "CSV Data Session Start Time (add 2h to match MT5 data)" [ref=e83]: 09:50:00
+            - generic [ref=e84]:
+              - text: Session End Time (add 2h to match MT5 data)
+              - textbox "Session End Time (add 2h to match MT5 data)" [ref=e85]: 20:00:00
+            - generic [ref=e86]:
+              - generic "Period of Moving Average" [ref=e87]: Moving Average Period*
+              - spinbutton "Moving Average Period*" [ref=e88]: "200"
+            - generic [ref=e89]:
+              - generic "How much tilt of moving average for valid acceleration signal" [ref=e90]: Moving Average Threshold*
+              - spinbutton "Moving Average Threshold*" [ref=e91]: "0.003"
+            - generic [ref=e92]:
+              - text: Lot Size (Base)
+              - spinbutton "Lot Size (Base)" [ref=e93]: "1.0"
+              - separator [ref=e94]
+              - generic "Starting account balance" [ref=e95]: Initial Balance ($)*
+              - spinbutton "Initial Balance ($)*" [ref=e96]: "500"
+              - generic "Monthly income to be injected" [ref=e97]: Monthly Income ($)*
+              - spinbutton "Monthly Income ($)*" [ref=e98]: "100"
+              - generic "Monthly lot size growth rate (2% = 0.02)" [ref=e99]: Monthly Growth Rate (%)*
+              - spinbutton "Monthly Growth Rate (%)*" [ref=e100]: "2"
+              - generic [ref=e101]:
+                - strong [ref=e102]: "Monthly System:"
+                - text: Lot size grows with equity. Drawdown capped at 90% of monthly income to ensure growth.
+              - separator [ref=e103]
+              - generic "Use this value for aproximate deduction as fees, swaps or commissions" [ref=e104]: Commission Aprox. Size*
+              - spinbutton "Commission Aprox. Size*" [ref=e105]: "0.00005"
+              - generic "Risk:Reward Ratio in points" [ref=e106]: RR (SL Points | TP Points)*
+              - spinbutton [ref=e107]: "0.001"
+              - spinbutton [ref=e108]: "0.006"
+              - generic "Trailing Stop base increment in points" [ref=e109]: TS Increment*
+              - spinbutton "TS Increment*" [ref=e110]: "0.0001"
+              - generic [ref=e111]:
+                - button "Save Configurations For Next Time" [ref=e112]
+                - generic "Save the current configuration as URLs parameters for future use. Browser URL will refresh with theses new parameters when saving!" [ref=e114]: Save Configurations*
+              - generic [ref=e115]:
+                - button "Load Configurations" [ref=e116]
+                - generic "Load the configuration from URLs parameters. Browser URL will refresh with new parameters when loading!" [ref=e118]: Load Configurations*
+              - generic [ref=e119]:
+                - button "Generate MQL" [ref=e120]
+                - text: Generate MQL
+          - generic [ref=e122]:
+            - generic [ref=e123]: "Performance Results:"
+            - textbox "Performance Results:" [ref=e124]
+            - generic "Easy way to copy paste the backtest result into a google sheet / excel" [ref=e125]: "CSV Exportable text: *"
+            - 'textbox "CSV Exportable text: *" [ref=e126]'
+            - separator [ref=e127]
+            - button "Send to Google Sheets" [disabled] [ref=e129]: Send to Google Sheets
+          - generic [ref=e133]: more stats here
+        - heading "Order History" [level=5] [ref=e135]
+      - generic [ref=e136]:
+        - heading "Review Historical Trade" [level=5] [ref=e137]
+        - generic [ref=e139]:
+          - text: Paste your historical lines (myfxbook for now)
+          - textbox "Paste your historical lines (myfxbook for now)" [ref=e140]: 2025.05.13 10:17:00 2025.05.13 10:18:00 EURUSD Sell 1.00 1.11078 - 1.11064 1.11078 -1.4 -16.60 1m -0.03% -4.0000
+      - generic [ref=e141]:
+        - heading "Parameter Comparison Results" [level=3] [ref=e142]
+        - generic [ref=e143]:
+          - button "Run Optimized" [ref=e144]: Run Optimized
+          - button "Save Params" [ref=e146]: Save Params
+          - button "Run All Saved" [ref=e148]: Run All Saved
+          - button "Grid Search" [ref=e150]: Grid Search
+        - generic [ref=e152]:
+          - text: "Param Set Name:"
+          - textbox "Param Set Name:" [ref=e153]:
+            - /placeholder: e.g., Conservative, Aggressive...
+        - generic [ref=e154]:
+          - button "Export" [ref=e155]: Export
+          - button "Import" [ref=e157]: Import
+          - button "Clear All" [ref=e159]: Clear All
+        - generic [ref=e162]:
+          - checkbox "Fast Mode (No Chart)" [ref=e163]
+          - generic [ref=e164]: Fast Mode (No Chart)
+        - heading "Results Comparison" [level=5] [ref=e165]
+        - paragraph [ref=e167]: No saved results yet. Run a backtest and save parameters to compare.

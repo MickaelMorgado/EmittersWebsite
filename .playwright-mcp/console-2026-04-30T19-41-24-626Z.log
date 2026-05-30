@@ -1,0 +1,3 @@
+[     115ms] missing ) after argument list
+[     116ms] TypeError: Cannot read properties of null (reading 'addEventListener')
+    at http://localhost:8080/tools/index6.html?btt=09%3A50%3A00&ett=20%3A00%3A00&maperiod=200&lotsize=1.0&commissionsize=0.00005&slpoints=0.001&tppoints=0.006&tsincrement=0.0001&strategy=CSID_W_MA_DynamicTS&csv=EURUSD_M5_202603020000_202603170000.csv&fastmode=1:797:20

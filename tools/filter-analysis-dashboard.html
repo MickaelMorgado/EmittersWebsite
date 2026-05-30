@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trade Filter Analysis Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 40px;
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
+        }
+
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .metric-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+        }
+
+        .metric-label {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .metric-value {
+            font-size: 2.2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .metric-value.win {
+            color: #28a745;
+        }
+
+        .metric-value.loss {
+            color: #dc3545;
+        }
+
+        .metric-value.percent {
+            color: #ff9800;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin-bottom: 30px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .chart-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .analysis-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .analysis-item {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .analysis-label {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            font-size: 0.85em;
+            letter-spacing: 1px;
+        }
+
+        .analysis-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .analysis-meta {
+            font-size: 0.85em;
+            color: #666;
+        }
+
+        .suggestions {
+            margin-top: 30px;
+        }
+
+        .suggestion-card {
+            background: white;
+            border-left: 5px solid #ff9800;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .suggestion-card.high {
+            border-left-color: #dc3545;
+            background: #fff5f5;
+        }
+
+        .suggestion-card.medium {
+            border-left-color: #ff9800;
+            background: #fff9f0;
+        }
+
+        .suggestion-card.low {
+            border-left-color: #28a745;
+            background: #f5fff5;
+        }
+
+        .suggestion-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .suggestion-priority {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .suggestion-priority.high {
+            background: #dc3545;
+            color: white;
+        }
+
+        .suggestion-priority.medium {
+            background: #ff9800;
+            color: white;
+        }
+
+        .suggestion-priority.low {
+            background: #28a745;
+            color: white;
+        }
+
+        .suggestion-text {
+            margin: 12px 0;
+            font-size: 0.95em;
+            line-height: 1.6;
+        }
+
+        .suggestion-label {
+            font-weight: 600;
+            color: #667eea;
+            display: block;
+            margin-top: 10px;
+        }
+
+        .controls {
+            margin-bottom: 30px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+
+        .status {
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .status.loading {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .status.success {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+
+        .status.error {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .insight-box {
+            background: #e3f2fd;
+            border-left: 4px solid #1976d2;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            color: #0d47a1;
+            font-size: 0.95em;
+        }
+
+        .insight-box.warning {
+            background: #fff3e0;
+            border-left-color: #e65100;
+            color: #e65100;
+        }
+
+        .insight-box.success {
+            background: #e8f5e9;
+            border-left-color: #2e7d32;
+            color: #1b5e20;
+        }
+
+        @media (max-width: 768px) {
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .analysis-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .content {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Trade Filter Analysis</h1>
+            <p>Identify market patterns to improve trading strategy profitability</p>
+        </div>
+
+        <div class="content">
+            <div class="controls">
+                <button class="btn-primary" onclick="runAnalysis()">🔍 Analyze Trades</button>
+                <button class="btn-secondary" onclick="clearAnalysis()">🗑️ Clear Results</button>
+                <button class="btn-secondary" onclick="exportReport()">📥 Export Report</button>
+            </div>
+
+            <div id="status" style="display:none;"></div>
+            <div id="results"></div>
+        </div>
+    </div>
+
+    <script src="trade-filter-analysis.js"></script>
+    <script>
+        let analysisResults = null;
+        let charts = {};
+
+        function runAnalysis() {
+            const status = document.getElementById('status');
+            const results = document.getElementById('results');
+
+            // Check if we have trade data from the backtest
+            if (!window.ordersHistory || window.ordersHistory.length === 0) {
+                showStatus('No trades found. Please run a backtest first.', 'error');
+                return;
+            }
+
+            if (!window.cachedCSVData || window.cachedCSVData.length === 0) {
+                showStatus('No market data found. Please load CSV data first.', 'error');
+                return;
+            }
+
+            showStatus('Analyzing trades and market conditions...', 'loading');
+            results.innerHTML = '';
+
+            try {
+                // Run the analysis
+                analysisResults = window.TradeFilterAnalysis.analyzeTradesAndConditions(
+                    window.ordersHistory,
+                    window.cachedCSVData
+                );
+
+                showStatus('Analysis complete!', 'success');
+                displayResults(analysisResults);
+            } catch (error) {
+                console.error('Analysis error:', error);
+                showStatus('Error: ' + error.message, 'error');
+            }
+        }
+
+        function displayResults(analysis) {
+            const resultsDiv = document.getElementById('results');
+            let html = '';
+
+            // Summary metrics
+            html += `
+                <div class="section">
+                    <h2>📈 Analysis Summary</h2>
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <div class="metric-label">Total Trades</div>
+                            <div class="metric-value">${analysis.totalTrades}</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">Winning Trades</div>
+                            <div class="metric-value win">${analysis.winCount}</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">Losing Trades</div>
+                            <div class="metric-value loss">${analysis.lossCount}</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">Current Win Rate</div>
+                            <div class="metric-value percent">${(analysis.winRate * 100).toFixed(2)}%</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Candle Size Analysis
+            html += `
+                <div class="section">
+                    <h2>🔍 Candle Size Analysis</h2>
+                    <div class="chart-container">
+                        <div class="chart-title">Win Rate by Entry Candle Size</div>
+                        <canvas id="candleSizeChart"></canvas>
+                    </div>
+                    <div class="analysis-grid">
+                        <div class="analysis-item">
+                            <div class="analysis-label">Small Candles (&lt;0.0002)</div>
+                            <div class="analysis-value">${analysis.candleSizeAnalysis.small.winRatePercent}%</div>
+                            <div class="analysis-meta">${analysis.candleSizeAnalysis.small.count} trades | ${analysis.candleSizeAnalysis.small.wins}W / ${analysis.candleSizeAnalysis.small.losses}L</div>
+                        </div>
+                        <div class="analysis-item">
+                            <div class="analysis-label">Medium Candles (0.0002-0.0005)</div>
+                            <div class="analysis-value">${analysis.candleSizeAnalysis.medium.winRatePercent}%</div>
+                            <div class="analysis-meta">${analysis.candleSizeAnalysis.medium.count} trades | ${analysis.candleSizeAnalysis.medium.wins}W / ${analysis.candleSizeAnalysis.medium.losses}L</div>
+                        </div>
+                        <div class="analysis-item">
+                            <div class="analysis-label">Large Candles (&gt;0.0005)</div>
+                            <div class="analysis-value">${analysis.candleSizeAnalysis.large.winRatePercent}%</div>
+                            <div class="analysis-meta">${analysis.candleSizeAnalysis.large.count} trades | ${analysis.candleSizeAnalysis.large.wins}W / ${analysis.candleSizeAnalysis.large.losses}L</div>
+                        </div>
+                    </div>
+                    <div class="insight-box">${analysis.candleSizeAnalysis.insight}</div>
+                </div>
+            `;
+
+            // Volatility Analysis
+            html += `
+                <div class="section">
+                    <h2>📊 Volatility Analysis</h2>
+                    <div class="chart-container">
+                        <div class="chart-title">Win Rate by Market Volatility</div>
+                        <canvas id="volatilityChart"></canvas>
+                    </div>
+                    <div class="analysis-grid">
+                        <div class="analysis-item">
+                            <div class="analysis-label">Low Volatility</div>
+                            <div class="analysis-value">${analysis.volatilityAnalysis.lowVolatility.winRatePercent}%</div>
+                            <div class="analysis-meta">${analysis.volatilityAnalysis.lowVolatility.count} trades | ${analysis.volatilityAnalysis.lowVolatility.wins}W / ${analysis.volatilityAnalysis.lowVolatility.losses}L</div>
+                        </div>
+                        <div class="analysis-item">
+                            <div class="analysis-label">Medium Volatility</div>
+                            <div class="analysis-value">${analysis.volatilityAnalysis.mediumVolatility.winRatePercent}%</div>
+                            <div class="analysis-meta">${analysis.volatilityAnalysis.mediumVolatility.count} trades | ${analysis.volatilityAnalysis.mediumVolatility.wins}W / ${analysis.volatilityAnalysis.mediumVolatility.losses}L</div>
+                        </div>
+                        <div class="analysis-item">
+                            <div class="analysis-label">High Volatility</div>
+                            <div class="analysis-value">${analysis.volatilityAnalysis.highVolatility.winRatePercent}%</div>
+                            <div class="analysis-meta">${analysis.volatilityAnalysis.highVolatility.count} trades | ${analysis.volatilityAnalysis.highVolatility.wins}W / ${analysis.volatilityAnalysis.highVolatility.losses}L</div>
+                        </div>
+                    </div>
+                    <div class="insight-box">${analysis.volatilityAnalysis.insight}</div>
+                </div>
+            `;
+
+            // Trend Analysis
+            html += `
+                <div class="section">
+                    <h2>📈 Trend Structure Analysis</h2>
+                    <div class="chart-container">
+                        <div class="chart-title">Win Rate by Trend Type at Entry</div>
+                        <canvas id="trendChart"></canvas>
+                    </div>
+                    <div class="analysis-grid">
+                        <div class="analysis-item">
+                            <div class="analysis-label">Uptrend Entry</div>
+                            <div class="analysis-value">${analysis.trendAnalysis.uptrend.winRatePercent}%</div>
+                            <div class="analysis-meta">${analysis.trendAnalysis.uptrend.count} trades | ${analysis.trendAnalysis.uptrend.wins}W / ${analysis.trendAnalysis.uptrend.losses}L</div>
+                        </div>
+                        <div class="analysis-item">
+                            <div class="analysis-label">Downtrend Entry</div>
+                            <div class="analysis-value">${analysis.trendAnalysis.downtrend.winRatePercent}%</div>
+                            <div class="analysis-meta">${analysis.trendAnalysis.downtrend.count} trades | ${analysis.trendAnalysis.downtrend.wins}W / ${analysis.trendAnalysis.downtrend.losses}L</div>
+                        </div>
+                        <div class="analysis-item">
+                            <div class="analysis-label">Range Entry</div>
+                            <div class="analysis-value">${analysis.trendAnalysis.range.winRatePercent}%</div>
+                            <div class="analysis-meta">${analysis.trendAnalysis.range.count} trades | ${analysis.trendAnalysis.range.wins}W / ${analysis.trendAnalysis.range.losses}L</div>
+                        </div>
+                    </div>
+                    <div class="insight-box">${analysis.trendAnalysis.insight}</div>
+                </div>
+            `;
+
+            // Entry Candle Direction
+            html += `
+                <div class="section">
+                    <h2>🕯️ Entry Candle Direction Analysis</h2>
+                    <div class="chart-container">
+                        <div class="chart-title">Win Rate by Entry Candle Direction</div>
+                        <canvas id="candleDirectionChart"></canvas>
+                    </div>
+                    <div class="analysis-grid">
+                        <div class="analysis-item">
+                            <div class="analysis-label">Bull Candle Entry</div>
+                            <div class="analysis-value">${analysis.candleDirectionAnalysis.bullCandleEntry.winRatePercent}%</div>
+                            <div class="analysis-meta">${analysis.candleDirectionAnalysis.bullCandleEntry.count} trades | ${analysis.candleDirectionAnalysis.bullCandleEntry.wins}W / ${analysis.candleDirectionAnalysis.bullCandleEntry.losses}L</div>
+                        </div>
+                        <div class="analysis-item">
+                            <div class="analysis-label">Bear Candle Entry</div>
+                            <div class="analysis-value">${analysis.candleDirectionAnalysis.bearCandleEntry.winRatePercent}%</div>
+                            <div class="analysis-meta">${analysis.candleDirectionAnalysis.bearCandleEntry.count} trades | ${analysis.candleDirectionAnalysis.bearCandleEntry.wins}W / ${analysis.candleDirectionAnalysis.bearCandleEntry.losses}L</div>
+                        </div>
+                    </div>
+                    <div class="insight-box">${analysis.candleDirectionAnalysis.insight}</div>
+                </div>
+            `;
+
+            // Filter Suggestions
+            if (analysis.suggestedFilters.length > 0) {
+                html += `<div class="section"><h2>🎯 Suggested Filters (${analysis.suggestedFilters.length})</h2><div class="suggestions">`;
+
+                analysis.suggestedFilters.forEach(filter => {
+                    const priorityClass = filter.priority.toLowerCase();
+                    html += `
+                        <div class="suggestion-card ${priorityClass}">
+                            <div style="display: flex; justify-content: space-between; align-items: start;">
+                                <div>
+                                    <div class="suggestion-title">${filter.description}</div>
+                                    <span class="suggestion-priority ${priorityClass}">${filter.priority}</span>
+                                </div>
+                            </div>
+                            <div class="suggestion-text"><strong>Type:</strong> ${filter.type}</div>
+                            <div class="suggestion-text"><strong>Detail:</strong> ${filter.detail}</div>
+                            <div class="suggestion-text"><strong>Implementation:</strong> ${filter.implementation}</div>
+                            <div class="suggestion-text"><strong>Expected Impact:</strong> ${filter.expectedImprovement}</div>
+                        </div>
+                    `;
+                });
+
+                html += `</div></div>`;
+            }
+
+            resultsDiv.innerHTML = html;
+
+            // Draw charts
+            setTimeout(() => {
+                drawCharts(analysis);
+            }, 100);
+        }
+
+        function drawCharts(analysis) {
+            const chartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    }
+                }
+            };
+
+            // Candle Size Chart
+            const candleCtx = document.getElementById('candleSizeChart');
+            if (candleCtx) {
+                charts.candleSize = new Chart(candleCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Small', 'Medium', 'Large'],
+                        datasets: [{
+                            label: 'Win Rate %',
+                            data: [
+                                parseFloat(analysis.candleSizeAnalysis.small.winRatePercent),
+                                parseFloat(analysis.candleSizeAnalysis.medium.winRatePercent),
+                                parseFloat(analysis.candleSizeAnalysis.large.winRatePercent)
+                            ],
+                            backgroundColor: ['#ff9800', '#2196F3', '#4CAF50'],
+                            borderColor: ['#ff6f00', '#1565c0', '#2e7d32'],
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        ...chartOptions,
+                        scales: {
+                            y: { max: 100 }
+                        }
+                    }
+                });
+            }
+
+            // Volatility Chart
+            const volCtx = document.getElementById('volatilityChart');
+            if (volCtx) {
+                charts.volatility = new Chart(volCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Low', 'Medium', 'High'],
+                        datasets: [{
+                            label: 'Win Rate %',
+                            data: [
+                                parseFloat(analysis.volatilityAnalysis.lowVolatility.winRatePercent),
+                                parseFloat(analysis.volatilityAnalysis.mediumVolatility.winRatePercent),
+                                parseFloat(analysis.volatilityAnalysis.highVolatility.winRatePercent)
+                            ],
+                            backgroundColor: ['#9C27B0', '#3F51B5', '#FF5722'],
+                            borderColor: ['#6A1B9A', '#283593', '#D84315'],
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        ...chartOptions,
+                        scales: {
+                            y: { max: 100 }
+                        }
+                    }
+                });
+            }
+
+            // Trend Chart
+            const trendCtx = document.getElementById('trendChart');
+            if (trendCtx) {
+                charts.trend = new Chart(trendCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Uptrend', 'Downtrend', 'Range'],
+                        datasets: [{
+                            label: 'Win Rate %',
+                            data: [
+                                parseFloat(analysis.trendAnalysis.uptrend.winRatePercent),
+                                parseFloat(analysis.trendAnalysis.downtrend.winRatePercent),
+                                parseFloat(analysis.trendAnalysis.range.winRatePercent)
+                            ],
+                            backgroundColor: ['#4CAF50', '#F44336', '#FFC107'],
+                            borderColor: ['#2e7d32', '#c62828', '#F57F17'],
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        ...chartOptions,
+                        scales: {
+                            y: { max: 100 }
+                        }
+                    }
+                });
+            }
+
+            // Candle Direction Chart
+            const dirCtx = document.getElementById('candleDirectionChart');
+            if (dirCtx) {
+                charts.direction = new Chart(dirCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Bull Entry', 'Bear Entry'],
+                        datasets: [{
+                            data: [
+                                parseFloat(analysis.candleDirectionAnalysis.bullCandleEntry.winRatePercent),
+                                parseFloat(analysis.candleDirectionAnalysis.bearCandleEntry.winRatePercent)
+                            ],
+                            backgroundColor: ['#4CAF50', '#F44336'],
+                            borderColor: ['#2e7d32', '#c62828'],
+                            borderWidth: 2
+                        }]
+                    },
+                    options: chartOptions
+                });
+            }
+        }
+
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+            status.style.display = 'block';
+        }
+
+        function clearAnalysis() {
+            document.getElementById('results').innerHTML = '';
+            document.getElementById('status').style.display = 'none';
+            analysisResults = null;
+        }
+
+        function exportReport() {
+            if (!analysisResults) {
+                showStatus('Please run analysis first', 'error');
+                return;
+            }
+
+            const report = window.TradeFilterAnalysis.formatReport(analysisResults);
+            const blob = new Blob([report], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'trade-filter-analysis-report.txt';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>

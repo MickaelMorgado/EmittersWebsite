@@ -58,19 +58,6 @@ export const STALKER_AMMO_DATA: AmmoCaliber[] = [
     name: '9x19mm',
     variants: [
       {
-        id: '9x19_fmj',
-        name: '9x19mm FMJ',
-        type: 'Regular',
-        weight: 0.009,
-        damage: 4,
-        penetration: 4,
-        degradation: 2,
-        description: 'Full Metal Jacket variant.',
-        imageUrl: `${BASE_URL}stalker-2-9x19mm-fmj.png`,
-        compatibleWeapons: ['Walker P9L', 'M-10', 'Riemann', 'Integral-A', 'Cavalier', 'Gambit', 'Zubr-19', "Shah's Mate"],
-        boxSize: 30
-      },
-      {
         id: '9x19_p',
         name: '9x19mm +P',
         type: 'Regular',
@@ -81,6 +68,19 @@ export const STALKER_AMMO_DATA: AmmoCaliber[] = [
         description: 'Standard 9mm Parabellum round.',
         imageUrl: `${BASE_URL}stalker-2-9x19mm-p.png`,
         compatibleWeapons: ['Walker P9L', 'M-10', 'Viper-5 (Mod)', 'Riemann', 'Integral-A', 'Cavalier', 'Gambit', 'Zubr-19', "Shah's Mate", 'Model Competitor'],
+        boxSize: 30
+      },
+      {
+        id: '9x19_fmj',
+        name: '9x19mm FMJ',
+        type: 'Regular',
+        weight: 0.009,
+        damage: 4,
+        penetration: 4,
+        degradation: 2,
+        description: 'Full Metal Jacket variant.',
+        imageUrl: `${BASE_URL}stalker-2-9x19mm-fmj.png`,
+        compatibleWeapons: ['Walker P9L', 'M-10', 'Riemann', 'Integral-A', 'Cavalier', 'Gambit', 'Zubr-19', "Shah's Mate"],
         boxSize: 30
       }
     ]
@@ -142,7 +142,20 @@ export const STALKER_AMMO_DATA: AmmoCaliber[] = [
         degradation: 2,
         description: 'Standard 5.45mm service round.',
         imageUrl: `${BASE_URL}stalker-2-545x39mm-ps.png`,
-        compatibleWeapons: ['AK-74', 'AKS-74U', 'Obokan', 'AKM-74S'],
+        compatibleWeapons: ['AK-74', 'AKS-74U', 'Obokan'],
+        boxSize: 30
+      },
+      {
+        id: '545x39_pp',
+        name: '5.45x39mm PP',
+        type: 'AP',
+        weight: 0.012,
+        damage: 5,
+        penetration: 7,
+        degradation: 5,
+        description: 'Increased penetration variant.',
+        imageUrl: `${BASE_URL}stalker-2-545x39mm-pp.png`,
+        compatibleWeapons: ['AK-74', 'AKS-74U', 'Obokan'],
         boxSize: 30
       },
       {
@@ -156,19 +169,6 @@ export const STALKER_AMMO_DATA: AmmoCaliber[] = [
         description: 'Expanding bullet for soft targets.',
         imageUrl: `${BASE_URL}stalker-2-545x39mm-mzhv-13.png`,
         compatibleWeapons: ['AK-74', 'AKS-74U', 'Abakan', 'AN-94', 'AKM-74U', 'AKM-74S', 'RPM-74', 'SA-U Gabion', 'Lullaby', 'Decider', 'Dnipro', 'Drowned', 'Spitfire', 'Sotnyk', "Valik Lummox's AKM-74S"],
-        boxSize: 30
-      },
-      {
-        id: '545x39_pp',
-        name: '5.45x39mm PP',
-        type: 'AP',
-        weight: 0.012,
-        damage: 5,
-        penetration: 7,
-        degradation: 5,
-        description: 'Increased penetration variant.',
-        imageUrl: `${BASE_URL}stalker-2-545x39mm-pp.png`,
-        compatibleWeapons: ['AK-74', 'AKS-74U', 'Obokan', 'AKM-74S'],
         boxSize: 30
       }
     ]
@@ -191,19 +191,6 @@ export const STALKER_AMMO_DATA: AmmoCaliber[] = [
         boxSize: 30
       },
       {
-        id: '556x45_hp',
-        name: '5.56x45mm HP',
-        type: 'Expansive',
-        weight: 0.012,
-        damage: 7,
-        penetration: 2,
-        degradation: 4,
-        description: 'Hollow point variant.',
-        imageUrl: `${BASE_URL}stalker-2-556x45mm-hp.png`,
-        compatibleWeapons: ['TRs 301', 'SGI-5k', 'GP 37', 'L85A2', 'KHAROD', 'AR416'],
-        boxSize: 30
-      },
-      {
         id: '556x45_m995',
         name: '5.56x45mm M995',
         type: 'AP',
@@ -213,7 +200,20 @@ export const STALKER_AMMO_DATA: AmmoCaliber[] = [
         degradation: 6,
         description: 'Tungsten core armor-piercing.',
         imageUrl: `${BASE_URL}stalker-2-556x45mm-m995.png`,
-        compatibleWeapons: ['TRs 301', 'SGI-5k', 'GP 37', 'KHAROD'],
+        compatibleWeapons: ['TRs 301', 'SGI-5k', 'GP 37'],
+        boxSize: 30
+      },
+      {
+        id: '556x45_hp',
+        name: '5.56x45mm HP',
+        type: 'Expansive',
+        weight: 0.012,
+        damage: 7,
+        penetration: 2,
+        degradation: 4,
+        description: 'Hollow point variant.',
+        imageUrl: `${BASE_URL}stalker-2-556x45mm-hp.png`,
+        compatibleWeapons: ['TRs 301', 'L85A2'],
         boxSize: 30
       },
       {
@@ -226,7 +226,7 @@ export const STALKER_AMMO_DATA: AmmoCaliber[] = [
         degradation: 3,
         description: 'Precision match-grade round.',
         imageUrl: `${BASE_URL}stalker-2-556x45mm-mk-262.png`,
-        compatibleWeapons: ['TRs 301', 'SGI-5k', 'GP 37', 'KHAROD'],
+        compatibleWeapons: ['TRs 301', 'SGI-5k', 'GP 37'],
         boxSize: 30
       }
     ]
@@ -245,7 +245,7 @@ export const STALKER_AMMO_DATA: AmmoCaliber[] = [
         degradation: 2,
         description: 'Standard AK-47 round.',
         imageUrl: `${BASE_URL}stalker-2-762x39mm-ps.png`,
-        compatibleWeapons: ['AKM-74', 'SKS', 'Glutton', 'AKM'],
+        compatibleWeapons: ['KHAROD', 'AKM-74', 'SKS', 'Glutton', 'AKM'],
         boxSize: 30
       },
       {
@@ -270,7 +270,7 @@ export const STALKER_AMMO_DATA: AmmoCaliber[] = [
         degradation: 4,
         description: 'Specialized hunting round.',
         imageUrl: `${BASE_URL}stalker-2-762x39mm-lan.png`,
-        compatibleWeapons: ['AKM-74', 'SKS', 'ASh-12'],
+        compatibleWeapons: ['KHAROD', 'AKM-74', 'SKS', 'ASh-12'],
         boxSize: 30
       }
     ]
@@ -338,19 +338,6 @@ export const STALKER_AMMO_DATA: AmmoCaliber[] = [
         boxSize: 10
       },
       {
-        id: '762x54_b32',
-        name: '7.62x54mm B-32',
-        type: 'AP',
-        weight: 0.024,
-        damage: 8,
-        penetration: 10,
-        degradation: 7,
-        description: 'Armor-piercing incendiary bullet.',
-        imageUrl: `${BASE_URL}stalker-2-762x54mm-b-32.png`,
-        compatibleWeapons: ['SVD', 'SVU', 'PKP Pecheneg', 'SVDM-2', 'SVDM-2 (Lynx)'],
-        boxSize: 10
-      },
-      {
         id: '762x54_7n1',
         name: '7.62x54mm 7N1',
         type: 'Sniper',
@@ -362,6 +349,19 @@ export const STALKER_AMMO_DATA: AmmoCaliber[] = [
         imageUrl: `${BASE_URL}stalker-2-762x54mm-7n1.png`,
         compatibleWeapons: ['SVD', 'SVU', 'SVDM-2', 'SVDM-2 (Lynx)'],
         boxSize: 10
+      },
+      {
+        id: '762x54_b32',
+        name: '7.62x54mm B-32',
+        type: 'AP',
+        weight: 0.024,
+        damage: 8,
+        penetration: 10,
+        degradation: 7,
+        description: 'Armor-piercing incendiary bullet.',
+        imageUrl: `${BASE_URL}stalker-2-762x54mm-b-32.png`,
+        compatibleWeapons: ['SVD', 'SVU', 'PKP Pecheneg', 'SVDM-2', 'SVDM-2 (Lynx)'],
+        boxSize: 10
       }
     ]
   },
@@ -370,27 +370,15 @@ export const STALKER_AMMO_DATA: AmmoCaliber[] = [
     name: '9x39mm',
     variants: [
       {
-        id: '9x39_pa',
-        name: '9x39mm PA',
+        id: '9x39_sp5',
+        name: '9x39mm SP-5',
         type: 'Regular',
-        weight: 0.023,
-        damage: 8,
-        penetration: 7,
-        degradation: 7,
-        description: 'Economical armor-piercing variant.',
-        imageUrl: `${BASE_URL}stalker-2-9x39mm-pa.png`,
-        boxSize: 20
-      },
-      {
-        id: '9x39_ppe',
-        name: '9x39mm PPE',
-        type: 'Expansive',
         weight: 0.022,
-        damage: 9,
-        penetration: 3,
-        degradation: 5,
-        description: 'Special expanding subsonic round.',
-        imageUrl: `${BASE_URL}stalker-2-9x39mm-ppe.png`,
+        damage: 7,
+        penetration: 6,
+        degradation: 2,
+        description: 'Standard subsonic special sniper round.',
+        imageUrl: `${BASE_URL}stalker-2-9x39mm-sp-5.png`,
         compatibleWeapons: ['VS Vintar', 'AS Lavina', 'Vintar', 'SA Avalanche', 'Grom S-14', 'AS Val', 'VSS Vintorez'],
         boxSize: 20
       },
@@ -407,16 +395,28 @@ export const STALKER_AMMO_DATA: AmmoCaliber[] = [
         boxSize: 20
       },
       {
-id: '9x39_sp5',
-        name: '9x39mm SP-5',
-        type: 'Sniper',
+        id: '9x39_pa',
+        name: '9x39mm PAB-9',
+        type: 'AP',
+        weight: 0.023,
+        damage: 8,
+        penetration: 7,
+        degradation: 7,
+        description: 'Economical armor-piercing variant.',
+        imageUrl: `${BASE_URL}stalker-2-9x39mm-pa.png`,
+        boxSize: 20
+      },
+      {
+        id: '9x39_ppe',
+        name: '9x39mm PPE',
+        type: 'Expansive',
         weight: 0.022,
-        damage: 7,
-        penetration: 6,
-        degradation: 2,
-        description: 'Standard subsonic special sniper round.',
-        imageUrl: `${BASE_URL}stalker-2-9x39mm-sp-5.png`,
-        compatibleWeapons: ['VS Vintar', 'AS Lavina', 'Vintar', 'SA Avalanche', 'Grom S-14', 'AS Val', 'VSS Vintorez'],
+        damage: 9,
+        penetration: 4,
+        degradation: 4,
+        description: 'Expanding sub-sonic bullet.',
+        imageUrl: `${BASE_URL}stalker-2-9x39mm-ppe.png`,
+        compatibleWeapons: ['Vintar', 'SA Avalanche', 'AS Val', 'VSS Vintorez'],
         boxSize: 20
       }
     ]
@@ -441,7 +441,7 @@ id: '9x39_sp5',
       {
         id: '12x76_slug',
         name: '12x76 Slug',
-        type: 'AP',
+        type: 'Regular',
         weight: 0.045,
         damage: 8,
         penetration: 4,
@@ -454,7 +454,7 @@ id: '9x39_sp5',
       {
         id: '12x76_dart',
         name: '12x76 Dart',
-        type: 'Expansive',
+        type: 'AP',
         weight: 0.045,
         damage: 7,
         penetration: 7,
@@ -463,6 +463,63 @@ id: '9x39_sp5',
         imageUrl: `${BASE_URL}stalker-2-12x76mm-expanding-dart.png`,
         compatibleWeapons: ['D-10', 'Sawed-off', 'Chaser-13', 'SPSA-14', 'SledgeHammer', 'TOZ-34', 'Boomstick', 'M860 Cracker', 'M860 Monolith', 'Margach D-12MT', 'Predator', 'Ram-2', 'Saiga D-12', 'Texan', 'Drowned'],
         boxSize: 10
+      }
+    ]
+  },
+  {
+    id: '12-7x55',
+    name: '12.7x55mm',
+    variants: [
+      {
+        id: '12_7x55_ps',
+        name: '12.7x55mm PS-12',
+        type: 'Regular',
+        weight: 0.045,
+        damage: 10,
+        penetration: 8,
+        degradation: 6,
+        description: 'Heavy subsonic assault round.',
+        imageUrl: `${BASE_URL}stalker-2-12_7x55mm-ps-12.png`,
+        compatibleWeapons: ['ASh-12'],
+        boxSize: 10
+      }
+    ]
+  },
+  {
+    id: '338_lapua',
+    name: '.338 Lapua',
+    variants: [
+      {
+        id: '338_lapua_m',
+        name: '.338 Lapua Magnum',
+        type: 'Sniper',
+        weight: 0.055,
+        damage: 10,
+        penetration: 10,
+        degradation: 8,
+        description: 'High-precision long-range projectile.',
+        imageUrl: `${BASE_URL}stalker-2-338-lapua-magnum.png`,
+        compatibleWeapons: ['M701'],
+        boxSize: 5
+      }
+    ]
+  },
+  {
+    id: '762x25',
+    name: '7.62x25mm',
+    variants: [
+      {
+        id: '762x25_p',
+        name: '7.62x25mm P',
+        type: 'Regular',
+        weight: 0.010,
+        damage: 4,
+        penetration: 3,
+        degradation: 1,
+        description: 'Standard Tokarev service round.',
+        imageUrl: `${BASE_URL}stalker-2-762x25mm-p.png`,
+        compatibleWeapons: ['PM-M', 'Fort-12', 'Viper-5'],
+        boxSize: 20
       }
     ]
   },

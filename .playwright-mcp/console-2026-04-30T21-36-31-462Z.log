@@ -1,0 +1,5 @@
+[     122ms] Identifier 'isBull' has already been declared
+[  287280ms] [LOG] window.ordersHistory: undefined @ :1
+[  301644ms] [LOG] Checking for trades... @ :2
+[  301645ms] [LOG] Backtesting result:  @ :5
+[  301645ms] [LOG] Window ordersHistory: undefined @ :9
