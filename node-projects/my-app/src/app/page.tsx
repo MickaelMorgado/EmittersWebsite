@@ -54,7 +54,7 @@ const PROJECTS: { [section: string]: Project[] } = {
     { title: "2D CAD Sketcher", description: "2D CAD drawing app with shapes, lines, and export", href: "/sketcher", accentColor: "156, 163, 175", isPublic: true },
     { title: "Investments Dashboard", description: "Live crypto/stock prices with P&L tracking", href: "/investments", accentColor: "34, 197, 94", isPublic: false },
     { title: "Fact Check AI", description: "AI-powered fact checking for text and images", href: "/fact-check", accentColor: "59, 130, 246", isPublic: false },
-    { title: "MikaBot Dashboard", description: "AI trading bot performance & analytics", href: "/trading-bot", accentColor: "0, 255, 200", isPublic: false },
+    { title: "Trading Bot 🤖", description: "Multi-position AI trading bot with real-time signals & analytics", href: "/trading-bot", accentColor: "0, 255, 200", isPublic: false },
   ],
   "Standalone Projects": [
     { title: "Trading Tools", description: "Trading tools for analyzing and visualizing market data", href: "https://emittersgame.com/tools/index6.html", accentColor: "245, 158, 11", isExternal: true },

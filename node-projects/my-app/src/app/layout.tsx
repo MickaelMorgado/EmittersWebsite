@@ -20,8 +20,14 @@ export const metadata: Metadata = {
     template: "%s | Emitters",
   },
   description:
-    "Free developer tools and web applications: P&L calendar, AI assistant, 3D CAD viewer, TikTok TTS, EMF detector, G-code timelapse, image compressor, and more.",
+    "Emitters: Trading Bot AI dashboard, P&L calendar, developer tools & web apps. Multi-position strategy, real-time signals, AI analysis, and more.",
   keywords: [
+    "trading bot",
+    "AI trading",
+    "multi-position strategy",
+    "trading signals",
+    "forex trading",
+    "automated trading",
     "developer tools",
     "web apps",
     "free tools",
@@ -68,7 +74,7 @@ export const metadata: Metadata = {
     siteName: "Emitters",
     title: "Emitters - Developer Tools & Web Apps",
     description:
-      "Free developer tools and web applications: P&L calendar, AI assistant, 3D CAD viewer, TikTok TTS, EMF detector, G-code timelapse, image compressor, and more.",
+      "Emitters: AI Trading Bot dashboard with multi-position strategy, real-time signals, and automated trading. Plus developer tools: P&L calendar, AI assistant, 3D CAD, and more.",
     images: [
       {
         url: "/og-image.png",
@@ -82,7 +88,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Emitters - Developer Tools & Web Apps",
     description:
-      "Free developer tools: P&L calendar, AI assistant, 3D CAD, TikTok TTS, EMF detector, and more",
+      "AI Trading Bot with multi-position strategy & real-time signals. Developer tools: P&L calendar, AI assistant, 3D CAD, and more.",
     images: ["/og-image.png"],
   },
   alternates: {

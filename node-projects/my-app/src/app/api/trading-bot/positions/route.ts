@@ -55,9 +55,12 @@ function getPositionsData() {
 export function GET(request: NextRequest) {
   const encoder = new TextEncoder();
 
+  // Extract mode from query parameters
+  const mode = request.nextUrl.searchParams.get('mode') || 'real';
+  console.log(`[positions stream] Client connected - Mode: ${mode}`);
+
   const stream = new ReadableStream({
     async start(controller) {
-      console.log('[positions stream] Client connected');
 
       let lastPositionsContent = '';
 

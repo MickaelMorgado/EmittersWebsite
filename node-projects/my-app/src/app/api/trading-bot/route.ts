@@ -53,8 +53,14 @@ interface AIAnalysis {
   reasoning: string;
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    // Extract mode from query parameters
+    const { searchParams } = new URL(request.url);
+    const mode = searchParams.get('mode') || 'real';
+
+    console.log(`[trading-bot GET] Mode: ${mode}`);
+
     const analysisPath = path.join(path.dirname(TRADES_PATH), ANALYSIS_FILE);
 
     console.log(`[trading-bot GET] Looking for trades at: ${TRADES_PATH}`);
@@ -64,7 +70,8 @@ export async function GET() {
       return NextResponse.json({
         openPositions: [],
         history: [],
-        stats: { totalTrades: 0, wins: 0, losses: 0, winRate: 0, totalPnl: 0, currentStreak: 0 }
+        stats: { totalTrades: 0, wins: 0, losses: 0, winRate: 0, totalPnl: 0, currentStreak: 0 },
+        mode
       });
     }
 
