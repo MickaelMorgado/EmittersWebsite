@@ -282,125 +282,46 @@ export default function AIReportsSection({
             {/* Sub-Agent Reports */}
             <div className="grid grid-cols-2 gap-2">
               <style>{`
-                @keyframes riskPulse {
+                @keyframes glassShine {
                   0% {
-                    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.8), 0 0 8px 0 rgba(239, 68, 68, 0.3);
-                    background-color: rgba(239, 68, 68, 0.04);
-                    transform: scale(1);
-                  }
-                  25% {
-                    box-shadow: 0 0 12px 4px rgba(239, 68, 68, 0.4), 0 0 20px 2px rgba(239, 68, 68, 0.15);
-                    background-color: rgba(239, 68, 68, 0.08);
-                    transform: scale(1.01);
+                    background: linear-gradient(135deg, transparent 0%, transparent 40%, rgba(255,255,255,0.1) 50%, transparent 60%, transparent 100%);
+                    background-position: 0% 0%;
+                    border-color: rgba(255,255,255,0.1);
                   }
                   50% {
-                    box-shadow: 0 0 20px 6px rgba(239, 68, 68, 0.2), 0 0 30px 4px rgba(239, 68, 68, 0.08);
-                    background-color: rgba(239, 68, 68, 0.06);
-                    transform: scale(1.02);
-                  }
-                  75% {
-                    box-shadow: 0 0 12px 3px rgba(239, 68, 68, 0.3), 0 0 18px 2px rgba(239, 68, 68, 0.1);
-                    background-color: rgba(239, 68, 68, 0.05);
-                    transform: scale(1.01);
+                    background: linear-gradient(135deg, transparent 0%, transparent 40%, rgba(255,255,255,0.25) 50%, transparent 60%, transparent 100%);
+                    background-position: 100% 100%;
+                    border-color: rgba(255,255,255,0.25);
                   }
                   100% {
-                    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0), 0 0 8px 0 rgba(239, 68, 68, 0);
-                    background-color: rgba(239, 68, 68, 0.02);
-                    transform: scale(1);
-                  }
-                }
-                @keyframes trendPulse {
-                  0% {
-                    box-shadow: 0 0 0 0 rgba(34, 211, 238, 0.8), 0 0 8px 0 rgba(34, 211, 238, 0.3);
-                    background-color: rgba(34, 211, 238, 0.04);
-                    transform: scale(1);
-                  }
-                  25% {
-                    box-shadow: 0 0 12px 4px rgba(34, 211, 238, 0.4), 0 0 20px 2px rgba(34, 211, 238, 0.15);
-                    background-color: rgba(34, 211, 238, 0.08);
-                    transform: scale(1.01);
-                  }
-                  50% {
-                    box-shadow: 0 0 20px 6px rgba(34, 211, 238, 0.2), 0 0 30px 4px rgba(34, 211, 238, 0.08);
-                    background-color: rgba(34, 211, 238, 0.06);
-                    transform: scale(1.02);
-                  }
-                  75% {
-                    box-shadow: 0 0 12px 3px rgba(34, 211, 238, 0.3), 0 0 18px 2px rgba(34, 211, 238, 0.1);
-                    background-color: rgba(34, 211, 238, 0.05);
-                    transform: scale(1.01);
-                  }
-                  100% {
-                    box-shadow: 0 0 0 0 rgba(34, 211, 238, 0), 0 0 8px 0 rgba(34, 211, 238, 0);
-                    background-color: rgba(34, 211, 238, 0.02);
-                    transform: scale(1);
-                  }
-                }
-                @keyframes newsPulse {
-                  0% {
-                    box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.8), 0 0 8px 0 rgba(168, 85, 247, 0.3);
-                    background-color: rgba(168, 85, 247, 0.04);
-                    transform: scale(1);
-                  }
-                  25% {
-                    box-shadow: 0 0 12px 4px rgba(168, 85, 247, 0.4), 0 0 20px 2px rgba(168, 85, 247, 0.15);
-                    background-color: rgba(168, 85, 247, 0.08);
-                    transform: scale(1.01);
-                  }
-                  50% {
-                    box-shadow: 0 0 20px 6px rgba(168, 85, 247, 0.2), 0 0 30px 4px rgba(168, 85, 247, 0.08);
-                    background-color: rgba(168, 85, 247, 0.06);
-                    transform: scale(1.02);
-                  }
-                  75% {
-                    box-shadow: 0 0 12px 3px rgba(168, 85, 247, 0.3), 0 0 18px 2px rgba(168, 85, 247, 0.1);
-                    background-color: rgba(168, 85, 247, 0.05);
-                    transform: scale(1.01);
-                  }
-                  100% {
-                    box-shadow: 0 0 0 0 rgba(168, 85, 247, 0), 0 0 8px 0 rgba(168, 85, 247, 0);
-                    background-color: rgba(168, 85, 247, 0.02);
-                    transform: scale(1);
-                  }
-                }
-                @keyframes historyPulse {
-                  0% {
-                    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.8), 0 0 8px 0 rgba(16, 185, 129, 0.3);
-                    background-color: rgba(16, 185, 129, 0.04);
-                    transform: scale(1);
-                  }
-                  25% {
-                    box-shadow: 0 0 12px 4px rgba(16, 185, 129, 0.4), 0 0 20px 2px rgba(16, 185, 129, 0.15);
-                    background-color: rgba(16, 185, 129, 0.08);
-                    transform: scale(1.01);
-                  }
-                  50% {
-                    box-shadow: 0 0 20px 6px rgba(16, 185, 129, 0.2), 0 0 30px 4px rgba(16, 185, 129, 0.08);
-                    background-color: rgba(16, 185, 129, 0.06);
-                    transform: scale(1.02);
-                  }
-                  75% {
-                    box-shadow: 0 0 12px 3px rgba(16, 185, 129, 0.3), 0 0 18px 2px rgba(16, 185, 129, 0.1);
-                    background-color: rgba(16, 185, 129, 0.05);
-                    transform: scale(1.01);
-                  }
-                  100% {
-                    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0), 0 0 8px 0 rgba(16, 185, 129, 0);
-                    background-color: rgba(16, 185, 129, 0.02);
-                    transform: scale(1);
+                    background: linear-gradient(135deg, transparent 0%, transparent 40%, rgba(255,255,255,0.1) 50%, transparent 60%, transparent 100%);
+                    background-position: 200% 200%;
+                    border-color: rgba(255,255,255,0.1);
                   }
                 }
                 @keyframes spin {
                   0% { transform: rotate(0deg); }
                   100% { transform: rotate(360deg); }
                 }
-                .agent-active-risk { animation: riskPulse 2s cubic-bezier(0.36, 0, 0.66, -0.56); }
+                .agent-active-risk {
+                  animation: glassShine 2s ease-in-out;
+                  border-color: rgba(239, 68, 68, 0.3) !important;
+                }
                 .agent-active-risk .agent-icon { animation: spin 1.5s linear; }
-                .agent-active-trend { animation: trendPulse 2s cubic-bezier(0.36, 0, 0.66, -0.56); }
+                .agent-active-trend {
+                  animation: glassShine 2s ease-in-out;
+                  border-color: rgba(34, 211, 238, 0.3) !important;
+                }
                 .agent-active-trend .agent-icon { animation: spin 1.5s linear; }
-                .agent-active-news { animation: newsPulse 2s cubic-bezier(0.36, 0, 0.66, -0.56); }
+                .agent-active-news {
+                  animation: glassShine 2s ease-in-out;
+                  border-color: rgba(168, 85, 247, 0.3) !important;
+                }
                 .agent-active-news .agent-icon { animation: spin 1.5s linear; }
-                .agent-active-history { animation: historyPulse 2s cubic-bezier(0.36, 0, 0.66, -0.56); }
+                .agent-active-history {
+                  animation: glassShine 2s ease-in-out;
+                  border-color: rgba(16, 185, 129, 0.3) !important;
+                }
                 .agent-active-history .agent-icon { animation: spin 1.5s linear; }
               `}</style>
 
