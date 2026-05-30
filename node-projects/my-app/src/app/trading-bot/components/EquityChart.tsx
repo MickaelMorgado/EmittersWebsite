@@ -168,8 +168,8 @@ export default function EquityChart({ data }: EquityChartProps) {
                 stroke="rgba(34,211,238,0.9)"
                 strokeWidth={1.5}
                 fill="url(#equityGradient)"
-                dot={{ fill: 'rgba(34,211,238,0.8)', r: 2 }}
-                activeDot={{ r: 3, fill: 'rgba(34,211,238,1)' }}
+                dot={{ fill: 'rgba(34,211,238,0.8)', r: 1 }}
+                activeDot={{ r: 1.5, fill: 'rgba(34,211,238,1)' }}
               />
             </AreaChart>
           </ResponsiveContainer>
