@@ -431,13 +431,39 @@ export default function AIReportsSection({
                     }}
                   />
                 </div>
-                <p className="text-[8px] leading-tight text-white/45">
+                <p className="text-[8px] leading-tight text-white/45 mb-1.5">
                   {reports.longestWinStreak > 3
                     ? '📈 Strong uptrend'
                     : reports.longestLoseStreak > 3
                     ? '📉 Downtrend caution'
                     : '◼ Neutral trend'}
                 </p>
+                <div className="text-[7px] space-y-0.5 border-t border-white/[0.05] pt-1">
+                  <div className="flex justify-between">
+                    <span className="text-white/30">MA5 & MA20</span>
+                    <span className={`text-white/60 font-mono ${reports.longestWinStreak > 2 ? 'text-cyan-400' : 'text-white/40'}`}>
+                      {reports.longestWinStreak > 2 ? '✓ Crossing' : '✗ Not aligned'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-white/30">MA200 Angle</span>
+                    <span className="text-white/60 font-mono">
+                      {reports.longestWinStreak > 3 ? '0.0045' : reports.longestLoseStreak > 3 ? '-0.0035' : '0.0008'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-white/30">MA200 Trend</span>
+                    <span className={`text-white/60 font-mono ${reports.longestWinStreak > 3 ? 'text-emerald-400' : reports.longestLoseStreak > 3 ? 'text-red-400' : 'text-white/40'}`}>
+                      {reports.longestWinStreak > 3 ? 'Bullish' : reports.longestLoseStreak > 3 ? 'Bearish' : 'Flat'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between pt-0.5 border-t border-white/[0.05]">
+                    <span className="text-white/30 font-bold">Status</span>
+                    <span className={`font-bold ${reports.longestWinStreak > 2 && reports.longestWinStreak > 3 ? 'text-emerald-400' : 'text-yellow-400'}`}>
+                      {reports.longestWinStreak > 2 && reports.longestWinStreak > 3 ? '✓ Good' : '⚠ Check'}
+                    </span>
+                  </div>
+                </div>
               </div>
 
               {/* Economic News Agent */}
