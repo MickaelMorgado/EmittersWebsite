@@ -628,6 +628,27 @@ export default function AIReportsSection({
                     })()}%
                   </span>
                 </div>
+                <div className="h-0.5 bg-white/[0.05] rounded overflow-hidden mb-1">
+                  <div
+                    className={`h-full ${(() => {
+                      const riskOk = reports.maxDrawdown <= stats.totalPnl * 0.5 ? 25 : 0;
+                      const trendOk = reports.longestWinStreak > 3 ? 25 : reports.longestLoseStreak > 3 ? 0 : 12;
+                      const newsOk = 25;
+                      const historyOk = stats.totalTrades > 100 ? 25 : stats.totalTrades > 50 ? 15 : 0;
+                      const total = riskOk + trendOk + newsOk + historyOk;
+                      return total >= 75 ? 'bg-indigo-500' : total >= 50 ? 'bg-yellow-500' : 'bg-red-500';
+                    })()}`}
+                    style={{
+                      width: `${(() => {
+                        const riskOk = reports.maxDrawdown <= stats.totalPnl * 0.5 ? 25 : 0;
+                        const trendOk = reports.longestWinStreak > 3 ? 25 : reports.longestLoseStreak > 3 ? 0 : 12;
+                        const newsOk = 25;
+                        const historyOk = stats.totalTrades > 100 ? 25 : stats.totalTrades > 50 ? 15 : 0;
+                        return riskOk + trendOk + newsOk + historyOk;
+                      })()}%`
+                    }}
+                  />
+                </div>
                 <p className="text-[8px] leading-tight text-white/45">
                   {(() => {
                     const riskOk = reports.maxDrawdown <= stats.totalPnl * 0.5 ? 25 : 0;
@@ -636,10 +657,10 @@ export default function AIReportsSection({
                     const historyOk = stats.totalTrades > 100 ? 25 : stats.totalTrades > 50 ? 15 : 0;
                     const total = riskOk + trendOk + newsOk + historyOk;
                     return total >= 75
-                      ? '✓ GATE OPEN: Execute'
+                      ? '✓ All agents aligned'
                       : total >= 50
-                      ? '⚠ GATE PARTIAL: Reduced risk'
-                      : '✗ GATE CLOSED: Hold';
+                      ? '⚠ Partial consensus'
+                      : '✗ Consensus not met';
                   })()}
                 </p>
               </div>
