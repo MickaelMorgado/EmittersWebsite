@@ -282,26 +282,118 @@ export default function AIReportsSection({
             {/* Sub-Agent Reports */}
             <div className="grid grid-cols-2 gap-2">
               <style>{`
-                @keyframes riskGlow {
-                  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4), inset 0 0 0 0 rgba(239, 68, 68, 0.1); }
-                  50% { box-shadow: 0 0 15px 3px rgba(239, 68, 68, 0), inset 0 0 8px 2px rgba(239, 68, 68, 0.2); }
+                @keyframes riskPulse {
+                  0% {
+                    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.8), 0 0 8px 0 rgba(239, 68, 68, 0.3);
+                    background-color: rgba(239, 68, 68, 0.04);
+                    transform: scale(1);
+                  }
+                  25% {
+                    box-shadow: 0 0 12px 4px rgba(239, 68, 68, 0.4), 0 0 20px 2px rgba(239, 68, 68, 0.15);
+                    background-color: rgba(239, 68, 68, 0.08);
+                    transform: scale(1.01);
+                  }
+                  50% {
+                    box-shadow: 0 0 20px 6px rgba(239, 68, 68, 0.2), 0 0 30px 4px rgba(239, 68, 68, 0.08);
+                    background-color: rgba(239, 68, 68, 0.06);
+                    transform: scale(1.02);
+                  }
+                  75% {
+                    box-shadow: 0 0 12px 3px rgba(239, 68, 68, 0.3), 0 0 18px 2px rgba(239, 68, 68, 0.1);
+                    background-color: rgba(239, 68, 68, 0.05);
+                    transform: scale(1.01);
+                  }
+                  100% {
+                    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0), 0 0 8px 0 rgba(239, 68, 68, 0);
+                    background-color: rgba(239, 68, 68, 0.02);
+                    transform: scale(1);
+                  }
                 }
-                @keyframes trendGlow {
-                  0%, 100% { box-shadow: 0 0 0 0 rgba(34, 211, 238, 0.4), inset 0 0 0 0 rgba(34, 211, 238, 0.1); }
-                  50% { box-shadow: 0 0 15px 3px rgba(34, 211, 238, 0), inset 0 0 8px 2px rgba(34, 211, 238, 0.2); }
+                @keyframes trendPulse {
+                  0% {
+                    box-shadow: 0 0 0 0 rgba(34, 211, 238, 0.8), 0 0 8px 0 rgba(34, 211, 238, 0.3);
+                    background-color: rgba(34, 211, 238, 0.04);
+                    transform: scale(1);
+                  }
+                  25% {
+                    box-shadow: 0 0 12px 4px rgba(34, 211, 238, 0.4), 0 0 20px 2px rgba(34, 211, 238, 0.15);
+                    background-color: rgba(34, 211, 238, 0.08);
+                    transform: scale(1.01);
+                  }
+                  50% {
+                    box-shadow: 0 0 20px 6px rgba(34, 211, 238, 0.2), 0 0 30px 4px rgba(34, 211, 238, 0.08);
+                    background-color: rgba(34, 211, 238, 0.06);
+                    transform: scale(1.02);
+                  }
+                  75% {
+                    box-shadow: 0 0 12px 3px rgba(34, 211, 238, 0.3), 0 0 18px 2px rgba(34, 211, 238, 0.1);
+                    background-color: rgba(34, 211, 238, 0.05);
+                    transform: scale(1.01);
+                  }
+                  100% {
+                    box-shadow: 0 0 0 0 rgba(34, 211, 238, 0), 0 0 8px 0 rgba(34, 211, 238, 0);
+                    background-color: rgba(34, 211, 238, 0.02);
+                    transform: scale(1);
+                  }
                 }
-                @keyframes newsGlow {
-                  0%, 100% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.4), inset 0 0 0 0 rgba(168, 85, 247, 0.1); }
-                  50% { box-shadow: 0 0 15px 3px rgba(168, 85, 247, 0), inset 0 0 8px 2px rgba(168, 85, 247, 0.2); }
+                @keyframes newsPulse {
+                  0% {
+                    box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.8), 0 0 8px 0 rgba(168, 85, 247, 0.3);
+                    background-color: rgba(168, 85, 247, 0.04);
+                    transform: scale(1);
+                  }
+                  25% {
+                    box-shadow: 0 0 12px 4px rgba(168, 85, 247, 0.4), 0 0 20px 2px rgba(168, 85, 247, 0.15);
+                    background-color: rgba(168, 85, 247, 0.08);
+                    transform: scale(1.01);
+                  }
+                  50% {
+                    box-shadow: 0 0 20px 6px rgba(168, 85, 247, 0.2), 0 0 30px 4px rgba(168, 85, 247, 0.08);
+                    background-color: rgba(168, 85, 247, 0.06);
+                    transform: scale(1.02);
+                  }
+                  75% {
+                    box-shadow: 0 0 12px 3px rgba(168, 85, 247, 0.3), 0 0 18px 2px rgba(168, 85, 247, 0.1);
+                    background-color: rgba(168, 85, 247, 0.05);
+                    transform: scale(1.01);
+                  }
+                  100% {
+                    box-shadow: 0 0 0 0 rgba(168, 85, 247, 0), 0 0 8px 0 rgba(168, 85, 247, 0);
+                    background-color: rgba(168, 85, 247, 0.02);
+                    transform: scale(1);
+                  }
                 }
-                @keyframes historyGlow {
-                  0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4), inset 0 0 0 0 rgba(16, 185, 129, 0.1); }
-                  50% { box-shadow: 0 0 15px 3px rgba(16, 185, 129, 0), inset 0 0 8px 2px rgba(16, 185, 129, 0.2); }
+                @keyframes historyPulse {
+                  0% {
+                    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.8), 0 0 8px 0 rgba(16, 185, 129, 0.3);
+                    background-color: rgba(16, 185, 129, 0.04);
+                    transform: scale(1);
+                  }
+                  25% {
+                    box-shadow: 0 0 12px 4px rgba(16, 185, 129, 0.4), 0 0 20px 2px rgba(16, 185, 129, 0.15);
+                    background-color: rgba(16, 185, 129, 0.08);
+                    transform: scale(1.01);
+                  }
+                  50% {
+                    box-shadow: 0 0 20px 6px rgba(16, 185, 129, 0.2), 0 0 30px 4px rgba(16, 185, 129, 0.08);
+                    background-color: rgba(16, 185, 129, 0.06);
+                    transform: scale(1.02);
+                  }
+                  75% {
+                    box-shadow: 0 0 12px 3px rgba(16, 185, 129, 0.3), 0 0 18px 2px rgba(16, 185, 129, 0.1);
+                    background-color: rgba(16, 185, 129, 0.05);
+                    transform: scale(1.01);
+                  }
+                  100% {
+                    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0), 0 0 8px 0 rgba(16, 185, 129, 0);
+                    background-color: rgba(16, 185, 129, 0.02);
+                    transform: scale(1);
+                  }
                 }
-                .agent-active-risk { animation: riskGlow 1.5s ease-out; }
-                .agent-active-trend { animation: trendGlow 1.5s ease-out; }
-                .agent-active-news { animation: newsGlow 1.5s ease-out; }
-                .agent-active-history { animation: historyGlow 1.5s ease-out; }
+                .agent-active-risk { animation: riskPulse 2s cubic-bezier(0.36, 0, 0.66, -0.56); }
+                .agent-active-trend { animation: trendPulse 2s cubic-bezier(0.36, 0, 0.66, -0.56); }
+                .agent-active-news { animation: newsPulse 2s cubic-bezier(0.36, 0, 0.66, -0.56); }
+                .agent-active-history { animation: historyPulse 2s cubic-bezier(0.36, 0, 0.66, -0.56); }
               `}</style>
 
               {/* Risk Management Agent */}
