@@ -1,8 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { chatAI } from '@/lib/ai';
 
-const OPENAI_KEY = process.env.NEXT_PUBLIC_OPENAI_KEY;
+const OPENAI_KEY =
+  process.env.OPENAI_API_KEY ||
+  process.env.OPENAI_KEY ||
+  process.env.NEXT_PUBLIC_OPENAI_API_KEY ||
+  process.env.NEXT_PUBLIC_OPENAI_KEY;
 const OPENROUTER_KEY = process.env.OPENROUTER_API_KEY || process.env.NEXT_PUBLIC_OPENROUTER_KEY;
+
+const OPENROUTER_VISION_MODELS = [
+  process.env.OPENROUTER_VISION_MODEL,
+  'google/gemma-4-26b-a4b-it:free',
+  'google/gemma-4-31b-it:free',
+].filter(Boolean) as string[];
 
 async function chatAIVision(imageData: string): Promise<{ content: string; provider: string; error?: string }> {
   if (OPENAI_KEY) {
@@ -38,37 +48,46 @@ async function chatAIVision(imageData: string): Promise<{ content: string; provi
   }
 
   if (OPENROUTER_KEY) {
-    try {
-      const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${OPENROUTER_KEY}`,
-          'HTTP-Referer': 'https://emitterswebsite.com',
-          'X-Title': 'EmittersWebsite'
-        },
-        body: JSON.stringify({
-          model: 'openrouter/free',
-          messages: [{
-            role: 'user',
-            content: [
-              { type: 'image_url', image_url: { url: imageData } },
-              { type: 'text', text: 'Describe this image and identify any factual claims that can be verified.' }
-            ]
-          }],
-          max_tokens: 1000
-        })
-      });
-      const data = await res.json();
-      const msg = data.choices?.[0]?.message;
-      const content = msg?.content || msg?.reasoning_details?.[0]?.text || '';
-      if (content) {
-        return { content, provider: 'openrouter' };
+    let lastError = '';
+
+    for (const model of OPENROUTER_VISION_MODELS) {
+      try {
+        const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${OPENROUTER_KEY}`,
+            'HTTP-Referer': 'https://emitterswebsite.com',
+            'X-Title': 'EmittersWebsite'
+          },
+          body: JSON.stringify({
+            model,
+            messages: [{
+              role: 'user',
+              content: [
+                { type: 'image_url', image_url: { url: imageData } },
+                { type: 'text', text: 'Describe this image and identify any factual claims that can be verified.' }
+              ]
+            }],
+            max_tokens: 1000
+          })
+        });
+        const data = await res.json();
+        const msg = data.choices?.[0]?.message;
+        const content = msg?.content || msg?.reasoning_details?.[0]?.text || '';
+        if (content) {
+          return { content, provider: 'openrouter' };
+        }
+
+        lastError = data.error?.message || `OpenRouter vision ${model} HTTP ${res.status}`;
+        console.log(`OpenRouter vision model failed (${model}):`, lastError);
+      } catch (err) {
+        lastError = String(err);
+        console.log(`OpenRouter vision model failed (${model}):`, lastError);
       }
-      return { content: '', provider: 'openrouter', error: data.error?.message || 'OpenRouter vision failed' };
-    } catch (err) {
-      return { content: '', provider: 'openrouter', error: String(err) };
     }
+
+    return { content: '', provider: 'openrouter', error: lastError || 'OpenRouter vision failed' };
   }
 
   return { content: '', provider: 'openai', error: 'Vision not available' };
