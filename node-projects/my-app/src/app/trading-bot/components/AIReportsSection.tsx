@@ -352,11 +352,37 @@ export default function AIReportsSection({
                     style={{ width: `${reports.maxDrawdown > stats.totalPnl * 0.5 ? 0 : 100}%` }}
                   />
                 </div>
-                <p className="text-[8px] leading-tight text-white/45">
+                <p className="text-[8px] leading-tight text-white/45 mb-1.5">
                   {reports.maxDrawdown > stats.totalPnl * 0.5
                     ? '⚠️ High drawdown detected'
                     : '✓ Risk within limits'}
                 </p>
+                <div className="text-[7px] space-y-0.5 border-t border-white/[0.05] pt-1">
+                  <div className="flex justify-between">
+                    <span className="text-white/30">SL Distance</span>
+                    <span className="text-white/60 font-mono">2.0%</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-white/30">R:R Ratio</span>
+                    <span className="text-white/60 font-mono">
+                      {reports.longestWinStreak > 3
+                        ? '1:6-9'
+                        : reports.longestLoseStreak > 3
+                        ? '1:3-6'
+                        : '1:1.5'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-white/30">Position Size</span>
+                    <span className="text-white/60 font-mono">
+                      {reports.longestWinStreak > 3
+                        ? '0.02-0.05'
+                        : reports.longestLoseStreak > 3
+                        ? '0.01'
+                        : '0.01'}
+                    </span>
+                  </div>
+                </div>
               </div>
 
               {/* Probability & Trend Agent */}
