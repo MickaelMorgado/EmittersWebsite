@@ -133,10 +133,12 @@ export default function TradingBotDashboard() {
     try {
       const res = await fetch('/api/trading-bot/news');
       const data = await res.json();
-      setLatestNews(data.news || []);
 
-      // News agent generates report
-      if (data.news.length > 0) {
+      // Only update if successful (no error in response)
+      if (!data.error && data.news && data.news.length > 0) {
+        setLatestNews(data.news);
+
+        // News agent generates report
         const topNews = data.news[0];
         const sentiment = topNews.analysis?.sentiment || 'Neutral';
         const impact = topNews.analysis?.impact || 'Low';
@@ -152,9 +154,13 @@ export default function TradingBotDashboard() {
           },
           `${sentiment} | ${impact} Impact`
         );
+      } else if (data.error) {
+        console.warn('News API error:', data.error);
+        // Keep existing news, don't wipe on error
       }
     } catch (error) {
       console.error('Failed to fetch news:', error);
+      // Keep existing news on network error
     }
   }, [addReport]);
 
