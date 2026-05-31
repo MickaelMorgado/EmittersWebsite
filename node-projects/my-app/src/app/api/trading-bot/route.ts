@@ -154,7 +154,7 @@ export async function GET(request: Request) {
     }
     
     return NextResponse.json({
-      version: data.version || '1.20',
+      version: data.version || '1.31',
       openPositions,
       history: history.reverse(),
       stats: {
