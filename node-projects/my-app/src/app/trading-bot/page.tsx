@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import AgentReportsModal from './components/AgentReportsModal';
 import AIReportsSection from './components/AIReportsSection';
+import DebugPanel from './components/DebugPanel';
 import EquityChart from './components/EquityChart';
 import Header from './components/Header';
 import MetricsSection from './components/MetricsSection';
@@ -234,6 +235,17 @@ export default function TradingBotDashboard() {
     } catch (error) {
       console.error('Failed to send debug signal:', error);
     }
+  }, []);
+
+  // Manual agent signal trigger for debug mode
+  const triggerManualSignal = useCallback((agent: string) => {
+    console.log(`[DEBUG] 🎯 Manual trigger for ${agent.toUpperCase()} agent`);
+    // This would trigger the specific agent's analysis
+    // For now, just log it - the agent state updates are driven by useEffects in AIReportsSection
+    setLastSignal({
+      signal: `Manual ${agent.toUpperCase()} trigger`,
+      timestamp: new Date().toISOString(),
+    });
   }, []);
 
   const fetchTrades = useCallback(async () => {
@@ -628,6 +640,16 @@ export default function TradingBotDashboard() {
       <AgentReportsModal
         isOpen={reportsModalOpen}
         onClose={() => setReportsModalOpen(false)}
+      />
+
+      {/* Debug Panel */}
+      <DebugPanel
+        debugMode={debugMode}
+        onDebugToggle={setDebugMode}
+        onManualSignal={triggerManualSignal}
+        agentLastRun={{}}
+        activeAgent={null}
+        stats={stats}
       />
     </div>
   );
