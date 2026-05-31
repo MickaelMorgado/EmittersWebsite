@@ -84,7 +84,13 @@ export async function GET(request: Request) {
 
     // Read trades file for history
     const content = fs.readFileSync(TRADES_PATH, 'utf-8');
-    const data: TradesData = JSON.parse(content);
+    let data: TradesData;
+    try {
+      data = JSON.parse(content);
+    } catch (parseError) {
+      console.log(`[trading-bot GET] ⚠️ Invalid JSON in trades.json, using default empty data`);
+      data = { version: 'N/D', history: [], stats: {} };
+    }
 
     // Read positions file if it exists (real-time)
     let openPositions: Trade[] = [];
