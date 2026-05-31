@@ -365,70 +365,70 @@ export default function AIReportsSection({
                 @keyframes agentPulseRisk {
                   0%, 100% {
                     box-shadow:
-                      0 0 0 0 rgba(239,68,68,0.4),
-                      0 0 0 8px rgba(239,68,68,0.1),
+                      0 0 20px 0 rgba(239,68,68,0.4),
+                      0 0 40px 8px rgba(239,68,68,0.1),
                       inset 0 0 12px rgba(239,68,68,0.08);
                   }
                   50% {
                     box-shadow:
-                      0 0 0 12px rgba(239,68,68,0),
-                      0 0 0 16px rgba(239,68,68,0.05),
+                      0 0 40px 12px rgba(239,68,68,0.2),
+                      0 0 80px 20px rgba(239,68,68,0.08),
                       inset 0 0 20px rgba(239,68,68,0.15);
                   }
                 }
                 @keyframes agentPulseTrend {
                   0%, 100% {
                     box-shadow:
-                      0 0 0 0 rgba(34,211,238,0.4),
-                      0 0 0 8px rgba(34,211,238,0.1),
+                      0 0 20px 0 rgba(34,211,238,0.4),
+                      0 0 40px 8px rgba(34,211,238,0.1),
                       inset 0 0 12px rgba(34,211,238,0.08);
                   }
                   50% {
                     box-shadow:
-                      0 0 0 12px rgba(34,211,238,0),
-                      0 0 0 16px rgba(34,211,238,0.05),
+                      0 0 40px 12px rgba(34,211,238,0.2),
+                      0 0 80px 20px rgba(34,211,238,0.08),
                       inset 0 0 20px rgba(34,211,238,0.15);
                   }
                 }
                 @keyframes agentPulseNews {
                   0%, 100% {
                     box-shadow:
-                      0 0 0 0 rgba(168,85,247,0.4),
-                      0 0 0 8px rgba(168,85,247,0.1),
+                      0 0 20px 0 rgba(168,85,247,0.4),
+                      0 0 40px 8px rgba(168,85,247,0.1),
                       inset 0 0 12px rgba(168,85,247,0.08);
                   }
                   50% {
                     box-shadow:
-                      0 0 0 12px rgba(168,85,247,0),
-                      0 0 0 16px rgba(168,85,247,0.05),
+                      0 0 40px 12px rgba(168,85,247,0.2),
+                      0 0 80px 20px rgba(168,85,247,0.08),
                       inset 0 0 20px rgba(168,85,247,0.15);
                   }
                 }
                 @keyframes agentPulseHistory {
                   0%, 100% {
                     box-shadow:
-                      0 0 0 0 rgba(16,185,129,0.4),
-                      0 0 0 8px rgba(16,185,129,0.1),
+                      0 0 20px 0 rgba(16,185,129,0.4),
+                      0 0 40px 8px rgba(16,185,129,0.1),
                       inset 0 0 12px rgba(16,185,129,0.08);
                   }
                   50% {
                     box-shadow:
-                      0 0 0 12px rgba(16,185,129,0),
-                      0 0 0 16px rgba(16,185,129,0.05),
+                      0 0 40px 12px rgba(16,185,129,0.2),
+                      0 0 80px 20px rgba(16,185,129,0.08),
                       inset 0 0 20px rgba(16,185,129,0.15);
                   }
                 }
                 @keyframes agentPulseMaster {
                   0%, 100% {
                     box-shadow:
-                      0 0 0 0 rgba(217,119,6,0.4),
-                      0 0 0 8px rgba(217,119,6,0.1),
+                      0 0 20px 0 rgba(217,119,6,0.4),
+                      0 0 40px 8px rgba(217,119,6,0.1),
                       inset 0 0 12px rgba(217,119,6,0.08);
                   }
                   50% {
                     box-shadow:
-                      0 0 0 12px rgba(217,119,6,0),
-                      0 0 0 16px rgba(217,119,6,0.05),
+                      0 0 40px 12px rgba(217,119,6,0.2),
+                      0 0 80px 20px rgba(217,119,6,0.08),
                       inset 0 0 20px rgba(217,119,6,0.15);
                   }
                 }
@@ -483,7 +483,7 @@ export default function AIReportsSection({
                   animation: progressFlow 1.2s ease-in-out infinite !important;
                 }
                 .agent-active-trend {
-                  animation: agentPulseTrend 1.2s ease-in-out infinite, bounceScale 1.4s ease-in-out infinite !important;
+                  animation: agentPulseTrend 1.2s ease-in-out infinite !important;
                   background: linear-gradient(to-br, rgba(34,211,238,0.15), rgba(34,211,238,0.05)) !important;
                   background-image: linear-gradient(to-br, rgba(34,211,238,0.15), rgba(34,211,238,0.05)) !important;
                   border-color: rgba(34,211,238,0.35) !important;
@@ -499,7 +499,7 @@ export default function AIReportsSection({
                   animation: progressFlow 1.2s ease-in-out infinite !important;
                 }
                 .agent-active-news {
-                  animation: agentPulseNews 1.2s ease-in-out infinite, bounceScale 1.4s ease-in-out infinite !important;
+                  animation: agentPulseNews 1.2s ease-in-out infinite !important;
                   background: linear-gradient(to-br, rgba(168,85,247,0.15), rgba(168,85,247,0.05)) !important;
                   background-image: linear-gradient(to-br, rgba(168,85,247,0.15), rgba(168,85,247,0.05)) !important;
                   border-color: rgba(168,85,247,0.35) !important;
@@ -515,7 +515,7 @@ export default function AIReportsSection({
                   animation: progressFlow 1.2s ease-in-out infinite !important;
                 }
                 .agent-active-history {
-                  animation: agentPulseHistory 1.2s ease-in-out infinite, bounceScale 1.4s ease-in-out infinite !important;
+                  animation: agentPulseHistory 1.2s ease-in-out infinite !important;
                   background: linear-gradient(to-br, rgba(16,185,129,0.15), rgba(16,185,129,0.05)) !important;
                   background-image: linear-gradient(to-br, rgba(16,185,129,0.15), rgba(16,185,129,0.05)) !important;
                   border-color: rgba(16,185,129,0.35) !important;
