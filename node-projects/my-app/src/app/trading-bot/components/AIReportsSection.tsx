@@ -258,18 +258,28 @@ export default function AIReportsSection({
     }
   }, [reportHistory?.globalRecommendation?.lastUpdatedAt]);
 
+  // Master Agent triggers only when sub-agents are active
   useEffect(() => {
-    // Master Agent runs constantly (updates every 3s for demo)
-    const masterInterval = setInterval(() => {
-      setActiveAgent('master');
-      setAgentLastRun(prev => ({ ...prev, master: new Date().toISOString() }));
-      console.log(`[MASTER AGENT] 🧠 Active | Aggregating signals from all sub-agents`);
-      setTimeout(() => setActiveAgent(prev => prev === 'master' ? null : prev), 2500);
-    }, 3000);
-    return () => clearInterval(masterInterval);
-  }, []);
+    if (activeAgent && activeAgent !== 'master' && ['risk', 'trend', 'news', 'history'].includes(activeAgent)) {
+      // Trigger master after sub-agent completes its initial phase
+      const masterDelay = setTimeout(() => {
+        setActiveAgent('master');
+        setAgentLastRun(prev => ({ ...prev, master: new Date().toISOString() }));
+        console.log(`[MASTER AGENT] 🧠 Active | Aggregating signals from ${activeAgent} agent`);
 
-  // Master Agent triggers on debug signal
+        // Master runs for 2.5s, then clears
+        const masterTimer = setTimeout(() => {
+          setActiveAgent(null);
+        }, 2500);
+
+        return () => clearTimeout(masterTimer);
+      }, 1200); // Trigger after first sub-agent's pulse completes
+
+      return () => clearTimeout(masterDelay);
+    }
+  }, [activeAgent]);
+
+  // Master Agent triggers on debug signal (manual trigger)
   useEffect(() => {
     if (lastSignal) {
       setActiveAgent('master');
