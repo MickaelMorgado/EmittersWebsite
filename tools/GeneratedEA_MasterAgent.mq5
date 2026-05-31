@@ -6,7 +6,7 @@
 //+------------------------------------------------------------------+
 
 #property copyright "HYTEK"
-#property version   "1.42"
+#property version   "1.43"
 #property description "Master Agent Integrated EMA Crossover - Dynamic SL/TP from Agent Parameters"
 #property strict
 
@@ -47,7 +47,7 @@ datetime lastSignalTime = 0;
 datetime lastHistoryUpdate = 0;
 const int MAGIC_NUMBER = 12345;
 string lastSignalString = "";
-const string EA_VERSION = "1.42";  // Must match #property version above
+const string EA_VERSION = "1.43";  // Must match #property version above
 const string TRADES_FILE = "trades.json";  // File to update with version
 
 //+------------------------------------------------------------------+
@@ -149,15 +149,11 @@ void UpdateTradesHistory()
     {
         int totalHistory = HistoryDealsTotal();
 
-        // Process deals in reverse order (most recent first)
+        // Process deals in reverse order (most recent first) - limit to 100 trades
         for(int i = totalHistory - 1; i >= 0 && dealCount < maxDeals; i--)
         {
             ulong ticket = HistoryDealGetTicket(i);
             if(ticket == 0) continue;
-
-            // Only include deals for our EA (magic number filter)
-            long dealMagic = HistoryDealGetInteger(ticket, DEAL_MAGIC);
-            if(dealMagic != MAGIC_NUMBER) continue;
 
             // Get deal properties
             long dealType = HistoryDealGetInteger(ticket, DEAL_TYPE);
