@@ -362,30 +362,108 @@ export default function AIReportsSection({
             {/* Sub-Agent Reports */}
             <div className="grid grid-cols-2 gap-2">
               <style>{`
+                @keyframes agentPulseRisk {
+                  0%, 100% {
+                    box-shadow:
+                      0 0 0 0 rgba(239,68,68,0.4),
+                      0 0 0 8px rgba(239,68,68,0.1),
+                      inset 0 0 12px rgba(239,68,68,0.08);
+                  }
+                  50% {
+                    box-shadow:
+                      0 0 0 12px rgba(239,68,68,0),
+                      0 0 0 16px rgba(239,68,68,0.05),
+                      inset 0 0 20px rgba(239,68,68,0.15);
+                  }
+                }
+                @keyframes agentPulseTrend {
+                  0%, 100% {
+                    box-shadow:
+                      0 0 0 0 rgba(34,211,238,0.4),
+                      0 0 0 8px rgba(34,211,238,0.1),
+                      inset 0 0 12px rgba(34,211,238,0.08);
+                  }
+                  50% {
+                    box-shadow:
+                      0 0 0 12px rgba(34,211,238,0),
+                      0 0 0 16px rgba(34,211,238,0.05),
+                      inset 0 0 20px rgba(34,211,238,0.15);
+                  }
+                }
+                @keyframes agentPulseNews {
+                  0%, 100% {
+                    box-shadow:
+                      0 0 0 0 rgba(168,85,247,0.4),
+                      0 0 0 8px rgba(168,85,247,0.1),
+                      inset 0 0 12px rgba(168,85,247,0.08);
+                  }
+                  50% {
+                    box-shadow:
+                      0 0 0 12px rgba(168,85,247,0),
+                      0 0 0 16px rgba(168,85,247,0.05),
+                      inset 0 0 20px rgba(168,85,247,0.15);
+                  }
+                }
+                @keyframes agentPulseHistory {
+                  0%, 100% {
+                    box-shadow:
+                      0 0 0 0 rgba(16,185,129,0.4),
+                      0 0 0 8px rgba(16,185,129,0.1),
+                      inset 0 0 12px rgba(16,185,129,0.08);
+                  }
+                  50% {
+                    box-shadow:
+                      0 0 0 12px rgba(16,185,129,0),
+                      0 0 0 16px rgba(16,185,129,0.05),
+                      inset 0 0 20px rgba(16,185,129,0.15);
+                  }
+                }
+                @keyframes agentPulseMaster {
+                  0%, 100% {
+                    box-shadow:
+                      0 0 0 0 rgba(217,119,6,0.4),
+                      0 0 0 8px rgba(217,119,6,0.1),
+                      inset 0 0 12px rgba(217,119,6,0.08);
+                  }
+                  50% {
+                    box-shadow:
+                      0 0 0 12px rgba(217,119,6,0),
+                      0 0 0 16px rgba(217,119,6,0.05),
+                      inset 0 0 20px rgba(217,119,6,0.15);
+                  }
+                }
+                @keyframes shimmer {
+                  0%, 100% { opacity: 0.5; }
+                  50% { opacity: 1; }
+                }
+                @keyframes bounceScale {
+                  0%, 100% { transform: scale(1); }
+                  50% { transform: scale(1.08); }
+                }
                 .agent-active-risk {
-                  background: linear-gradient(to-br, rgba(239,68,68,0.12), rgba(239,68,68,0.04)) !important;
-                  border-color: rgba(239,68,68,0.25) !important;
-                  box-shadow: inset 0 0 12px rgba(239,68,68,0.08) !important;
+                  animation: agentPulseRisk 1.2s ease-in-out infinite, bounceScale 1.4s ease-in-out infinite !important;
+                  background: linear-gradient(to-br, rgba(239,68,68,0.15), rgba(239,68,68,0.05)) !important;
+                  border-color: rgba(239,68,68,0.35) !important;
                 }
                 .agent-active-trend {
-                  background: linear-gradient(to-br, rgba(34,211,238,0.12), rgba(34,211,238,0.04)) !important;
-                  border-color: rgba(34,211,238,0.25) !important;
-                  box-shadow: inset 0 0 12px rgba(34,211,238,0.08) !important;
+                  animation: agentPulseTrend 1.2s ease-in-out infinite, bounceScale 1.4s ease-in-out infinite !important;
+                  background: linear-gradient(to-br, rgba(34,211,238,0.15), rgba(34,211,238,0.05)) !important;
+                  border-color: rgba(34,211,238,0.35) !important;
                 }
                 .agent-active-news {
-                  background: linear-gradient(to-br, rgba(168,85,247,0.12), rgba(168,85,247,0.04)) !important;
-                  border-color: rgba(168,85,247,0.25) !important;
-                  box-shadow: inset 0 0 12px rgba(168,85,247,0.08) !important;
+                  animation: agentPulseNews 1.2s ease-in-out infinite, bounceScale 1.4s ease-in-out infinite !important;
+                  background: linear-gradient(to-br, rgba(168,85,247,0.15), rgba(168,85,247,0.05)) !important;
+                  border-color: rgba(168,85,247,0.35) !important;
                 }
                 .agent-active-history {
-                  background: linear-gradient(to-br, rgba(16,185,129,0.12), rgba(16,185,129,0.04)) !important;
-                  border-color: rgba(16,185,129,0.25) !important;
-                  box-shadow: inset 0 0 12px rgba(16,185,129,0.08) !important;
+                  animation: agentPulseHistory 1.2s ease-in-out infinite, bounceScale 1.4s ease-in-out infinite !important;
+                  background: linear-gradient(to-br, rgba(16,185,129,0.15), rgba(16,185,129,0.05)) !important;
+                  border-color: rgba(16,185,129,0.35) !important;
                 }
                 .agent-active-master {
-                  background: linear-gradient(to-br, rgba(217,119,6,0.12), rgba(217,119,6,0.04)) !important;
-                  border-color: rgba(217,119,6,0.25) !important;
-                  box-shadow: inset 0 0 12px rgba(217,119,6,0.08) !important;
+                  animation: agentPulseMaster 1.2s ease-in-out infinite, bounceScale 1.4s ease-in-out infinite !important;
+                  background: linear-gradient(to-br, rgba(217,119,6,0.15), rgba(217,119,6,0.05)) !important;
+                  border-color: rgba(217,119,6,0.35) !important;
                 }
               `}</style>
 
