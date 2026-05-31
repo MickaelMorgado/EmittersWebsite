@@ -6,7 +6,7 @@
 //+------------------------------------------------------------------+
 
 #property copyright "HYTEK"
-#property version   "1.38"
+#property version   "1.39"
 #property description "Master Agent Integrated EMA Crossover - Dynamic SL/TP from Agent Parameters"
 #property strict
 
@@ -47,7 +47,7 @@ datetime lastSignalTime = 0;
 datetime lastHistoryUpdate = 0;
 const int MAGIC_NUMBER = 12345;
 string lastSignalString = "";
-const string EA_VERSION = "1.38";  // Must match #property version above
+const string EA_VERSION = "1.39";  // Must match #property version above
 const string TRADES_FILE = "trades.json";  // File to update with version
 
 //+------------------------------------------------------------------+
@@ -141,8 +141,11 @@ void UpdateTradesHistory()
     string json = "{\"version\": \"" + EA_VERSION + "\", \"history\": [";
     int dealCount = 0;
 
-    // Get deal history - try selecting all
-    if(HistorySelect(0, TimeCurrent()))
+    // Try to select deal history using account history period
+    // Use large time range to catch all deals
+    datetime rangeStart = TimeCurrent() - (30 * 24 * 3600);  // Last 30 days
+
+    if(HistorySelect(rangeStart, TimeCurrent()))
     {
         int totalHistory = HistoryDealsTotal();
 
@@ -158,18 +161,24 @@ void UpdateTradesHistory()
             datetime dealTime = (datetime)HistoryDealGetInteger(ticket, DEAL_TIME);
             double dealProfit = HistoryDealGetDouble(ticket, DEAL_PROFIT);
             double dealCommission = HistoryDealGetDouble(ticket, DEAL_COMMISSION);
+            long dealEntry = HistoryDealGetInteger(ticket, DEAL_ENTRY);
 
             string type = (dealType == DEAL_TYPE_BUY) ? "BUY" : "SELL";
+            string entry = (dealEntry == DEAL_ENTRY_IN) ? "IN" : (dealEntry == DEAL_ENTRY_OUT) ? "OUT" : "INOUT";
 
-            // Write ALL deals to file (debug mode)
+            // Write ALL deals to see what's there
             if(dealCount > 0) json += ",";
 
             json += "{\"ticket\":" + (string)ticket + ",\"type\":\"" + type +
+                    "\",\"entry\":\"" + entry +
                     "\",\"price\":" + DoubleToString(dealPrice, 5) +
                     ",\"magic\":" + (string)dealMagic +
                     ",\"profit\":" + DoubleToString(dealProfit, 2) + "}";
 
             dealCount++;
+
+            if(dealCount == 1)  // Log first deal found
+                Print("[HISTORY] First deal: ticket=", ticket, " type=", type, " magic=", dealMagic);
         }
     }
 
