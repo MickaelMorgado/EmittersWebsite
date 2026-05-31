@@ -181,49 +181,45 @@ bool ReadMasterSignal(MasterSignalData &data)
     string content = "";
     while(!FileIsEnding(handle))
     {
-        content += FileReadString(handle) + "\n";
+        content += FileReadString(handle);
     }
     FileClose(handle);
 
-    // Parse JSON (simple parsing for key fields)
-    // Looking for: "signal":"BUY", "stopLossPips":50, "takeProfitPips":100, "positionSize":0.01
+    // Parse minimal JSON: signal, trading.stopLossPips, trading.takeProfitPips, trading.positionSize
 
     // Extract signal
     int signalPos = StringFind(content, "\"signal\":");
-    if(signalPos >= 0)
-    {
-        int quotePos = StringFind(content, "\"", signalPos + 10);
-        int endQuote = StringFind(content, "\"", quotePos + 1);
-        data.signal = StringSubstr(content, quotePos + 1, endQuote - quotePos - 1);
-    }
-    else
-        return false;
+    if(signalPos < 0) return false;
 
-    // Don't process NEUTRAL signals
+    int quotePos = StringFind(content, "\"", signalPos + 10);
+    int endQuote = StringFind(content, "\"", quotePos + 1);
+    data.signal = StringSubstr(content, quotePos + 1, endQuote - quotePos - 1);
+
+    // Skip NEUTRAL signals
     if(data.signal != "BUY" && data.signal != "SELL")
         return false;
 
-    // Extract stopLossPips
-    if(!ExtractDoubleFromJson(content, "stopLossPips", data.stopLossPips))
-        data.stopLossPips = SL_Pips;
+    // Extract trading.stopLossPips
+    ExtractDoubleFromJson(content, "stopLossPips", data.stopLossPips);
+    if(data.stopLossPips <= 0) data.stopLossPips = SL_Pips;
 
-    // Extract takeProfitPips
-    if(!ExtractDoubleFromJson(content, "takeProfitPips", data.takeProfitPips))
-        data.takeProfitPips = TP_Pips;
+    // Extract trading.takeProfitPips
+    ExtractDoubleFromJson(content, "takeProfitPips", data.takeProfitPips);
+    if(data.takeProfitPips <= 0) data.takeProfitPips = TP_Pips;
 
-    // Extract positionSize
-    if(!ExtractDoubleFromJson(content, "positionSize", data.positionSize))
-        data.positionSize = LotSize;
+    // Extract trading.positionSize
+    ExtractDoubleFromJson(content, "positionSize", data.positionSize);
+    if(data.positionSize <= 0) data.positionSize = LotSize;
 
     // Extract confidence
-    if(!ExtractDoubleFromJson(content, "confidence", data.confidence))
-        data.confidence = 75;
+    ExtractDoubleFromJson(content, "confidence", data.confidence);
+    if(data.confidence <= 0) data.confidence = 75;
 
     data.generatedTime = TimeCurrent();
 
     // Log the signal
-    Print("[MASTER SIGNAL] ", data.signal, " | SL:", data.stopLossPips, "pips | TP:",
-          data.takeProfitPips, "pips | Size:", data.positionSize, " | Confidence:", data.confidence, "%");
+    Print("[MASTER SIGNAL] ", data.signal, " | SL:", data.stopLossPips, "p TP:",
+          data.takeProfitPips, "p Size:", data.positionSize, " | Confidence:", data.confidence, "%");
 
     return true;
 }

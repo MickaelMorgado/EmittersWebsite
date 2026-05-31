@@ -9,14 +9,10 @@ export async function POST(request: NextRequest) {
       signal,
       timestamp,
       debug = false,
-      // Trading parameters from Master Agent
       stopLossPips = 50,
       takeProfitPips = 100,
       positionSize = 0.01,
-      riskAmount = null,
-      riskPercent = 2.0,
       confidence = 0,
-      agentData = {},
     } = body;
 
     // Validate signal
@@ -28,37 +24,33 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate trading parameters
-    if (stopLossPips <= 0 || takeProfitPips <= 0) {
+    if (stopLossPips <= 0 || takeProfitPips <= 0 || positionSize <= 0) {
       return NextResponse.json(
-        { error: 'Stop loss and take profit must be positive' },
+        { error: 'SL, TP, and position size must be positive' },
         { status: 400 }
       );
     }
 
     // Signal file path (shared between web app and EA)
-    // This should point to a location where the MT5 EA can read it
     const signalDir = process.env.SIGNAL_FILE_DIR || './signals';
     const signalFile = join(signalDir, 'master_signal.txt');
 
-    // Create comprehensive signal content with all trading parameters
+    // Enforce minimum SL for safety
+    const finalSlPips = Math.max(stopLossPips, 50);
+
+    // Create minimal signal content
     const signalContent = JSON.stringify(
       {
         signal,
         timestamp,
         debug,
         generated_at: new Date().toISOString(),
-        // Trading execution parameters
         trading: {
-          stopLossPips: Math.max(stopLossPips, 50), // Enforce minimum for safety
+          stopLossPips: finalSlPips,
           takeProfitPips,
           positionSize,
-          riskAmount,
-          riskPercent,
         },
-        // Decision confidence
         confidence,
-        // Agent signal breakdown for logging
-        agentData,
       },
       null,
       2
@@ -68,17 +60,15 @@ export async function POST(request: NextRequest) {
     writeFileSync(signalFile, signalContent, 'utf-8');
 
     console.log(
-      `[${debug ? 'DEBUG' : 'REAL'}] Signal: ${signal} | SL: ${Math.max(stopLossPips, 50)}pips | TP: ${takeProfitPips}pips | Size: ${positionSize} | Confidence: ${confidence}%`
+      `[${debug ? 'DEBUG' : 'REAL'}] ${signal} | SL:${finalSlPips}p TP:${takeProfitPips}p Size:${positionSize} | Confidence:${confidence}%`
     );
 
     return NextResponse.json(
       {
         success: true,
         signal,
-        timestamp,
-        debug,
         trading: {
-          stopLossPips: Math.max(stopLossPips, 50),
+          stopLossPips: finalSlPips,
           takeProfitPips,
           positionSize,
         },

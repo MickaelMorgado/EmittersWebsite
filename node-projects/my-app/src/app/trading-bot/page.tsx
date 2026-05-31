@@ -244,53 +244,21 @@ export default function TradingBotDashboard() {
           signal: masterDecision,
           timestamp,
           debug: true,
-          // Trading parameters calculated through agent chain
-          // History Agent → R:R ratio → Risk Agent → SL/TP/Size → Master Agent
           stopLossPips: slPips,
           takeProfitPips: tpPips,
           positionSize: posSize_num,
-          riskPercent: 2.0,
           confidence: Math.round(confidence),
-          // Agent communication flow for audit trail
-          agentData: {
-            trend: {
-              direction: trendDir,
-              score: trendScore,
-              role: 'Provides entry direction'
-            },
-            history: {
-              rrTarget,
-              consistency,
-              score: historyScore,
-              rrRatio,
-              role: 'Market regime analysis → passes R:R to Risk Agent'
-            },
-            risk: {
-              slPips,
-              tpPips,
-              rrRatioUsed: rrRatio,
-              positionSize: posSize_num,
-              score: riskScore,
-              role: 'Receives R:R from History → calculates final SL/TP → passes to Master'
-            },
-            news: {
-              sentiment,
-              volatility,
-              score: newsScore,
-              role: 'Provides market context'
-            }
-          }
         })
       });
 
       if (!res.ok) {
-        console.error('Failed to send debug signal:', await res.json());
+        console.error('Failed to send signal:', await res.json());
       } else {
         const result = await res.json();
         console.log('✓ Signal sent to EA:', result);
       }
     } catch (error) {
-      console.error('Failed to send debug signal:', error);
+      console.error('Failed to send signal:', error);
     }
   }, []);
 
