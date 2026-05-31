@@ -205,6 +205,7 @@ export default function AIReportsSection({
     master: new Date().toISOString(),
   });
   const [activeAgent, setActiveAgent] = useState<string | null>(null);
+  const [lastNewsFetchTime, setLastNewsFetchTime] = useState<number>(0);
 
   // Risk Agent: Automatically calculate position sizes
   const positionSizing = useMemo(() => {
@@ -272,22 +273,24 @@ export default function AIReportsSection({
     }
   }, [simulatedAgents]);
 
-  // News Agent: API polling simulation (more frequent in debug mode)
+  // News Agent: API polling with rate-limit protection
   useEffect(() => {
     const newsInterval = setInterval(() => {
-      // Fetch actual news from API
-      if (fetchNews) {
+      // Only fetch actual news every 30+ seconds to avoid rate limiting
+      const now = Date.now();
+      if (fetchNews && now - lastNewsFetchTime >= 30000) {
         fetchNews();
+        setLastNewsFetchTime(now);
       }
 
       setActiveAgent('news');
       setAgentLastRun(prev => ({ ...prev, news: new Date().toISOString() }));
-      console.log(`[NEWS AGENT] 📰 Active | ${simulatedAgents ? 'Fetching simulated news' : 'Polling economic events & market news'}`);
+      console.log(`[NEWS AGENT] 📰 Active | ${simulatedAgents ? 'Checking for fresh news' : 'Polling economic events & market news'}`);
       const timer = setTimeout(() => setActiveAgent(prev => prev === 'news' ? null : prev), 2500);
       return () => clearTimeout(timer);
-    }, simulatedAgents ? (5000 + Math.random() * 3000) : 10000); // 5-8s in debug, 10s normal
+    }, simulatedAgents ? (6000 + Math.random() * 4000) : 15000); // 6-10s in debug, 15s normal
     return () => clearInterval(newsInterval);
-  }, [simulatedAgents, fetchNews]);
+  }, [simulatedAgents, fetchNews, lastNewsFetchTime]);
 
   // History Agent: data-driven in normal mode, simulated in debug mode
   useEffect(() => {
