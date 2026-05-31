@@ -284,7 +284,7 @@ export default function AIReportsSection({
     }
   }, [latestNews]);
 
-  // News Agent: Polling schedule (fetches but doesn't animate until data arrives)
+  // News Agent: Polling schedule (respects API rate limit in both modes)
   useEffect(() => {
     const newsInterval = setInterval(() => {
       const now = Date.now();
@@ -292,9 +292,9 @@ export default function AIReportsSection({
         fetchNews();
         setLastNewsFetchTime(now);
       }
-    }, simulatedAgents ? (8000 + Math.random() * 4000) : 30000); // 8-12s in debug, 30s normal
+    }, 30000); // 30s interval in all modes - respects real API limits
     return () => clearInterval(newsInterval);
-  }, [simulatedAgents, fetchNews, lastNewsFetchTime]);
+  }, [fetchNews, lastNewsFetchTime]);
 
   // History Agent: data-driven in normal mode, simulated in debug mode
   useEffect(() => {
