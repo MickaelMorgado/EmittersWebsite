@@ -139,7 +139,7 @@ export default function HistoryAgentCard({
         <div className="mb-2 pb-2 border-b border-white/[0.05] space-y-1">
           <p className="text-[7px] text-white/40 font-medium uppercase">Last {recentTrades.length} Trades</p>
           <div className="space-y-0.5">
-            {recentTrades.map((trade, idx) => (
+            {recentTrades.slice().reverse().map((trade, idx) => (
               <div key={trade.id} className="flex items-center justify-between text-[7px] bg-white/[0.02] p-1 rounded">
                 <div className="flex items-center gap-1">
                   {trade.result === 'WIN' ? (

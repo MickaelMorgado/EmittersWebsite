@@ -520,8 +520,8 @@ export default function TradingBotDashboard() {
       : 0;
 
     return {
-      pnlData: pnl,
-      equityData: equity,
+      pnlData: pnl.reverse(),
+      equityData: equity.reverse(),
       totalCommission: totalComm,
       reports: {
         bestTrade: bestTrade === -Infinity ? 0 : bestTrade,

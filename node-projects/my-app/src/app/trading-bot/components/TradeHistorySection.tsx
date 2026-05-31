@@ -38,7 +38,7 @@ export default function TradeHistorySection({ history }: TradeHistorySectionProp
             <p className="text-[10px]">No closed trades yet.</p>
           </div>
         ) : (
-          history.slice(-20).map((trade, index) => (
+          history.slice(-20).reverse().map((trade, index) => (
             <div
               key={trade.id || index}
               className="flex items-center justify-between px-4 py-2 hover:bg-white/[0.02] transition-colors duration-200"
