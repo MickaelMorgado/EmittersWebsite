@@ -223,10 +223,10 @@ export default function AIReportsSection({
   // Risk Agent: data-driven in normal mode, simulated in debug mode
   useEffect(() => {
     if (!simulatedAgents) {
-      // Normal mode: trigger on data changes
-      setActiveAgent('risk');
+      // Update lastRun on successful data reception
       setAgentLastRun(prev => ({ ...prev, risk: new Date().toISOString() }));
-      console.log(`[RISK AGENT] 🛡️ Active | Drawdown: ${reports.maxDrawdown.toFixed(2)} | P&L: ${stats.totalPnl.toFixed(2)}`);
+      setActiveAgent('risk');
+      console.log(`[RISK AGENT] ✓ Received data at ${new Date().toLocaleTimeString()} | Drawdown: ${reports.maxDrawdown.toFixed(2)}% | P&L: $${stats.totalPnl.toFixed(2)}`);
       const timer = setTimeout(() => setActiveAgent(null), 2500);
       return () => clearTimeout(timer);
     }
@@ -249,11 +249,11 @@ export default function AIReportsSection({
   // Trend Agent: data-driven in normal mode, simulated in debug mode
   useEffect(() => {
     if (!simulatedAgents) {
-      // Normal mode: trigger on streak changes
-      setActiveAgent('trend');
+      // Update lastRun on successful data reception
       setAgentLastRun(prev => ({ ...prev, trend: new Date().toISOString() }));
+      setActiveAgent('trend');
       const trend = reports.longestWinStreak > 3 ? 'UPTREND' : reports.longestLoseStreak > 3 ? 'DOWNTREND' : 'NEUTRAL';
-      console.log(`[TREND AGENT] 📈 Active | Trend: ${trend} | Win Streak: ${reports.longestWinStreak} | Loss Streak: ${reports.longestLoseStreak}`);
+      console.log(`[TREND AGENT] ✓ Received data at ${new Date().toLocaleTimeString()} | Trend: ${trend} | W:${reports.longestWinStreak} L:${reports.longestLoseStreak}`);
       const timer = setTimeout(() => setActiveAgent(null), 2500);
       return () => clearTimeout(timer);
     }

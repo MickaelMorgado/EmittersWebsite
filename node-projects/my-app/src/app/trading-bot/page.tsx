@@ -152,8 +152,10 @@ export default function TradingBotDashboard() {
             impact,
             relevance: topNews.analysis?.relevanceScore,
           },
-          `${sentiment} | ${impact} Impact`
+          `${sentiment} | ${impact} Impact | ${new Date().toLocaleTimeString()}`
         );
+
+        console.log(`[NEWS AGENT] ✓ Successfully received ${data.news.length} news items at ${new Date().toLocaleTimeString()}`);
       } else if (data.error) {
         console.warn('News API error:', data.error);
         // Keep existing news, don't wipe on error
