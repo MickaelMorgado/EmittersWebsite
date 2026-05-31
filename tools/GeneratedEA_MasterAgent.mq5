@@ -6,7 +6,7 @@
 //+------------------------------------------------------------------+
 
 #property copyright "HYTEK"
-#property version   "1.36"
+#property version   "1.37"
 #property description "Master Agent Integrated EMA Crossover - Dynamic SL/TP from Agent Parameters"
 #property strict
 
@@ -47,7 +47,7 @@ datetime lastSignalTime = 0;
 datetime lastHistoryUpdate = 0;
 const int MAGIC_NUMBER = 12345;
 string lastSignalString = "";
-const string EA_VERSION = "1.36";  // Must match #property version above
+const string EA_VERSION = "1.37";  // Must match #property version above
 const string TRADES_FILE = "trades.json";  // File to update with version
 
 //+------------------------------------------------------------------+
@@ -140,23 +140,22 @@ void UpdateTradesHistory()
 
     string json = "{\"version\": \"" + EA_VERSION + "\", \"history\": [";
     int dealCount = 0;
+    int totalHistory = 0;
 
     // Get deal history - select all
     if(HistorySelect(0, TimeCurrent()))
     {
-        int totalDeals = HistoryDealsTotal();
+        totalHistory = HistoryDealsTotal();
+        Print("[HISTORY] Total deals in MT5 history: ", totalHistory);
 
-        for(int i = 0; i < totalDeals; i++)
+        for(int i = 0; i < totalHistory; i++)
         {
             ulong ticket = HistoryDealGetTicket(i);
             if(ticket == 0) continue;
 
-            // Only include deals for our EA
-            long dealMagic = HistoryDealGetInteger(ticket, DEAL_MAGIC);
-            if(dealMagic != MAGIC_NUMBER) continue;
-
-            // Get deal properties
+            // Get deal properties for ALL deals (no magic filter yet)
             long dealType = HistoryDealGetInteger(ticket, DEAL_TYPE);
+            long dealMagic = HistoryDealGetInteger(ticket, DEAL_MAGIC);
             double dealPrice = HistoryDealGetDouble(ticket, DEAL_PRICE);
             datetime dealTime = (datetime)HistoryDealGetInteger(ticket, DEAL_TIME);
             double dealProfit = HistoryDealGetDouble(ticket, DEAL_PROFIT);
@@ -164,15 +163,23 @@ void UpdateTradesHistory()
 
             string type = (dealType == DEAL_TYPE_BUY) ? "BUY" : "SELL";
 
-            if(dealCount > 0) json += ",";
+            // Only add to JSON if our magic number
+            if(dealMagic == MAGIC_NUMBER)
+            {
+                if(dealCount > 0) json += ",";
 
-            json += "{\"ticket\":" + (string)ticket + ",\"type\":\"" + type + "\",\"price\":" +
-                    DoubleToString(dealPrice, 5) + ",\"time\":\"" + TimeToString(dealTime, TIME_DATE | TIME_MINUTES) +
-                    "\",\"profit\":" + DoubleToString(dealProfit, 2) + ",\"commission\":" +
-                    DoubleToString(dealCommission, 2) + "}";
+                json += "{\"ticket\":" + (string)ticket + ",\"type\":\"" + type + "\",\"price\":" +
+                        DoubleToString(dealPrice, 5) + ",\"time\":\"" + TimeToString(dealTime, TIME_DATE | TIME_MINUTES) +
+                        "\",\"profit\":" + DoubleToString(dealProfit, 2) + ",\"commission\":" +
+                        DoubleToString(dealCommission, 2) + ",\"magic\":" + (string)dealMagic + "}";
 
-            dealCount++;
+                dealCount++;
+            }
         }
+    }
+    else
+    {
+        Print("[HISTORY] HistorySelect failed");
     }
 
     json += "], \"stats\": {}}";
@@ -183,7 +190,11 @@ void UpdateTradesHistory()
     {
         FileWriteString(handle, json);
         FileClose(handle);
-        Print("[HISTORY] Wrote ", dealCount, " deals to file");
+        Print("[HISTORY] Wrote ", dealCount, " deals (filtered from ", totalHistory, " total) to file");
+    }
+    else
+    {
+        Print("[HISTORY] Failed to write file");
     }
 }
 
