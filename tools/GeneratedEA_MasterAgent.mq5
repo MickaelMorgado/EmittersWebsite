@@ -107,57 +107,21 @@ void OnDeinit(const int reason)
 
 void UpdateTradesFileVersion()
 {
-    // Note: This reads existing trades.json (if it exists) and updates version
-    // The web interface reads this version field
+    // Write entire file fresh with current version
+    // Simpler and more reliable than string replacement
 
-    int handle = FileOpen(TRADES_FILE, FILE_READ);
-    string fileContent = "";
+    string fileContent = "{\n  \"version\": \"" + EA_VERSION + "\",\n  \"openPositions\": [],\n  \"history\": [],\n  \"stats\": {}\n}";
 
-    // Read existing file if it exists
-    if(handle != INVALID_HANDLE)
-    {
-        while(!FileIsEnding(handle))
-        {
-            fileContent += FileReadString(handle);
-        }
-        FileClose(handle);
-
-        // Simple version replacement: find "version" and update it
-        int versionPos = StringFind(fileContent, "\"version\"");
-        if(versionPos >= 0)
-        {
-            // Find the value between quotes after "version":"
-            int quoteStart = StringFind(fileContent, "\"", versionPos + 10);
-            int quoteEnd = StringFind(fileContent, "\"", quoteStart + 1);
-
-            if(quoteStart >= 0 && quoteEnd > quoteStart)
-            {
-                // Replace old version with new one
-                string oldVersion = StringSubstr(fileContent, quoteStart + 1, quoteEnd - quoteStart - 1);
-                string newContent = StringSubstr(fileContent, 0, quoteStart + 1) +
-                                   EA_VERSION +
-                                   StringSubstr(fileContent, quoteEnd);
-                fileContent = newContent;
-            }
-        }
-    }
-    else
-    {
-        // File doesn't exist, create minimal structure with version
-        fileContent = "{\n  \"version\": \"" + EA_VERSION + "\",\n  \"history\": [],\n  \"stats\": {}\n}";
-    }
-
-    // Write updated file (without FILE_TXT to avoid UTF-16 encoding issues)
     int writeHandle = FileOpen(TRADES_FILE, FILE_WRITE);
     if(writeHandle != INVALID_HANDLE)
     {
         FileWriteString(writeHandle, fileContent);
         FileClose(writeHandle);
-        Print("[INIT] trades.json updated with version: ", EA_VERSION);
+        Print("[INIT] trades.json written with version: ", EA_VERSION);
     }
     else
     {
-        Print("[WARNING] Could not update trades.json with version");
+        Print("[WARNING] Could not write trades.json");
     }
 }
 
