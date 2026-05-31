@@ -240,9 +240,9 @@ bool ExtractDoubleFromJson(const string &json, const string &key, double &value)
     // Extract number (could be integer or float)
     for(int i = startPos; i < StringLen(json); i++)
     {
-        char ch = StringGetChar(json, i);
+        char ch = json[i];  // MQL5: direct string indexing
         if((ch >= '0' && ch <= '9') || ch == '.' || ch == '-')
-            valueStr += CharToString(ch);
+            valueStr = valueStr + ch;  // Direct char append in MQL5
         else
             break;
     }
