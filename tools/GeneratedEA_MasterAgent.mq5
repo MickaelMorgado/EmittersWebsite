@@ -6,7 +6,7 @@
 //+------------------------------------------------------------------+
 
 #property copyright "HYTEK"
-#property version   "1.41"
+#property version   "1.42"
 #property description "Master Agent Integrated EMA Crossover - Dynamic SL/TP from Agent Parameters"
 #property strict
 
@@ -47,7 +47,7 @@ datetime lastSignalTime = 0;
 datetime lastHistoryUpdate = 0;
 const int MAGIC_NUMBER = 12345;
 string lastSignalString = "";
-const string EA_VERSION = "1.41";  // Must match #property version above
+const string EA_VERSION = "1.42";  // Must match #property version above
 const string TRADES_FILE = "trades.json";  // File to update with version
 
 //+------------------------------------------------------------------+
@@ -132,69 +132,53 @@ void UpdateTradesFileVersion()
 
 void UpdateTradesHistory()
 {
-    // Update trades.json with deal history (every 5 seconds to avoid excessive I/O)
-    if(TimeCurrent() - lastHistoryUpdate < 5)
+    // Update trades.json with deal history (every 1 second to keep file fresh)
+    if(TimeCurrent() - lastHistoryUpdate < 1)
         return;
 
     lastHistoryUpdate = TimeCurrent();
-    Print("[HISTORY] ========== UpdateTradesHistory() called ==========");
 
     string json = "{\"version\": \"" + EA_VERSION + "\", \"history\": [";
     int dealCount = 0;
+    int maxDeals = 100;  // Limit to 100 most recent trades
 
-    // Try to select deal history using account history period
-    // Use large time range to catch all deals
-    datetime rangeStart = TimeCurrent() - (30 * 24 * 3600);  // Last 30 days
-    Print("[HISTORY] Searching deals from ", TimeToString(rangeStart), " to ", TimeToString(TimeCurrent()));
+    // Select deal history from last 30 days
+    datetime rangeStart = TimeCurrent() - (30 * 24 * 3600);
 
     if(HistorySelect(rangeStart, TimeCurrent()))
     {
         int totalHistory = HistoryDealsTotal();
-        Print("[HISTORY] HistorySelect SUCCESS - Total deals found: ", totalHistory);
 
-        if(totalHistory == 0)
-        {
-            Print("[HISTORY] WARNING: No deals in history!");
-        }
-
-        for(int i = 0; i < totalHistory; i++)
+        // Process deals in reverse order (most recent first)
+        for(int i = totalHistory - 1; i >= 0 && dealCount < maxDeals; i--)
         {
             ulong ticket = HistoryDealGetTicket(i);
-            if(ticket == 0)
-            {
-                Print("[HISTORY] Ticket at index ", i, " is 0, skipping");
-                continue;
-            }
+            if(ticket == 0) continue;
+
+            // Only include deals for our EA (magic number filter)
+            long dealMagic = HistoryDealGetInteger(ticket, DEAL_MAGIC);
+            if(dealMagic != MAGIC_NUMBER) continue;
 
             // Get deal properties
             long dealType = HistoryDealGetInteger(ticket, DEAL_TYPE);
-            long dealMagic = HistoryDealGetInteger(ticket, DEAL_MAGIC);
             double dealPrice = HistoryDealGetDouble(ticket, DEAL_PRICE);
             datetime dealTime = (datetime)HistoryDealGetInteger(ticket, DEAL_TIME);
             double dealProfit = HistoryDealGetDouble(ticket, DEAL_PROFIT);
             double dealCommission = HistoryDealGetDouble(ticket, DEAL_COMMISSION);
-            long dealEntry = HistoryDealGetInteger(ticket, DEAL_ENTRY);
 
             string type = (dealType == DEAL_TYPE_BUY) ? "BUY" : "SELL";
-            string entry = (dealEntry == DEAL_ENTRY_IN) ? "IN" : (dealEntry == DEAL_ENTRY_OUT) ? "OUT" : "INOUT";
 
-            Print("[HISTORY] Deal ", i, ": ticket=", ticket, " type=", type, " entry=", entry, " magic=", dealMagic, " profit=", dealProfit);
-
-            // Write ALL deals to see what's there
             if(dealCount > 0) json += ",";
 
             json += "{\"ticket\":" + (string)ticket + ",\"type\":\"" + type +
-                    "\",\"entry\":\"" + entry +
                     "\",\"price\":" + DoubleToString(dealPrice, 5) +
-                    ",\"magic\":" + (string)dealMagic +
-                    ",\"profit\":" + DoubleToString(dealProfit, 2) + "}";
+                    ",\"time\":\"" + TimeToString(dealTime, TIME_DATE | TIME_MINUTES) +
+                    "\",\"profit\":" + DoubleToString(dealProfit, 2) +
+                    ",\"commission\":" + DoubleToString(dealCommission, 2) +
+                    ",\"netProfit\":" + DoubleToString(dealProfit - dealCommission, 2) + "}";
 
             dealCount++;
         }
-    }
-    else
-    {
-        Print("[HISTORY] ERROR: HistorySelect FAILED! Cannot access history.");
     }
 
     json += "], \"stats\": {}}";
@@ -205,14 +189,7 @@ void UpdateTradesHistory()
     {
         FileWriteString(handle, json);
         FileClose(handle);
-        Print("[HISTORY] File written successfully. Total deals in JSON: ", dealCount);
     }
-    else
-    {
-        Print("[HISTORY] ERROR: Could not open ", TRADES_FILE, " for writing!");
-    }
-
-    Print("[HISTORY] ========== UpdateTradesHistory() complete ==========");
 }
 
 //+------------------------------------------------------------------+
