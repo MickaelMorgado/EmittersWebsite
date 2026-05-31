@@ -205,6 +205,20 @@ export default function TradingBotDashboard() {
       ? (trendDir === 'BUY' ? 'BUY' : trendDir === 'SELL' ? 'SELL' : 'NEUTRAL')
       : 'NEUTRAL';
 
+    // Calculate trading parameters from agent data
+    // SL: Use risk agent's SL distance (pips)
+    const baseSlPips = slDist * 100; // Convert to pips (e.g., 1.0 → 100 pips)
+    const slPips = Math.max(Math.round(baseSlPips), 50); // Minimum 50 pips
+
+    // TP: Parse R:R ratio and calculate TP from SL
+    const rrMatch = rrTarget.match(/1:(\d+\.?\d*)/);
+    const rrRatio = rrMatch ? parseFloat(rrMatch[1]) : 1.5;
+    const tpPips = Math.round(slPips * rrRatio);
+
+    // Position size from risk agent
+    const posSize_num = parseFloat(posSize);
+    const confidence = (totalScore / 100) * 100; // Convert to percentage
+
     setSimulatedAgents(simulated);
     setLastSignal({ signal: masterDecision, timestamp });
 
@@ -212,9 +226,9 @@ export default function TradingBotDashboard() {
 [DEBUG SIMULATION] ${new Date(timestamp).toLocaleTimeString()}
 ├─ Trend Agent:   ${trendDir} (${trendScore}pts)
 ├─ History Agent: ${rrTarget} R:R, ${consistency}% consistency (${historyScore}pts)
-├─ Risk Agent:    SL ${slDist}%, TP ${tpRatio}, Size ${posSize} (${riskScore}pts)
+├─ Risk Agent:    SL ${slPips}pips, TP ${tpPips}pips, Size ${posSize} (${riskScore}pts)
 ├─ News Agent:    ${sentiment}, VIX ${volatility} (${newsScore}pts)
-└─ Master Gate:   ${totalScore}pts / 100 → ${totalScore >= 75 ? '✓ OPEN' : '✗ CLOSED'} → Signal: ${masterDecision}
+└─ Master Gate:   ${totalScore}pts / 100 → Confidence: ${confidence.toFixed(0)}% → Signal: ${masterDecision}
     `);
 
     try {
@@ -225,12 +239,27 @@ export default function TradingBotDashboard() {
           signal: masterDecision,
           timestamp,
           debug: true,
-          simulated
+          // Trading parameters for EA execution
+          stopLossPips: slPips,
+          takeProfitPips: tpPips,
+          positionSize: posSize_num,
+          riskPercent: 2.0,
+          confidence: Math.round(confidence),
+          // Agent data for logging
+          agentData: {
+            trend: { direction: trendDir, score: trendScore },
+            history: { rrTarget, consistency, score: historyScore },
+            risk: { slPips, tpPips, positionSize: posSize_num, score: riskScore },
+            news: { sentiment, volatility, score: newsScore }
+          }
         })
       });
 
       if (!res.ok) {
-        console.error('Failed to send debug signal');
+        console.error('Failed to send debug signal:', await res.json());
+      } else {
+        const result = await res.json();
+        console.log('✓ Signal sent to EA:', result);
       }
     } catch (error) {
       console.error('Failed to send debug signal:', error);
