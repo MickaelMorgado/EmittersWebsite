@@ -46,6 +46,8 @@ datetime lastTradeDay = 0;
 datetime lastSignalTime = 0;
 const int MAGIC_NUMBER = 12345;
 string lastSignalString = "";
+const string EA_VERSION = "1.31";  // Must match #property version above
+const string TRADES_FILE = "trades.json";  // File to update with version
 
 //+------------------------------------------------------------------+
 //| EXPERT INITIALIZATION                                            |
@@ -65,7 +67,7 @@ int OnInit()
     trade.SetExpertMagicNumber(MAGIC_NUMBER);
     trade.SetDeviationInPoints(30);
 
-    Print("=== HYTEK EA v1.31 Initialized ===");
+    Print("=== HYTEK EA v", EA_VERSION, " Initialized ===");
     Print("Master Agent Integration: ", UseMasterSignals ? "ENABLED" : "DISABLED");
     Print("Entry Strategy: Master Agent Signals (dynamic SL/TP) + 9/21 EMA Crossover (fallback)");
     Print("Default SL: ", SL_Pips, " pips | Default TP: ", TP_Pips, " pips");
@@ -81,6 +83,9 @@ int OnInit()
             Print("WARNING: Default SL_Pips is less than broker minimum");
     }
 
+    // Update trades.json with current EA version for web interface
+    UpdateTradesFileVersion();
+
     lastTradeDay = 0;
     return INIT_SUCCEEDED;
 }
@@ -93,7 +98,67 @@ void OnDeinit(const int reason)
 {
     if(handleEMA9 != INVALID_HANDLE) IndicatorRelease(handleEMA9);
     if(handleEMA21 != INVALID_HANDLE) IndicatorRelease(handleEMA21);
-    Print("HYTEK EA v1.31 Deinitialized");
+    Print("HYTEK EA v", EA_VERSION, " Deinitialized");
+}
+
+//+------------------------------------------------------------------+
+//| UPDATE TRADES FILE WITH CURRENT EA VERSION                       |
+//+------------------------------------------------------------------+
+
+void UpdateTradesFileVersion()
+{
+    // Note: This reads existing trades.json (if it exists) and updates version
+    // The web interface reads this version field
+
+    int handle = FileOpen(TRADES_FILE, FILE_READ | FILE_TXT);
+    string fileContent = "";
+
+    // Read existing file if it exists
+    if(handle != INVALID_HANDLE)
+    {
+        while(!FileIsEnding(handle))
+        {
+            fileContent += FileReadString(handle);
+        }
+        FileClose(handle);
+
+        // Simple version replacement: find "version" and update it
+        int versionPos = StringFind(fileContent, "\"version\"");
+        if(versionPos >= 0)
+        {
+            // Find the value between quotes after "version":"
+            int quoteStart = StringFind(fileContent, "\"", versionPos + 10);
+            int quoteEnd = StringFind(fileContent, "\"", quoteStart + 1);
+
+            if(quoteStart >= 0 && quoteEnd > quoteStart)
+            {
+                // Replace old version with new one
+                string oldVersion = StringSubstr(fileContent, quoteStart + 1, quoteEnd - quoteStart - 1);
+                string newContent = StringSubstr(fileContent, 0, quoteStart + 1) +
+                                   EA_VERSION +
+                                   StringSubstr(fileContent, quoteEnd);
+                fileContent = newContent;
+            }
+        }
+    }
+    else
+    {
+        // File doesn't exist, create minimal structure with version
+        fileContent = "{\n  \"version\": \"" + EA_VERSION + "\",\n  \"history\": [],\n  \"stats\": {}\n}";
+    }
+
+    // Write updated file
+    int writeHandle = FileOpen(TRADES_FILE, FILE_WRITE | FILE_TXT);
+    if(writeHandle != INVALID_HANDLE)
+    {
+        FileWriteString(writeHandle, fileContent);
+        FileClose(writeHandle);
+        Print("[INIT] trades.json updated with version: ", EA_VERSION);
+    }
+    else
+    {
+        Print("[WARNING] Could not update trades.json with version");
+    }
 }
 
 //+------------------------------------------------------------------+
