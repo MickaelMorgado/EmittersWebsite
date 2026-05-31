@@ -3,6 +3,13 @@
 import { Bot } from 'lucide-react';
 import { ReportMetrics, BotStats, SimulatedAgentOutput } from '../AIReportsSection';
 
+interface AgentWeights {
+  risk: number;
+  trend: number;
+  news: number;
+  history: number;
+}
+
 interface MasterAgentCardProps {
   activeAgent: string | null;
   agentLastRun: { master: string };
@@ -23,6 +30,62 @@ function formatTimeAgo(timestamp: string): string {
   return `${Math.floor(seconds / 86400)}d ago`;
 }
 
+// Calculate dynamic weights based on agent performance
+function calculateDynamicWeights(reports: ReportMetrics, stats: BotStats): AgentWeights {
+  // Base weights (all start equal)
+  let weights: AgentWeights = {
+    risk: 1.0,
+    trend: 1.0,
+    news: 1.0,
+    history: 1.0,
+  };
+
+  // Risk Agent: Boost if managing drawdown well
+  if (reports.maxDrawdown > 0 && stats.totalPnl > 0) {
+    const drawdownRatio = reports.maxDrawdown / stats.totalPnl;
+    if (drawdownRatio < 0.2) {
+      weights.risk = 1.3; // 30% boost for low drawdown
+    } else if (drawdownRatio < 0.5) {
+      weights.risk = 1.1; // 10% boost for moderate drawdown
+    } else {
+      weights.risk = 0.8; // 20% penalty for high drawdown
+    }
+  }
+
+  // Trend Agent: Boost based on win rate
+  const winRate = stats.wins / (stats.wins + stats.losses) || 0;
+  if (winRate > 0.65) {
+    weights.trend = 1.3; // 30% boost for high win rate
+  } else if (winRate > 0.55) {
+    weights.trend = 1.15; // 15% boost for good win rate
+  } else if (winRate < 0.45) {
+    weights.trend = 0.85; // 15% penalty for poor win rate
+  }
+
+  // History Agent: Boost based on consistency (number of trades)
+  if (stats.totalTrades > 200) {
+    weights.history = 1.25; // 25% boost for large sample size
+  } else if (stats.totalTrades > 100) {
+    weights.history = 1.15; // 15% boost for good sample
+  } else if (stats.totalTrades < 30) {
+    weights.history = 0.7; // 30% penalty for insufficient data
+  }
+
+  // News Agent: Moderate boost (always relevant for market awareness)
+  weights.news = 1.0; // Keep stable, as sentiment can be volatile
+
+  // Normalize weights so they sum to 4 (average of 1.0)
+  const sum = weights.risk + weights.trend + weights.news + weights.history;
+  const normalizedWeights: AgentWeights = {
+    risk: (weights.risk / sum) * 1.0,
+    trend: (weights.trend / sum) * 1.0,
+    news: (weights.news / sum) * 1.0,
+    history: (weights.history / sum) * 1.0,
+  };
+
+  return normalizedWeights;
+}
+
 export default function MasterAgentCard({
   activeAgent,
   agentLastRun,
@@ -32,13 +95,30 @@ export default function MasterAgentCard({
 }: MasterAgentCardProps) {
   const calculateConfidence = () => {
     if (simulatedAgents) {
-      return simulatedAgents.risk.score + simulatedAgents.trend.score + simulatedAgents.news.score + simulatedAgents.history.score;
+      // Use dynamic weights for simulated agents too
+      const weights = calculateDynamicWeights(reports, stats);
+      const weightedRisk = simulatedAgents.risk.score * (weights.risk / 0.25);
+      const weightedTrend = simulatedAgents.trend.score * (weights.trend / 0.25);
+      const weightedNews = simulatedAgents.news.score * (weights.news / 0.25);
+      const weightedHistory = simulatedAgents.history.score * (weights.history / 0.25);
+      return Math.min(100, (weightedRisk + weightedTrend + weightedNews + weightedHistory) / 4);
     }
+
+    // Calculate base scores
     const riskOk = reports.maxDrawdown <= stats.totalPnl * 0.5 ? 25 : 0;
     const trendOk = reports.longestWinStreak > 3 ? 25 : reports.longestLoseStreak > 3 ? 0 : 12;
     const newsOk = 25;
     const historyOk = stats.totalTrades > 100 ? 25 : stats.totalTrades > 50 ? 15 : 0;
-    return riskOk + trendOk + newsOk + historyOk;
+
+    // Apply dynamic weights
+    const weights = calculateDynamicWeights(reports, stats);
+    const weightedScore =
+      (riskOk * weights.risk * 4) +
+      (trendOk * weights.trend * 4) +
+      (newsOk * weights.news * 4) +
+      (historyOk * weights.history * 4);
+
+    return Math.min(100, weightedScore / (25 * 4));
   };
 
   const getSignal = () => {
@@ -69,6 +149,7 @@ export default function MasterAgentCard({
   };
 
   const total = calculateConfidence();
+  const weights = calculateDynamicWeights(reports, stats);
 
   return (
     <div className={`bg-gradient-to-br from-amber-500/[0.06] to-orange-500/[0.02] border border-amber-500/[0.08] p-3 rounded ${
@@ -135,6 +216,58 @@ export default function MasterAgentCard({
           <span className="font-mono font-bold text-white/60">
             {reports.longestWinStreak > 3 ? 'Aggressive (↑↑)' : reports.longestLoseStreak > 3 ? 'Conservative (↓)' : 'Standard (→)'}
           </span>
+        </div>
+      </div>
+
+      {/* Dynamic Weight Adjustments */}
+      <div className="mb-2 pt-2 border-t border-white/[0.05]">
+        <div className="text-[7px] space-y-0.5">
+          <div className="flex justify-between items-center">
+            <span className="text-white/30">Agent Weights</span>
+            <span className="text-white/40 text-[6px]">Dynamic Allocation</span>
+          </div>
+          <div className="flex gap-1">
+            <div className="flex-1">
+              <div className="text-[6px] text-white/40 mb-0.5">Risk</div>
+              <div className="h-1 bg-white/[0.05] rounded overflow-hidden">
+                <div
+                  className="h-full bg-red-500/60"
+                  style={{ width: `${Math.min(weights.risk * 100, 100)}%` }}
+                />
+              </div>
+              <div className="text-[6px] text-red-400/70 mt-0.5">{(weights.risk * 100).toFixed(0)}%</div>
+            </div>
+            <div className="flex-1">
+              <div className="text-[6px] text-white/40 mb-0.5">Trend</div>
+              <div className="h-1 bg-white/[0.05] rounded overflow-hidden">
+                <div
+                  className="h-full bg-blue-500/60"
+                  style={{ width: `${Math.min(weights.trend * 100, 100)}%` }}
+                />
+              </div>
+              <div className="text-[6px] text-blue-400/70 mt-0.5">{(weights.trend * 100).toFixed(0)}%</div>
+            </div>
+            <div className="flex-1">
+              <div className="text-[6px] text-white/40 mb-0.5">News</div>
+              <div className="h-1 bg-white/[0.05] rounded overflow-hidden">
+                <div
+                  className="h-full bg-violet-500/60"
+                  style={{ width: `${Math.min(weights.news * 100, 100)}%` }}
+                />
+              </div>
+              <div className="text-[6px] text-violet-400/70 mt-0.5">{(weights.news * 100).toFixed(0)}%</div>
+            </div>
+            <div className="flex-1">
+              <div className="text-[6px] text-white/40 mb-0.5">Hist</div>
+              <div className="h-1 bg-white/[0.05] rounded overflow-hidden">
+                <div
+                  className="h-full bg-emerald-500/60"
+                  style={{ width: `${Math.min(weights.history * 100, 100)}%` }}
+                />
+              </div>
+              <div className="text-[6px] text-emerald-400/70 mt-0.5">{(weights.history * 100).toFixed(0)}%</div>
+            </div>
+          </div>
         </div>
       </div>
 
