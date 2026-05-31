@@ -6,7 +6,7 @@
 //+------------------------------------------------------------------+
 
 #property copyright "HYTEK"
-#property version   "1.35"
+#property version   "1.36"
 #property description "Master Agent Integrated EMA Crossover - Dynamic SL/TP from Agent Parameters"
 #property strict
 
@@ -47,7 +47,7 @@ datetime lastSignalTime = 0;
 datetime lastHistoryUpdate = 0;
 const int MAGIC_NUMBER = 12345;
 string lastSignalString = "";
-const string EA_VERSION = "1.35";  // Must match #property version above
+const string EA_VERSION = "1.36";  // Must match #property version above
 const string TRADES_FILE = "trades.json";  // File to update with version
 
 //+------------------------------------------------------------------+
@@ -138,66 +138,44 @@ void UpdateTradesHistory()
 
     lastHistoryUpdate = TimeCurrent();
 
-    // Build JSON with current deals from history
-    string json = "{\n  \"version\": \"" + EA_VERSION + "\",\n  \"history\": [";
+    string json = "{\"version\": \"" + EA_VERSION + "\", \"history\": [";
     int dealCount = 0;
 
-    // Get deal history
+    // Get deal history - select all
     if(HistorySelect(0, TimeCurrent()))
     {
-        for(int i = 0; i < HistoryDealsTotal(); i++)
+        int totalDeals = HistoryDealsTotal();
+
+        for(int i = 0; i < totalDeals; i++)
         {
             ulong ticket = HistoryDealGetTicket(i);
             if(ticket == 0) continue;
 
-            // Only include closed deals for our EA
+            // Only include deals for our EA
             long dealMagic = HistoryDealGetInteger(ticket, DEAL_MAGIC);
             if(dealMagic != MAGIC_NUMBER) continue;
 
-            ENUM_DEAL_ENTRY dealEntry = (ENUM_DEAL_ENTRY)HistoryDealGetInteger(ticket, DEAL_ENTRY);
-            if(dealEntry != DEAL_ENTRY_OUT) continue;  // Only OUT deals (closed)
+            // Get deal properties
+            long dealType = HistoryDealGetInteger(ticket, DEAL_TYPE);
+            double dealPrice = HistoryDealGetDouble(ticket, DEAL_PRICE);
+            datetime dealTime = (datetime)HistoryDealGetInteger(ticket, DEAL_TIME);
+            double dealProfit = HistoryDealGetDouble(ticket, DEAL_PROFIT);
+            double dealCommission = HistoryDealGetDouble(ticket, DEAL_COMMISSION);
+
+            string type = (dealType == DEAL_TYPE_BUY) ? "BUY" : "SELL";
 
             if(dealCount > 0) json += ",";
 
-            double openPrice = HistoryDealGetDouble(ticket, DEAL_PRICE);
-            double closePrice = 0;
-            datetime closeTime = HistoryDealGetInteger(ticket, DEAL_TIME);
-            double profit = HistoryDealGetDouble(ticket, DEAL_PROFIT);
-            double commission = HistoryDealGetDouble(ticket, DEAL_COMMISSION);
-
-            // Find corresponding entry deal to get close price
-            for(int j = i - 1; j >= 0; j--)
-            {
-                ulong entryTicket = HistoryDealGetTicket(j);
-                if(entryTicket == 0) continue;
-                long entryMagic = HistoryDealGetInteger(entryTicket, DEAL_MAGIC);
-                if(entryMagic != MAGIC_NUMBER) continue;
-                ENUM_DEAL_ENTRY entryDealEntry = (ENUM_DEAL_ENTRY)HistoryDealGetInteger(entryTicket, DEAL_ENTRY);
-                if(entryDealEntry == DEAL_ENTRY_IN)
-                {
-                    openPrice = HistoryDealGetDouble(entryTicket, DEAL_PRICE);
-                    break;
-                }
-            }
-
-            string type = (HistoryDealGetInteger(ticket, DEAL_TYPE) == DEAL_TYPE_BUY) ? "BUY" : "SELL";
-            double netProfit = profit - commission;
-
-            json += "\n    {\"ticket\": " + (string)ticket +
-                    ", \"type\": \"" + type +
-                    "\", \"openPrice\": " + DoubleToString(openPrice, 5) +
-                    ", \"closePrice\": " + DoubleToString(closePrice, 5) +
-                    ", \"openTime\": \"" + TimeToString(HistoryDealGetInteger(ticket, DEAL_TIME_MSC) / 1000, TIME_DATE | TIME_MINUTES) +
-                    "\", \"closeTime\": \"" + TimeToString(closeTime, TIME_DATE | TIME_MINUTES) +
-                    "\", \"profit\": " + DoubleToString(profit, 2) +
-                    ", \"commission\": " + DoubleToString(commission, 2) +
-                    ", \"netProfit\": " + DoubleToString(netProfit, 2) + "}";
+            json += "{\"ticket\":" + (string)ticket + ",\"type\":\"" + type + "\",\"price\":" +
+                    DoubleToString(dealPrice, 5) + ",\"time\":\"" + TimeToString(dealTime, TIME_DATE | TIME_MINUTES) +
+                    "\",\"profit\":" + DoubleToString(dealProfit, 2) + ",\"commission\":" +
+                    DoubleToString(dealCommission, 2) + "}";
 
             dealCount++;
         }
     }
 
-    json += "\n  ],\n  \"stats\": {}\n}";
+    json += "], \"stats\": {}}";
 
     // Write to file
     int handle = FileOpen(TRADES_FILE, FILE_WRITE);
@@ -205,6 +183,7 @@ void UpdateTradesHistory()
     {
         FileWriteString(handle, json);
         FileClose(handle);
+        Print("[HISTORY] Wrote ", dealCount, " deals to file");
     }
 }
 
