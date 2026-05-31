@@ -86,27 +86,39 @@ export default function TrendAgentCard({
       </p>
       <div className="text-[7px] space-y-0.5 border-t border-white/[0.05] pt-1">
         <div className="flex justify-between">
-          <span className="text-white/30">MA5 & MA20</span>
-          <span className={`text-white/60 font-mono ${reports.longestWinStreak > 2 ? 'text-cyan-400' : 'text-white/40'}`}>
-            {reports.longestWinStreak > 2 ? '✓ Crossing' : '✗ Not aligned'}
+          <span className="text-white/30">MA9 / MA21 / MA50</span>
+          <span className="text-white/60 font-mono text-[6px]">
+            {simulatedAgents?.trend?.ma_9
+              ? `${simulatedAgents.trend.ma_9.toFixed(2)} / ${simulatedAgents.trend.ma_21?.toFixed(2) || 'N/A'} / ${simulatedAgents.trend.ma_50?.toFixed(2) || 'N/A'}`
+              : 'Updating...'}
           </span>
         </div>
         <div className="flex justify-between">
-          <span className="text-white/30">MA200 Angle</span>
-          <span className="text-white/60 font-mono">
-            {reports.longestWinStreak > 3 ? '0.0045' : reports.longestLoseStreak > 3 ? '-0.0035' : '0.0008'}
+          <span className="text-white/30">Crossover Status</span>
+          <span className={`text-white/60 font-mono ${
+            simulatedAgents?.trend?.crossover_status === 'UP' ? 'text-emerald-400' :
+            simulatedAgents?.trend?.crossover_status === 'DOWN' ? 'text-red-400' :
+            'text-white/40'
+          }`}>
+            {simulatedAgents?.trend?.crossover_status === 'UP' ? '↑ UP' :
+             simulatedAgents?.trend?.crossover_status === 'DOWN' ? '↓ DOWN' :
+             '— NONE'}
           </span>
         </div>
         <div className="flex justify-between">
-          <span className="text-white/30">MA200 Trend</span>
-          <span className={`text-white/60 font-mono ${reports.longestWinStreak > 3 ? 'text-emerald-400' : reports.longestLoseStreak > 3 ? 'text-red-400' : 'text-white/40'}`}>
-            {reports.longestWinStreak > 3 ? 'Bullish' : reports.longestLoseStreak > 3 ? 'Bearish' : 'Flat'}
+          <span className="text-white/30">MA50 Trend</span>
+          <span className={`text-white/60 font-mono ${
+            simulatedAgents?.trend?.ma_50_trend === 'Uptrend' ? 'text-emerald-400' :
+            simulatedAgents?.trend?.ma_50_trend === 'Downtrend' ? 'text-red-400' :
+            'text-white/40'
+          }`}>
+            {simulatedAgents?.trend?.ma_50_trend || 'Neutral'}
           </span>
         </div>
         <div className="flex justify-between pt-0.5 border-t border-white/[0.05]">
-          <span className="text-white/30 font-bold">Status</span>
-          <span className={`font-bold ${reports.longestWinStreak > 2 && reports.longestWinStreak > 3 ? 'text-emerald-400' : 'text-yellow-400'}`}>
-            {reports.longestWinStreak > 2 && reports.longestWinStreak > 3 ? '✓ Good' : '⚠ Check'}
+          <span className="text-white/30 font-bold">Entry Allowed</span>
+          <span className={`font-bold ${simulatedAgents?.trend?.entry_allowed ? 'text-emerald-400' : 'text-red-400'}`}>
+            {simulatedAgents?.trend?.entry_allowed ? '✓ Yes' : '✗ No'}
           </span>
         </div>
       </div>
