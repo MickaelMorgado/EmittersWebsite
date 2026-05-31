@@ -110,7 +110,7 @@ void UpdateTradesFileVersion()
     // Note: This reads existing trades.json (if it exists) and updates version
     // The web interface reads this version field
 
-    int handle = FileOpen(TRADES_FILE, FILE_READ | FILE_TXT);
+    int handle = FileOpen(TRADES_FILE, FILE_READ);
     string fileContent = "";
 
     // Read existing file if it exists
@@ -147,8 +147,8 @@ void UpdateTradesFileVersion()
         fileContent = "{\n  \"version\": \"" + EA_VERSION + "\",\n  \"history\": [],\n  \"stats\": {}\n}";
     }
 
-    // Write updated file
-    int writeHandle = FileOpen(TRADES_FILE, FILE_WRITE | FILE_TXT);
+    // Write updated file (without FILE_TXT to avoid UTF-16 encoding issues)
+    int writeHandle = FileOpen(TRADES_FILE, FILE_WRITE);
     if(writeHandle != INVALID_HANDLE)
     {
         FileWriteString(writeHandle, fileContent);
