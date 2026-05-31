@@ -284,7 +284,7 @@ export default function AIReportsSection({
     }
   }, [latestNews]);
 
-  // News Agent: Polling schedule (respects API rate limit in both modes)
+  // News Agent: Real-time polling from API (30s rate limit)
   useEffect(() => {
     const newsInterval = setInterval(() => {
       const now = Date.now();
@@ -292,7 +292,7 @@ export default function AIReportsSection({
         fetchNews();
         setLastNewsFetchTime(now);
       }
-    }, 30000); // 30s interval in all modes - respects real API limits
+    }, 30000);
     return () => clearInterval(newsInterval);
   }, [fetchNews, lastNewsFetchTime]);
 
