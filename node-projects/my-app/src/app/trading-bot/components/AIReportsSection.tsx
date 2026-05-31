@@ -217,46 +217,96 @@ export default function AIReportsSection({
   }, [latestNews]);
 
   // Update agent last run times when data changes
+  // Risk Agent: data-driven in normal mode, simulated in debug mode
   useEffect(() => {
-    // Risk Agent runs when reports/stats change
-    setActiveAgent('risk');
-    setAgentLastRun(prev => ({ ...prev, risk: new Date().toISOString() }));
-    console.log(`[RISK AGENT] 🛡️ Active | Drawdown: ${reports.maxDrawdown.toFixed(2)} | P&L: ${stats.totalPnl.toFixed(2)}`);
-    const timer = setTimeout(() => setActiveAgent(null), 2500);
-    return () => clearTimeout(timer);
-  }, [reports.maxDrawdown, stats.totalPnl]);
+    if (!simulatedAgents) {
+      // Normal mode: trigger on data changes
+      setActiveAgent('risk');
+      setAgentLastRun(prev => ({ ...prev, risk: new Date().toISOString() }));
+      console.log(`[RISK AGENT] 🛡️ Active | Drawdown: ${reports.maxDrawdown.toFixed(2)} | P&L: ${stats.totalPnl.toFixed(2)}`);
+      const timer = setTimeout(() => setActiveAgent(null), 2500);
+      return () => clearTimeout(timer);
+    }
+  }, [reports.maxDrawdown, stats.totalPnl, simulatedAgents]);
 
+  // Debug mode: Risk Agent random trigger
   useEffect(() => {
-    // Trend Agent runs when streak data changes
-    setActiveAgent('trend');
-    setAgentLastRun(prev => ({ ...prev, trend: new Date().toISOString() }));
-    const trend = reports.longestWinStreak > 3 ? 'UPTREND' : reports.longestLoseStreak > 3 ? 'DOWNTREND' : 'NEUTRAL';
-    console.log(`[TREND AGENT] 📈 Active | Trend: ${trend} | Win Streak: ${reports.longestWinStreak} | Loss Streak: ${reports.longestLoseStreak}`);
-    const timer = setTimeout(() => setActiveAgent(null), 2500);
-    return () => clearTimeout(timer);
-  }, [reports.longestWinStreak, reports.longestLoseStreak]);
+    if (simulatedAgents) {
+      const riskInterval = setInterval(() => {
+        setActiveAgent('risk');
+        setAgentLastRun(prev => ({ ...prev, risk: new Date().toISOString() }));
+        console.log(`[RISK AGENT] 🛡️ Active | Simulated risk check`);
+        const timer = setTimeout(() => setActiveAgent(null), 2500);
+        return () => clearTimeout(timer);
+      }, 8000 + Math.random() * 4000); // 8-12s random interval
+      return () => clearInterval(riskInterval);
+    }
+  }, [simulatedAgents]);
 
+  // Trend Agent: data-driven in normal mode, simulated in debug mode
   useEffect(() => {
-    // News Agent runs periodically (simulated here every 10s for visibility)
+    if (!simulatedAgents) {
+      // Normal mode: trigger on streak changes
+      setActiveAgent('trend');
+      setAgentLastRun(prev => ({ ...prev, trend: new Date().toISOString() }));
+      const trend = reports.longestWinStreak > 3 ? 'UPTREND' : reports.longestLoseStreak > 3 ? 'DOWNTREND' : 'NEUTRAL';
+      console.log(`[TREND AGENT] 📈 Active | Trend: ${trend} | Win Streak: ${reports.longestWinStreak} | Loss Streak: ${reports.longestLoseStreak}`);
+      const timer = setTimeout(() => setActiveAgent(null), 2500);
+      return () => clearTimeout(timer);
+    }
+  }, [reports.longestWinStreak, reports.longestLoseStreak, simulatedAgents]);
+
+  // Debug mode: Trend Agent random trigger
+  useEffect(() => {
+    if (simulatedAgents) {
+      const trendInterval = setInterval(() => {
+        setActiveAgent('trend');
+        setAgentLastRun(prev => ({ ...prev, trend: new Date().toISOString() }));
+        console.log(`[TREND AGENT] 📈 Active | Simulated trend analysis`);
+        const timer = setTimeout(() => setActiveAgent(null), 2500);
+        return () => clearTimeout(timer);
+      }, 6000 + Math.random() * 4000); // 6-10s random interval
+      return () => clearInterval(trendInterval);
+    }
+  }, [simulatedAgents]);
+
+  // News Agent: API polling simulation (more frequent in debug mode)
+  useEffect(() => {
     const newsInterval = setInterval(() => {
       setActiveAgent('news');
       setAgentLastRun(prev => ({ ...prev, news: new Date().toISOString() }));
-      console.log(`[NEWS AGENT] 📰 Active | Checking economic events & market news`);
-      setTimeout(() => setActiveAgent(prev => prev === 'news' ? null : prev), 2500);
-    }, 10000);
+      console.log(`[NEWS AGENT] 📰 Active | ${simulatedAgents ? 'Simulated news received' : 'Checking economic events & market news'}`);
+      const timer = setTimeout(() => setActiveAgent(prev => prev === 'news' ? null : prev), 2500);
+      return () => clearTimeout(timer);
+    }, simulatedAgents ? (5000 + Math.random() * 3000) : 10000); // 5-8s in debug, 10s normal
     return () => clearInterval(newsInterval);
-  }, []);
+  }, [simulatedAgents]);
 
+  // History Agent: data-driven in normal mode, simulated in debug mode
   useEffect(() => {
-    // History Agent runs when reports are generated
-    if (reportHistory?.globalRecommendation?.lastUpdatedAt) {
+    if (!simulatedAgents && reportHistory?.globalRecommendation?.lastUpdatedAt) {
+      // Normal mode: trigger when reports update
       setActiveAgent('history');
       setAgentLastRun(prev => ({ ...prev, history: new Date().toISOString() }));
       console.log(`[HISTORY AGENT] 📊 Active | Analyzing trading history & generating reports`);
       const timer = setTimeout(() => setActiveAgent(null), 2500);
       return () => clearTimeout(timer);
     }
-  }, [reportHistory?.globalRecommendation?.lastUpdatedAt]);
+  }, [reportHistory?.globalRecommendation?.lastUpdatedAt, simulatedAgents]);
+
+  // Debug mode: History Agent random trigger
+  useEffect(() => {
+    if (simulatedAgents) {
+      const historyInterval = setInterval(() => {
+        setActiveAgent('history');
+        setAgentLastRun(prev => ({ ...prev, history: new Date().toISOString() }));
+        console.log(`[HISTORY AGENT] 📊 Active | Simulated history analysis`);
+        const timer = setTimeout(() => setActiveAgent(null), 2500);
+        return () => clearTimeout(timer);
+      }, 12000 + Math.random() * 5000); // 12-17s random interval
+      return () => clearInterval(historyInterval);
+    }
+  }, [simulatedAgents]);
 
   // Master Agent triggers only when sub-agents are active
   useEffect(() => {
