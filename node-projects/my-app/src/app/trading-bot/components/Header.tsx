@@ -1,6 +1,6 @@
 "use client";
 
-import { Activity, DollarSign, RefreshCw, Target, Zap, Bug } from 'lucide-react';
+import { Activity, DollarSign, RefreshCw, Target, Zap, Bug, FileText } from 'lucide-react';
 
 interface BotStats {
   totalTrades: number;
@@ -19,6 +19,7 @@ interface HeaderProps {
   onRefresh: () => void;
   debugMode?: boolean;
   onDebugToggle?: (enabled: boolean) => void;
+  onReportsClick?: () => void;
 }
 
 function PulsingDot() {
@@ -30,7 +31,7 @@ function PulsingDot() {
   );
 }
 
-export default function Header({ version, stats, loading, onRefresh, debugMode = false, onDebugToggle }: HeaderProps) {
+export default function Header({ version, stats, loading, onRefresh, debugMode = false, onDebugToggle, onReportsClick }: HeaderProps) {
   return (
     <header className="flex items-center justify-between mb-4 shrink-0">
       <div className="flex items-center gap-3">
@@ -78,6 +79,14 @@ export default function Header({ version, stats, loading, onRefresh, debugMode =
             </span>
           </div>
         </div>
+
+        <button
+          onClick={onReportsClick}
+          className="flex items-center justify-center w-7 h-7 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.05] rounded transition-all cursor-pointer"
+          title="View agent reports"
+        >
+          <FileText className="w-3 h-3 text-violet-400/60 hover:text-violet-400 transition-colors" />
+        </button>
 
         <button
           onClick={() => onDebugToggle?.(!debugMode)}

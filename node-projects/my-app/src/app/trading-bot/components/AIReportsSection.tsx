@@ -1,8 +1,15 @@
 "use client";
 
-import { Activity, Brain, Sparkles, Target, TrendingUp, Settings, FileText, Bot } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { Brain } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import OpenPositionsCard from './OpenPositionsCard';
+import ReportCard from './ReportCard';
 import SummarySection from './SummarySection';
+import HistoryAgentCard from './agents/HistoryAgentCard';
+import MasterAgentCard from './agents/MasterAgentCard';
+import NewsAgentCard from './agents/NewsAgentCard';
+import RiskAgentCard from './agents/RiskAgentCard';
+import TrendAgentCard from './agents/TrendAgentCard';
 
 interface AIAnalysis {
   timestamp: string;
@@ -84,6 +91,13 @@ interface BotStats {
   currentStreak: number;
 }
 
+interface SimulatedAgentOutput {
+  trend: { direction: 'BUY' | 'SELL' | 'NEUTRAL'; score: number };
+  history: { rrTarget: string; consistency: number; score: number };
+  risk: { slDistance: number; tpRatio: string; positionSize: string; score: number };
+  news: { sentiment: 'Bullish' | 'Neutral' | 'Bearish'; volatility: number; score: number };
+}
+
 interface AIReportsSectionProps {
   aiAnalysis: AIAnalysis | null;
   openPositions: Trade[];
@@ -97,15 +111,11 @@ interface AIReportsSectionProps {
   reportHistory: ReportHistory | null;
   generateReport: (tradeCount: number) => void;
   onCloseReport: () => void;
+  lastSignal?: { signal: string; timestamp: string } | null;
+  simulatedAgents?: SimulatedAgentOutput | null;
+  latestNews?: any[];
 }
 
-function AnimatedNumber({ value, className }: { value: number; className: string }) {
-  return (
-    <span className={className}>
-      {value >= 0 ? '+' : ''}{value.toFixed(2)}
-    </span>
-  );
-}
 
 interface AgentReport {
   id: string;
@@ -131,6 +141,41 @@ function formatTimeAgo(timestamp: string): string {
   return `${Math.floor(seconds / 86400)}d ago`;
 }
 
+// Risk Agent automatic position sizing calculator
+function calculatePositionSize(
+  accountSize: number,
+  riskPercentage: number,
+  history: Trade[]
+): { positionSize: string; recommendedLots: number; riskAmount: number } {
+  if (history.length === 0) {
+    return { positionSize: '0.01', recommendedLots: 0.01, riskAmount: 0 };
+  }
+
+  // Calculate average pip distance from recent trades
+  const recentTrades = history.slice(-10);
+  let totalPipDistance = 0;
+  recentTrades.forEach(trade => {
+    const pipDist = Math.abs((trade.price - (trade.openPrice || trade.price)) * 10000);
+    totalPipDistance += pipDist;
+  });
+  const avgPipDistance = totalPipDistance / recentTrades.length || 50; // Default 50 pips if no data
+
+  // Risk Amount = Account Size * Risk Percentage
+  const riskAmount = accountSize * (riskPercentage / 100);
+
+  // Position Size = Risk Amount / (Pip Distance * Pip Value)
+  // For forex, pip value is typically 10 per standard lot
+  const pipValue = 10;
+  const positionSizeUnits = riskAmount / (avgPipDistance * (pipValue / 10));
+  const lotSize = Math.round((positionSizeUnits / 100000) * 1000) / 1000; // Convert to standard lots
+
+  return {
+    positionSize: `${Math.max(0.01, Math.min(0.1, lotSize)).toFixed(2)} lots`,
+    recommendedLots: Math.max(0.01, Math.min(0.1, lotSize)),
+    riskAmount: Math.round(riskAmount * 100) / 100,
+  };
+}
+
 export default function AIReportsSection({
   aiAnalysis,
   openPositions,
@@ -144,6 +189,9 @@ export default function AIReportsSection({
   reportHistory,
   generateReport,
   onCloseReport,
+  lastSignal,
+  simulatedAgents,
+  latestNews,
 }: AIReportsSectionProps) {
   const [selectedAgent, setSelectedAgent] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'rules' | 'reports'>('rules');
@@ -155,6 +203,18 @@ export default function AIReportsSection({
     master: new Date().toISOString(),
   });
   const [activeAgent, setActiveAgent] = useState<string | null>(null);
+
+  // Risk Agent: Automatically calculate position sizes
+  const positionSizing = useMemo(() => {
+    const accountSize = Math.max(1000, stats.totalPnl + 10000);
+    const riskPercentage = 2; // Default 2% risk per trade
+    return calculatePositionSize(accountSize, riskPercentage, history);
+  }, [stats.totalPnl, history]);
+
+  // Prepare latest news for display (top 3)
+  const displayNews = useMemo(() => {
+    return (latestNews || []).slice(0, 3);
+  }, [latestNews]);
 
   // Update agent last run times when data changes
   useEffect(() => {
@@ -209,6 +269,17 @@ export default function AIReportsSection({
     return () => clearInterval(masterInterval);
   }, []);
 
+  // Master Agent triggers on debug signal
+  useEffect(() => {
+    if (lastSignal) {
+      setActiveAgent('master');
+      setAgentLastRun(prev => ({ ...prev, master: new Date().toISOString() }));
+      console.log(`[MASTER AGENT] 🤖 Signal: ${lastSignal.signal} | Time: ${new Date(lastSignal.timestamp).toLocaleTimeString()} | Status: EXECUTING`);
+      const timer = setTimeout(() => setActiveAgent(null), 2500);
+      return () => clearTimeout(timer);
+    }
+  }, [lastSignal]);
+
   // Sample agent reports (would come from backend)
   const agentReportsData: { [key: string]: AgentReport[] } = {
     risk: [
@@ -252,12 +323,15 @@ export default function AIReportsSection({
     news: {
       agentName: 'Economic News',
       rules: [
-        'Poll news feed every 5 minutes',
+        'Fetch news from external API (Finnhub/NewsAPI/FinancialJuice) every 5 minutes',
+        'AI/LLM analyzes news sentiment and impact on market',
+        'Display top 3 news headlines with sentiment badges in News Agent card',
         'High impact events: Extend stop loss 2x',
         'No major events = 25% weight baseline',
         'Breaking news triggers immediate alert',
+        'AI generates news-based reports for decision making',
       ],
-      lastModified: '2026-05-20 09:00',
+      lastModified: '2026-05-30 23:45',
     },
     history: {
       agentName: 'History & Reports',
@@ -308,756 +382,123 @@ export default function AIReportsSection({
                   border-color: rgba(16,185,129,0.25) !important;
                   box-shadow: inset 0 0 12px rgba(16,185,129,0.08) !important;
                 }
+                .agent-active-master {
+                  background: linear-gradient(to-br, rgba(217,119,6,0.12), rgba(217,119,6,0.04)) !important;
+                  border-color: rgba(217,119,6,0.25) !important;
+                  box-shadow: inset 0 0 12px rgba(217,119,6,0.08) !important;
+                }
               `}</style>
 
-              {/* Risk Management Agent */}
-              <div className={`bg-gradient-to-br from-red-500/[0.06] to-rose-500/[0.02] border border-red-500/[0.1] p-2 group hover:border-red-500/[0.2] transition-colors rounded ${
-                activeAgent === 'risk' ? 'agent-active-risk' : ''
-              }`}>
-                <div className="flex items-center justify-between gap-1.5 mb-1">
-                  <div className="flex items-center gap-1">
-                    <Bot className="agent-icon w-2.5 h-2.5 text-red-400/60" />
-                    <span className="text-[8px] font-bold text-red-300/80 uppercase tracking-wider">Risk</span>
-                    <span className="text-[7px] text-red-400/50 font-mono">{formatTimeAgo(agentLastRun.risk)}</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={() => {
-                        setSelectedAgent('risk');
-                        setActiveTab('rules');
-                      }}
-                      className="p-0.5 hover:bg-red-500/10 rounded opacity-0 group-hover:opacity-100 transition-opacity"
-                      title="View rules"
-                    >
-                      <Settings className="w-2.5 h-2.5 text-red-400/60" />
-                    </button>
-                    <button
-                      onClick={() => {
-                        setSelectedAgent('risk');
-                        setActiveTab('reports');
-                      }}
-                      className="p-0.5 hover:bg-red-500/10 rounded opacity-0 group-hover:opacity-100 transition-opacity"
-                      title="View reports"
-                    >
-                      <FileText className="w-2.5 h-2.5 text-red-400/60" />
-                    </button>
-                    <span className="text-[8px] font-bold text-red-400 font-mono">
-                      {reports.maxDrawdown > stats.totalPnl * 0.5 ? '0' : '25'}%
-                    </span>
-                  </div>
-                </div>
-                <div className="h-0.5 bg-white/[0.05] rounded overflow-hidden mb-1">
-                  <div
-                    className="h-full bg-red-500"
-                    style={{ width: `${reports.maxDrawdown > stats.totalPnl * 0.5 ? 0 : 100}%` }}
-                  />
-                </div>
-                <p className="text-[8px] leading-tight text-white/45 mb-1.5">
-                  {reports.maxDrawdown > stats.totalPnl * 0.5
-                    ? '⚠️ High drawdown detected'
-                    : '✓ Risk within limits'}
-                </p>
-                <div className="text-[7px] space-y-0.5 border-t border-white/[0.05] pt-1">
-                  <div className="flex justify-between">
-                    <span className="text-white/30">SL Distance</span>
-                    <span className="text-white/60 font-mono">2.0%</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-white/30">R:R Ratio</span>
-                    <span className="text-white/60 font-mono">
-                      {reports.longestWinStreak > 3
-                        ? '1:6-9'
-                        : reports.longestLoseStreak > 3
-                        ? '1:3-6'
-                        : '1:1.5'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-white/30">Position Size</span>
-                    <span className="text-white/60 font-mono">
-                      {reports.longestWinStreak > 3
-                        ? '0.02-0.05'
-                        : reports.longestLoseStreak > 3
-                        ? '0.01'
-                        : '0.01'}
-                    </span>
-                  </div>
-                </div>
-              </div>
+              {/* Trend Agent (Foundation) */}
+              <TrendAgentCard
+                activeAgent={activeAgent}
+                agentLastRun={agentLastRun}
+                reports={reports}
+                simulatedAgents={simulatedAgents}
+                onRulesClick={() => {
+                  setSelectedAgent('trend');
+                  setActiveTab('rules');
+                }}
+                onReportsClick={() => {
+                  setSelectedAgent('trend');
+                  setActiveTab('reports');
+                }}
+                formatTimeAgo={formatTimeAgo}
+              />
 
-              {/* Probability & Trend Agent */}
-              <div className={`bg-gradient-to-br from-cyan-500/[0.06] to-blue-500/[0.02] border border-cyan-500/[0.1] p-2 group hover:border-cyan-500/[0.2] transition-colors rounded ${
-                activeAgent === 'trend' ? 'agent-active-trend' : ''
-              }`}>
-                <div className="flex items-center justify-between gap-1.5 mb-1">
-                  <div className="flex items-center gap-1">
-                    <Bot className="agent-icon w-2.5 h-2.5 text-cyan-400/60" />
-                    <span className="text-[8px] font-bold text-cyan-300/80 uppercase tracking-wider">Trend</span>
-                    <span className="text-[7px] text-cyan-400/50 font-mono">{formatTimeAgo(agentLastRun.trend)}</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={() => {
-                        setSelectedAgent('trend');
-                        setActiveTab('rules');
-                      }}
-                      className="p-0.5 hover:bg-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity"
-                      title="View rules"
-                    >
-                      <Settings className="w-2.5 h-2.5 text-cyan-400/60" />
-                    </button>
-                    <button
-                      onClick={() => {
-                        setSelectedAgent('trend');
-                        setActiveTab('reports');
-                      }}
-                      className="p-0.5 hover:bg-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity"
-                      title="View reports"
-                    >
-                      <FileText className="w-2.5 h-2.5 text-cyan-400/60" />
-                    </button>
-                    <span className="text-[8px] font-bold text-cyan-400 font-mono">
-                      {reports.longestWinStreak > 3 ? '25' : reports.longestLoseStreak > 3 ? '0' : '12'}%
-                    </span>
-                  </div>
-                </div>
-                <div className="h-0.5 bg-white/[0.05] overflow-hidden mb-1">
-                  <div
-                    className="h-full bg-cyan-500"
-                    style={{
-                      width: `${
-                        reports.longestWinStreak > 3 ? 100 : reports.longestLoseStreak > 3 ? 0 : 48
-                      }%`
-                    }}
-                  />
-                </div>
-                <p className="text-[8px] leading-tight text-white/45 mb-1.5">
-                  {reports.longestWinStreak > 3
-                    ? '📈 Strong uptrend'
-                    : reports.longestLoseStreak > 3
-                    ? '📉 Downtrend caution'
-                    : '◼ Neutral trend'}
-                </p>
-                <div className="text-[7px] space-y-0.5 border-t border-white/[0.05] pt-1">
-                  <div className="flex justify-between">
-                    <span className="text-white/30">MA5 & MA20</span>
-                    <span className={`text-white/60 font-mono ${reports.longestWinStreak > 2 ? 'text-cyan-400' : 'text-white/40'}`}>
-                      {reports.longestWinStreak > 2 ? '✓ Crossing' : '✗ Not aligned'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-white/30">MA200 Angle</span>
-                    <span className="text-white/60 font-mono">
-                      {reports.longestWinStreak > 3 ? '0.0045' : reports.longestLoseStreak > 3 ? '-0.0035' : '0.0008'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-white/30">MA200 Trend</span>
-                    <span className={`text-white/60 font-mono ${reports.longestWinStreak > 3 ? 'text-emerald-400' : reports.longestLoseStreak > 3 ? 'text-red-400' : 'text-white/40'}`}>
-                      {reports.longestWinStreak > 3 ? 'Bullish' : reports.longestLoseStreak > 3 ? 'Bearish' : 'Flat'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between pt-0.5 border-t border-white/[0.05]">
-                    <span className="text-white/30 font-bold">Status</span>
-                    <span className={`font-bold ${reports.longestWinStreak > 2 && reports.longestWinStreak > 3 ? 'text-emerald-400' : 'text-yellow-400'}`}>
-                      {reports.longestWinStreak > 2 && reports.longestWinStreak > 3 ? '✓ Good' : '⚠ Check'}
-                    </span>
-                  </div>
-                </div>
-              </div>
+              {/* News Agent (Context Provider) */}
+              <NewsAgentCard
+                activeAgent={activeAgent}
+                agentLastRun={agentLastRun}
+                reports={reports}
+                simulatedAgents={simulatedAgents}
+                displayNews={displayNews}
+                onRulesClick={() => {
+                  setSelectedAgent('news');
+                  setActiveTab('rules');
+                }}
+                onReportsClick={() => {
+                  setSelectedAgent('news');
+                  setActiveTab('reports');
+                }}
+                formatTimeAgo={formatTimeAgo}
+              />
 
-              {/* Economic News Agent */}
-              <div className={`bg-gradient-to-br from-violet-500/[0.06] to-purple-500/[0.02] border border-violet-500/[0.1] p-2 group hover:border-violet-500/[0.2] transition-colors rounded ${
-                activeAgent === 'news' ? 'agent-active-news' : ''
-              }`}>
-                <div className="flex items-center justify-between gap-1.5 mb-1">
-                  <div className="flex items-center gap-1">
-                    <Bot className="agent-icon w-2.5 h-2.5 text-violet-400/60" />
-                    <span className="text-[8px] font-bold text-violet-300/80 uppercase tracking-wider">News</span>
-                    <span className="text-[7px] text-violet-400/50 font-mono">{formatTimeAgo(agentLastRun.news)}</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={() => {
-                        setSelectedAgent('news');
-                        setActiveTab('rules');
-                      }}
-                      className="p-0.5 hover:bg-violet-500/10 opacity-0 group-hover:opacity-100 transition-opacity"
-                      title="View rules"
-                    >
-                      <Settings className="w-2.5 h-2.5 text-violet-400/60" />
-                    </button>
-                    <button
-                      onClick={() => {
-                        setSelectedAgent('news');
-                        setActiveTab('reports');
-                      }}
-                      className="p-0.5 hover:bg-violet-500/10 opacity-0 group-hover:opacity-100 transition-opacity"
-                      title="View reports"
-                    >
-                      <FileText className="w-2.5 h-2.5 text-violet-400/60" />
-                    </button>
-                    <span className="text-[8px] font-bold text-violet-400 font-mono">25%</span>
-                  </div>
-                </div>
-                <div className="h-0.5 bg-white/[0.05] overflow-hidden mb-1">
-                  <div className="h-full bg-violet-500" style={{ width: '100%' }} />
-                </div>
-                <p className="text-[8px] leading-tight text-white/45 mb-1.5">
-                  No major news events
-                </p>
-                <div className="text-[7px] space-y-0.5 border-t border-white/[0.05] pt-1">
-                  <div className="flex justify-between">
-                    <span className="text-white/30">Market Sentiment</span>
-                    <span className={`text-white/60 font-mono ${reports.longestWinStreak > 3 ? 'text-emerald-400' : 'text-amber-400'}`}>
-                      {reports.longestWinStreak > 3 ? 'Bullish' : 'Neutral'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-white/30">Volatility (VIX)</span>
-                    <span className="text-white/60 font-mono">
-                      {reports.longestWinStreak > 3 ? '14.2' : '19.8'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-white/30">Event Impact</span>
-                    <span className="text-white/60 font-mono">Low</span>
-                  </div>
-                  <div className="flex justify-between pt-0.5 border-t border-white/[0.05]">
-                    <span className="text-white/30 font-bold">Risk Level</span>
-                    <span className="text-yellow-400 font-bold">⚠ Medium</span>
-                  </div>
-                </div>
-              </div>
+              {/* History Agent (Validator) */}
+              <HistoryAgentCard
+                activeAgent={activeAgent}
+                agentLastRun={agentLastRun}
+                stats={stats}
+                reports={reports}
+                simulatedAgents={simulatedAgents}
+                reportHistory={reportHistory}
+                onRulesClick={() => {
+                  setSelectedAgent('history');
+                  setActiveTab('rules');
+                }}
+                onReportsClick={() => {
+                  setSelectedAgent('history');
+                  setActiveTab('reports');
+                }}
+                formatTimeAgo={formatTimeAgo}
+              />
 
-              {/* History & Reports Agent */}
-              <div className={`bg-gradient-to-br from-emerald-500/[0.06] to-green-500/[0.02] border border-emerald-500/[0.1] p-2 group hover:border-emerald-500/[0.2] transition-colors rounded ${
-                activeAgent === 'history' ? 'agent-active-history' : ''
-              }`}>
-                <div className="flex items-center justify-between gap-1.5 mb-1">
-                  <div className="flex items-center gap-1">
-                    <Bot className="agent-icon w-2.5 h-2.5 text-emerald-400/60" />
-                    <span className="text-[8px] font-bold text-emerald-300/80 uppercase tracking-wider">History</span>
-                    <span className="text-[7px] text-emerald-400/50 font-mono">{formatTimeAgo(agentLastRun.history)}</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={() => {
-                        setSelectedAgent('history');
-                        setActiveTab('rules');
-                      }}
-                      className="p-0.5 hover:bg-emerald-500/10 rounded opacity-0 group-hover:opacity-100 transition-opacity"
-                      title="View rules"
-                    >
-                      <Settings className="w-2.5 h-2.5 text-emerald-400/60" />
-                    </button>
-                    <button
-                      onClick={() => {
-                        setSelectedAgent('history');
-                        setActiveTab('reports');
-                      }}
-                      className="p-0.5 hover:bg-emerald-500/10 rounded opacity-0 group-hover:opacity-100 transition-opacity"
-                      title="View reports"
-                    >
-                      <FileText className="w-2.5 h-2.5 text-emerald-400/60" />
-                    </button>
-                    <span className="text-[8px] font-bold text-emerald-400 font-mono">
-                      {stats.totalTrades > 100 ? '25' : stats.totalTrades > 50 ? '15' : '0'}%
-                    </span>
-                  </div>
-                </div>
-                <div className="h-0.5 bg-white/[0.05] rounded overflow-hidden mb-1">
-                  <div
-                    className="h-full bg-emerald-500"
-                    style={{
-                      width: `${
-                        stats.totalTrades > 100 ? 100 : stats.totalTrades > 50 ? 60 : 0
-                      }%`
-                    }}
-                  />
-                </div>
-                <p className="text-[8px] leading-tight text-white/45 mb-1.5">
-                  {stats.totalTrades > 100 ? '📊 Sufficient data' : '⏳ Need more trades'}
-                </p>
-                <div className="text-[7px] space-y-0.5 border-t border-white/[0.05] pt-1">
-                  <div className="flex justify-between">
-                    <span className="text-white/30">Win Rate Trend</span>
-                    <span className={`text-white/60 font-mono ${reports.longestWinStreak > reports.longestLoseStreak ? 'text-emerald-400' : 'text-red-400'}`}>
-                      {reports.longestWinStreak > reports.longestLoseStreak ? '↗ Improving' : '↘ Declining'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-white/30">Last 20 Trades</span>
-                    <span className={`text-white/60 font-mono ${reports.longestWinStreak >= 5 ? 'text-emerald-400' : 'text-yellow-400'}`}>
-                      {reports.longestWinStreak >= 5 ? `${reports.longestWinStreak}W streak` : 'Mixed'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-white/30">Recovery Time</span>
-                    <span className="text-white/60 font-mono">
-                      {reports.maxDrawdown > stats.totalPnl * 0.3 ? '3-5 days' : '1-2 days'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-white/30">Consistency</span>
-                    <span className="text-white/60 font-mono">
-                      {stats.totalTrades > 100 ? '87%' : stats.totalTrades > 50 ? '72%' : '—'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between pt-0.5 border-t border-white/[0.05]">
-                    <span className="text-white/30 font-bold">Edge Quality</span>
-                    <span className={`font-bold ${stats.totalTrades > 100 && reports.longestWinStreak > 3 ? 'text-emerald-400' : 'text-amber-400'}`}>
-                      {stats.totalTrades > 100 && reports.longestWinStreak > 3 ? '✓ Strong' : '⚠ Monitor'}
-                    </span>
-                  </div>
-                </div>
-              </div>
+              {/* Risk Agent (Depends on Trend + News) */}
+              <RiskAgentCard
+                activeAgent={activeAgent}
+                agentLastRun={agentLastRun}
+                reports={reports}
+                stats={stats}
+                simulatedAgents={simulatedAgents}
+                positionSizing={positionSizing}
+                onRulesClick={() => {
+                  setSelectedAgent('risk');
+                  setActiveTab('rules');
+                }}
+                onReportsClick={() => {
+                  setSelectedAgent('risk');
+                  setActiveTab('reports');
+                }}
+                formatTimeAgo={formatTimeAgo}
+              />
             </div>
-            
+
             {/* Master Agent */}
-            <div className="bg-gradient-to-br from-amber-500/[0.06] to-orange-500/[0.02] border border-amber-500/[0.08] p-3">
-              <div className="flex items-center justify-between gap-2 mb-2">
-                <div className="flex items-center gap-2">
-                  <Bot className="w-3 h-3 text-amber-400/70" />
-                  <span className="text-[10px] font-bold text-amber-300/80 uppercase tracking-wider">Master Recommendation</span>
-                  <span className="text-[8px] text-amber-400/50 font-mono">{formatTimeAgo(agentLastRun.master)}</span>
-                </div>
-                <span className={`text-xs font-bold px-2 py-0.5 ${
-                  (() => {
-                    const riskOk = reports.maxDrawdown <= stats.totalPnl * 0.5 ? 25 : 0;
-                    const trendOk = reports.longestWinStreak > 3 ? 25 : reports.longestLoseStreak > 3 ? 0 : 12;
-                    const newsOk = 25;
-                    const historyOk = stats.totalTrades > 100 ? 25 : stats.totalTrades > 50 ? 15 : 0;
-                    const total = riskOk + trendOk + newsOk + historyOk;
-
-                    if (total < 75) {
-                      return 'bg-white/10 text-white/40 ring-1 ring-white/10';
-                    } else if (reports.longestWinStreak > 3) {
-                      return 'bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-500/20';
-                    } else if (reports.longestLoseStreak > 3) {
-                      return 'bg-red-500/20 text-red-400 ring-1 ring-red-500/20';
-                    } else {
-                      return 'bg-white/10 text-white/40 ring-1 ring-white/10';
-                    }
-                  })()
-                }`}>
-                  {(() => {
-                    const riskOk = reports.maxDrawdown <= stats.totalPnl * 0.5 ? 25 : 0;
-                    const trendOk = reports.longestWinStreak > 3 ? 25 : reports.longestLoseStreak > 3 ? 0 : 12;
-                    const newsOk = 25;
-                    const historyOk = stats.totalTrades > 100 ? 25 : stats.totalTrades > 50 ? 15 : 0;
-                    const total = riskOk + trendOk + newsOk + historyOk;
-
-                    if (total < 75) {
-                      return 'NEUTRAL';
-                    } else if (reports.longestWinStreak > 3) {
-                      return 'BUY';
-                    } else if (reports.longestLoseStreak > 3) {
-                      return 'SELL';
-                    } else {
-                      return 'NEUTRAL';
-                    }
-                  })()}
-                </span>
-              </div>
-
-              {/* Decision Percentile */}
-              <div className="mb-2.5">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-[8px] text-white/30 uppercase">Confidence Gate</span>
-                  <span className={`text-[10px] font-bold font-mono ${
-                    (() => {
-                      const riskOk = reports.maxDrawdown <= stats.totalPnl * 0.5 ? 25 : 0;
-                      const trendOk = reports.longestWinStreak > 3 ? 25 : reports.longestLoseStreak > 3 ? 0 : 12;
-                      const newsOk = 25;
-                      const historyOk = stats.totalTrades > 100 ? 25 : stats.totalTrades > 50 ? 15 : 0;
-                      const total = riskOk + trendOk + newsOk + historyOk;
-                      return total >= 75 ? 'text-emerald-400' : total >= 50 ? 'text-yellow-400' : 'text-red-400';
-                    })()
-                  }`}>
-                    {(() => {
-                      const riskOk = reports.maxDrawdown <= stats.totalPnl * 0.5 ? 25 : 0;
-                      const trendOk = reports.longestWinStreak > 3 ? 25 : reports.longestLoseStreak > 3 ? 0 : 12;
-                      const newsOk = 25;
-                      const historyOk = stats.totalTrades > 100 ? 25 : stats.totalTrades > 50 ? 15 : 0;
-                      return riskOk + trendOk + newsOk + historyOk;
-                    })()}%
-                  </span>
-                </div>
-                <div className="w-full h-1.5 bg-white/[0.05] rounded overflow-hidden border border-white/[0.08]">
-                  <div
-                    className={`h-full transition-all duration-300 ${
-                      (() => {
-                        const riskOk = reports.maxDrawdown <= stats.totalPnl * 0.5 ? 25 : 0;
-                        const trendOk = reports.longestWinStreak > 3 ? 25 : reports.longestLoseStreak > 3 ? 0 : 12;
-                        const newsOk = 25;
-                        const historyOk = stats.totalTrades > 100 ? 25 : stats.totalTrades > 50 ? 15 : 0;
-                        const total = riskOk + trendOk + newsOk + historyOk;
-                        return total >= 75 ? 'bg-gradient-to-r from-emerald-500 to-emerald-400' : total >= 50 ? 'bg-gradient-to-r from-yellow-500 to-yellow-400' : 'bg-gradient-to-r from-red-500 to-red-400';
-                      })()
-                    }`}
-                    style={{
-                      width: `${(() => {
-                        const riskOk = reports.maxDrawdown <= stats.totalPnl * 0.5 ? 25 : 0;
-                        const trendOk = reports.longestWinStreak > 3 ? 25 : reports.longestLoseStreak > 3 ? 0 : 12;
-                        const newsOk = 25;
-                        const historyOk = stats.totalTrades > 100 ? 25 : stats.totalTrades > 50 ? 15 : 0;
-                        return riskOk + trendOk + newsOk + historyOk;
-                      })()}%`
-                    }}
-                  />
-                </div>
-              </div>
-
-              {/* Risk/Reward Adjustment based on Trend */}
-              <div className="mb-2 pt-2 border-t border-white/[0.05]">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-[8px] text-white/30 uppercase">Strategy Mode</span>
-                  <span className="text-[9px] font-mono text-emerald-400/70">
-                    {(() => {
-                      if (reports.longestWinStreak > 3) {
-                        return 'TRENDING+';
-                      } else if (reports.longestLoseStreak > 3) {
-                        return 'TRENDING−';
-                      } else {
-                        return 'STATIC';
-                      }
-                    })()}
-                  </span>
-                </div>
-                <p className="text-[7px] text-white/50 mb-1.5">
-                  {(() => {
-                    if (reports.longestWinStreak > 3) {
-                      return `Uptrend detected (${reports.longestWinStreak}W) → Trailing stops + Extended targets`;
-                    } else if (reports.longestLoseStreak > 3) {
-                      return `Downtrend detected (${reports.longestLoseStreak}L) → Trailing stops + Moderate targets`;
-                    } else {
-                      return 'Neutral trend → Static risk/reward';
-                    }
-                  })()}
-                </p>
-                <div className="flex items-center justify-between text-[7px]">
-                  <span className="text-white/30">Target R:R</span>
-                  <span className="font-mono font-bold text-white/60">
-                    {(() => {
-                      if (reports.longestWinStreak > 3) {
-                        return `1:${(6 + Math.min(reports.longestWinStreak * 0.5, 3)).toFixed(0)} (1:9+)`;
-                      } else if (reports.longestLoseStreak > 3) {
-                        return `1:${(3 + Math.min(reports.longestLoseStreak * 0.2, 2)).toFixed(1)}`;
-                      } else {
-                        return '1:1.5';
-                      }
-                    })()}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between text-[7px] mt-0.5">
-                  <span className="text-white/30">Position Size</span>
-                  <span className="font-mono font-bold text-white/60">
-                    {(() => {
-                      if (reports.longestWinStreak > 3) {
-                        return 'Aggressive (↑↑)';
-                      } else if (reports.longestLoseStreak > 3) {
-                        return 'Conservative (↓)';
-                      } else {
-                        return 'Standard (→)';
-                      }
-                    })()}
-                  </span>
-                </div>
-              </div>
-
-              <p className="text-[8px] leading-relaxed text-white/50">
-                {(() => {
-                  const riskOk = reports.maxDrawdown <= stats.totalPnl * 0.5 ? 25 : 0;
-                  const trendOk = reports.longestWinStreak > 3 ? 25 : reports.longestLoseStreak > 3 ? 0 : 12;
-                  const newsOk = 25;
-                  const historyOk = stats.totalTrades > 100 ? 25 : stats.totalTrades > 50 ? 15 : 0;
-                  const total = riskOk + trendOk + newsOk + historyOk;
-
-                  return total >= 75
-                    ? '✓ GATE OPEN: All agents aligned for execution'
-                    : total >= 50
-                    ? '⚠ GATE PARTIAL: Trade with adjusted risk/reward'
-                    : '✗ GATE CLOSED: Insufficient confidence';
-                })()}
-              </p>
-            </div>
+            <MasterAgentCard
+              activeAgent={activeAgent}
+              agentLastRun={agentLastRun}
+              reports={reports}
+              stats={stats}
+              simulatedAgents={simulatedAgents}
+              formatTimeAgo={formatTimeAgo}
+            />
           </div>
 
-          <div className="col-span-2">    
+          <div className="col-span-1">
             {openPositions.length > 0 && (
-              <div className="bg-white/[0.03] border border-cyan-500/[0.1] p-3 flex-1 min-h-0 h-full">
-                <style>{`
-                  @keyframes slideInGlow {
-                    from {
-                      opacity: 0;
-                      transform: translateX(-10px);
-                      box-shadow: 0 0 20px rgba(34, 211, 238, 0.8);
-                    }
-                    to {
-                      opacity: 1;
-                      transform: translateX(0);
-                      box-shadow: 0 0 0 rgba(34, 211, 238, 0);
-                    }
-                  }
-                  @keyframes pnlPulse {
-                    0% {
-                      transform: scale(1);
-                      filter: drop-shadow(0 0 0px currentColor);
-                    }
-                    50% {
-                      transform: scale(1.05);
-                      filter: drop-shadow(0 0 8px currentColor);
-                    }
-                    100% {
-                      transform: scale(1);
-                      filter: drop-shadow(0 0 0px currentColor);
-                    }
-                  }
-                  .position-new {
-                    animation: slideInGlow 0.5s ease-out;
-                  }
-                  .pnl-value {
-                    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-                    font-variant-numeric: tabular-nums;
-                  }
-                  .pnl-update {
-                    animation: pnlPulse 0.6s ease-out;
-                  }
-                `}</style>
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <Activity className="w-3 h-3 text-cyan-400/60" />
-                    <span className="text-[10px] font-bold text-cyan-300/80 uppercase tracking-wider">Open Positions</span>
-                  </div>
-                  <span className="text-[9px] text-cyan-400/40 font-mono">{openPositions.length} active</span>
-                </div>
-                <div className="space-y-1 overflow-y-auto max-h-28">
-                  {openPositions.map((pos: Trade, i: number) => {
-                    const isNew = newPositionIds.has(pos.id);
-                    const pnl = floatingPnL[pos.id] || 0;
-                    const pnlColor = pnl >= 0 ? 'text-emerald-400' : 'text-red-400';
-                    return (
-                      <div
-                        key={pos.id || i}
-                        className={`flex items-center justify-between py-1.5 px-2 border border-cyan-500/[0.1] rounded transition-all ${
-                          isNew ? 'position-new bg-cyan-500/10' : 'border-white/[0.04]'
-                        } last:border-0`}
-                      >
-                        <div className="flex items-center gap-2 flex-1">
-                          <span className={`text-[10px] font-bold ${pos.type === 'BUY' ? 'text-emerald-400' : 'text-red-400'}`}>
-                            {pos.type}
-                          </span>
-                          <div className="flex flex-col flex-1">
-                            <span className="text-[11px] font-mono text-white/70">{pos.price.toFixed(5)}</span>
-                            <span className="text-[8px] text-white/40 font-mono">{pos.time}</span>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <AnimatedNumber
-                            value={pnl}
-                            className={`text-[10px] font-mono font-bold transition-colors duration-300 ${pnlColor}`}
-                          />
-                          <div className="text-[8px] text-white/30">Floating</div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
+              <OpenPositionsCard
+                openPositions={openPositions}
+                floatingPnL={floatingPnL}
+                newPositionIds={newPositionIds}
+              />
             )}
           </div>
 
-           {/* Report — 2 cols */}
-           <div className="col-span-1 bg-white/[0.02] border border-white/[0.05] flex flex-col min-h-0 rounded">
-             <div className="flex items-center gap-1.5 px-4 py-2 border-b border-white/[0.05] shrink-0">
-               <Brain className="w-3 h-3 text-violet-400/50" />
-               <h3 className="text-[10px] font-semibold text-white/50 tracking-wide">Report</h3>
-             </div>
-             <div className="overflow-y-auto flex-1 min-h-0 px-3 py-2 flex flex-col gap-2">
-               {!report ? (
-                 <>
-                   <div className="space-y-1.5">
-                     <div className="text-[8px] font-bold text-white/60 uppercase">Report Milestones</div>
+          {/* Report Card & History */}
+          <div class="col-span-2">
+            <ReportCard
+              report={report}
+              reportLoading={reportLoading}
+              reportHistory={reportHistory}
+              onCloseReport={onCloseReport}
+              history={history}
+            />
 
-                     {/* 50-Trade Milestone */}
-                     <div className="bg-white/[0.02] border border-cyan-500/[0.1] p-2 rounded">
-                       <div className="flex items-center justify-between mb-1">
-                         <span className="text-[7px] text-cyan-400/80 uppercase font-semibold">50-Trade</span>
-                         <span className="text-[7px] text-white/30 font-mono">{history.length}/50</span>
-                       </div>
-                       <div className="w-full h-1 bg-white/[0.05] rounded overflow-hidden border border-white/[0.08]">
-                         <div
-                           className="h-full bg-gradient-to-r from-cyan-500 to-cyan-400 transition-all duration-300"
-                           style={{ width: `${Math.min((history.length / 50) * 100, 100)}%` }}
-                         />
-                       </div>
-                       {history.length < 50 && (
-                         <div className="text-[7px] text-white/40 mt-1">
-                           {50 - history.length} trades until report
-                         </div>
-                       )}
-                       {history.length >= 50 && (
-                         <div className="text-[7px] text-cyan-400 mt-1">
-                           ✓ History Agent auto-generating...
-                         </div>
-                       )}
-                     </div>
-
-                     {/* 500-Trade Milestone */}
-                     <div className="bg-white/[0.02] border border-amber-500/[0.1] p-2 rounded">
-                       <div className="flex items-center justify-between mb-1">
-                         <span className="text-[7px] text-amber-400/80 uppercase font-semibold">500-Trade</span>
-                         <span className="text-[7px] text-white/30 font-mono">{history.length}/500</span>
-                       </div>
-                       <div className="w-full h-1 bg-white/[0.05] rounded overflow-hidden border border-white/[0.08]">
-                         <div
-                           className="h-full bg-gradient-to-r from-amber-500 to-amber-400 transition-all duration-300"
-                           style={{ width: `${Math.min((history.length / 500) * 100, 100)}%` }}
-                         />
-                       </div>
-                       {history.length < 500 && (
-                         <div className="text-[7px] text-white/40 mt-1">
-                           {500 - history.length} trades until report
-                         </div>
-                       )}
-                       {history.length >= 500 && (
-                         <div className="text-[7px] text-amber-400 mt-1">
-                           ✓ History Agent auto-generating...
-                         </div>
-                       )}
-                     </div>
-                   </div>
-
-                   <div className="pt-1.5 border-t border-white/[0.05] text-[7px] text-white/40">
-                     <p>History Agent automatically generates reports at each milestone.</p>
-                   </div>
-                 </>
-               ) : report.error ? (
-                 <>
-                   <div className="text-[8px] text-red-400 p-1.5 bg-red-500/10 rounded border border-red-500/15">
-                     {report.error}
-                   </div>
-                   <button
-                     onClick={onCloseReport}
-                     className="w-full px-2 py-1 text-[7px] text-white/40 hover:text-white/60 transition-colors"
-                   >
-                     Close
-                   </button>
-                 </>
-               ) : (
-                 <>
-                   <div className="space-y-1.5 flex-1 min-h-0 overflow-y-auto">
-                     <div className="bg-white/[0.03] border border-white/[0.05] p-1.5 rounded">
-                       <div className="text-[7px] font-bold text-white/50 mb-1 uppercase">Metrics</div>
-                       <div className="space-y-0.5 text-[7px] text-white/50 font-mono">
-                         <div className="flex justify-between">
-                           <span>WR:</span>
-                           <span className="text-emerald-400">{report.metrics?.winRate}%</span>
-                         </div>
-                         <div className="flex justify-between">
-                           <span>P&L:</span>
-                           <span className={report.metrics?.totalPnL >= 0 ? 'text-emerald-400' : 'text-red-400'}>
-                             ${report.metrics?.totalPnL}
-                           </span>
-                         </div>
-                         <div className="flex justify-between">
-                           <span>PF:</span>
-                           <span>{report.metrics?.profitFactor}</span>
-                         </div>
-                       </div>
-                     </div>
-                     <div className="bg-white/[0.03] border border-white/[0.05] p-1.5 rounded flex-1 min-h-0 overflow-y-auto">
-                       <div className="text-[7px] font-bold text-white/50 mb-1 uppercase">Analysis</div>
-                       <p className="text-[7px] leading-relaxed text-white/45">
-                         {report.analysis}
-                       </p>
-                     </div>
-                   </div>
-                   
-                   {/* Master Recommendation Section */}
-                   {reportHistory && reportHistory.globalRecommendation && (
-                     <div className="mt-4 pt-3 border-t border-white/[0.05]">
-                       <div className="flex items-center gap-2 mb-2">
-                         <Sparkles className="w-3 h-3 text-violet-400/40" />
-                         <h3 className="text-[9px] font-semibold text-white/50 tracking-wide">Master</h3>
-                       </div>
-                       <div className="bg-white/[0.03] border border-violet-500/[0.15] p-3 rounded">
-                         <p className="text-[8px] leading-relaxed text-white/70">
-                           {reportHistory.globalRecommendation.recommendation}
-                         </p>
-                       </div>
-                       {reportHistory.globalRecommendation.keyInsights && reportHistory.globalRecommendation.keyInsights.length > 0 && (
-                         <div className="mt-3 space-y-1 text-[7px] text-white/50">
-                           {reportHistory.globalRecommendation.keyInsights.slice(0, 2).map((insight, i) => (
-                             <div key={i} className="flex gap-1">
-                               <span className="text-violet-400 shrink-0">•</span>
-                               <span className="line-clamp-2">{insight}</span>
-                             </div>
-                           ))}
-                         </div>
-                       )}
-                     </div>
-                   )}
-                   
-                   <button
-                     onClick={onCloseReport}
-                     className="w-full px-2 py-1 text-[7px] text-white/40 hover:text-white/60 transition-colors mt-4"
-                   >
-                     Close
-                   </button>
-                 </>
-               )}
-             </div>
-           </div>
-
-          {/* Reports Vertical Stack — 1 col, spans full height */}
-          {reportHistory && ((reportHistory.notes50?.items?.length ?? 0) > 0 || (reportHistory.notes500?.items?.length ?? 0) > 0) && (
-            <div className="col-span-1 flex flex-col gap-3 min-h-0">
-              {/* 50-Trade Notes */}
-              {(reportHistory.notes50?.items?.length ?? 0) > 0 && (
-                <div className="bg-white/[0.02] border border-white/[0.05] flex flex-col min-h-0 rounded">
-                  <div className="flex items-center gap-2 px-3 py-2 border-b border-white/[0.05] shrink-0">
-                    <Target className="w-3 h-3 text-cyan-400/40" />
-                    <h3 className="text-[9px] font-semibold text-white/50 tracking-wide">50-Trade</h3>
-                  </div>
-                  <div className="overflow-y-auto flex-1 min-h-0 p-3 space-y-2">
-                    {reportHistory.notes50?.items
-                      .filter(item => item.status === 'active')
-                      .slice(0, 3)
-                      .map((item) => (
-                        <div key={item.id} className="bg-white/[0.02] border border-cyan-500/[0.1] p-2 rounded">
-                          <p className="text-[7.5px] text-white/60 leading-tight">{item.content}</p>
-                        </div>
-                      ))}
-                  </div>
-                </div>
-              )}
-
-              {/* 500-Trade Notes */}
-              {(reportHistory.notes500?.items?.length ?? 0) > 0 && (
-                <div className="bg-white/[0.02] border border-white/[0.05] flex flex-col min-h-0 rounded">
-                  <div className="flex items-center gap-2 px-3 py-2 border-b border-white/[0.05] shrink-0">
-                    <TrendingUp className="w-3 h-3 text-amber-400/40" />
-                    <h3 className="text-[9px] font-semibold text-white/50 tracking-wide">500-Trade</h3>
-                  </div>
-                  <div className="overflow-y-auto flex-1 min-h-0 p-3 space-y-2">
-                    {reportHistory.notes500?.items
-                      .filter(item => item.status === 'active')
-                      .slice(0, 3)
-                      .map((item) => (
-                        <div key={item.id} className="bg-white/[0.02] border border-amber-500/[0.1] p-2 rounded">
-                          <p className="text-[7.5px] text-white/60 leading-tight">{item.content}</p>
-                        </div>
-                      ))}
-                  </div>
-                </div>
-              )}
+            {/* Left: Live Analysis or Session Summary — 6 cols */}
+            <div className="mt-3">
+              <SummarySection aiAnalysis={aiAnalysis} stats={stats} reports={reports} />
             </div>
-          )}
-
-          {/* Left: Live Analysis or Session Summary — 6 cols */}
-          <SummarySection aiAnalysis={aiAnalysis} stats={stats} reports={reports} />
+          </div>
         </div>
 
         {/* Unified Agent Modal with Tabs */}

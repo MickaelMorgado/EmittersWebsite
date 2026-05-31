@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import AgentReportsModal from './components/AgentReportsModal';
 import AIReportsSection from './components/AIReportsSection';
 import EquityChart from './components/EquityChart';
 import Header from './components/Header';
@@ -68,6 +69,13 @@ interface GlobalRecommendation {
   keyInsights: string[];
 }
 
+interface SimulatedAgentOutput {
+  trend: { direction: 'BUY' | 'SELL' | 'NEUTRAL'; score: number };
+  history: { rrTarget: string; consistency: number; score: number };
+  risk: { slDistance: number; tpRatio: string; positionSize: string; score: number };
+  news: { sentiment: 'Bullish' | 'Neutral' | 'Bearish'; volatility: number; score: number };
+}
+
 interface ReportHistory {
   notes50: Notes | null;
   notes500: Notes | null;
@@ -105,22 +113,115 @@ export default function TradingBotDashboard() {
   const [reportHistory, setReportHistory] = useState<ReportHistory | null>(null);
   const [debugMode, setDebugMode] = useState(false);
   const [lastSignal, setLastSignal] = useState<{ signal: string; timestamp: string } | null>(null);
+  const [simulatedAgents, setSimulatedAgents] = useState<SimulatedAgentOutput | null>(null);
+  const [reportsModalOpen, setReportsModalOpen] = useState(false);
+  const [latestNews, setLatestNews] = useState<any[]>([]);
+
+  const addReport = useCallback(async (agent: string, message: string, data?: any, action?: string) => {
+    try {
+      await fetch('/api/trading-bot/agent-reports', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ agent, message, data, action }),
+      });
+    } catch (error) {
+      console.error('Failed to add report:', error);
+    }
+  }, []);
+
+  const fetchNews = useCallback(async () => {
+    try {
+      const res = await fetch('/api/trading-bot/news');
+      const data = await res.json();
+      setLatestNews(data.news || []);
+
+      // News agent generates report
+      if (data.news.length > 0) {
+        const topNews = data.news[0];
+        const sentiment = topNews.analysis?.sentiment || 'Neutral';
+        const impact = topNews.analysis?.impact || 'Low';
+
+        addReport(
+          'news',
+          `📰 ${topNews.title.substring(0, 60)}...`,
+          {
+            source: topNews.source,
+            sentiment,
+            impact,
+            relevance: topNews.analysis?.relevanceScore,
+          },
+          `${sentiment} | ${impact} Impact`
+        );
+      }
+    } catch (error) {
+      console.error('Failed to fetch news:', error);
+    }
+  }, [addReport]);
 
   const generateDebugSignal = useCallback(async () => {
-    const signals = ['BUY', 'SELL', 'NEUTRAL'];
-    const randomSignal = signals[Math.floor(Math.random() * signals.length)];
     const timestamp = new Date().toISOString();
+
+    // Simulate agent outputs
+    const trendDirections: ('BUY' | 'SELL' | 'NEUTRAL')[] = ['BUY', 'SELL', 'NEUTRAL'];
+    const trendDir = trendDirections[Math.floor(Math.random() * 3)];
+    const trendScore = Math.floor(Math.random() * 26); // 0-25
+
+    const rrTargets = ['1:1.5', '1:3', '1:4', '1:6'];
+    const rrTarget = rrTargets[Math.floor(Math.random() * 4)];
+    const historyScore = Math.floor(Math.random() * 26); // 0-25
+    const consistency = 50 + Math.floor(Math.random() * 50); // 50-100%
+
+    const slDistances = [1.0, 1.5, 2.0, 2.5];
+    const slDist = slDistances[Math.floor(Math.random() * 4)];
+    const tpRatios = ['1:1.5', '1:3', '1:4', '1:6'];
+    const tpRatio = tpRatios[Math.floor(Math.random() * 4)];
+    const positionSizes = ['0.01', '0.02', '0.03', '0.05'];
+    const posSize = positionSizes[Math.floor(Math.random() * 4)];
+    const riskScore = Math.floor(Math.random() * 26); // 0-25
+
+    const sentiments: ('Bullish' | 'Neutral' | 'Bearish')[] = ['Bullish', 'Neutral', 'Bearish'];
+    const sentiment = sentiments[Math.floor(Math.random() * 3)];
+    const volatility = 10 + Math.floor(Math.random() * 20); // 10-30 (VIX-like)
+    const newsScore = Math.floor(Math.random() * 26); // 0-25
+
+    const simulated: SimulatedAgentOutput = {
+      trend: { direction: trendDir, score: trendScore },
+      history: { rrTarget, consistency, score: historyScore },
+      risk: { slDistance: slDist, tpRatio, positionSize: posSize, score: riskScore },
+      news: { sentiment, volatility, score: newsScore }
+    };
+
+    const totalScore = trendScore + historyScore + riskScore + newsScore;
+    const masterDecision = totalScore >= 75
+      ? (trendDir === 'BUY' ? 'BUY' : trendDir === 'SELL' ? 'SELL' : 'NEUTRAL')
+      : 'NEUTRAL';
+
+    setSimulatedAgents(simulated);
+    setLastSignal({ signal: masterDecision, timestamp });
+
+    console.log(`
+[DEBUG SIMULATION] ${new Date(timestamp).toLocaleTimeString()}
+├─ Trend Agent:   ${trendDir} (${trendScore}pts)
+├─ History Agent: ${rrTarget} R:R, ${consistency}% consistency (${historyScore}pts)
+├─ Risk Agent:    SL ${slDist}%, TP ${tpRatio}, Size ${posSize} (${riskScore}pts)
+├─ News Agent:    ${sentiment}, VIX ${volatility} (${newsScore}pts)
+└─ Master Gate:   ${totalScore}pts / 100 → ${totalScore >= 75 ? '✓ OPEN' : '✗ CLOSED'} → Signal: ${masterDecision}
+    `);
 
     try {
       const res = await fetch('/api/trading-bot/signal', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ signal: randomSignal, timestamp, debug: true })
+        body: JSON.stringify({
+          signal: masterDecision,
+          timestamp,
+          debug: true,
+          simulated
+        })
       });
 
-      if (res.ok) {
-        setLastSignal({ signal: randomSignal, timestamp });
-        console.log(`[MASTER AGENT] 🤖 Signal: ${randomSignal} | Time: ${new Date(timestamp).toLocaleTimeString()}`);
+      if (!res.ok) {
+        console.error('Failed to send debug signal');
       }
     } catch (error) {
       console.error('Failed to send debug signal:', error);
@@ -164,6 +265,10 @@ export default function TradingBotDashboard() {
 
   useEffect(() => {
     setLoading(true);
+
+    // Fetch news on mount and periodically
+    fetchNews();
+    const newsInterval = setInterval(fetchNews, 30000); // Fetch news every 30s
 
     // Fetch report history on mount and periodically
     fetchReportHistory();
@@ -265,8 +370,9 @@ export default function TradingBotDashboard() {
       positionsSource?.close();
       if (fallbackInterval) clearInterval(fallbackInterval);
       clearInterval(reportHistoryInterval);
+      clearInterval(newsInterval);
     };
-  }, [fetchTrades, fetchReportHistory]);
+  }, [fetchTrades, fetchReportHistory, fetchNews]);
 
 
   const refreshData = async () => {
@@ -389,6 +495,53 @@ export default function TradingBotDashboard() {
     };
   }, [history]);
 
+  // Generate agent reports (after reports is computed)
+  useEffect(() => {
+    if (!stats.totalTrades || stats.totalTrades === 0) return;
+
+    // Trend Agent report
+    const trend = reports.longestWinStreak > 3 ? 'UPTREND' : reports.longestLoseStreak > 3 ? 'DOWNTREND' : 'NEUTRAL';
+    addReport(
+      'trend',
+      `📈 Trend Detection: ${trend}`,
+      {
+        winStreak: reports.longestWinStreak,
+        lossStreak: reports.longestLoseStreak,
+        ma200Angle: reports.longestWinStreak > 3 ? 0.0045 : reports.longestLoseStreak > 3 ? -0.0035 : 0.0008,
+      },
+      trend
+    );
+
+    // Risk Agent report
+    const riskStatus = reports.maxDrawdown > stats.totalPnl * 0.5 ? '⚠️ HIGH' : '✓ WITHIN LIMITS';
+    const rrRatio = reports.longestWinStreak > 3 ? '1:6-9' : reports.longestLoseStreak > 3 ? '1:3-6' : '1:1.5';
+    addReport(
+      'risk',
+      `🛡️ Risk Assessment: ${riskStatus}`,
+      {
+        maxDrawdown: `${reports.maxDrawdown.toFixed(2)}%`,
+        rrRatio,
+        positionSize: reports.longestWinStreak > 3 ? '0.02-0.05' : '0.01',
+      },
+      riskStatus
+    );
+
+    // History Agent report
+    const consistency = stats.totalTrades > 100 ? 87 : stats.totalTrades > 50 ? 72 : 0;
+    const edgeQuality = stats.totalTrades > 100 && reports.longestWinStreak > 3 ? '✓ STRONG' : '⚠ MONITOR';
+    addReport(
+      'history',
+      `📊 Performance Analysis: ${edgeQuality}`,
+      {
+        totalTrades: stats.totalTrades,
+        winRate: `${stats.winRate}%`,
+        consistency: `${consistency}%`,
+        expectancy: reports.expectancy.toFixed(4),
+      },
+      edgeQuality
+    );
+  }, [reports.longestWinStreak, reports.longestLoseStreak, reports.maxDrawdown, reports.expectancy, stats.totalTrades, stats.totalPnl, stats.winRate, addReport]);
+
   return (
     <div className="h-screen overflow-hidden bg-[#06080f] text-white selection:bg-cyan-500/30 flex flex-col">
       {/* Ambient background glow */}
@@ -407,10 +560,11 @@ export default function TradingBotDashboard() {
           onRefresh={refreshData}
           debugMode={debugMode}
           onDebugToggle={setDebugMode}
+          onReportsClick={() => setReportsModalOpen(true)}
         />
 
         {/* Charts Row: Equity (large) + P&L sparkline (small) */}
-        <div className="grid grid-cols-4 gap-2 mb-3 shrink-0" style={{ height: '35%' }}>
+        <div className="grid grid-cols-4 gap-2 mb-3 shrink-0" style={{ height: '20%' }}>
           {/* Equity Curve — 2 cols */}
           <div className="col-span-3">
             <EquityChart data={equityData} />
@@ -436,6 +590,9 @@ export default function TradingBotDashboard() {
             reportHistory={reportHistory}
             generateReport={generateReport}
             onCloseReport={() => setReport(null)}
+            lastSignal={lastSignal}
+            simulatedAgents={simulatedAgents}
+            latestNews={latestNews}
           />
 
           {/* Metrics & History Combined — 70/30 split */}
@@ -454,9 +611,15 @@ export default function TradingBotDashboard() {
 
         {/* Footer */}
         <footer className="mt-2 flex items-center justify-center shrink-0">
-          <span className="text-[8px] text-white/10">MikaBot</span>
+          <span className="text-[8px] text-white/10">MikaBot v0.1</span>
         </footer>
       </div>
+
+      {/* Agent Reports Modal */}
+      <AgentReportsModal
+        isOpen={reportsModalOpen}
+        onClose={() => setReportsModalOpen(false)}
+      />
     </div>
   );
 }
