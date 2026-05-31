@@ -75,7 +75,7 @@ export default function SummarySection({ aiAnalysis, stats, reports }: SummarySe
                 <div>
                   <div className="flex items-center gap-2 mb-3">
                     <div className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
-                    <span className="text-[10px] font-bold text-cyan-300/80 uppercase tracking-wider">Performance</span>
+                    <span className="text-[10px] font-bold text-cyan-300/80 uppercase tracking-wider">Profitability</span>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
