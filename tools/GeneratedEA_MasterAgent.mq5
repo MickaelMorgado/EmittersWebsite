@@ -6,7 +6,7 @@
 //+------------------------------------------------------------------+
 
 #property copyright "HYTEK"
-#property version   "1.32"
+#property version   "1.33"
 #property description "Master Agent Integrated EMA Crossover - Dynamic SL/TP from Agent Parameters"
 #property strict
 
@@ -46,7 +46,7 @@ datetime lastTradeDay = 0;
 datetime lastSignalTime = 0;
 const int MAGIC_NUMBER = 12345;
 string lastSignalString = "";
-const string EA_VERSION = "1.32";  // Must match #property version above
+const string EA_VERSION = "1.33";  // Must match #property version above
 const string TRADES_FILE = "trades.json";  // File to update with version
 
 //+------------------------------------------------------------------+
