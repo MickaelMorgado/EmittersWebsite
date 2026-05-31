@@ -205,30 +205,35 @@ export default function TradingBotDashboard() {
       ? (trendDir === 'BUY' ? 'BUY' : trendDir === 'SELL' ? 'SELL' : 'NEUTRAL')
       : 'NEUTRAL';
 
-    // Calculate trading parameters from agent data
-    // SL: Use risk agent's SL distance (pips)
-    const baseSlPips = slDist * 100; // Convert to pips (e.g., 1.0 → 100 pips)
-    const slPips = Math.max(Math.round(baseSlPips), 50); // Minimum 50 pips
-
-    // TP: Parse R:R ratio and calculate TP from SL
+    // AGENT COMMUNICATION FLOW:
+    // History Agent → passes R:R ratio based on market regime analysis
     const rrMatch = rrTarget.match(/1:(\d+\.?\d*)/);
     const rrRatio = rrMatch ? parseFloat(rrMatch[1]) : 1.5;
-    const tpPips = Math.round(slPips * rrRatio);
+    console.log(`[HISTORY→RISK] Passing R:R ratio: ${rrTarget} (${rrRatio}:1) based on market regime`);
 
-    // Position size from risk agent
+    // Risk Agent → uses History's R:R to calculate final TP from its SL
+    const baseSlPips = slDist * 100; // Convert to pips (e.g., 1.0 → 100 pips)
+    const slPips = Math.max(Math.round(baseSlPips), 50); // Minimum 50 pips for broker compliance
+    const tpPips = Math.round(slPips * rrRatio); // TP = SL × R:R (from History Agent)
     const posSize_num = parseFloat(posSize);
+
+    console.log(`[RISK AGENT] Calculated: SL=${slPips}pips, TP=${tpPips}pips (using History's R:R), Size=${posSize}`);
+
+    // Master Agent → aggregates all signals
     const confidence = (totalScore / 100) * 100; // Convert to percentage
 
     setSimulatedAgents(simulated);
     setLastSignal({ signal: masterDecision, timestamp });
 
     console.log(`
-[DEBUG SIMULATION] ${new Date(timestamp).toLocaleTimeString()}
-├─ Trend Agent:   ${trendDir} (${trendScore}pts)
-├─ History Agent: ${rrTarget} R:R, ${consistency}% consistency (${historyScore}pts)
-├─ Risk Agent:    SL ${slPips}pips, TP ${tpPips}pips, Size ${posSize} (${riskScore}pts)
-├─ News Agent:    ${sentiment}, VIX ${volatility} (${newsScore}pts)
-└─ Master Gate:   ${totalScore}pts / 100 → Confidence: ${confidence.toFixed(0)}% → Signal: ${masterDecision}
+[SIGNAL GENERATION] ${new Date(timestamp).toLocaleTimeString()}
+├─ Trend Agent:    ${trendDir} (${trendScore}pts)
+├─ History Agent:  Regime Analysis → R:R=${rrTarget} (${consistency}% consistency) (${historyScore}pts)
+│   └→ [PASSES R:R RATIO TO RISK AGENT]
+├─ Risk Agent:     SL=${slPips}pips, TP=${tpPips}pips (from History's R:R), Size=${posSize} (${riskScore}pts)
+│   └→ [PASSES SL/TP/SIZE TO MASTER AGENT]
+├─ News Agent:     ${sentiment}, VIX ${volatility} (${newsScore}pts)
+└─ Master Gate:    ${totalScore}pts/100 → Confidence: ${confidence.toFixed(0)}% → ${masterDecision}
     `);
 
     try {
@@ -239,18 +244,41 @@ export default function TradingBotDashboard() {
           signal: masterDecision,
           timestamp,
           debug: true,
-          // Trading parameters for EA execution
+          // Trading parameters calculated through agent chain
+          // History Agent → R:R ratio → Risk Agent → SL/TP/Size → Master Agent
           stopLossPips: slPips,
           takeProfitPips: tpPips,
           positionSize: posSize_num,
           riskPercent: 2.0,
           confidence: Math.round(confidence),
-          // Agent data for logging
+          // Agent communication flow for audit trail
           agentData: {
-            trend: { direction: trendDir, score: trendScore },
-            history: { rrTarget, consistency, score: historyScore },
-            risk: { slPips, tpPips, positionSize: posSize_num, score: riskScore },
-            news: { sentiment, volatility, score: newsScore }
+            trend: {
+              direction: trendDir,
+              score: trendScore,
+              role: 'Provides entry direction'
+            },
+            history: {
+              rrTarget,
+              consistency,
+              score: historyScore,
+              rrRatio,
+              role: 'Market regime analysis → passes R:R to Risk Agent'
+            },
+            risk: {
+              slPips,
+              tpPips,
+              rrRatioUsed: rrRatio,
+              positionSize: posSize_num,
+              score: riskScore,
+              role: 'Receives R:R from History → calculates final SL/TP → passes to Master'
+            },
+            news: {
+              sentiment,
+              volatility,
+              score: newsScore,
+              role: 'Provides market context'
+            }
           }
         })
       });
