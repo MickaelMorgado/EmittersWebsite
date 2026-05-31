@@ -462,16 +462,12 @@ export default function AIReportsSection({
                   50% { opacity: 1; filter: drop-shadow(0 0 4px currentColor); }
                   100% { opacity: 0.6; }
                 }
-                @keyframes bounceScale {
-                  0%, 100% { transform: scale(1); }
-                  50% { transform: scale(1.08); }
-                }
                 @keyframes shimmerWave {
                   0% { background-position: -1000px 0; }
                   100% { background-position: 1000px 0; }
                 }
                 .agent-active-risk {
-                  animation: agentPulseRisk 1.2s ease-in-out infinite, bounceScale 1.4s ease-in-out infinite !important;
+                  animation: agentPulseRisk 1.2s ease-in-out infinite !important;
                   background: linear-gradient(to-br, rgba(239,68,68,0.15), rgba(239,68,68,0.05)) !important;
                   background-image: linear-gradient(to-br, rgba(239,68,68,0.15), rgba(239,68,68,0.05)) !important;
                   border-color: rgba(239,68,68,0.35) !important;
