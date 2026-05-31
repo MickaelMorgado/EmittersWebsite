@@ -480,7 +480,8 @@ bool HasOpenLongs()
 {
     for(int i = PositionsTotal() - 1; i >= 0; i--)
     {
-        if(PositionSelectByIndex(i))
+        ulong ticket = PositionGetTicket(i);
+        if(ticket > 0 && PositionSelectByTicket(ticket))
         {
             if(PositionGetString(POSITION_SYMBOL) == _Symbol &&
                PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY &&
@@ -495,7 +496,8 @@ bool HasOpenShorts()
 {
     for(int i = PositionsTotal() - 1; i >= 0; i--)
     {
-        if(PositionSelectByIndex(i))
+        ulong ticket = PositionGetTicket(i);
+        if(ticket > 0 && PositionSelectByTicket(ticket))
         {
             if(PositionGetString(POSITION_SYMBOL) == _Symbol &&
                PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_SELL &&
@@ -510,13 +512,14 @@ void ClosePositionsByType(ENUM_POSITION_TYPE type)
 {
     for(int i = PositionsTotal() - 1; i >= 0; i--)
     {
-        if(PositionSelectByIndex(i))
+        ulong ticket = PositionGetTicket(i);
+        if(ticket > 0 && PositionSelectByTicket(ticket))
         {
             if(PositionGetString(POSITION_SYMBOL) == _Symbol &&
                PositionGetInteger(POSITION_TYPE) == type &&
                PositionGetInteger(POSITION_MAGIC) == MAGIC_NUMBER)
             {
-                trade.PositionClose(PositionGetTicket(0));
+                trade.PositionClose(ticket);
             }
         }
     }
@@ -526,12 +529,13 @@ void CloseAllPositions()
 {
     for(int i = PositionsTotal() - 1; i >= 0; i--)
     {
-        if(PositionSelectByIndex(i))
+        ulong ticket = PositionGetTicket(i);
+        if(ticket > 0 && PositionSelectByTicket(ticket))
         {
             if(PositionGetString(POSITION_SYMBOL) == _Symbol &&
                PositionGetInteger(POSITION_MAGIC) == MAGIC_NUMBER)
             {
-                trade.PositionClose(PositionGetTicket(0));
+                trade.PositionClose(ticket);
             }
         }
     }
@@ -542,7 +546,8 @@ void UpdateDailyPnL()
     dailyPnL = 0;
     for(int i = PositionsTotal() - 1; i >= 0; i--)
     {
-        if(PositionSelectByIndex(i))
+        ulong ticket = PositionGetTicket(i);
+        if(ticket > 0 && PositionSelectByTicket(ticket))
         {
             if(PositionGetString(POSITION_SYMBOL) == _Symbol &&
                PositionGetInteger(POSITION_MAGIC) == MAGIC_NUMBER)
@@ -569,7 +574,8 @@ void ManageTrailingStop()
 {
     for(int i = PositionsTotal() - 1; i >= 0; i--)
     {
-        if(PositionSelectByIndex(i))
+        ulong ticket = PositionGetTicket(i);
+        if(ticket > 0 && PositionSelectByTicket(ticket))
         {
             if(PositionGetString(POSITION_SYMBOL) == _Symbol &&
                PositionGetInteger(POSITION_MAGIC) == MAGIC_NUMBER)
@@ -582,13 +588,13 @@ void ManageTrailingStop()
                 {
                     double newSL = currentPrice - (TS_Pips * _Point);
                     if(newSL > currentSL)
-                        trade.PositionModify(PositionGetTicket(0), newSL, PositionGetDouble(POSITION_TP));
+                        trade.PositionModify(ticket, newSL, PositionGetDouble(POSITION_TP));
                 }
                 else if(PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_SELL)
                 {
                     double newSL = currentPrice + (TS_Pips * _Point);
                     if(newSL < currentSL)
-                        trade.PositionModify(PositionGetTicket(0), newSL, PositionGetDouble(POSITION_TP));
+                        trade.PositionModify(ticket, newSL, PositionGetDouble(POSITION_TP));
                 }
             }
         }
