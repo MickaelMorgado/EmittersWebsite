@@ -1,59 +1,5 @@
 import { NextResponse } from 'next/server';
 
-// Trading news headlines database
-const TRADING_NEWS = [
-  {
-    title: 'Federal Reserve signals higher-for-longer interest rate stance amid inflation concerns',
-    source: 'Bloomberg',
-    keywords: ['Fed', 'inflation', 'rates'],
-  },
-  {
-    title: 'Tech stocks rally on AI optimism, Nasdaq closes near all-time highs',
-    source: 'Reuters',
-    keywords: ['tech', 'AI', 'rally'],
-  },
-  {
-    title: 'Oil prices surge past $90 as geopolitical tensions escalate',
-    source: 'MarketWatch',
-    keywords: ['oil', 'energy', 'geopolitical'],
-  },
-  {
-    title: 'JPMorgan reports stronger-than-expected earnings, outpaces analyst estimates',
-    source: 'CNBC',
-    keywords: ['earnings', 'finance', 'beat'],
-  },
-  {
-    title: 'Dollar strengthens against major currencies on economic data',
-    source: 'FX Street',
-    keywords: ['currency', 'dollar', 'strong'],
-  },
-  {
-    title: 'European markets decline as economic growth concerns mount',
-    source: 'Investing.com',
-    keywords: ['Europe', 'economy', 'decline'],
-  },
-  {
-    title: 'Bitcoin climbs past $65,000 amid institutional adoption wave',
-    source: 'CoinDesk',
-    keywords: ['crypto', 'Bitcoin', 'surge'],
-  },
-  {
-    title: 'Manufacturing PMI falls below 50, signaling economic contraction',
-    source: 'Trading Economics',
-    keywords: ['manufacturing', 'PMI', 'contraction'],
-  },
-  {
-    title: 'Apple announces record iPhone sales, stock hits new peak',
-    source: 'Yahoo Finance',
-    keywords: ['Apple', 'tech', 'sales', 'beat'],
-  },
-  {
-    title: 'Gold surges as investors seek safe-haven assets amid uncertainty',
-    source: 'Kitco',
-    keywords: ['gold', 'safe-haven', 'surge'],
-  },
-];
-
 interface NewsAnalysis {
   sentiment: 'Bullish' | 'Neutral' | 'Bearish';
   keywords: string[];
@@ -65,9 +11,9 @@ function analyzeSentiment(text: string): NewsAnalysis {
   const lowerText = text.toLowerCase();
 
   // Bullish keywords
-  const bullishWords = ['surge', 'rally', 'jump', 'gain', 'bull', 'strong', 'positive', 'soar', 'growth', 'beat', 'profit', 'climb', 'peak', 'outpace'];
+  const bullishWords = ['surge', 'rally', 'jump', 'gain', 'bull', 'strong', 'positive', 'soar', 'growth', 'beat', 'profit', 'climb', 'peak', 'outpace', 'rise', 'recovery'];
   // Bearish keywords
-  const bearishWords = ['crash', 'plunge', 'fall', 'loss', 'bear', 'weak', 'negative', 'decline', 'miss', 'threat', 'contraction', 'concerns', 'weakness'];
+  const bearishWords = ['crash', 'plunge', 'fall', 'loss', 'bear', 'weak', 'negative', 'decline', 'miss', 'threat', 'contraction', 'concerns', 'weakness', 'drop', 'slump'];
 
   const bullishCount = bullishWords.filter(w => lowerText.includes(w)).length;
   const bearishCount = bearishWords.filter(w => lowerText.includes(w)).length;
@@ -89,42 +35,82 @@ function analyzeSentiment(text: string): NewsAnalysis {
   return { sentiment, keywords, impact, relevanceScore };
 }
 
+function parseRSSFeed(xmlString: string) {
+  const items: any[] = [];
+
+  // Extract items from RSS
+  const itemRegex = /<item>([\s\S]*?)<\/item>/g;
+  let match;
+
+  while ((match = itemRegex.exec(xmlString)) !== null) {
+    const itemContent = match[1];
+
+    // Extract fields using regex
+    const titleMatch = itemContent.match(/<title[^>]*>([^<]+)<\/title>/);
+    const descMatch = itemContent.match(/<description[^>]*>([^<]+)<\/description>/);
+    const linkMatch = itemContent.match(/<link[^>]*>([^<]+)<\/link>/);
+    const pubDateMatch = itemContent.match(/<pubDate[^>]*>([^<]+)<\/pubDate>/);
+
+    if (titleMatch) {
+      items.push({
+        title: titleMatch[1].trim(),
+        description: descMatch ? descMatch[1].trim() : '',
+        link: linkMatch ? linkMatch[1].trim() : '',
+        pubDate: pubDateMatch ? new Date(pubDateMatch[1]).toISOString() : new Date().toISOString(),
+      });
+    }
+  }
+
+  return items;
+}
+
 export async function GET(request: Request) {
   try {
-    // Simulate news rotation by time-based selection
-    const hour = new Date().getHours();
-    const newsPool = TRADING_NEWS;
-
-    // Shuffle news based on hour to simulate different headlines
-    const shuffled = [...newsPool].sort(() => {
-      const seed = hour * 12345; // Use hour as seed
-      return (Math.sin(seed) * 10000) % 1 - 0.5;
+    // Fetch from Financial Juice RSS feed
+    const response = await fetch('https://www.financialjuice.com/feed.ashx?xy=rss', {
+      method: 'GET',
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+      },
     });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch RSS: ${response.status}`);
+    }
+
+    const xmlText = await response.text();
+    const parsedItems = parseRSSFeed(xmlText);
 
     // Analyze all news
-    const analyzedNews = shuffled.map((news, idx) => ({
-      title: news.title,
-      source: news.source,
-      pubDate: new Date(Date.now() - (idx * 60000)).toISOString(), // Stagger timestamps
-      content: news.title,
-      link: `https://news.example.com/${idx}`,
-      analysis: analyzeSentiment(news.title),
+    const analyzedNews = parsedItems.map((item) => ({
+      title: item.title,
+      source: 'Financial Juice',
+      pubDate: item.pubDate,
+      content: item.description || item.title,
+      link: item.link,
+      analysis: analyzeSentiment(item.title + ' ' + (item.description || '')),
     }));
 
-    // Sort by relevance
-    analyzedNews.sort((a, b) => b.analysis.relevanceScore - a.analysis.relevanceScore);
+    // Sort by relevance and date
+    analyzedNews.sort((a, b) => {
+      const relevanceDiff = b.analysis.relevanceScore - a.analysis.relevanceScore;
+      if (relevanceDiff !== 0) return relevanceDiff;
+      return new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime();
+    });
 
     return NextResponse.json({
-      news: analyzedNews.slice(0, 10), // Return top 10
+      news: analyzedNews.slice(0, 15), // Return top 15
       timestamp: new Date().toISOString(),
-      newsCount: TRADING_NEWS.length,
+      newsCount: analyzedNews.length,
+      source: 'Financial Juice RSS Feed',
     });
   } catch (error) {
-    console.error('Error fetching news:', error);
+    console.error('Error fetching RSS news:', error);
     return NextResponse.json({
       news: [],
-      error: 'Failed to fetch news',
+      error: `Failed to fetch news: ${error instanceof Error ? error.message : 'Unknown error'}`,
       timestamp: new Date().toISOString(),
+      source: 'Financial Juice RSS Feed',
     });
   }
 }
