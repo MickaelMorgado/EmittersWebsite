@@ -64,53 +64,125 @@ function parseRSSFeed(xmlString: string) {
   return items;
 }
 
+async function fetchNewsViaLLM() {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) {
+    throw new Error('ANTHROPIC_API_KEY not configured');
+  }
+
+  const prompt = `Fetch and summarize the latest financial market news from multiple sources (Bloomberg, Reuters, MarketWatch, CNBC, Yahoo Finance, etc.).
+
+  Return EXACTLY this JSON format (no markdown, no extra text):
+  {
+    "news": [
+      {
+        "title": "headline",
+        "source": "source name",
+        "description": "2-3 sentence summary",
+        "link": "https://example.com",
+        "pubDate": "ISO 8601 timestamp"
+      }
+    ]
+  }
+
+  Include 10-12 recent news items. Focus on: market movements, earnings, Fed/economic data, major corporate news.`;
+
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+    },
+    body: JSON.stringify({
+      model: 'claude-3-5-sonnet-20241022',
+      max_tokens: 2048,
+      messages: [
+        {
+          role: 'user',
+          content: prompt,
+        },
+      ],
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Claude API error: ${response.status}`);
+  }
+
+  const data = await response.json();
+  const content = data.content[0].text;
+
+  // Parse JSON from response
+  const jsonMatch = content.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) {
+    throw new Error('Could not parse JSON from Claude response');
+  }
+
+  const parsed = JSON.parse(jsonMatch[0]);
+  return parsed.news || [];
+}
+
 export async function GET(request: Request) {
   try {
-    // Fetch from Financial Juice RSS feed
-    const response = await fetch('https://www.financialjuice.com/feed.ashx?xy=rss', {
-      method: 'GET',
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-      },
-    });
+    let newsItems: any[] = [];
+    let source = 'Financial Juice RSS Feed';
 
-    if (!response.ok) {
-      throw new Error(`Failed to fetch RSS: ${response.status}`);
+    // Try RSS first
+    try {
+      const response = await fetch('https://www.financialjuice.com/feed.ashx?xy=rss', {
+        method: 'GET',
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        },
+        signal: AbortSignal.timeout(5000), // 5s timeout
+      });
+
+      if (response.ok) {
+        const xmlText = await response.text();
+        newsItems = parseRSSFeed(xmlText);
+        source = 'Financial Juice RSS Feed';
+      } else {
+        throw new Error(`RSS: ${response.status}`);
+      }
+    } catch (rssError) {
+      console.warn('RSS feed failed, falling back to Claude API:', rssError);
+
+      // Fallback to Claude API for multi-source fetch
+      newsItems = await fetchNewsViaLLM();
+      source = 'Claude AI Multi-Source Feed';
     }
 
-    const xmlText = await response.text();
-    const parsedItems = parseRSSFeed(xmlText);
-
     // Analyze all news
-    const analyzedNews = parsedItems.map((item) => ({
+    const analyzedNews = newsItems.map((item: any) => ({
       title: item.title,
-      source: 'Financial Juice',
-      pubDate: item.pubDate,
+      source: item.source || source,
+      pubDate: item.pubDate || new Date().toISOString(),
       content: item.description || item.title,
-      link: item.link,
+      link: item.link || '',
       analysis: analyzeSentiment(item.title + ' ' + (item.description || '')),
     }));
 
     // Sort by relevance and date
-    analyzedNews.sort((a, b) => {
+    analyzedNews.sort((a: any, b: any) => {
       const relevanceDiff = b.analysis.relevanceScore - a.analysis.relevanceScore;
       if (relevanceDiff !== 0) return relevanceDiff;
       return new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime();
     });
 
     return NextResponse.json({
-      news: analyzedNews.slice(0, 15), // Return top 15
+      news: analyzedNews.slice(0, 15),
       timestamp: new Date().toISOString(),
       newsCount: analyzedNews.length,
-      source: 'Financial Juice RSS Feed',
+      source: source,
     });
   } catch (error) {
-    console.error('Error fetching RSS news:', error);
+    console.error('Error fetching news:', error);
     return NextResponse.json({
       news: [],
       error: `Failed to fetch news: ${error instanceof Error ? error.message : 'Unknown error'}`,
       timestamp: new Date().toISOString(),
-      source: 'Financial Juice RSS Feed',
+      source: 'News Feed',
     });
   }
 }
