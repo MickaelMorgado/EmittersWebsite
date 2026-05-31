@@ -42,6 +42,32 @@ function formatTimeAgo(timestamp: string): string {
   return `${Math.floor(seconds / 86400)}d ago`;
 }
 
+// Calculate optimal R:R ratio based on historical performance
+function calculateOptimalRRTarget(history: Trade[], reports: ReportMetrics): string {
+  if (history.length < 10) return '1:1.5'; // Default for low sample
+
+  // Get closed trades only (has result)
+  const closedTrades = history.filter(t => t.result);
+  if (closedTrades.length === 0) return '1:1.5';
+
+  // Calculate average win and loss
+  const wins = closedTrades.filter(t => t.result === 'WIN').map(t => t.pnl || 0).filter(p => p > 0);
+  const losses = closedTrades.filter(t => t.result === 'LOSS').map(t => Math.abs(t.pnl || 0)).filter(p => p > 0);
+
+  if (wins.length === 0 || losses.length === 0) return '1:1.5';
+
+  const avgWin = wins.reduce((a, b) => a + b, 0) / wins.length;
+  const avgLoss = losses.reduce((a, b) => a + b, 0) / losses.length;
+  const rrRatio = avgWin / avgLoss;
+
+  // Recommend based on actual performance
+  if (rrRatio > 3) return '1:3.5'; // Excellent
+  if (rrRatio > 2) return '1:3.0';
+  if (rrRatio > 1.5) return '1:2.0';
+  if (rrRatio > 1) return '1:1.5';
+  return '1:1.0'; // Poor, conservative
+}
+
 export default function HistoryAgentCard({
   activeAgent,
   agentLastRun,
@@ -59,6 +85,14 @@ export default function HistoryAgentCard({
   const recentLosses = recentTrades.filter(t => t.result === 'LOSS').length;
   const recentWinRate = recentTrades.length > 0 ? (recentWins / recentTrades.length * 100).toFixed(0) : '—';
   const totalRecentPnL = recentTrades.reduce((sum, t) => sum + (t.pnl || 0), 0);
+
+  // Calculate optimal RR target from history
+  const optimalRRTarget = calculateOptimalRRTarget(history, reports);
+
+  // Calculate expectancy for validation
+  const closedTrades = history.filter(t => t.result);
+  const winRate = closedTrades.length > 0 ? recentWins / closedTrades.length : 0;
+  const expectancy = (winRate * reports.avgWin || 0) - ((1 - winRate) * Math.abs(reports.avgLoss || 0));
 
   return (
     <div className={`bg-gradient-to-br from-emerald-500/[0.06] to-green-500/[0.02] border border-emerald-500/[0.1] p-2 group hover:border-emerald-500/[0.2] transition-colors rounded ${
@@ -124,6 +158,26 @@ export default function HistoryAgentCard({
         </div>
       )}
 
+      {/* RR Target & Recommendation Section */}
+      <div className="mb-2 pb-2 border-b border-white/[0.05]">
+        <div className="flex justify-between items-center mb-1">
+          <span className="text-[7px] text-white/40 uppercase font-bold">Recommended R:R</span>
+          <span className={`text-[9px] font-bold font-mono ${
+            optimalRRTarget.includes('3') ? 'text-emerald-400' :
+            optimalRRTarget.includes('2') ? 'text-emerald-300' :
+            'text-amber-400'
+          }`}>
+            {optimalRRTarget}
+          </span>
+        </div>
+        <p className="text-[7px] text-white/50 leading-tight">
+          {optimalRRTarget.includes('3') ? 'Based on strong avg win/loss ratio' :
+           optimalRRTarget.includes('2') ? 'Moderate performance - balanced approach' :
+           optimalRRTarget.includes('1.5') ? 'Conservative - build consistency' :
+           'Portfolio needs improvement'}
+        </p>
+      </div>
+
       {/* Metrics Section */}
       <p className="text-[8px] leading-tight text-white/45 mb-2">
         {stats.totalTrades > 100 ? '📊 Excellent dataset' : stats.totalTrades > 50 ? '📋 Good data' : '⏳ Build more trades'}
@@ -143,6 +197,12 @@ export default function HistoryAgentCard({
           </span>
         </div>
         <div className="flex justify-between">
+          <span className="text-white/30">Expectancy</span>
+          <span className={`font-mono font-bold ${expectancy > 0 ? 'text-emerald-400' : expectancy < 0 ? 'text-red-400' : 'text-amber-400'}`}>
+            {expectancy > 0 ? '+' : ''}{expectancy.toFixed(2)}
+          </span>
+        </div>
+        <div className="flex justify-between">
           <span className="text-white/30">Consistency</span>
           <span className="text-white/60 font-mono">
             {simulatedAgents ? `${simulatedAgents.history.consistency}%` : (stats.totalTrades > 100 ? '87%' : stats.totalTrades > 50 ? '72%' : '—')}
@@ -157,7 +217,7 @@ export default function HistoryAgentCard({
         <div className="flex justify-between pt-0.5 border-t border-white/[0.05]">
           <span className="text-white/30 font-bold">Analysis Status</span>
           <span className={`font-bold ${stats.totalTrades > 50 ? 'text-emerald-400' : 'text-yellow-400'}`}>
-            {stats.totalTrades > 50 ? '✓ Ready' : '⚠ Building'}
+            {stats.totalTrades > 50 ? '✓ Valid' : '⚠ Building'}
           </span>
         </div>
       </div>
