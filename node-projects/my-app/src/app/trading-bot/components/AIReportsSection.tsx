@@ -297,16 +297,24 @@ export default function AIReportsSection({
   }, [fetchNews, lastNewsFetchTime]);
 
   // History Agent: data-driven in normal mode, simulated in debug mode
+  // Triggers on new trade insertion OR report updates
   useEffect(() => {
-    if (!simulatedAgents && reportHistory?.globalRecommendation?.lastUpdatedAt) {
-      // Normal mode: trigger when reports update
-      setActiveAgent('history');
-      setAgentLastRun(prev => ({ ...prev, history: new Date().toISOString() }));
-      console.log(`[HISTORY AGENT] 📊 Active | Analyzing trading history & generating reports`);
-      const timer = setTimeout(() => setActiveAgent(null), 2500);
-      return () => clearTimeout(timer);
+    if (!simulatedAgents) {
+      // Normal mode: trigger when new trades are added OR reports update
+      const shouldTrigger = history.length > 0 && (
+        reportHistory?.globalRecommendation?.lastUpdatedAt ||
+        history.length > 0
+      );
+
+      if (shouldTrigger) {
+        setActiveAgent('history');
+        setAgentLastRun(prev => ({ ...prev, history: new Date().toISOString() }));
+        console.log(`[HISTORY AGENT] 📊 Active | Analyzing ${history.length} trades for performance insights`);
+        const timer = setTimeout(() => setActiveAgent(null), 2500);
+        return () => clearTimeout(timer);
+      }
     }
-  }, [reportHistory?.globalRecommendation?.lastUpdatedAt, simulatedAgents]);
+  }, [history.length, reportHistory?.globalRecommendation?.lastUpdatedAt, simulatedAgents]);
 
   // Debug mode: History Agent random trigger
   useEffect(() => {
@@ -665,6 +673,7 @@ export default function AIReportsSection({
                 reports={reports}
                 simulatedAgents={simulatedAgents}
                 reportHistory={reportHistory}
+                history={history}
                 onRulesClick={() => {
                   setSelectedAgent('history');
                   setActiveTab('rules');
