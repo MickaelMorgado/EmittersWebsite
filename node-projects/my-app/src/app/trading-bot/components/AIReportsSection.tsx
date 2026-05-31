@@ -365,70 +365,70 @@ export default function AIReportsSection({
                 @keyframes agentPulseRisk {
                   0%, 100% {
                     box-shadow:
-                      0 0 20px 0 rgba(239,68,68,0.4),
-                      0 0 40px 8px rgba(239,68,68,0.1),
+                      0 0 8px 0 rgba(239,68,68,0.3),
+                      0 0 16px 4px rgba(239,68,68,0.08),
                       inset 0 0 12px rgba(239,68,68,0.08);
                   }
                   50% {
                     box-shadow:
-                      0 0 40px 12px rgba(239,68,68,0.2),
-                      0 0 80px 20px rgba(239,68,68,0.08),
+                      0 0 16px 6px rgba(239,68,68,0.15),
+                      0 0 32px 12px rgba(239,68,68,0.05),
                       inset 0 0 20px rgba(239,68,68,0.15);
                   }
                 }
                 @keyframes agentPulseTrend {
                   0%, 100% {
                     box-shadow:
-                      0 0 20px 0 rgba(34,211,238,0.4),
-                      0 0 40px 8px rgba(34,211,238,0.1),
+                      0 0 8px 0 rgba(34,211,238,0.3),
+                      0 0 16px 4px rgba(34,211,238,0.08),
                       inset 0 0 12px rgba(34,211,238,0.08);
                   }
                   50% {
                     box-shadow:
-                      0 0 40px 12px rgba(34,211,238,0.2),
-                      0 0 80px 20px rgba(34,211,238,0.08),
+                      0 0 16px 6px rgba(34,211,238,0.15),
+                      0 0 32px 12px rgba(34,211,238,0.05),
                       inset 0 0 20px rgba(34,211,238,0.15);
                   }
                 }
                 @keyframes agentPulseNews {
                   0%, 100% {
                     box-shadow:
-                      0 0 20px 0 rgba(168,85,247,0.4),
-                      0 0 40px 8px rgba(168,85,247,0.1),
+                      0 0 8px 0 rgba(168,85,247,0.3),
+                      0 0 16px 4px rgba(168,85,247,0.08),
                       inset 0 0 12px rgba(168,85,247,0.08);
                   }
                   50% {
                     box-shadow:
-                      0 0 40px 12px rgba(168,85,247,0.2),
-                      0 0 80px 20px rgba(168,85,247,0.08),
+                      0 0 16px 6px rgba(168,85,247,0.15),
+                      0 0 32px 12px rgba(168,85,247,0.05),
                       inset 0 0 20px rgba(168,85,247,0.15);
                   }
                 }
                 @keyframes agentPulseHistory {
                   0%, 100% {
                     box-shadow:
-                      0 0 20px 0 rgba(16,185,129,0.4),
-                      0 0 40px 8px rgba(16,185,129,0.1),
+                      0 0 8px 0 rgba(16,185,129,0.3),
+                      0 0 16px 4px rgba(16,185,129,0.08),
                       inset 0 0 12px rgba(16,185,129,0.08);
                   }
                   50% {
                     box-shadow:
-                      0 0 40px 12px rgba(16,185,129,0.2),
-                      0 0 80px 20px rgba(16,185,129,0.08),
+                      0 0 16px 6px rgba(16,185,129,0.15),
+                      0 0 32px 12px rgba(16,185,129,0.05),
                       inset 0 0 20px rgba(16,185,129,0.15);
                   }
                 }
                 @keyframes agentPulseMaster {
                   0%, 100% {
                     box-shadow:
-                      0 0 20px 0 rgba(217,119,6,0.4),
-                      0 0 40px 8px rgba(217,119,6,0.1),
+                      0 0 8px 0 rgba(217,119,6,0.3),
+                      0 0 16px 4px rgba(217,119,6,0.08),
                       inset 0 0 12px rgba(217,119,6,0.08);
                   }
                   50% {
                     box-shadow:
-                      0 0 40px 12px rgba(217,119,6,0.2),
-                      0 0 80px 20px rgba(217,119,6,0.08),
+                      0 0 16px 6px rgba(217,119,6,0.15),
+                      0 0 32px 12px rgba(217,119,6,0.05),
                       inset 0 0 20px rgba(217,119,6,0.15);
                   }
                 }
