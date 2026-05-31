@@ -273,22 +273,26 @@ export default function AIReportsSection({
     }
   }, [simulatedAgents]);
 
-  // News Agent: API polling with rate-limit protection
+  // News Agent: Trigger animation only when news data arrives
+  useEffect(() => {
+    if (latestNews && latestNews.length > 0) {
+      setActiveAgent('news');
+      setAgentLastRun(prev => ({ ...prev, news: new Date().toISOString() }));
+      console.log(`[NEWS AGENT] 📰 Active | Received ${latestNews.length} news items`);
+      const timer = setTimeout(() => setActiveAgent(prev => prev === 'news' ? null : prev), 2500);
+      return () => clearTimeout(timer);
+    }
+  }, [latestNews]);
+
+  // News Agent: Polling schedule (fetches but doesn't animate until data arrives)
   useEffect(() => {
     const newsInterval = setInterval(() => {
-      // Only fetch actual news every 30+ seconds to avoid rate limiting
       const now = Date.now();
       if (fetchNews && now - lastNewsFetchTime >= 30000) {
         fetchNews();
         setLastNewsFetchTime(now);
       }
-
-      setActiveAgent('news');
-      setAgentLastRun(prev => ({ ...prev, news: new Date().toISOString() }));
-      console.log(`[NEWS AGENT] 📰 Active | ${simulatedAgents ? 'Checking for fresh news' : 'Polling economic events & market news'}`);
-      const timer = setTimeout(() => setActiveAgent(prev => prev === 'news' ? null : prev), 2500);
-      return () => clearTimeout(timer);
-    }, simulatedAgents ? (6000 + Math.random() * 4000) : 15000); // 6-10s in debug, 15s normal
+    }, simulatedAgents ? (8000 + Math.random() * 4000) : 30000); // 8-12s in debug, 30s normal
     return () => clearInterval(newsInterval);
   }, [simulatedAgents, fetchNews, lastNewsFetchTime]);
 
