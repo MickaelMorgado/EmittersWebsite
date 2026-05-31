@@ -114,6 +114,7 @@ interface AIReportsSectionProps {
   lastSignal?: { signal: string; timestamp: string } | null;
   simulatedAgents?: SimulatedAgentOutput | null;
   latestNews?: any[];
+  fetchNews?: () => Promise<void>;
 }
 
 
@@ -192,6 +193,7 @@ export default function AIReportsSection({
   lastSignal,
   simulatedAgents,
   latestNews,
+  fetchNews,
 }: AIReportsSectionProps) {
   const [selectedAgent, setSelectedAgent] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'rules' | 'reports'>('rules');
@@ -273,14 +275,19 @@ export default function AIReportsSection({
   // News Agent: API polling simulation (more frequent in debug mode)
   useEffect(() => {
     const newsInterval = setInterval(() => {
+      // Fetch actual news from API
+      if (fetchNews) {
+        fetchNews();
+      }
+
       setActiveAgent('news');
       setAgentLastRun(prev => ({ ...prev, news: new Date().toISOString() }));
-      console.log(`[NEWS AGENT] 📰 Active | ${simulatedAgents ? 'Simulated news received' : 'Checking economic events & market news'}`);
+      console.log(`[NEWS AGENT] 📰 Active | ${simulatedAgents ? 'Fetching simulated news' : 'Polling economic events & market news'}`);
       const timer = setTimeout(() => setActiveAgent(prev => prev === 'news' ? null : prev), 2500);
       return () => clearTimeout(timer);
     }, simulatedAgents ? (5000 + Math.random() * 3000) : 10000); // 5-8s in debug, 10s normal
     return () => clearInterval(newsInterval);
-  }, [simulatedAgents]);
+  }, [simulatedAgents, fetchNews]);
 
   // History Agent: data-driven in normal mode, simulated in debug mode
   useEffect(() => {

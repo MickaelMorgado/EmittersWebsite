@@ -593,6 +593,7 @@ export default function TradingBotDashboard() {
             lastSignal={lastSignal}
             simulatedAgents={simulatedAgents}
             latestNews={latestNews}
+            fetchNews={fetchNews}
           />
 
           {/* Metrics & History Combined — 70/30 split */}
