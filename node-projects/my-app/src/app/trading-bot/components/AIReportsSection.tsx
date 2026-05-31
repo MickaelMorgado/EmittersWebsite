@@ -115,6 +115,8 @@ interface AIReportsSectionProps {
   simulatedAgents?: SimulatedAgentOutput | null;
   latestNews?: any[];
   fetchNews?: () => Promise<void>;
+  debugMode?: boolean;
+  onDebugSignal?: (signal: 'BUY' | 'SELL') => void;
 }
 
 
@@ -713,6 +715,8 @@ export default function AIReportsSection({
               stats={stats}
               simulatedAgents={simulatedAgents}
               formatTimeAgo={formatTimeAgo}
+              debugMode={debugMode}
+              onDebugSignal={onDebugSignal}
             />
           </div>
 

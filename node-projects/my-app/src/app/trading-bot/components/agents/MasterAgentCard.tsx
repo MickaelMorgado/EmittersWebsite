@@ -17,6 +17,8 @@ interface MasterAgentCardProps {
   stats: BotStats;
   simulatedAgents?: SimulatedAgentOutput | null;
   formatTimeAgo: (timestamp: string) => string;
+  debugMode?: boolean;
+  onDebugSignal?: (signal: 'BUY' | 'SELL') => void;
 }
 
 function formatTimeAgo(timestamp: string): string {
@@ -92,6 +94,8 @@ export default function MasterAgentCard({
   reports,
   stats,
   simulatedAgents,
+  debugMode = false,
+  onDebugSignal,
 }: MasterAgentCardProps) {
   const calculateConfidence = () => {
     if (simulatedAgents) {
@@ -278,6 +282,27 @@ export default function MasterAgentCard({
           ? '⚠ GATE PARTIAL: Trade with adjusted risk/reward'
           : '✗ GATE CLOSED: Insufficient confidence'}
       </p>
+
+      {/* Debug Mode Triggers */}
+      {debugMode && (
+        <div className="mt-2 pt-2 border-t border-white/[0.05] space-y-2">
+          <p className="text-[7px] text-amber-400/70 font-bold uppercase">Debug Mode</p>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => onDebugSignal?.('BUY')}
+              className="py-1.5 px-2 rounded text-[8px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:border-emerald-500/100 transition-all cursor-pointer"
+            >
+              📈 BUY
+            </button>
+            <button
+              onClick={() => onDebugSignal?.('SELL')}
+              className="py-1.5 px-2 rounded text-[8px] font-bold bg-red-500/20 text-red-400 border border-red-500/30 hover:border-red-500/100 transition-all cursor-pointer"
+            >
+              📉 SELL
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
