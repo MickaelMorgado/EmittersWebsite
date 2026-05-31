@@ -6,8 +6,8 @@
 //+------------------------------------------------------------------+
 
 #property copyright "HYTEK"
-#property version   "2.00"
-#property description "Master Agent + 9/21 EMA Crossover with dynamic SL/TP"
+#property version   "1.31"
+#property description "Master Agent Integrated EMA Crossover - Dynamic SL/TP from Agent Parameters"
 #property strict
 
 #include <Trade\Trade.mqh>
@@ -65,9 +65,9 @@ int OnInit()
     trade.SetExpertMagicNumber(MAGIC_NUMBER);
     trade.SetDeviationInPoints(30);
 
-    Print("=== HYTEK EA v2.0 Initialized ===");
+    Print("=== HYTEK EA v1.31 Initialized ===");
     Print("Master Agent Integration: ", UseMasterSignals ? "ENABLED" : "DISABLED");
-    Print("Entry Strategy: Master Signals (if available) + 9/21 EMA Crossover (fallback)");
+    Print("Entry Strategy: Master Agent Signals (dynamic SL/TP) + 9/21 EMA Crossover (fallback)");
     Print("Default SL: ", SL_Pips, " pips | Default TP: ", TP_Pips, " pips");
 
     // Check broker's minimum stop distance requirement
@@ -93,7 +93,7 @@ void OnDeinit(const int reason)
 {
     if(handleEMA9 != INVALID_HANDLE) IndicatorRelease(handleEMA9);
     if(handleEMA21 != INVALID_HANDLE) IndicatorRelease(handleEMA21);
-    Print("HYTEK EA v2.0 Deinitialized");
+    Print("HYTEK EA v1.31 Deinitialized");
 }
 
 //+------------------------------------------------------------------+
