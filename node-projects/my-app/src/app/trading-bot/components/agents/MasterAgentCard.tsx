@@ -76,8 +76,8 @@ export default function MasterAgentCard({
     }`}>
       <div className="flex items-center justify-between gap-2 mb-2">
         <div className="flex items-center gap-2">
-          <Bot className="w-3 h-3 text-amber-400/70" />
-          <span className="text-[10px] font-bold text-amber-300/80 uppercase tracking-wider">Master</span>
+          <Bot className="agent-icon w-3 h-3 text-amber-400/70" />
+          <span className="agent-title text-[10px] font-bold text-amber-300/80 uppercase tracking-wider">Master</span>
           <span className="text-[8px] text-amber-400/50 font-mono">{formatTimeAgo(agentLastRun.master)}</span>
         </div>
         <span className={`text-xs font-bold px-2 py-0.5 ${getSignalColor()}`}>
@@ -97,7 +97,7 @@ export default function MasterAgentCard({
         </div>
         <div className="w-full h-1.5 bg-white/[0.05] rounded overflow-hidden border border-white/[0.08]">
           <div
-            className={`h-full transition-all duration-300 ${
+            className={`progress-bar h-full transition-all duration-300 ${
               total >= 75 ? 'bg-gradient-to-r from-emerald-500 to-emerald-400' : total >= 50 ? 'bg-gradient-to-r from-yellow-500 to-yellow-400' : 'bg-gradient-to-r from-red-500 to-red-400'
             }`}
             style={{ width: `${total}%` }}

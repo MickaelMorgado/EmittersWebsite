@@ -432,38 +432,118 @@ export default function AIReportsSection({
                       inset 0 0 20px rgba(217,119,6,0.15);
                   }
                 }
-                @keyframes shimmer {
-                  0%, 100% { opacity: 0.5; }
-                  50% { opacity: 1; }
+                @keyframes iconRotate {
+                  0% { transform: rotate(0deg) scale(1); }
+                  50% { transform: rotate(180deg) scale(1.15); }
+                  100% { transform: rotate(360deg) scale(1); }
+                }
+                @keyframes textGlowRisk {
+                  0%, 100% { text-shadow: 0 0 4px rgba(239,68,68,0.3); }
+                  50% { text-shadow: 0 0 12px rgba(239,68,68,0.6); }
+                }
+                @keyframes textGlowTrend {
+                  0%, 100% { text-shadow: 0 0 4px rgba(34,211,238,0.3); }
+                  50% { text-shadow: 0 0 12px rgba(34,211,238,0.6); }
+                }
+                @keyframes textGlowNews {
+                  0%, 100% { text-shadow: 0 0 4px rgba(168,85,247,0.3); }
+                  50% { text-shadow: 0 0 12px rgba(168,85,247,0.6); }
+                }
+                @keyframes textGlowHistory {
+                  0%, 100% { text-shadow: 0 0 4px rgba(16,185,129,0.3); }
+                  50% { text-shadow: 0 0 12px rgba(16,185,129,0.6); }
+                }
+                @keyframes textGlowMaster {
+                  0%, 100% { text-shadow: 0 0 4px rgba(217,119,6,0.3); }
+                  50% { text-shadow: 0 0 12px rgba(217,119,6,0.6); }
+                }
+                @keyframes progressFlow {
+                  0% { opacity: 0.6; }
+                  50% { opacity: 1; filter: drop-shadow(0 0 4px currentColor); }
+                  100% { opacity: 0.6; }
                 }
                 @keyframes bounceScale {
                   0%, 100% { transform: scale(1); }
                   50% { transform: scale(1.08); }
+                }
+                @keyframes shimmerWave {
+                  0% { background-position: -1000px 0; }
+                  100% { background-position: 1000px 0; }
                 }
                 .agent-active-risk {
                   animation: agentPulseRisk 1.2s ease-in-out infinite, bounceScale 1.4s ease-in-out infinite !important;
                   background: linear-gradient(to-br, rgba(239,68,68,0.15), rgba(239,68,68,0.05)) !important;
                   border-color: rgba(239,68,68,0.35) !important;
                 }
+                .agent-active-risk .agent-icon {
+                  animation: iconRotate 2s ease-in-out infinite;
+                  filter: drop-shadow(0 0 4px rgba(239,68,68,0.5));
+                }
+                .agent-active-risk .agent-title {
+                  animation: textGlowRisk 1.2s ease-in-out infinite;
+                }
+                .agent-active-risk .progress-bar {
+                  animation: progressFlow 1.2s ease-in-out infinite;
+                }
                 .agent-active-trend {
                   animation: agentPulseTrend 1.2s ease-in-out infinite, bounceScale 1.4s ease-in-out infinite !important;
                   background: linear-gradient(to-br, rgba(34,211,238,0.15), rgba(34,211,238,0.05)) !important;
                   border-color: rgba(34,211,238,0.35) !important;
+                }
+                .agent-active-trend .agent-icon {
+                  animation: iconRotate 2s ease-in-out infinite;
+                  filter: drop-shadow(0 0 4px rgba(34,211,238,0.5));
+                }
+                .agent-active-trend .agent-title {
+                  animation: textGlowTrend 1.2s ease-in-out infinite;
+                }
+                .agent-active-trend .progress-bar {
+                  animation: progressFlow 1.2s ease-in-out infinite;
                 }
                 .agent-active-news {
                   animation: agentPulseNews 1.2s ease-in-out infinite, bounceScale 1.4s ease-in-out infinite !important;
                   background: linear-gradient(to-br, rgba(168,85,247,0.15), rgba(168,85,247,0.05)) !important;
                   border-color: rgba(168,85,247,0.35) !important;
                 }
+                .agent-active-news .agent-icon {
+                  animation: iconRotate 2s ease-in-out infinite;
+                  filter: drop-shadow(0 0 4px rgba(168,85,247,0.5));
+                }
+                .agent-active-news .agent-title {
+                  animation: textGlowNews 1.2s ease-in-out infinite;
+                }
+                .agent-active-news .progress-bar {
+                  animation: progressFlow 1.2s ease-in-out infinite;
+                }
                 .agent-active-history {
                   animation: agentPulseHistory 1.2s ease-in-out infinite, bounceScale 1.4s ease-in-out infinite !important;
                   background: linear-gradient(to-br, rgba(16,185,129,0.15), rgba(16,185,129,0.05)) !important;
                   border-color: rgba(16,185,129,0.35) !important;
                 }
+                .agent-active-history .agent-icon {
+                  animation: iconRotate 2s ease-in-out infinite;
+                  filter: drop-shadow(0 0 4px rgba(16,185,129,0.5));
+                }
+                .agent-active-history .agent-title {
+                  animation: textGlowHistory 1.2s ease-in-out infinite;
+                }
+                .agent-active-history .progress-bar {
+                  animation: progressFlow 1.2s ease-in-out infinite;
+                }
                 .agent-active-master {
                   animation: agentPulseMaster 1.2s ease-in-out infinite, bounceScale 1.4s ease-in-out infinite !important;
                   background: linear-gradient(to-br, rgba(217,119,6,0.15), rgba(217,119,6,0.05)) !important;
                   border-color: rgba(217,119,6,0.35) !important;
+                }
+                .agent-active-master .agent-icon {
+                  animation: iconRotate 2s ease-in-out infinite;
+                  filter: drop-shadow(0 0 4px rgba(217,119,6,0.5));
+                }
+                .agent-active-master .agent-title {
+                  animation: textGlowMaster 1.2s ease-in-out infinite;
+                }
+                .agent-active-master .progress-bar {
+                  animation: progressFlow 1.2s ease-in-out infinite;
                 }
               `}</style>
 

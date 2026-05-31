@@ -40,7 +40,7 @@ export default function TrendAgentCard({
       <div className="flex items-center justify-between gap-1.5 mb-1">
         <div className="flex items-center gap-1">
           <Bot className="agent-icon w-2.5 h-2.5 text-cyan-400/60" />
-          <span className="text-[8px] font-bold text-cyan-300/80 uppercase tracking-wider">Trend</span>
+          <span className="agent-title text-[8px] font-bold text-cyan-300/80 uppercase tracking-wider">Trend</span>
           <span className="text-[7px] text-cyan-400/50 font-mono">{formatTimeAgo(agentLastRun.trend)}</span>
         </div>
         <div className="flex items-center gap-1">
@@ -65,7 +65,7 @@ export default function TrendAgentCard({
       </div>
       <div className="h-0.5 bg-white/[0.05] overflow-hidden mb-1">
         <div
-          className="h-full bg-cyan-500"
+          className="progress-bar h-full bg-cyan-500"
           style={{
             width: `${
               simulatedAgents
