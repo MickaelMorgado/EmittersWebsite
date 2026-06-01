@@ -2,6 +2,27 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+---
+
+## 🚀 QUICK START - Run These 3 Commands First
+
+Open 3 terminal windows and run these **in parallel**. Copy + paste the full lines:
+
+```bash
+# Terminal 1 - Ollama LLM Server (no path needed)
+ollama serve
+
+# Terminal 2 - Next.js Dashboard (copy entire line)
+cd /Users/mickael/development/EmittersWebsite/node-projects/my-app && npm run dev
+
+# Terminal 3 - File Sync Watchdog (copy entire line)
+cd /Users/mickael/development/MikaBot && python3 sync-trades.py
+```
+
+✅ **Done?** Access dashboard at: **http://localhost:3000**
+
+---
+
 ## Project Overview
 
 **Master Agent Trading System**: An AI-driven algorithmic trading platform that integrates a Next.js web dashboard with MetaTrader 5 Expert Advisor (EA). The system uses local Ollama LLM for real-time trading decisions while enforcing strict risk management via a gatekeeper Risk Agent.
@@ -266,28 +287,6 @@ OPENAI_API_KEY=xxx  # Optional fallback
 OPENROUTER_API_KEY=xxx  # Optional fallback
 HOME=/Users/mickael  # Required for file paths
 ```
-
-### Quick Start - 3 Commands (Copy & Paste Ready)
-
-Open 3 terminal windows and run these in parallel:
-
-```bash
-# Terminal 1 - Ollama LLM Server (no path needed)
-ollama serve
-
-# Terminal 2 - Next.js Dashboard (copy + paste entire line)
-cd /Users/mickael/development/EmittersWebsite/node-projects/my-app && npm run dev
-
-# Terminal 3 - File Sync Watchdog (copy + paste entire line)
-cd /Users/mickael/development/MikaBot && python3 sync-trades.py
-```
-
-**Access Dashboard**: http://localhost:3000  
-**Ollama API**: http://localhost:11434
-
-**Project Folders**:
-- Dashboard: `/Users/mickael/development/EmittersWebsite/node-projects/my-app`
-- EA & Data: `/Users/mickael/development/MikaBot`
 
 ### Full Setup (One-Time Only)
 
