@@ -107,10 +107,13 @@ Respond ONLY with valid JSON (no markdown):
 
 ANALYSIS RULES:
 
-1. CROSSOVER IS KING:
-   - If crossover_detected = true AND crossover_direction = "UP" → BUY signal allowed
-   - If crossover_detected = true AND crossover_direction = "DOWN" → SELL signal allowed
-   - If crossover_detected = false → entry_allowed = false (wait for next crossover)
+1. ALIGNMENT REQUIREMENT (CRITICAL):
+   Both conditions must be true for valid signal:
+   - Crossover detected: crossover_detected = true
+   - Direction match: crossover_direction matches MA50 trend
+     * crossover_direction="UP" AND ma_50_trend="Uptrend" → entry_allowed=true, direction=BUY
+     * crossover_direction="DOWN" AND ma_50_trend="Downtrend" → entry_allowed=true, direction=SELL
+     * Mismatch (e.g., UP crossover but Downtrend) → entry_allowed=false, direction=NEUTRAL (filter noise/chop)
 
 2. TREND BIAS (from Slow MA):
    - Price > Slow MA → Uptrend (bullish)
@@ -118,25 +121,24 @@ ANALYSIS RULES:
    - Price ≈ Slow MA (within 50 pips) → Neutral
 
 3. CONFIDENCE CALCULATION:
-   - Crossover detected: +40 points (most reliable signal)
+   - Crossover detected AND direction aligned: +40 points (strongest signal)
+   - Crossover detected but misaligned: +20 points (weak signal, typically filtered)
    - MA alignment (all 3 ordered correctly): +30 points
    - Price far from Slow MA (>100 pips): +20 points
-   - Crossover direction matches trend bias: +10 points
-   - Base: 40% if no crossover
+   - Base: 30% if no crossover detected
 
 4. ENTRY ALLOWED:
-   - TRUE only if crossover_detected = true
-   - Direction must match trend bias for maximum confidence
-   - FALSE otherwise (wait for actual crossover)
+   - TRUE only if: crossover_detected=true AND crossover_direction matches ma_50_trend
+   - FALSE if: crossover_detected=false OR direction mismatches trend (noise/whipsaw)
 
-EXAMPLE:
-- Crossover UP detected, Fast > Medium > Slow, Price > Slow → Strong BUY (confidence 90+)
-- Crossover UP detected, but Medium < Slow → Weak BUY (confidence 60)
-- No crossover detected → No entry (entry_allowed=false, direction=NEUTRAL)
-   - Price far from Slow MA (>100 pips): +20
-   - Only crossover signal: base 60%
+EXAMPLES:
+- Crossover UP, MA50 Trend UP, Price > MA50 → entry_allowed=true, direction=BUY (Strong 90+)
+- Crossover DOWN, MA50 Trend DOWN, Price < MA50 → entry_allowed=true, direction=SELL (Strong 90+)
+- Crossover UP, MA50 Trend DOWN (choppy) → entry_allowed=false, direction=NEUTRAL (noise, ignore)
+- Crossover DOWN, MA50 Trend UP (pullback) → entry_allowed=false, direction=NEUTRAL (noise, ignore)
+- No crossover → entry_allowed=false, direction=NEUTRAL (wait for actual crossover)
 
-4. Trend Strength:
+5. Trend Strength:
    - Confidence >= 80 → Strong
    - Confidence 50-79 → Moderate
    - Confidence < 50 → Weak`;
@@ -170,11 +172,23 @@ EXAMPLE:
       crossover_detected && crossover_direction === 'DOWN' ? 'DOWN' :
       'NONE';
 
+    // CRITICAL: Check alignment - crossover direction must match MA50 trend
+    // UP crossover only valid in Uptrend, DOWN crossover only valid in Downtrend
+    const isAligned =
+      (crossover_direction === 'UP' && ma_50_trend === 'Uptrend') ||
+      (crossover_direction === 'DOWN' && ma_50_trend === 'Downtrend');
+
+    const isValidSignal = crossover_detected && isAligned;
+    const finalDirection = isValidSignal ? trendData.direction : 'NEUTRAL';
+    const finalConfidence = isValidSignal
+      ? Math.min(100, Math.max(0, trendData.confidence || 50))
+      : 0;
+
     const signal: TrendSignal = {
       timestamp: new Date().toISOString(),
       symbol: 'BTCUSD',
-      direction: trendData.direction || 'NEUTRAL',
-      confidence: Math.min(100, Math.max(0, trendData.confidence || 50)),
+      direction: finalDirection,
+      confidence: finalConfidence,
       price,
       ma_9: ma_fast,
       ma_21: ma_medium,
@@ -182,9 +196,11 @@ EXAMPLE:
       ma_50_trend,
       crossover_status,
       trend_bias: trendData.trend_bias || 'Neutral',
-      entry_allowed: trendData.entry_allowed !== false,
+      entry_allowed: isValidSignal,
       trend_strength: trendData.trend_strength || 'Moderate',
-      reasoning: trendData.reasoning || 'Analysis complete'
+      reasoning: isValidSignal
+        ? trendData.reasoning || 'Crossover aligned with trend'
+        : 'Crossover misaligned with trend - filtering noise'
     };
 
     // Save to file
