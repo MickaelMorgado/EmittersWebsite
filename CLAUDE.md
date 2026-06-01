@@ -267,23 +267,27 @@ OPENROUTER_API_KEY=xxx  # Optional fallback
 HOME=/Users/mickael  # Required for file paths
 ```
 
-### Quick Start - 3 Commands (Copy & Paste)
+### Quick Start - 3 Commands (Copy & Paste Ready)
 
 Open 3 terminal windows and run these in parallel:
 
 ```bash
-# Terminal 1 - Ollama LLM Server
+# Terminal 1 - Ollama LLM Server (no path needed)
 ollama serve
 
-# Terminal 2 - Next.js Dashboard
+# Terminal 2 - Next.js Dashboard (copy + paste entire line)
 cd /Users/mickael/development/EmittersWebsite/node-projects/my-app && npm run dev
 
-# Terminal 3 - File Sync Watchdog
+# Terminal 3 - File Sync Watchdog (copy + paste entire line)
 cd /Users/mickael/development/MikaBot && python3 sync-trades.py
 ```
 
 **Access Dashboard**: http://localhost:3000  
 **Ollama API**: http://localhost:11434
+
+**Project Folders**:
+- Dashboard: `/Users/mickael/development/EmittersWebsite/node-projects/my-app`
+- EA & Data: `/Users/mickael/development/MikaBot`
 
 ### Full Setup (One-Time Only)
 
