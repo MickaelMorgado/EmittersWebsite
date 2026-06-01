@@ -267,25 +267,37 @@ OPENROUTER_API_KEY=xxx  # Optional fallback
 HOME=/Users/mickael  # Required for file paths
 ```
 
-### Starting Services
+### Quick Start - 3 Commands (Copy & Paste)
+
+Open 3 terminal windows and run these in parallel:
 
 ```bash
-# 1. Start Ollama (terminal 1)
+# Terminal 1 - Ollama LLM Server
 ollama serve
 
-# 2. In another terminal, pull model
+# Terminal 2 - Next.js Dashboard
+cd /Users/mickael/development/EmittersWebsite/node-projects/my-app && npm run dev
+
+# Terminal 3 - File Sync Watchdog
+cd /Users/mickael/development/MikaBot && python3 sync-trades.py
+```
+
+**Access Dashboard**: http://localhost:3000  
+**Ollama API**: http://localhost:11434
+
+### Full Setup (One-Time Only)
+
+```bash
+# 1. Pull Ollama model (run once)
 ollama pull llama2:7b
 
-# 3. Start dashboard dev server (terminal 2)
+# 2. Install dashboard dependencies (run once or after package.json changes)
 cd /Users/mickael/development/EmittersWebsite/node-projects/my-app
-npm run dev
+npm install
 
-# 4. Start file sync (terminal 3)
-cd /Users/mickael/development/MikaBot
-python3 sync-trades.py
-
-# 5. Load EA in MetaTrader 5
+# 3. Load EA in MetaTrader 5 (manual step)
 # Path: /Users/mickael/development/MikaBot/GeneratedEA_MasterAgent.mq5
+# Attach to BTCUSD chart
 ```
 
 ### File Paths (macOS)
