@@ -12,7 +12,11 @@ const OPENROUTER_TEXT_MODELS = [
   'meta-llama/llama-3.3-70b-instruct:free',
 ].filter(Boolean) as string[];
 
-export type AIProvider = 'openai' | 'openrouter';
+// Ollama config
+const OLLAMA_HOST = process.env.OLLAMA_HOST || 'http://localhost:11434';
+const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'llama2:7b';
+
+export type AIProvider = 'openai' | 'openrouter' | 'ollama';
 
 export interface AIResponse {
   content: string;
@@ -20,84 +24,229 @@ export interface AIResponse {
   error?: string;
 }
 
-export async function chatAI(prompt: string, fallback = true): Promise<AIResponse> {
+export interface ChatOptions {
+  provider?: AIProvider; // Force specific provider: 'ollama', 'openai', 'openrouter'
+  fallback?: boolean; // Allow fallback if primary fails (default: true)
+  temperature?: number; // For Ollama (default: 0.3 for agents, 0.7 for general)
+}
+
+/**
+ * Unified chat function - supports OpenAI, OpenRouter, and Ollama
+ * @param prompt The prompt to send
+ * @param options Provider selection, fallback behavior, temperature
+ */
+export async function chatAI(prompt: string, options?: ChatOptions): Promise<AIResponse> {
+  const { provider, fallback = true, temperature } = options || {};
   let lastError = '';
 
-  // Try OpenAI first
-  if (OPENAI_KEY) {
-    try {
-      const res = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${OPENAI_KEY}`
-        },
-        body: JSON.stringify({
-          model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
-          messages: [{ role: 'user', content: prompt }],
-          max_tokens: 800
-        })
-      });
-
-      const data = await res.json();
-      
-      if (data.choices?.[0]?.message?.content) {
-        return { content: data.choices[0].message.content, provider: 'openai' };
-      }
-
-      lastError = data.error?.message || `OpenAI HTTP ${res.status}`;
-      
-      if (data.error?.code === 'insufficient_quota') {
-        console.log('OpenAI quota exceeded, trying OpenRouter...');
-      } else if (!fallback) {
-        return { content: '', provider: 'openai', error: lastError || 'OpenAI error' };
-      }
-    } catch (err) {
-      console.error('OpenAI error:', err);
-      lastError = String(err);
-      if (!fallback) return { content: '', provider: 'openai', error: lastError };
-    }
+  // Force Ollama if specified
+  if (provider === 'ollama') {
+    return chatOllama(prompt, temperature);
   }
 
-  // Fallback to OpenRouter
-  if (OPENROUTER_KEY) {
-    for (const model of OPENROUTER_TEXT_MODELS) {
-      try {
-        const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${OPENROUTER_KEY}`,
-            'HTTP-Referer': 'https://emitterswebsite.com',
-            'X-Title': 'EmittersWebsite'
-          },
-          body: JSON.stringify({
-            model,
-            messages: [{ role: 'user', content: prompt }],
-            max_tokens: 800
-          })
-        });
+  // Force OpenAI if specified
+  if (provider === 'openai') {
+    const result = await chatOpenAI(prompt, temperature);
+    if (result.content || !fallback) return result;
+    lastError = result.error || 'OpenAI failed';
+  }
 
-        const data = await res.json();
-        
-        if (data.choices?.[0]?.message?.content) {
-          return { content: data.choices[0].message.content, provider: 'openrouter' };
-        }
+  // Force OpenRouter if specified
+  if (provider === 'openrouter') {
+    const result = await chatOpenRouter(prompt, temperature);
+    if (result.content || !fallback) return result;
+    lastError = result.error || 'OpenRouter failed';
+  }
 
-        lastError = data.error?.message || `OpenRouter ${model} HTTP ${res.status}`;
-        console.log(`OpenRouter model failed (${model}):`, lastError);
-      } catch (err) {
-        lastError = String(err);
-        console.log(`OpenRouter model failed (${model}):`, lastError);
-      }
+  // No specific provider: try OpenAI first, then OpenRouter
+  if (!provider) {
+    if (OPENAI_KEY) {
+      const result = await chatOpenAI(prompt, temperature);
+      if (result.content) return result;
+      lastError = result.error || 'OpenAI failed';
+
+      if (!fallback) return result;
     }
 
-    return { content: '', provider: 'openrouter', error: lastError || 'OpenRouter error' };
+    if (OPENROUTER_KEY) {
+      return chatOpenRouter(prompt, temperature);
+    }
   }
 
   return {
     content: '',
-    provider: 'openai',
-    error: lastError || 'No AI API keys configured',
+    provider: provider || 'openai',
+    error: lastError || 'No AI provider configured',
   };
+}
+
+/**
+ * Chat via Ollama (local LLM)
+ */
+async function chatOllama(prompt: string, temperature = 0.3): Promise<AIResponse> {
+  try {
+    const res = await fetch(`${OLLAMA_HOST}/api/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: OLLAMA_MODEL,
+        messages: [{ role: 'user', content: prompt }],
+        stream: false,
+        temperature: temperature || 0.3
+      })
+    });
+
+    if (!res.ok) {
+      return {
+        content: '',
+        provider: 'ollama',
+        error: `HTTP ${res.status}`
+      };
+    }
+
+    const data = await res.json();
+    if (data.message?.content) {
+      return { content: data.message.content, provider: 'ollama' };
+    }
+
+    return {
+      content: '',
+      provider: 'ollama',
+      error: 'No response from Ollama'
+    };
+  } catch (err) {
+    return {
+      content: '',
+      provider: 'ollama',
+      error: `Connection failed: ${String(err)}`
+    };
+  }
+}
+
+/**
+ * Chat via OpenAI
+ */
+async function chatOpenAI(prompt: string, temperature?: number): Promise<AIResponse> {
+  if (!OPENAI_KEY) {
+    return {
+      content: '',
+      provider: 'openai',
+      error: 'No OpenAI API key configured'
+    };
+  }
+
+  try {
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${OPENAI_KEY}`
+      },
+      body: JSON.stringify({
+        model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: 800,
+        ...(temperature !== undefined && { temperature })
+      })
+    });
+
+    const data = await res.json();
+
+    if (data.choices?.[0]?.message?.content) {
+      return { content: data.choices[0].message.content, provider: 'openai' };
+    }
+
+    return {
+      content: '',
+      provider: 'openai',
+      error: data.error?.message || `HTTP ${res.status}`
+    };
+  } catch (err) {
+    return {
+      content: '',
+      provider: 'openai',
+      error: String(err)
+    };
+  }
+}
+
+/**
+ * Chat via OpenRouter
+ */
+async function chatOpenRouter(prompt: string, temperature?: number): Promise<AIResponse> {
+  if (!OPENROUTER_KEY) {
+    return {
+      content: '',
+      provider: 'openrouter',
+      error: 'No OpenRouter API key configured'
+    };
+  }
+
+  for (const model of OPENROUTER_TEXT_MODELS) {
+    try {
+      const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${OPENROUTER_KEY}`,
+          'HTTP-Referer': 'https://emitterswebsite.com',
+          'X-Title': 'EmittersWebsite'
+        },
+        body: JSON.stringify({
+          model,
+          messages: [{ role: 'user', content: prompt }],
+          max_tokens: 800,
+          ...(temperature !== undefined && { temperature })
+        })
+      });
+
+      const data = await res.json();
+
+      if (data.choices?.[0]?.message?.content) {
+        return { content: data.choices[0].message.content, provider: 'openrouter' };
+      }
+
+      console.log(`OpenRouter ${model} failed:`, data.error?.message);
+    } catch (err) {
+      console.log(`OpenRouter ${model} error:`, String(err));
+    }
+  }
+
+  return {
+    content: '',
+    provider: 'openrouter',
+    error: 'All OpenRouter models failed'
+  };
+}
+
+/**
+ * Parse JSON from response (handles markdown code blocks and embedded JSON)
+ */
+export function parseJSON<T>(response: string): T | null {
+  try {
+    // Try direct JSON parse first
+    return JSON.parse(response);
+  } catch {
+    // Try extracting from markdown code block
+    const markdownMatch = response.match(/```(?:json)?\n?([\s\S]*?)\n?```/);
+    if (markdownMatch) {
+      try {
+        return JSON.parse(markdownMatch[1]);
+      } catch {
+        // Continue to next attempt
+      }
+    }
+
+    // Try finding JSON object in response (between first { and last })
+    const jsonMatch = response.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      try {
+        return JSON.parse(jsonMatch[0]);
+      } catch {
+        return null;
+      }
+    }
+
+    return null;
+  }
 }

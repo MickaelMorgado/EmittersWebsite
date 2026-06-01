@@ -44,6 +44,15 @@ export default function TrendAgentCard({
           <span className="text-[7px] text-cyan-400/50 font-mono">{formatTimeAgo(agentLastRun.trend)}</span>
         </div>
         <div className="flex items-center gap-1">
+          <span className={`text-[7px] px-1.5 py-0.5 rounded font-bold ${
+            simulatedAgents?.trend?.entry_allowed
+              ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30'
+              : simulatedAgents?.trend
+              ? 'bg-yellow-500/15 text-yellow-400 border border-yellow-500/20'
+              : 'bg-slate-500/10 text-slate-400 border border-slate-500/20'
+          }`}>
+            {simulatedAgents?.trend?.entry_allowed ? 'APPROVED' : simulatedAgents?.trend ? 'ANALYZING' : 'OFFLINE'}
+          </span>
           <button
             onClick={onRulesClick}
             className="p-0.5 hover:bg-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity"
@@ -58,9 +67,6 @@ export default function TrendAgentCard({
           >
             <FileText className="w-2.5 h-2.5 text-cyan-400/60" />
           </button>
-          <span className="text-[8px] font-bold text-cyan-400 font-mono">
-            {simulatedAgents ? `${simulatedAgents.trend.score}pts` : reports.longestWinStreak > 3 ? '25' : reports.longestLoseStreak > 3 ? '0' : '12'}%
-          </span>
         </div>
       </div>
       <div className="h-0.5 bg-white/[0.05] overflow-hidden mb-1">

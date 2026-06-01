@@ -196,6 +196,8 @@ export default function AIReportsSection({
   simulatedAgents,
   latestNews,
   fetchNews,
+  debugMode = false,
+  onDebugSignal,
 }: AIReportsSectionProps) {
   const [selectedAgent, setSelectedAgent] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'rules' | 'reports'>('rules');
@@ -731,7 +733,7 @@ export default function AIReportsSection({
           </div>
 
           {/* Report Card & History */}
-          <div class="col-span-2">
+          <div className="col-span-2">
             <ReportCard
               report={report}
               reportLoading={reportLoading}

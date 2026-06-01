@@ -15,6 +15,8 @@ interface Trade {
   type: string;
   price: number;
   openPrice?: number;
+  stopLoss?: number;
+  takeProfit?: number;
   lot: number;
   time: string;
   result?: 'WIN' | 'LOSS';
@@ -71,7 +73,16 @@ interface GlobalRecommendation {
 }
 
 interface SimulatedAgentOutput {
-  trend: { direction: 'BUY' | 'SELL' | 'NEUTRAL'; score: number };
+  trend: {
+    direction: 'BUY' | 'SELL' | 'NEUTRAL';
+    score: number;
+    ma_9?: number;
+    ma_21?: number;
+    ma_50?: number;
+    ma_50_trend?: 'Uptrend' | 'Downtrend' | 'Neutral';
+    crossover_status?: 'UP' | 'DOWN' | 'NONE';
+    entry_allowed?: boolean;
+  };
   history: { rrTarget: string; consistency: number; score: number };
   risk: { slDistance: number; tpRatio: string; positionSize: string; score: number };
   news: { sentiment: 'Bullish' | 'Neutral' | 'Bearish'; volatility: number; score: number };
@@ -193,8 +204,22 @@ export default function TradingBotDashboard() {
     const volatility = 10 + Math.floor(Math.random() * 20); // 10-30 (VIX-like)
     const newsScore = Math.floor(Math.random() * 26); // 0-25
 
+    // Generate sample MA values for debug display
+    const baseMa50 = 45000 + Math.random() * 1000; // Current MA50
+    const ma50Trend = trendDir === 'BUY' ? 'Uptrend' : trendDir === 'SELL' ? 'Downtrend' : 'Neutral';
+    const crossoverStatus = trendDir === 'BUY' ? 'UP' : trendDir === 'SELL' ? 'DOWN' : 'NONE';
+
     const simulated: SimulatedAgentOutput = {
-      trend: { direction: trendDir, score: trendScore },
+      trend: {
+        direction: trendDir,
+        score: trendScore,
+        ma_9: baseMa50 + (Math.random() * 200 - 100),    // MA9 near MA50
+        ma_21: baseMa50 + (Math.random() * 150 - 75),     // MA21 near MA50
+        ma_50: baseMa50,                                   // MA50 base
+        ma_50_trend: ma50Trend,
+        crossover_status: crossoverStatus,
+        entry_allowed: trendScore > 10 && crossoverStatus !== 'NONE'
+      },
       history: { rrTarget, consistency, score: historyScore },
       risk: { slDistance: slDist, tpRatio, positionSize: posSize, score: riskScore },
       news: { sentiment, volatility, score: newsScore }
@@ -271,6 +296,39 @@ export default function TradingBotDashboard() {
       signal: `Manual ${agent.toUpperCase()} trigger`,
       timestamp: new Date().toISOString(),
     });
+  }, []);
+
+  // Debug signal handler (Buy/Sell from Master Agent Card)
+  const handleDebugSignal = useCallback(async (signal: 'BUY' | 'SELL') => {
+    try {
+      console.log(`[DEBUG] Master Agent debug signal: ${signal}`);
+      const res = await fetch('/api/trading-bot/signal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          signal,
+          timestamp: new Date().toISOString(),
+          debug: true,
+          stopLossPips: 50,
+          takeProfitPips: 100,
+          positionSize: 0.01,
+          confidence: 50,
+        })
+      });
+
+      if (!res.ok) {
+        console.error('Failed to send debug signal:', await res.json());
+      } else {
+        const result = await res.json();
+        console.log(`✓ Debug signal sent: ${signal}`, result);
+        setLastSignal({
+          signal: `Debug ${signal}`,
+          timestamp: new Date().toISOString(),
+        });
+      }
+    } catch (error) {
+      console.error('Failed to send debug signal:', error);
+    }
   }, []);
 
   const fetchTrades = useCallback(async () => {
@@ -419,6 +477,49 @@ export default function TradingBotDashboard() {
     };
   }, [fetchTrades, fetchReportHistory, fetchNews]);
 
+  // Real-time Trend Agent data polling - reads trend_signal.json from EA
+  useEffect(() => {
+    const fetchTrendSignal = async () => {
+      try {
+        // Try to read trend_signal.json via API endpoint
+        const res = await fetch('/api/trading-bot/trend-signal');
+        if (res.ok) {
+          const trendData = await res.json();
+          setSimulatedAgents(prev => {
+            // Ensure all agent objects exist with defaults
+            const updated: SimulatedAgentOutput = prev || {
+              trend: { direction: 'NEUTRAL', score: 0 },
+              history: { rrTarget: '1:3', consistency: 0, score: 0 },
+              risk: { slDistance: 0, tpRatio: '1:3', positionSize: '0.02', score: 0 },
+              news: { sentiment: 'Neutral', volatility: 0, score: 0 },
+            };
+            return {
+              ...updated,
+              trend: {
+                direction: trendData.direction || 'NEUTRAL',
+                score: Math.max(0, (trendData.confidence || 0) / 4), // Convert confidence to 0-25 score
+                ma_9: trendData.ma_9,
+                ma_21: trendData.ma_21,
+                ma_50: trendData.ma_50,
+                ma_50_trend: trendData.ma_50_trend,
+                crossover_status: trendData.crossover_status,
+                entry_allowed: trendData.entry_allowed,
+              },
+            };
+          });
+          console.log('[DASHBOARD] Updated trend data from agent:', trendData);
+        }
+      } catch (error) {
+        // Silently fail - fallback to debug data if real agent unavailable
+      }
+    };
+
+    // Poll trend signal every 1 second
+    const trendInterval = setInterval(fetchTrendSignal, 1000);
+    fetchTrendSignal(); // Fetch immediately on mount
+
+    return () => clearInterval(trendInterval);
+  }, []);
 
   const refreshData = async () => {
     setLoading(true);
@@ -639,6 +740,8 @@ export default function TradingBotDashboard() {
             simulatedAgents={simulatedAgents}
             latestNews={latestNews}
             fetchNews={fetchNews}
+            debugMode={debugMode}
+            onDebugSignal={handleDebugSignal}
           />
 
           {/* Metrics & History Combined — 70/30 split */}

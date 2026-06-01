@@ -1,7 +1,9 @@
 "use client";
 
 import { Bot } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { ReportMetrics, BotStats, SimulatedAgentOutput } from '../AIReportsSection';
+
 
 interface AgentWeights {
   risk: number;
@@ -97,14 +99,37 @@ export default function MasterAgentCard({
   debugMode = false,
   onDebugSignal,
 }: MasterAgentCardProps) {
+  // Track which agents have reached APPROVED state (never regress)
+  const [approvedAgents, setApprovedAgents] = useState({
+    trend: false,
+    history: false,
+    risk: false,
+    news: false,
+  });
+
+  // Update approved agents when they reach APPROVED state
+  useEffect(() => {
+    const trendApproved = simulatedAgents?.trend?.entry_allowed === true;
+    const historyApproved = !!simulatedAgents?.history?.score;
+    const riskApproved = !!simulatedAgents?.risk?.score;
+    const newsApproved = simulatedAgents?.news?.sentiment === 'Bullish';
+
+    setApprovedAgents(prev => ({
+      trend: prev.trend || trendApproved,
+      history: prev.history || historyApproved,
+      risk: prev.risk || riskApproved,
+      news: prev.news || newsApproved,
+    }));
+  }, [simulatedAgents]);
+
   const calculateConfidence = () => {
-    if (simulatedAgents) {
+    if (simulatedAgents && simulatedAgents.risk && simulatedAgents.trend && simulatedAgents.news && simulatedAgents.history) {
       // Use dynamic weights for simulated agents too
       const weights = calculateDynamicWeights(reports, stats);
-      const weightedRisk = simulatedAgents.risk.score * (weights.risk / 0.25);
-      const weightedTrend = simulatedAgents.trend.score * (weights.trend / 0.25);
-      const weightedNews = simulatedAgents.news.score * (weights.news / 0.25);
-      const weightedHistory = simulatedAgents.history.score * (weights.history / 0.25);
+      const weightedRisk = (simulatedAgents.risk?.score || 0) * (weights.risk / 0.25);
+      const weightedTrend = (simulatedAgents.trend?.score || 0) * (weights.trend / 0.25);
+      const weightedNews = (simulatedAgents.news?.score || 0) * (weights.news / 0.25);
+      const weightedHistory = (simulatedAgents.history?.score || 0) * (weights.history / 0.25);
       return Math.min(100, (weightedRisk + weightedTrend + weightedNews + weightedHistory) / 4);
     }
 
@@ -170,23 +195,68 @@ export default function MasterAgentCard({
         </span>
       </div>
 
-      {/* Decision Percentile */}
-      <div className="mb-2.5">
-        <div className="flex items-center justify-between mb-1">
-          <span className="text-[8px] text-white/30 uppercase">Confidence Gate</span>
-          <span className={`text-[10px] font-bold font-mono ${
-            total >= 75 ? 'text-emerald-400' : total >= 50 ? 'text-yellow-400' : 'text-red-400'
+
+      {/* LAUNCH PAD - Agent Approval LEDs with Glow */}
+      <style>{`
+        @keyframes ledGlowCyan {
+          0%, 100% { box-shadow: 0 0 4px rgb(34, 211, 238), inset 0 0 4px rgb(34, 211, 238); }
+          50% { box-shadow: 0 0 12px rgb(34, 211, 238), inset 0 0 6px rgb(34, 211, 238); }
+        }
+        .led-approved { animation: ledGlowCyan 1.5s ease-in-out infinite; }
+      `}</style>
+
+      <div className="mb-2 pt-2 border-t border-white/[0.05]">
+        <div className="flex items-center justify-between mb-2.5">
+          <span className="text-[9px] text-white/30 uppercase font-bold tracking-wider">Launch Pad</span>
+          <span className={`text-[8px] font-bold px-2 py-0.5 rounded ${
+            approvedAgents.trend && approvedAgents.history && approvedAgents.risk && approvedAgents.news
+              ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+              : 'bg-yellow-500/10 text-yellow-400/60 border border-yellow-500/20'
           }`}>
-            {total}%
+            {approvedAgents.trend && approvedAgents.history && approvedAgents.risk && approvedAgents.news ? '🚀 GO' : '⏳ Waiting'}
           </span>
         </div>
-        <div className="w-full h-1.5 bg-white/[0.05] rounded overflow-hidden border border-white/[0.08]">
-          <div
-            className={`progress-bar h-full transition-all duration-300 ${
-              total >= 75 ? 'bg-gradient-to-r from-emerald-500 to-emerald-400' : total >= 50 ? 'bg-gradient-to-r from-yellow-500 to-yellow-400' : 'bg-gradient-to-r from-red-500 to-red-400'
-            }`}
-            style={{ width: `${total}%` }}
-          />
+
+        <div className="flex gap-3">
+          {/* Trend Agent LED + Label */}
+          <div className="flex items-center gap-1">
+            <div className={`w-3 h-3 rounded transition-all border border-white/20 ${
+              approvedAgents.trend
+                ? 'bg-cyan-500 led-approved shadow-cyan-500/70'
+                : 'bg-slate-500/40 shadow-slate-500/20'
+            }`} />
+            <span className="text-[6.5px] text-white/50">Trend</span>
+          </div>
+
+          {/* History Agent LED + Label */}
+          <div className="flex items-center gap-1">
+            <div className={`w-3 h-3 rounded transition-all border border-white/20 ${
+              approvedAgents.history
+                ? 'bg-cyan-500 led-approved shadow-cyan-500/70'
+                : 'bg-slate-500/40 shadow-slate-500/20'
+            }`} />
+            <span className="text-[6.5px] text-white/50">History</span>
+          </div>
+
+          {/* Risk Agent LED + Label */}
+          <div className="flex items-center gap-1">
+            <div className={`w-3 h-3 rounded transition-all border border-white/20 ${
+              approvedAgents.risk
+                ? 'bg-cyan-500 led-approved shadow-cyan-500/70'
+                : 'bg-slate-500/40 shadow-slate-500/20'
+            }`} />
+            <span className="text-[6.5px] text-white/50">Risk</span>
+          </div>
+
+          {/* News Agent LED + Label */}
+          <div className="flex items-center gap-1">
+            <div className={`w-3 h-3 rounded transition-all border border-white/20 ${
+              approvedAgents.news
+                ? 'bg-cyan-500 led-approved shadow-cyan-500/70'
+                : 'bg-slate-500/40 shadow-slate-500/20'
+            }`} />
+            <span className="text-[6.5px] text-white/50">News</span>
+          </div>
         </div>
       </div>
 

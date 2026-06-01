@@ -105,6 +105,15 @@ export default function HistoryAgentCard({
           <span className="text-[7px] text-emerald-400/50 font-mono">{formatTimeAgo(agentLastRun.history)}</span>
         </div>
         <div className="flex items-center gap-1">
+          <span className={`text-[7px] px-1.5 py-0.5 rounded font-bold ${
+            simulatedAgents?.history?.score
+              ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+              : simulatedAgents?.history
+              ? 'bg-yellow-500/15 text-yellow-400 border border-yellow-500/20'
+              : 'bg-slate-500/10 text-slate-400 border border-slate-500/20'
+          }`}>
+            {simulatedAgents?.history?.score ? 'APPROVED' : simulatedAgents?.history ? 'ANALYZING' : 'OFFLINE'}
+          </span>
           <button
             onClick={onRulesClick}
             className="p-0.5 hover:bg-emerald-500/10 rounded opacity-0 group-hover:opacity-100 transition-opacity"
@@ -119,9 +128,6 @@ export default function HistoryAgentCard({
           >
             <FileText className="w-2.5 h-2.5 text-emerald-400/60" />
           </button>
-          <span className="text-[8px] font-bold text-emerald-400 font-mono">
-            {simulatedAgents ? `${simulatedAgents.history.score}pts` : stats.totalTrades > 100 ? '25' : stats.totalTrades > 50 ? '15' : '0'}%
-          </span>
         </div>
       </div>
       <div className="h-0.5 bg-white/[0.05] rounded overflow-hidden mb-1">
@@ -205,7 +211,7 @@ export default function HistoryAgentCard({
         <div className="flex justify-between">
           <span className="text-white/30">Consistency</span>
           <span className="text-white/60 font-mono">
-            {simulatedAgents ? `${simulatedAgents.history.consistency}%` : (stats.totalTrades > 100 ? '87%' : stats.totalTrades > 50 ? '72%' : '—')}
+            {simulatedAgents?.history?.consistency ? `${simulatedAgents.history.consistency}%` : (stats.totalTrades > 100 ? '87%' : stats.totalTrades > 50 ? '72%' : '—')}
           </span>
         </div>
         <div className="flex justify-between">

@@ -45,6 +45,17 @@ export default function NewsAgentCard({
           <span className="text-[7px] text-violet-400/50 font-mono">{formatTimeAgo(agentLastRun.news)}</span>
         </div>
         <div className="flex items-center gap-1">
+          <span className={`text-[7px] px-1.5 py-0.5 rounded font-bold ${
+            simulatedAgents?.news?.sentiment === 'Bullish'
+              ? 'bg-violet-500/20 text-violet-400 border border-violet-500/30'
+              : simulatedAgents?.news?.sentiment === 'Neutral'
+              ? 'bg-yellow-500/15 text-yellow-400 border border-yellow-500/20'
+              : simulatedAgents?.news?.sentiment === 'Bearish'
+              ? 'bg-red-500/15 text-red-400 border border-red-500/20'
+              : 'bg-slate-500/10 text-slate-400 border border-slate-500/20'
+          }`}>
+            {simulatedAgents?.news?.sentiment ? simulatedAgents.news.sentiment.toUpperCase() : 'OFFLINE'}
+          </span>
           <button
             onClick={onRulesClick}
             className="p-0.5 hover:bg-violet-500/10 opacity-0 group-hover:opacity-100 transition-opacity"
@@ -59,9 +70,6 @@ export default function NewsAgentCard({
           >
             <FileText className="w-2.5 h-2.5 text-violet-400/60" />
           </button>
-          <span className="text-[8px] font-bold text-violet-400 font-mono">
-            {simulatedAgents ? `${simulatedAgents.news.score}pts` : '25%'}
-          </span>
         </div>
       </div>
       <div className="h-0.5 bg-white/[0.05] overflow-hidden mb-1">

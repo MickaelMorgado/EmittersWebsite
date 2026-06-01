@@ -8,6 +8,8 @@ interface Trade {
   type: string;
   price: number;
   openPrice?: number;
+  stopLoss?: number;
+  takeProfit?: number;
   lot: number;
   time: string;
   profit?: number;
@@ -27,7 +29,9 @@ function getPositionsData() {
           type: pos.type,
           price: pos.currentPrice || pos.entryPrice || pos.price || 0,
           openPrice: pos.entryPrice || pos.price || 0,
-          lot: 0.01,
+          stopLoss: pos.stopLoss || 0,
+          takeProfit: pos.takeProfit || 0,
+          lot: pos.volume || 0.01,
           time: pos.openTime || pos.time,
           profit: pos.profit || 0,
           pnl: pos.profit || 0,

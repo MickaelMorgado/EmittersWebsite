@@ -6,32 +6,26 @@
 //+------------------------------------------------------------------+
 
 #property copyright "HYTEK"
-#property version   "1.43"
-#property description "Master Agent Integrated EMA Crossover - Dynamic SL/TP from Agent Parameters"
+#property version   "1.65"
+#property description "Master Agent Integrated EMA Crossover - Dynamic SL/TP from Agent Parameters + Open Positions JSON"
 #property strict
 
 #include <Trade\Trade.mqh>
 #include <Files\FileTxt.mqh>
 
 //+------------------------------------------------------------------+
-//| INPUT PARAMETERS                                                 |
+//| CONFIGURATION                                                     |
 //+------------------------------------------------------------------+
 
-input bool UseMasterSignals = true;        // Use Master Agent signals if available
-input string SignalFilePath = "signals";   // Folder path for signal file
-input double SL_Pips = 50;                 // Default Stop Loss: 50 pips
-input double TP_Pips = 100;                // Default Take Profit: 100 pips
-input double TS_Pips = 0;                  // Trailing Stop: 0 (disabled)
-input double LotSize = 1.0;                // Fixed lot size
-input double RiskPercent = 2.0;            // Alternative: risk % per trade
-input int EMA_Fast = 9;                    // Fast EMA period
-input int EMA_Slow = 21;                   // Slow EMA period
-input string TradeStartHour = "09:50";     // Trade start time HH:MM
-input string TradeEndHour = "11:00";       // Trade end time HH:MM
-input bool TradeAllHours = false;          // If true, ignore time filter
-input int MaxTradesPerDay = 10;            // Maximum trades per day
-input double MaxDailyLoss = 500;           // Max loss in $ per day
-input bool CloseAllOnMaxLoss = false;      // Close all if max loss hit
+const string SIGNAL_FILE_PATH = "signal.txt";
+const double DEFAULT_SL_DISTANCE = 100.0;
+const double DEFAULT_TP_DISTANCE = 200.0;
+const double DEFAULT_LOT_SIZE = 0.01;
+const int EMA_FAST_PERIOD = 9;
+const int EMA_SLOW_PERIOD = 21;
+const int MAGIC_NUMBER = 12345;
+const string EA_VERSION = "1.65";
+const string TRADES_FILE = "trades.json";
 
 //+------------------------------------------------------------------+
 //| GLOBAL VARIABLES                                                 |
@@ -40,15 +34,8 @@ input bool CloseAllOnMaxLoss = false;      // Close all if max loss hit
 CTrade trade;
 int handleEMA9 = INVALID_HANDLE;
 int handleEMA21 = INVALID_HANDLE;
-int tradesToday = 0;
-double dailyPnL = 0;
-datetime lastTradeDay = 0;
-datetime lastSignalTime = 0;
 datetime lastHistoryUpdate = 0;
-const int MAGIC_NUMBER = 12345;
-string lastSignalString = "";
-const string EA_VERSION = "1.43";  // Must match #property version above
-const string TRADES_FILE = "trades.json";  // File to update with version
+string lastProcessedSignalTimestamp = "";
 
 //+------------------------------------------------------------------+
 //| EXPERT INITIALIZATION                                            |
@@ -56,8 +43,8 @@ const string TRADES_FILE = "trades.json";  // File to update with version
 
 int OnInit()
 {
-    handleEMA9 = iMA(_Symbol, _Period, EMA_Fast, 0, MODE_EMA, PRICE_CLOSE);
-    handleEMA21 = iMA(_Symbol, _Period, EMA_Slow, 0, MODE_EMA, PRICE_CLOSE);
+    handleEMA9 = iMA(_Symbol, _Period, EMA_FAST_PERIOD, 0, MODE_EMA, PRICE_CLOSE);
+    handleEMA21 = iMA(_Symbol, _Period, EMA_SLOW_PERIOD, 0, MODE_EMA, PRICE_CLOSE);
 
     if(handleEMA9 == INVALID_HANDLE || handleEMA21 == INVALID_HANDLE)
     {
@@ -69,25 +56,10 @@ int OnInit()
     trade.SetDeviationInPoints(30);
 
     Print("=== HYTEK EA v", EA_VERSION, " Initialized ===");
-    Print("Master Agent Integration: ", UseMasterSignals ? "ENABLED" : "DISABLED");
-    Print("Entry Strategy: Master Agent Signals (dynamic SL/TP) + 9/21 EMA Crossover (fallback)");
-    Print("Default SL: ", SL_Pips, " pips | Default TP: ", TP_Pips, " pips");
+    Print("Master Agent Signals: ENABLED");
+    Print("Signal file: ", SIGNAL_FILE_PATH);
 
-    // Check broker's minimum stop distance requirement
-    int minStopsPoints = (int)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
-    if(minStopsPoints > 0)
-    {
-        int minStopsPips = minStopsPoints / 10;
-        Print("=== BROKER INFO ===");
-        Print("Broker minimum stop distance: ", minStopsPoints, " points (", minStopsPips, " pips)");
-        if(SL_Pips < minStopsPips)
-            Print("WARNING: Default SL_Pips is less than broker minimum");
-    }
-
-    // Update trades.json with current EA version for web interface
     UpdateTradesFileVersion();
-
-    lastTradeDay = 0;
     return INIT_SUCCEEDED;
 }
 
@@ -123,6 +95,67 @@ void UpdateTradesFileVersion()
     else
     {
         Print("[WARNING] Could not write trades.json");
+    }
+}
+
+//+------------------------------------------------------------------+
+//| UPDATE OPEN POSITIONS TO POSITIONS.JSON                          |
+//+------------------------------------------------------------------+
+
+void UpdateOpenPositions()
+{
+    string json = "{\"version\":\"" + EA_VERSION + "\",\"openPositions\":[";
+    int posCount = 0;
+
+    for(int i = PositionsTotal() - 1; i >= 0; i--)
+    {
+        ulong ticket = PositionGetTicket(i);
+        if(ticket == 0) continue;
+
+        if(!PositionSelectByTicket(ticket)) continue;
+
+        // Filter to only our EA's trades (matching magic number)
+        long magicNumber = PositionGetInteger(POSITION_MAGIC);
+        if(magicNumber != MAGIC_NUMBER) continue;
+
+        // Get position properties
+        string symbol = PositionGetString(POSITION_SYMBOL);
+        long type = PositionGetInteger(POSITION_TYPE);
+        double entryPrice = PositionGetDouble(POSITION_PRICE_OPEN);
+        double currentPrice = PositionGetDouble(POSITION_PRICE_CURRENT);
+        double stopLoss = PositionGetDouble(POSITION_SL);
+        double takeProfit = PositionGetDouble(POSITION_TP);
+        double profit = PositionGetDouble(POSITION_PROFIT);
+        double volume = PositionGetDouble(POSITION_VOLUME);
+        datetime openTime = (datetime)PositionGetInteger(POSITION_TIME);
+
+        string typeStr = (type == POSITION_TYPE_BUY) ? "BUY" : "SELL";
+
+        if(posCount > 0) json += ",";
+
+        // Build position JSON with SL and TP
+        json += "{\"ticket\":" + (string)ticket +
+                ",\"symbol\":\"" + symbol +
+                "\",\"type\":\"" + typeStr +
+                "\",\"entryPrice\":" + DoubleToString(entryPrice, _Digits) +
+                ",\"currentPrice\":" + DoubleToString(currentPrice, _Digits) +
+                ",\"stopLoss\":" + DoubleToString(stopLoss, _Digits) +
+                ",\"takeProfit\":" + DoubleToString(takeProfit, _Digits) +
+                ",\"volume\":" + DoubleToString(volume, 2) +
+                ",\"profit\":" + DoubleToString(profit, 2) +
+                ",\"openTime\":\"" + TimeToString(openTime, TIME_DATE | TIME_MINUTES) + "\"}";
+
+        posCount++;
+    }
+
+    json += "],\"timestamp\":\"" + TimeToString(TimeCurrent(), TIME_DATE | TIME_MINUTES) + "\"}";
+
+    // Write to positions.json file
+    int handle = FileOpen("positions.json", FILE_WRITE);
+    if(handle != INVALID_HANDLE)
+    {
+        FileWriteString(handle, json);
+        FileClose(handle);
     }
 }
 
@@ -194,56 +227,19 @@ void UpdateTradesHistory()
 
 void OnTick()
 {
-    // ALWAYS update trade history - do this first before any other checks
+    // Update open positions (every tick for live data)
+    UpdateOpenPositions();
+
+    // Update trade history
     UpdateTradesHistory();
 
-    MqlDateTime dt;
-    TimeToStruct(TimeCurrent(), dt);
-
-    // Skip weekends
-    if(dt.day_of_week == 0 || dt.day_of_week == 6)
-        return;
-
-    // Reset daily counters
-    MqlDateTime lastDt;
-    TimeToStruct(lastTradeDay, lastDt);
-    if(dt.day != lastDt.day)
+    // Check for Master Agent signal
+    MasterSignalData masterData = {0};
+    if(ReadMasterSignal(masterData))
     {
-        tradesToday = 0;
-        dailyPnL = 0;
-        lastTradeDay = TimeCurrent();
+        Print("[OnTick] Signal: ", masterData.signal);
+        ProcessMasterSignal(masterData);
     }
-
-    UpdateDailyPnL();
-
-    // Check max daily loss
-    if(MaxDailyLoss > 0 && dailyPnL < -MaxDailyLoss)
-    {
-        if(CloseAllOnMaxLoss) CloseAllPositions();
-        return;
-    }
-
-    // Check trading hours
-    if(!TradeAllHours && !IsInTradingHours())
-        return;
-
-    // Check trade limit
-    if(tradesToday >= MaxTradesPerDay)
-        return;
-
-    // PRIMARY: Check for Master Agent signal
-    if(UseMasterSignals)
-    {
-        MasterSignalData masterData;
-        if(ReadMasterSignal(masterData))
-        {
-            ProcessMasterSignal(masterData);
-            return;  // Use Master signal, skip EMA logic
-        }
-    }
-
-    // FALLBACK: Use EMA crossover logic
-    ProcessEMACrossover();
 }
 
 //+------------------------------------------------------------------+
@@ -266,11 +262,14 @@ struct MasterSignalData
 
 bool ReadMasterSignal(MasterSignalData &data)
 {
-    string filePath = SignalFilePath + "/master_signal.txt";
+    string filePath = SIGNAL_FILE_PATH;
 
     int handle = FileOpen(filePath, FILE_READ | FILE_TXT);
     if(handle == INVALID_HANDLE)
-        return false;  // No signal file yet
+    {
+        Print("[ReadMasterSignal] FAILED: File not found: ", filePath);
+        return false;
+    }
 
     // Read entire file
     string content = "";
@@ -280,35 +279,41 @@ bool ReadMasterSignal(MasterSignalData &data)
     }
     FileClose(handle);
 
-    // Parse minimal JSON: signal, trading.stopLossPips, trading.takeProfitPips, trading.positionSize
+    Print("[ReadMasterSignal] File read, content length: ", StringLen(content));
+    Print("[ReadMasterSignal] Content: ", content);
 
-    // Extract signal
-    int signalPos = StringFind(content, "\"signal\":");
-    if(signalPos < 0) return false;
-
-    int quotePos = StringFind(content, "\"", signalPos + 10);
-    int endQuote = StringFind(content, "\"", quotePos + 1);
-    data.signal = StringSubstr(content, quotePos + 1, endQuote - quotePos - 1);
-
-    // Skip NEUTRAL signals
-    if(data.signal != "BUY" && data.signal != "SELL")
+    // Extract signal - search for "signal":"BUY" or "signal":"SELL"
+    if(StringFind(content, "\"signal\":\"BUY\"") >= 0)
+        data.signal = "BUY";
+    else if(StringFind(content, "\"signal\":\"SELL\"") >= 0)
+        data.signal = "SELL";
+    else
+    {
         return false;
+    }
 
-    // Extract trading.stopLossPips
-    ExtractDoubleFromJson(content, "stopLossPips", data.stopLossPips);
-    if(data.stopLossPips <= 0) data.stopLossPips = SL_Pips;
+    // Extract timestamp to avoid duplicate execution
+    int tsPos = StringFind(content, "\"timestamp\":\"");
+    if(tsPos < 0) return false;
+    int tsStart = tsPos + 14;
+    int tsEnd = StringFind(content, "\"", tsStart);
+    string timestamp = StringSubstr(content, tsStart, tsEnd - tsStart);
 
-    // Extract trading.takeProfitPips
-    ExtractDoubleFromJson(content, "takeProfitPips", data.takeProfitPips);
-    if(data.takeProfitPips <= 0) data.takeProfitPips = TP_Pips;
+    // Skip if we already processed this signal
+    if(timestamp == lastProcessedSignalTimestamp)
+    {
+        Print("[ReadMasterSignal] Skipping duplicate signal (", timestamp, ")");
+        return false;
+    }
 
-    // Extract trading.positionSize
-    ExtractDoubleFromJson(content, "positionSize", data.positionSize);
-    if(data.positionSize <= 0) data.positionSize = LotSize;
+    lastProcessedSignalTimestamp = timestamp;
+    Print("[ReadMasterSignal] Signal: ", data.signal);
 
-    // Extract confidence
-    ExtractDoubleFromJson(content, "confidence", data.confidence);
-    if(data.confidence <= 0) data.confidence = 75;
+    // Use defaults - price distance (not pips)
+    data.stopLossPips = DEFAULT_SL_DISTANCE;
+    data.takeProfitPips = DEFAULT_TP_DISTANCE;
+    data.positionSize = DEFAULT_LOT_SIZE;
+    data.confidence = 50;
 
     data.generatedTime = TimeCurrent();
 
@@ -332,12 +337,16 @@ bool ExtractDoubleFromJson(const string &json, const string &key, double &value)
     int startPos = keyPos + StringLen(searchKey);
     string valueStr = "";
 
+    // Skip whitespace
+    while(startPos < StringLen(json) && (json[startPos] == ' ' || json[startPos] == '\t' || json[startPos] == '\n'))
+        startPos++;
+
     // Extract number (could be integer or float)
     for(int i = startPos; i < StringLen(json); i++)
     {
-        char ch = json[i];  // MQL5: direct string indexing
+        char ch = json[i];
         if((ch >= '0' && ch <= '9') || ch == '.' || ch == '-')
-            valueStr = valueStr + ch;  // Direct char append in MQL5
+            valueStr = valueStr + ch;
         else
             break;
     }
@@ -355,27 +364,19 @@ void ProcessMasterSignal(const MasterSignalData &data)
 {
     if(data.signal == "BUY")
     {
-        // Close any open short positions first
         if(HasOpenShorts())
             ClosePositionsByType(POSITION_TYPE_SELL);
 
-        // Only open if no existing position
         if(!HasOpenTrade())
-        {
             OpenMasterBuyOrder(data.positionSize, data.stopLossPips, data.takeProfitPips);
-        }
     }
     else if(data.signal == "SELL")
     {
-        // Close any open long positions first
         if(HasOpenLongs())
             ClosePositionsByType(POSITION_TYPE_BUY);
 
-        // Only open if no existing position
         if(!HasOpenTrade())
-        {
             OpenMasterSellOrder(data.positionSize, data.stopLossPips, data.takeProfitPips);
-        }
     }
 }
 
@@ -383,36 +384,20 @@ void ProcessMasterSignal(const MasterSignalData &data)
 //| OPEN BUY ORDER WITH MASTER PARAMETERS                            |
 //+------------------------------------------------------------------+
 
-void OpenMasterBuyOrder(double lotSize, double slPips, double tpPips)
+void OpenMasterBuyOrder(double lotSize, double slDistance, double tpDistance)
 {
-    // Execute at market price without SL/TP initially
-    if(trade.Buy(lotSize, _Symbol, 0, 0, 0, "MASTER_BUY"))
+    double askPrice = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+    double stopLoss = NormalizeDouble(askPrice - slDistance, _Digits);
+    double takeProfit = NormalizeDouble(askPrice + tpDistance, _Digits);
+
+    if(trade.Buy(lotSize, _Symbol, 0, stopLoss, takeProfit, "MASTER_BUY"))
     {
         ulong ticket = trade.ResultOrder();
-        Print("[MASTER BUY] Ticket=", ticket);
-
-        Sleep(100);
-
-        if(PositionSelectByTicket(ticket))
-        {
-            double fillPrice = PositionGetDouble(POSITION_PRICE_OPEN);
-            double stopLoss = NormalizeDouble(fillPrice - (slPips * _Point), _Digits);
-            double takeProfit = NormalizeDouble(fillPrice + (tpPips * _Point), _Digits);
-
-            if(trade.PositionModify(ticket, stopLoss, takeProfit))
-            {
-                Print("[MASTER BUY] SUCCESS: Fill=", fillPrice, " SL=", stopLoss, " TP=", takeProfit);
-                tradesToday++;
-            }
-            else
-            {
-                Print("[MASTER BUY] MODIFY FAILED: Error=", GetLastError());
-            }
-        }
+        Print("[MASTER BUY] Ticket=", ticket, " Entry=", askPrice, " SL=", stopLoss, " TP=", takeProfit);
     }
     else
     {
-        Print("[MASTER BUY] EXECUTION FAILED: Error=", GetLastError());
+        Print("[MASTER BUY] FAILED: Error=", GetLastError());
     }
 }
 
@@ -420,151 +405,23 @@ void OpenMasterBuyOrder(double lotSize, double slPips, double tpPips)
 //| OPEN SELL ORDER WITH MASTER PARAMETERS                           |
 //+------------------------------------------------------------------+
 
-void OpenMasterSellOrder(double lotSize, double slPips, double tpPips)
+void OpenMasterSellOrder(double lotSize, double slDistance, double tpDistance)
 {
-    // Execute at market price without SL/TP initially
-    if(trade.Sell(lotSize, _Symbol, 0, 0, 0, "MASTER_SELL"))
+    double bidPrice = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+    double stopLoss = NormalizeDouble(bidPrice + slDistance, _Digits);
+    double takeProfit = NormalizeDouble(bidPrice - tpDistance, _Digits);
+
+    if(trade.Sell(lotSize, _Symbol, 0, stopLoss, takeProfit, "MASTER_SELL"))
     {
         ulong ticket = trade.ResultOrder();
-        Print("[MASTER SELL] Ticket=", ticket);
-
-        Sleep(100);
-
-        if(PositionSelectByTicket(ticket))
-        {
-            double fillPrice = PositionGetDouble(POSITION_PRICE_OPEN);
-            double stopLoss = NormalizeDouble(fillPrice + (slPips * _Point), _Digits);
-            double takeProfit = NormalizeDouble(fillPrice - (tpPips * _Point), _Digits);
-
-            if(trade.PositionModify(ticket, stopLoss, takeProfit))
-            {
-                Print("[MASTER SELL] SUCCESS: Fill=", fillPrice, " SL=", stopLoss, " TP=", takeProfit);
-                tradesToday++;
-            }
-            else
-            {
-                Print("[MASTER SELL] MODIFY FAILED: Error=", GetLastError());
-            }
-        }
+        Print("[MASTER SELL] Ticket=", ticket, " Entry=", bidPrice, " SL=", stopLoss, " TP=", takeProfit);
     }
     else
     {
-        Print("[MASTER SELL] EXECUTION FAILED: Error=", GetLastError());
+        Print("[MASTER SELL] FAILED: Error=", GetLastError());
     }
 }
 
-//+------------------------------------------------------------------+
-//| PROCESS EMA CROSSOVER (FALLBACK)                                 |
-//+------------------------------------------------------------------+
-
-void ProcessEMACrossover()
-{
-    double ema9Array[2], ema21Array[2];
-
-    if(CopyBuffer(handleEMA9, 0, 0, 2, ema9Array) != 2)
-        return;
-    if(CopyBuffer(handleEMA21, 0, 0, 2, ema21Array) != 2)
-        return;
-
-    double ema9Prev = ema9Array[1];
-    double ema9Curr = ema9Array[0];
-    double ema21Prev = ema21Array[1];
-    double ema21Curr = ema21Array[0];
-
-    bool bullishCrossover = (ema9Prev <= ema21Prev) && (ema9Curr > ema21Curr);
-    bool bearishCrossover = (ema9Prev >= ema21Prev) && (ema9Curr < ema21Curr);
-
-    if(bullishCrossover && HasOpenShorts())
-        ClosePositionsByType(POSITION_TYPE_SELL);
-
-    if(bearishCrossover && HasOpenLongs())
-        ClosePositionsByType(POSITION_TYPE_BUY);
-
-    if(bullishCrossover && !HasOpenTrade())
-        OpenBuyOrder();
-
-    if(bearishCrossover && !HasOpenTrade())
-        OpenSellOrder();
-
-    if(TS_Pips > 0)
-        ManageTrailingStop();
-}
-
-//+------------------------------------------------------------------+
-//| OPEN BUY ORDER (EMA FALLBACK)                                    |
-//+------------------------------------------------------------------+
-
-void OpenBuyOrder()
-{
-    double lotSize = CalculateLotSize(LotSize, RiskPercent);
-
-    if(trade.Buy(lotSize, _Symbol, 0, 0, 0, "EMA_BUY"))
-    {
-        ulong ticket = trade.ResultOrder();
-
-        Sleep(100);
-
-        if(PositionSelectByTicket(ticket))
-        {
-            double fillPrice = PositionGetDouble(POSITION_PRICE_OPEN);
-            double stopLoss = NormalizeDouble(fillPrice - (SL_Pips * _Point), _Digits);
-            double takeProfit = NormalizeDouble(fillPrice + (TP_Pips * _Point), _Digits);
-
-            if(trade.PositionModify(ticket, stopLoss, takeProfit))
-            {
-                Print("[EMA BUY] SUCCESS: Ticket=", ticket, " Fill=", fillPrice);
-                tradesToday++;
-            }
-        }
-    }
-}
-
-//+------------------------------------------------------------------+
-//| OPEN SELL ORDER (EMA FALLBACK)                                   |
-//+------------------------------------------------------------------+
-
-void OpenSellOrder()
-{
-    double lotSize = CalculateLotSize(LotSize, RiskPercent);
-
-    if(trade.Sell(lotSize, _Symbol, 0, 0, 0, "EMA_SELL"))
-    {
-        ulong ticket = trade.ResultOrder();
-
-        Sleep(100);
-
-        if(PositionSelectByTicket(ticket))
-        {
-            double fillPrice = PositionGetDouble(POSITION_PRICE_OPEN);
-            double stopLoss = NormalizeDouble(fillPrice + (SL_Pips * _Point), _Digits);
-            double takeProfit = NormalizeDouble(fillPrice - (TP_Pips * _Point), _Digits);
-
-            if(trade.PositionModify(ticket, stopLoss, takeProfit))
-            {
-                Print("[EMA SELL] SUCCESS: Ticket=", ticket, " Fill=", fillPrice);
-                tradesToday++;
-            }
-        }
-    }
-}
-
-//+------------------------------------------------------------------+
-//| HELPER FUNCTIONS                                                  |
-//+------------------------------------------------------------------+
-
-bool IsInTradingHours()
-{
-    MqlDateTime dt;
-    TimeToStruct(TimeCurrent(), dt);
-    int currentTime = dt.hour * 100 + dt.min;
-
-    int startTime = StringToInteger(TradeStartHour[0] + "" + TradeStartHour[1]) * 100 +
-                    StringToInteger(TradeStartHour[3] + "" + TradeStartHour[4]);
-    int endTime = StringToInteger(TradeEndHour[0] + "" + TradeEndHour[1]) * 100 +
-                  StringToInteger(TradeEndHour[3] + "" + TradeEndHour[4]);
-
-    return currentTime >= startTime && currentTime <= endTime;
-}
 
 bool HasOpenTrade()
 {
@@ -636,62 +493,3 @@ void CloseAllPositions()
     }
 }
 
-void UpdateDailyPnL()
-{
-    dailyPnL = 0;
-    for(int i = PositionsTotal() - 1; i >= 0; i--)
-    {
-        ulong ticket = PositionGetTicket(i);
-        if(ticket > 0 && PositionSelectByTicket(ticket))
-        {
-            if(PositionGetString(POSITION_SYMBOL) == _Symbol &&
-               PositionGetInteger(POSITION_MAGIC) == MAGIC_NUMBER)
-            {
-                dailyPnL += PositionGetDouble(POSITION_PROFIT);
-            }
-        }
-    }
-}
-
-double CalculateLotSize(double fixedLots, double riskPercent)
-{
-    if(riskPercent > 0)
-    {
-        double accountBalance = AccountInfoDouble(ACCOUNT_BALANCE);
-        double riskAmount = accountBalance * riskPercent / 100;
-        // Simplified: assume 50 pips standard risk
-        return NormalizeDouble(riskAmount / (50 * 10), 2);
-    }
-    return fixedLots;
-}
-
-void ManageTrailingStop()
-{
-    for(int i = PositionsTotal() - 1; i >= 0; i--)
-    {
-        ulong ticket = PositionGetTicket(i);
-        if(ticket > 0 && PositionSelectByTicket(ticket))
-        {
-            if(PositionGetString(POSITION_SYMBOL) == _Symbol &&
-               PositionGetInteger(POSITION_MAGIC) == MAGIC_NUMBER)
-            {
-                double currentPrice = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-                double positionOpenPrice = PositionGetDouble(POSITION_PRICE_OPEN);
-                double currentSL = PositionGetDouble(POSITION_SL);
-
-                if(PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY)
-                {
-                    double newSL = currentPrice - (TS_Pips * _Point);
-                    if(newSL > currentSL)
-                        trade.PositionModify(ticket, newSL, PositionGetDouble(POSITION_TP));
-                }
-                else if(PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_SELL)
-                {
-                    double newSL = currentPrice + (TS_Pips * _Point);
-                    if(newSL < currentSL)
-                        trade.PositionModify(ticket, newSL, PositionGetDouble(POSITION_TP));
-                }
-            }
-        }
-    }
-}

@@ -1,0 +1,12 @@
+{
+  "signal": "NEUTRAL",
+  "timestamp": "2026-05-31T17:41:24.517Z",
+  "debug": true,
+  "generated_at": "2026-05-31T17:41:25.349Z",
+  "trading": {
+    "stopLossPips": 100,
+    "takeProfitPips": 300,
+    "positionSize": 0.03
+  },
+  "confidence": 36
+}

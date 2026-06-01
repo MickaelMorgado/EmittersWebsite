@@ -8,6 +8,8 @@ interface Trade {
   type: string;
   price: number;
   openPrice?: number;
+  stopLoss?: number;
+  takeProfit?: number;
   lot: number;
   time: string;
   result?: 'WIN' | 'LOSS';
@@ -101,8 +103,10 @@ export default function OpenPositionsCard({
                   {pos.type}
                 </span>
                 <div className="flex flex-col flex-1">
-                  <span className="text-[11px] font-mono text-white/70">{pos.price.toFixed(5)}</span>
-                  <span className="text-[8px] text-white/40 font-mono">{pos.time}</span>
+                  <span className="text-[11px] font-mono text-white/70">{pos.price.toFixed(5)} @ {pos.lot.toFixed(2)} lot</span>
+                  <span className="text-[8px] text-white/40 font-mono">
+                    {pos.time} | SL: {pos.stopLoss?.toFixed(5) || 'N/A'} TP: {pos.takeProfit?.toFixed(5) || 'N/A'}
+                  </span>
                 </div>
               </div>
               <div className="text-right">

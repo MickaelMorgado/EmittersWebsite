@@ -47,6 +47,15 @@ export default function RiskAgentCard({
           <span className="text-[7px] text-red-400/50 font-mono">{formatTimeAgo(agentLastRun.risk)}</span>
         </div>
         <div className="flex items-center gap-1">
+          <span className={`text-[7px] px-1.5 py-0.5 rounded font-bold ${
+            simulatedAgents?.risk?.score
+              ? 'bg-red-500/20 text-red-400 border border-red-500/30'
+              : simulatedAgents?.risk
+              ? 'bg-yellow-500/15 text-yellow-400 border border-yellow-500/20'
+              : 'bg-slate-500/10 text-slate-400 border border-slate-500/20'
+          }`}>
+            {simulatedAgents?.risk?.score ? 'APPROVED' : simulatedAgents?.risk ? 'ANALYZING' : 'OFFLINE'}
+          </span>
           <button
             onClick={onRulesClick}
             className="p-0.5 hover:bg-red-500/10 rounded opacity-0 group-hover:opacity-100 transition-opacity"
@@ -61,9 +70,6 @@ export default function RiskAgentCard({
           >
             <FileText className="w-2.5 h-2.5 text-red-400/60" />
           </button>
-          <span className="text-[8px] font-bold text-red-400 font-mono">
-            {simulatedAgents ? `${simulatedAgents.risk.score}pts` : reports.maxDrawdown > stats.totalPnl * 0.5 ? '0' : '25'}%
-          </span>
         </div>
       </div>
       <div className="h-0.5 bg-white/[0.05] rounded overflow-hidden mb-1">
@@ -81,13 +87,13 @@ export default function RiskAgentCard({
         <div className="flex justify-between">
           <span className="text-white/30">SL Distance</span>
           <span className="text-white/60 font-mono">
-            {simulatedAgents ? `${simulatedAgents.risk.slDistance}%` : '2.0%'}
+            {simulatedAgents?.risk?.slDistance ? `${simulatedAgents.risk.slDistance}%` : '2.0%'}
           </span>
         </div>
         <div className="flex justify-between">
           <span className="text-white/30">R:R Target</span>
           <span className="text-white/60 font-mono">
-            {simulatedAgents
+            {simulatedAgents?.risk?.tpRatio
               ? simulatedAgents.risk.tpRatio
               : reports.longestWinStreak > 3
               ? '1:6-9'
@@ -99,7 +105,7 @@ export default function RiskAgentCard({
         <div className="flex justify-between">
           <span className="text-white/30">Position Size (Auto)</span>
           <span className="text-emerald-400 font-mono font-bold">
-            {simulatedAgents
+            {simulatedAgents?.risk?.positionSize
               ? simulatedAgents.risk.positionSize
               : positionSizing.positionSize}
           </span>
