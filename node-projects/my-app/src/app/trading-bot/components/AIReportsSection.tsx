@@ -10,6 +10,7 @@ import MasterAgentCard from './agents/MasterAgentCard';
 import NewsAgentCard from './agents/NewsAgentCard';
 import RiskAgentCard from './agents/RiskAgentCard';
 import TrendAgentCard from './agents/TrendAgentCard';
+import AgentStructuredOutput, { OutputField } from './agents/AgentStructuredOutput';
 
 interface AIAnalysis {
   timestamp: string;
@@ -200,7 +201,7 @@ export default function AIReportsSection({
   onDebugSignal,
 }: AIReportsSectionProps) {
   const [selectedAgent, setSelectedAgent] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'rules' | 'reports'>('rules');
+  const [activeTab, setActiveTab] = useState<'rules' | 'reports' | 'state'>('rules');
   const [agentLastRun, setAgentLastRun] = useState<{ [key: string]: string }>({
     risk: new Date().toISOString(),
     trend: new Date().toISOString(),
@@ -448,189 +449,69 @@ export default function AIReportsSection({
             {/* Sub-Agent Reports */}
             <div className="grid grid-cols-2 gap-2">
               <style>{`
-                @keyframes agentPulseRisk {
-                  0%, 100% {
-                    box-shadow:
-                      0 0 8px 0 rgba(239,68,68,0.3),
-                      0 0 16px 4px rgba(239,68,68,0.08),
-                      inset 0 0 12px rgba(239,68,68,0.08);
-                  }
-                  50% {
-                    box-shadow:
-                      0 0 16px 6px rgba(239,68,68,0.15),
-                      0 0 32px 12px rgba(239,68,68,0.05),
-                      inset 0 0 20px rgba(239,68,68,0.15);
-                  }
+                /* ── Single pulse keyframe – color injected via CSS custom property ── */
+                @keyframes agentPulse {
+                  0%   { box-shadow: 0 0 0px 0px var(--ac), inset 0 0 0px  0px var(--ac-in); }
+                  25%  { box-shadow: 0 0 16px 6px var(--ac), inset 0 0 12px 2px var(--ac-in); }
+                  50%  { box-shadow: 0 0 8px  0px var(--ac), inset 0 0 6px  0px var(--ac-in); }
+                  75%  { box-shadow: 0 0 16px 6px var(--ac), inset 0 0 12px 2px var(--ac-in); }
+                  100% { box-shadow: 0 0 0px  0px var(--ac), inset 0 0 0px  0px var(--ac-in); }
                 }
-                @keyframes agentPulseTrend {
-                  0%, 100% {
-                    box-shadow:
-                      0 0 8px 0 rgba(34,211,238,0.3),
-                      0 0 16px 4px rgba(34,211,238,0.08),
-                      inset 0 0 12px rgba(34,211,238,0.08);
-                  }
-                  50% {
-                    box-shadow:
-                      0 0 16px 6px rgba(34,211,238,0.15),
-                      0 0 32px 12px rgba(34,211,238,0.05),
-                      inset 0 0 20px rgba(34,211,238,0.15);
-                  }
-                }
-                @keyframes agentPulseNews {
-                  0%, 100% {
-                    box-shadow:
-                      0 0 8px 0 rgba(168,85,247,0.3),
-                      0 0 16px 4px rgba(168,85,247,0.08),
-                      inset 0 0 12px rgba(168,85,247,0.08);
-                  }
-                  50% {
-                    box-shadow:
-                      0 0 16px 6px rgba(168,85,247,0.15),
-                      0 0 32px 12px rgba(168,85,247,0.05),
-                      inset 0 0 20px rgba(168,85,247,0.15);
-                  }
-                }
-                @keyframes agentPulseHistory {
-                  0%, 100% {
-                    box-shadow:
-                      0 0 8px 0 rgba(16,185,129,0.3),
-                      0 0 16px 4px rgba(16,185,129,0.08),
-                      inset 0 0 12px rgba(16,185,129,0.08);
-                  }
-                  50% {
-                    box-shadow:
-                      0 0 16px 6px rgba(16,185,129,0.15),
-                      0 0 32px 12px rgba(16,185,129,0.05),
-                      inset 0 0 20px rgba(16,185,129,0.15);
-                  }
-                }
-                @keyframes agentPulseMaster {
-                  0%, 100% {
-                    box-shadow:
-                      0 0 8px 0 rgba(217,119,6,0.3),
-                      0 0 16px 4px rgba(217,119,6,0.08),
-                      inset 0 0 12px rgba(217,119,6,0.08);
-                  }
-                  50% {
-                    box-shadow:
-                      0 0 16px 6px rgba(217,119,6,0.15),
-                      0 0 32px 12px rgba(217,119,6,0.05),
-                      inset 0 0 20px rgba(217,119,6,0.15);
-                  }
+                @keyframes agentTextGlow {
+                  0%,100% { text-shadow: none; }
+                  25%,75% { text-shadow: 0 0 10px var(--ac-text); }
+                  50%     { text-shadow: 0 0 5px  var(--ac-text); }
                 }
                 @keyframes iconRotate {
-                  0% { transform: rotate(0deg) scale(1); }
-                  50% { transform: rotate(180deg) scale(1.15); }
-                  100% { transform: rotate(360deg) scale(1); }
-                }
-                @keyframes textGlowRisk {
-                  0%, 100% { text-shadow: 0 0 4px rgba(239,68,68,0.3); }
-                  50% { text-shadow: 0 0 12px rgba(239,68,68,0.6); }
-                }
-                @keyframes textGlowTrend {
-                  0%, 100% { text-shadow: 0 0 4px rgba(34,211,238,0.3); }
-                  50% { text-shadow: 0 0 12px rgba(34,211,238,0.6); }
-                }
-                @keyframes textGlowNews {
-                  0%, 100% { text-shadow: 0 0 4px rgba(168,85,247,0.3); }
-                  50% { text-shadow: 0 0 12px rgba(168,85,247,0.6); }
-                }
-                @keyframes textGlowHistory {
-                  0%, 100% { text-shadow: 0 0 4px rgba(16,185,129,0.3); }
-                  50% { text-shadow: 0 0 12px rgba(16,185,129,0.6); }
-                }
-                @keyframes textGlowMaster {
-                  0%, 100% { text-shadow: 0 0 4px rgba(217,119,6,0.3); }
-                  50% { text-shadow: 0 0 12px rgba(217,119,6,0.6); }
+                  0%   { transform: rotate(0deg)   scale(1);    }
+                  50%  { transform: rotate(180deg) scale(1.15); }
+                  100% { transform: rotate(360deg) scale(1);    }
                 }
                 @keyframes progressFlow {
-                  0% { opacity: 0.6; }
-                  50% { opacity: 1; filter: drop-shadow(0 0 4px currentColor); }
-                  100% { opacity: 0.6; }
+                  0%,100% { opacity: 0.6; }
+                  50%     { opacity: 1; filter: drop-shadow(0 0 4px currentColor); }
                 }
-                @keyframes shimmerWave {
-                  0% { background-position: -1000px 0; }
-                  100% { background-position: 1000px 0; }
-                }
-                .agent-active-risk {
-                  animation: agentPulseRisk 1.2s ease-in-out infinite !important;
-                  background: linear-gradient(to-br, rgba(239,68,68,0.15), rgba(239,68,68,0.05)) !important;
-                  background-image: linear-gradient(to-br, rgba(239,68,68,0.15), rgba(239,68,68,0.05)) !important;
-                  border-color: rgba(239,68,68,0.35) !important;
-                }
-                .agent-active-risk .agent-icon {
-                  animation: iconRotate 2s ease-in-out infinite !important;
-                  filter: drop-shadow(0 0 4px rgba(239,68,68,0.5)) !important;
-                }
-                .agent-active-risk .agent-title {
-                  animation: textGlowRisk 1.2s ease-in-out infinite !important;
-                }
-                .agent-active-risk .progress-bar {
-                  animation: progressFlow 1.2s ease-in-out infinite !important;
-                }
-                .agent-active-trend {
-                  animation: agentPulseTrend 1.2s ease-in-out infinite !important;
-                  background: linear-gradient(to-br, rgba(34,211,238,0.15), rgba(34,211,238,0.05)) !important;
-                  background-image: linear-gradient(to-br, rgba(34,211,238,0.15), rgba(34,211,238,0.05)) !important;
-                  border-color: rgba(34,211,238,0.35) !important;
-                }
-                .agent-active-trend .agent-icon {
-                  animation: iconRotate 2s ease-in-out infinite !important;
-                  filter: drop-shadow(0 0 4px rgba(34,211,238,0.5)) !important;
-                }
-                .agent-active-trend .agent-title {
-                  animation: textGlowTrend 1.2s ease-in-out infinite !important;
-                }
-                .agent-active-trend .progress-bar {
-                  animation: progressFlow 1.2s ease-in-out infinite !important;
-                }
-                .agent-active-news {
-                  animation: agentPulseNews 1.2s ease-in-out infinite !important;
-                  background: linear-gradient(to-br, rgba(168,85,247,0.15), rgba(168,85,247,0.05)) !important;
-                  background-image: linear-gradient(to-br, rgba(168,85,247,0.15), rgba(168,85,247,0.05)) !important;
-                  border-color: rgba(168,85,247,0.35) !important;
-                }
-                .agent-active-news .agent-icon {
-                  animation: iconRotate 2s ease-in-out infinite !important;
-                  filter: drop-shadow(0 0 4px rgba(168,85,247,0.5)) !important;
-                }
-                .agent-active-news .agent-title {
-                  animation: textGlowNews 1.2s ease-in-out infinite !important;
-                }
-                .agent-active-news .progress-bar {
-                  animation: progressFlow 1.2s ease-in-out infinite !important;
-                }
-                .agent-active-history {
-                  animation: agentPulseHistory 1.2s ease-in-out infinite !important;
-                  background: linear-gradient(to-br, rgba(16,185,129,0.15), rgba(16,185,129,0.05)) !important;
-                  background-image: linear-gradient(to-br, rgba(16,185,129,0.15), rgba(16,185,129,0.05)) !important;
-                  border-color: rgba(16,185,129,0.35) !important;
-                }
-                .agent-active-history .agent-icon {
-                  animation: iconRotate 2s ease-in-out infinite !important;
-                  filter: drop-shadow(0 0 4px rgba(16,185,129,0.5)) !important;
-                }
-                .agent-active-history .agent-title {
-                  animation: textGlowHistory 1.2s ease-in-out infinite !important;
-                }
-                .agent-active-history .progress-bar {
-                  animation: progressFlow 1.2s ease-in-out infinite !important;
-                }
+
+                /* ── Per-agent color tokens ── */
+                .agent-active-trend   { --ac: rgba(34,211,238,0.22);  --ac-in: rgba(34,211,238,0.08);  --ac-text: rgba(34,211,238,0.7);  --ac-drop: rgba(34,211,238,0.5);  --ac-border: rgba(34,211,238,0.35);  }
+                .agent-active-history { --ac: rgba(16,185,129,0.22);  --ac-in: rgba(16,185,129,0.08);  --ac-text: rgba(16,185,129,0.7);  --ac-drop: rgba(16,185,129,0.5);  --ac-border: rgba(16,185,129,0.35);  }
+                .agent-active-risk    { --ac: rgba(239,68,68,0.22);   --ac-in: rgba(239,68,68,0.08);   --ac-text: rgba(239,68,68,0.7);   --ac-drop: rgba(239,68,68,0.5);   --ac-border: rgba(239,68,68,0.35);   }
+                .agent-active-news    { --ac: rgba(168,85,247,0.22);  --ac-in: rgba(168,85,247,0.08);  --ac-text: rgba(168,85,247,0.7);  --ac-drop: rgba(168,85,247,0.5);  --ac-border: rgba(168,85,247,0.35);  }
+                .agent-active-master  { --ac: rgba(217,119,6,0.22);   --ac-in: rgba(217,119,6,0.08);   --ac-text: rgba(217,119,6,0.7);   --ac-drop: rgba(217,119,6,0.5);   --ac-border: rgba(217,119,6,0.35);   }
+
+                /* ── Shared active styles (apply the single animation) ── */
+                .agent-active-trend,
+                .agent-active-history,
+                .agent-active-risk,
+                .agent-active-news,
                 .agent-active-master {
-                  animation: agentPulseMaster 1.2s ease-in-out infinite, bounceScale 1.4s ease-in-out infinite !important;
-                  background: linear-gradient(to-br, rgba(217,119,6,0.15), rgba(217,119,6,0.05)) !important;
-                  background-image: linear-gradient(to-br, rgba(217,119,6,0.15), rgba(217,119,6,0.05)) !important;
-                  border-color: rgba(217,119,6,0.35) !important;
+                  animation: agentPulse 2s ease-in-out infinite !important;
+                  border-color: var(--ac-border) !important;
                 }
-                .agent-active-master .agent-icon {
+
+                .agent-active-trend   .agent-icon,
+                .agent-active-history .agent-icon,
+                .agent-active-risk    .agent-icon,
+                .agent-active-news    .agent-icon,
+                .agent-active-master  .agent-icon {
                   animation: iconRotate 2s ease-in-out infinite !important;
-                  filter: drop-shadow(0 0 4px rgba(217,119,6,0.5)) !important;
+                  filter: drop-shadow(0 0 4px var(--ac-drop)) !important;
                 }
-                .agent-active-master .agent-title {
-                  animation: textGlowMaster 1.2s ease-in-out infinite !important;
+
+                .agent-active-trend   .agent-title,
+                .agent-active-history .agent-title,
+                .agent-active-risk    .agent-title,
+                .agent-active-news    .agent-title,
+                .agent-active-master  .agent-title {
+                  animation: agentTextGlow 2s ease-in-out infinite !important;
                 }
-                .agent-active-master .progress-bar {
-                  animation: progressFlow 1.2s ease-in-out infinite !important;
+
+                .agent-active-trend   .progress-bar,
+                .agent-active-history .progress-bar,
+                .agent-active-risk    .progress-bar,
+                .agent-active-news    .progress-bar,
+                .agent-active-master  .progress-bar {
+                  animation: progressFlow 2s ease-in-out infinite !important;
                 }
               `}</style>
 
@@ -750,7 +631,57 @@ export default function AIReportsSection({
         </div>
 
         {/* Unified Agent Modal with Tabs */}
-        {selectedAgent && agentRulesData[selectedAgent] && agentReportsData[selectedAgent] && (
+        {selectedAgent && agentRulesData[selectedAgent] && agentReportsData[selectedAgent] && (() => {
+          // Build structured output fields for the selected agent
+          const agentStatus = (agent: string): OutputField['value'] => {
+            if (activeAgent === agent) return 'analyzing';
+            switch (agent) {
+              case 'trend':    return simulatedAgents?.trend?.entry_allowed ? 'approved' : simulatedAgents?.trend ? 'rejected' : 'offline';
+              case 'risk':     return simulatedAgents?.risk?.score ? 'approved' : simulatedAgents?.risk ? 'rejected' : 'offline';
+              case 'history':  return simulatedAgents?.history?.score ? 'approved' : simulatedAgents?.history ? 'rejected' : 'offline';
+              case 'news':     return !simulatedAgents?.news ? 'offline' : simulatedAgents.news.approved === false ? 'rejected' : 'approved';
+              default:         return 'offline';
+            }
+          };
+
+          const stateFields: Record<string, OutputField[]> = {
+            trend: [
+              { key: 'agent',         value: 'trend' },
+              { key: 'status',        value: agentStatus('trend') },
+              { key: 'direction',     value: simulatedAgents?.trend?.direction ?? null },
+              { key: 'entry_allowed', value: simulatedAgents?.trend?.entry_allowed ?? null },
+              { key: 'crossover',     value: simulatedAgents?.trend?.crossover_status ?? null },
+              { key: 'ma_trend',      value: simulatedAgents?.trend?.ma_50_trend ?? null },
+              { key: 'ma_9',          value: simulatedAgents?.trend?.ma_9 ?? null },
+              { key: 'ma_21',         value: simulatedAgents?.trend?.ma_21 ?? null },
+              { key: 'ma_50',         value: simulatedAgents?.trend?.ma_50 ?? null },
+              { key: 'score',         value: simulatedAgents?.trend?.score ?? null },
+            ],
+            history: [
+              { key: 'agent',       value: 'history' },
+              { key: 'status',      value: agentStatus('history') },
+              { key: 'rr_ratio',    value: simulatedAgents?.history?.rrTarget ?? null },
+              { key: 'consistency', value: simulatedAgents?.history?.consistency ?? null },
+              { key: 'score',       value: simulatedAgents?.history?.score ?? null },
+            ],
+            risk: [
+              { key: 'agent',         value: 'risk' },
+              { key: 'status',        value: agentStatus('risk') },
+              { key: 'position_size', value: simulatedAgents?.risk?.positionSize ?? null },
+              { key: 'sl_pct',        value: simulatedAgents?.risk?.slDistance ?? null },
+              { key: 'tp_ratio',      value: simulatedAgents?.risk?.tpRatio ?? null },
+              { key: 'score',         value: simulatedAgents?.risk?.score ?? null },
+            ],
+            news: [
+              { key: 'agent',      value: 'news' },
+              { key: 'status',     value: agentStatus('news') },
+              { key: 'sentiment',  value: simulatedAgents?.news?.sentiment ?? null },
+              { key: 'volatility', value: simulatedAgents?.news?.volatility ?? null },
+              { key: 'score',      value: simulatedAgents?.news?.score ?? null },
+            ],
+          };
+
+          return (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <div className="bg-[#0d1117] border border-white/10 rounded-lg max-w-md w-full max-h-96 flex flex-col">
               {/* Header with Tabs */}
@@ -786,6 +717,16 @@ export default function AIReportsSection({
                   >
                     Reports
                   </button>
+                  <button
+                    onClick={() => setActiveTab('state')}
+                    className={`px-3 py-2 text-[11px] font-semibold uppercase tracking-wider border-b-2 transition-colors ${
+                      activeTab === 'state'
+                        ? 'border-white text-white'
+                        : 'border-transparent text-white/40 hover:text-white/60'
+                    }`}
+                  >
+                    State
+                  </button>
                 </div>
               </div>
 
@@ -800,30 +741,42 @@ export default function AIReportsSection({
                       </div>
                     ))}
                     <div className="pt-3 border-t border-white/10 mt-4">
-                      <span className="text-[8px] text-white/30">
+                      <span className="text-[11px] text-white/30">
                         Last modified: {agentRulesData[selectedAgent].lastModified}
                       </span>
                     </div>
                   </div>
-                ) : (
+                ) : activeTab === 'reports' ? (
                   <div className="space-y-2">
                     {agentReportsData[selectedAgent]
                       .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
                       .map((rep) => (
                         <div key={rep.id} className="bg-white/[0.03] border border-white/[0.08] p-2.5 rounded">
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-[7px] font-bold text-white/50 uppercase">{rep.type}</span>
-                            <span className="text-[7px] text-white/30 font-mono">{rep.timestamp}</span>
+                            <span className="text-[10px] font-bold text-white/50 uppercase">{rep.type}</span>
+                            <span className="text-[10px] text-white/30 font-mono">{rep.timestamp}</span>
                           </div>
-                          <p className="text-[8px] text-white/60 leading-relaxed">{rep.content}</p>
+                          <p className="text-[11px] text-white/60 leading-relaxed">{rep.content}</p>
                         </div>
                       ))}
+                  </div>
+                ) : (
+                  <div>
+                    <p className="text-[10px] text-white/30 mb-3 leading-relaxed">
+                      Live output from the last agent run. This is the structured data Master reads to make decisions.
+                    </p>
+                    {stateFields[selectedAgent] ? (
+                      <AgentStructuredOutput fields={stateFields[selectedAgent]} />
+                    ) : (
+                      <p className="text-xs text-white/30 italic">No state available for this agent.</p>
+                    )}
                   </div>
                 )}
               </div>
             </div>
           </div>
-        )}
+          );
+        })()}
       </div>
     </div>
   );

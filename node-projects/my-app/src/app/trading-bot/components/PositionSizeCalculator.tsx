@@ -63,7 +63,7 @@ export default function PositionSizeCalculator({
             calculate();
           }
         }}
-        className="flex items-center gap-1 px-2 py-1 text-[8px] bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 rounded transition-colors"
+        className="flex items-center gap-1 px-2 py-1 text-[11px] bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 rounded transition-colors"
         title="Position Size Calculator"
       >
         <Calculator className="w-3 h-3 text-cyan-400" />
@@ -95,7 +95,7 @@ export default function PositionSizeCalculator({
                 onChange={(e) => setRiskPercentage(parseFloat(e.target.value))}
                 className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer"
               />
-              <div className="text-[8px] text-white/30 flex justify-between mt-0.5">
+              <div className="text-[11px] text-white/30 flex justify-between mt-0.5">
                 <span>0.5%</span>
                 <span>5%</span>
               </div>
@@ -142,21 +142,21 @@ export default function PositionSizeCalculator({
                   <div className="text-sm font-bold text-emerald-400">
                     {result.positionSize.toFixed(2)} units
                   </div>
-                  <div className="text-[8px] text-white/40">
+                  <div className="text-[11px] text-white/40">
                     {result.lotSize.toFixed(3)} lots
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-1.5">
                   <div className="bg-white/[0.03] p-1.5 rounded border border-white/[0.05]">
-                    <div className="text-white/50 text-[8px] mb-0.5">Risk Amount</div>
+                    <div className="text-white/50 text-[11px] mb-0.5">Risk Amount</div>
                     <div className="text-xs font-bold text-red-400">
                       ${result.riskAmount.toFixed(2)}
                     </div>
                   </div>
 
                   <div className="bg-white/[0.03] p-1.5 rounded border border-white/[0.05]">
-                    <div className="text-white/50 text-[8px] mb-0.5">Pips</div>
+                    <div className="text-white/50 text-[11px] mb-0.5">Pips</div>
                     <div className="text-xs font-bold text-white/70">
                       {result.pipDistance.toFixed(0)}
                     </div>
@@ -166,14 +166,14 @@ export default function PositionSizeCalculator({
                 {result.rewardTarget && (
                   <div className="grid grid-cols-2 gap-1.5">
                     <div className="bg-white/[0.03] p-1.5 rounded border border-white/[0.05]">
-                      <div className="text-white/50 text-[8px] mb-0.5">Take Profit</div>
+                      <div className="text-white/50 text-[11px] mb-0.5">Take Profit</div>
                       <div className="text-xs font-bold text-emerald-400">
                         {result.rewardTarget.toFixed(4)}
                       </div>
                     </div>
 
                     <div className="bg-white/[0.03] p-1.5 rounded border border-white/[0.05]">
-                      <div className="text-white/50 text-[8px] mb-0.5">R:R Ratio</div>
+                      <div className="text-white/50 text-[11px] mb-0.5">R:R Ratio</div>
                       <div className="text-xs font-bold text-cyan-400">
                         1:{result.rrRatio?.toFixed(1)}
                       </div>
@@ -181,7 +181,7 @@ export default function PositionSizeCalculator({
                   </div>
                 )}
 
-                <div className="text-[8px] text-white/40 pt-1">
+                <div className="text-[11px] text-white/40 pt-1">
                   Entry: {entryPrice.toFixed(4)} | SL: {stopLossPrice.toFixed(4)}
                 </div>
               </div>

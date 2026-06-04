@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import AgentReportsModal from './components/AgentReportsModal';
 import AIReportsSection from './components/AIReportsSection';
 import DebugPanel from './components/DebugPanel';
@@ -85,7 +85,7 @@ interface SimulatedAgentOutput {
   };
   history: { rrTarget: string; consistency: number; score: number };
   risk: { slDistance: number; tpRatio: string; positionSize: string; score: number };
-  news: { sentiment: 'Bullish' | 'Neutral' | 'Bearish'; volatility: number; score: number };
+  news: { sentiment: 'Bullish' | 'Neutral' | 'Bearish'; volatility: number; score: number; approved?: boolean; high_impact_count?: number };
 }
 
 interface ReportHistory {
@@ -119,6 +119,9 @@ export default function TradingBotDashboard() {
   const [loading, setLoading] = useState(true);
   const [aiAnalysis, setAiAnalysis] = useState<AIAnalysis | null>(null);
   const [newPositionIds, setNewPositionIds] = useState<Set<string>>(new Set());
+  const seenPositionIds = useRef<Set<string>>(new Set());
+  // Trend Agent trigger — fires once per new candle (ma_timestamp change)
+  const lastCandleTimestamp = useRef<string>('');
   const [floatingPnL, setFloatingPnL] = useState<{ [key: string]: number }>({});
   const [report, setReport] = useState<any>(null);
   const [reportLoading, setReportLoading] = useState(false);
@@ -146,35 +149,69 @@ export default function TradingBotDashboard() {
       const res = await fetch('/api/trading-bot/news');
       const data = await res.json();
 
-      // Only update if successful (no error in response)
       if (!data.error && data.news && data.news.length > 0) {
         setLatestNews(data.news);
 
-        // News agent generates report
-        const topNews = data.news[0];
-        const sentiment = topNews.analysis?.sentiment || 'Neutral';
-        const impact = topNews.analysis?.impact || 'Low';
+        // ── Run News Agent (pure math — no LLM) ─────────────────────────────
+        try {
+          const agentRes = await fetch('/api/trading-bot/agents/news', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ news: data.news }),
+          });
 
-        addReport(
-          'news',
-          `📰 ${topNews.title.substring(0, 60)}...`,
-          {
-            source: topNews.source,
-            sentiment,
-            impact,
-            relevance: topNews.analysis?.relevanceScore,
-          },
-          `${sentiment} | ${impact} Impact | ${new Date().toLocaleTimeString()}`
-        );
+          if (agentRes.ok) {
+            const agentData = await agentRes.json();
+            console.log(
+              `[NEWS AGENT] ${agentData.approved ? '✓ APPROVED' : '✗ REJECTED'} | ` +
+              `Sentiment: ${agentData.sentiment} | VIX-proxy: ${agentData.volatility} | ` +
+              `High-impact: ${agentData.high_impact_count}`
+            );
 
-        console.log(`[NEWS AGENT] ✓ Successfully received ${data.news.length} news items at ${new Date().toLocaleTimeString()}`);
+            setSimulatedAgents(prev => {
+              const base: SimulatedAgentOutput = prev || {
+                trend:   { direction: 'NEUTRAL', score: 0 },
+                history: { rrTarget: '1:3', consistency: 0, score: 0 },
+                risk:    { slDistance: 0, tpRatio: '1:3', positionSize: '0.02', score: 0 },
+                news:    { sentiment: 'Neutral', volatility: 0, score: 0 },
+              };
+              return {
+                ...base,
+                news: {
+                  sentiment:         agentData.sentiment,
+                  volatility:        agentData.volatility,
+                  score:             agentData.score,
+                  approved:          agentData.approved,
+                  high_impact_count: agentData.high_impact_count,
+                },
+              };
+            });
+
+            addReport(
+              'news',
+              agentData.approved
+                ? `📰 ${data.news[0].title.substring(0, 60)}...`
+                : `⚠️ News block: ${agentData.rejection_reason}`,
+              {
+                sentiment:        agentData.sentiment,
+                volatility:       agentData.volatility,
+                high_impact:      agentData.high_impact_count,
+                approved:         agentData.approved,
+                rejection_reason: agentData.rejection_reason,
+              },
+              `${agentData.approved ? 'APPROVED' : 'REJECTED'} | ${agentData.sentiment} | VIX ${agentData.volatility}`
+            );
+          }
+        } catch (agentErr) {
+          console.error('[NEWS AGENT] Failed:', agentErr);
+        }
+
+        console.log(`[NEWS] ✓ ${data.news.length} items at ${new Date().toLocaleTimeString()}`);
       } else if (data.error) {
         console.warn('News API error:', data.error);
-        // Keep existing news, don't wipe on error
       }
     } catch (error) {
       console.error('Failed to fetch news:', error);
-      // Keep existing news on network error
     }
   }, [addReport]);
 
@@ -432,22 +469,22 @@ export default function TradingBotDashboard() {
               pnlMap[pos.id] = pos.pnl;
             }
 
-            // Mark as new if not in previous positions
-            setNewPositionIds(prev => {
-              if (!prev.has(pos.id)) {
+            // Mark as new only if never seen before in this session
+            if (!seenPositionIds.current.has(pos.id)) {
+              seenPositionIds.current.add(pos.id);
+              setNewPositionIds(prev => {
                 const updated = new Set(prev);
                 updated.add(pos.id);
-                setTimeout(() => {
-                  setNewPositionIds(p => {
-                    const next = new Set(p);
-                    next.delete(pos.id);
-                    return next;
-                  });
-                }, 2000);
                 return updated;
-              }
-              return prev;
-            });
+              });
+              setTimeout(() => {
+                setNewPositionIds(p => {
+                  const next = new Set(p);
+                  next.delete(pos.id);
+                  return next;
+                });
+              }, 2000);
+            }
           });
 
           setOpenPositions(newPositions);
@@ -477,47 +514,88 @@ export default function TradingBotDashboard() {
     };
   }, [fetchTrades, fetchReportHistory, fetchNews]);
 
-  // Real-time Trend Agent data polling - reads trend_signal.json from EA
+  // Real-time Trend Agent data polling — reads ma_data every second.
+  // Fires the Trend Agent LLM once per new candle (ma_timestamp change).
   useEffect(() => {
     const fetchTrendSignal = async () => {
       try {
-        // Try to read trend_signal.json via API endpoint
         const res = await fetch('/api/trading-bot/trend-signal');
-        if (res.ok) {
-          const trendData = await res.json();
-          setSimulatedAgents(prev => {
-            // Ensure all agent objects exist with defaults
-            const updated: SimulatedAgentOutput = prev || {
-              trend: { direction: 'NEUTRAL', score: 0 },
-              history: { rrTarget: '1:3', consistency: 0, score: 0 },
-              risk: { slDistance: 0, tpRatio: '1:3', positionSize: '0.02', score: 0 },
-              news: { sentiment: 'Neutral', volatility: 0, score: 0 },
-            };
-            return {
-              ...updated,
-              trend: {
-                direction: trendData.direction || 'NEUTRAL',
-                score: Math.max(0, (trendData.confidence || 0) / 4), // Convert confidence to 0-25 score
-                ma_9: trendData.ma_9,
-                ma_21: trendData.ma_21,
-                ma_50: trendData.ma_50,
-                ma_50_trend: trendData.ma_50_trend,
-                crossover_status: trendData.crossover_status,
-                entry_allowed: trendData.entry_allowed,
-              },
-            };
-          });
-          console.log('[DASHBOARD] Updated trend data from agent:', trendData);
+        if (!res.ok) return;
+        const trendData = await res.json();
+
+        // Always update live MA display values (price, MA9/21/50, ma_50_trend)
+        setSimulatedAgents(prev => {
+          const base: SimulatedAgentOutput = prev || {
+            trend:   { direction: 'NEUTRAL', score: 0 },
+            history: { rrTarget: '1:3', consistency: 0, score: 0 },
+            risk:    { slDistance: 0, tpRatio: '1:3', positionSize: '0.02', score: 0 },
+            news:    { sentiment: 'Neutral', volatility: 0, score: 0 },
+          };
+          return {
+            ...base,
+            trend: {
+              ...base.trend,
+              ma_9:        trendData.ma_9        || base.trend.ma_9,
+              ma_21:       trendData.ma_21       || base.trend.ma_21,
+              ma_50:       trendData.ma_50       || base.trend.ma_50,
+              ma_50_trend: trendData.ma_50_trend || base.trend.ma_50_trend,
+            },
+          };
+        });
+
+        // New candle detected (ma_timestamp changed) — fire Trend Agent once
+        const maTimestamp: string = trendData.ma_timestamp || '';
+        if (maTimestamp && maTimestamp !== lastCandleTimestamp.current) {
+          lastCandleTimestamp.current = maTimestamp;
+          console.log('[DASHBOARD] 🕯️ New candle:', maTimestamp,
+            '| crossover:', trendData.crossover_detected,
+            trendData.crossover_direction ? `(${trendData.crossover_direction})` : '');
+
+          try {
+            const agentRes = await fetch('/api/trading-bot/agents/trend', { method: 'POST' });
+            if (agentRes.ok) {
+              const agentData = await agentRes.json();
+              console.log('[TREND AGENT] ✓', agentData.direction,
+                '| entry_allowed:', agentData.entry_allowed,
+                '| MA50 trend:', agentData.ma_50_trend,
+                '| confidence:', agentData.confidence + '%');
+
+              setSimulatedAgents(prev => {
+                const base: SimulatedAgentOutput = prev || {
+                  trend:   { direction: 'NEUTRAL', score: 0 },
+                  history: { rrTarget: '1:3', consistency: 0, score: 0 },
+                  risk:    { slDistance: 0, tpRatio: '1:3', positionSize: '0.02', score: 0 },
+                  news:    { sentiment: 'Neutral', volatility: 0, score: 0 },
+                };
+                return {
+                  ...base,
+                  trend: {
+                    direction:        agentData.direction        || 'NEUTRAL',
+                    score:            Math.max(0, (agentData.confidence || 0) / 4),
+                    ma_9:             agentData.ma_9,
+                    ma_21:            agentData.ma_21,
+                    ma_50:            agentData.ma_50,
+                    ma_50_trend:      agentData.ma_50_trend,
+                    crossover_status: agentData.crossover_status,
+                    entry_allowed:    agentData.entry_allowed,
+                  },
+                };
+              });
+            } else {
+              console.error('[TREND AGENT] ✗ HTTP', agentRes.status);
+            }
+          } catch (agentErr) {
+            console.error('[TREND AGENT] ✗ Call failed:', agentErr);
+          }
         }
+
       } catch (error) {
-        // Silently fail - fallback to debug data if real agent unavailable
+        // Silently fail
       }
     };
 
-    // Poll trend signal every 1 second
     const trendInterval = setInterval(fetchTrendSignal, 1000);
-    fetchTrendSignal(); // Fetch immediately on mount
-
+    fetchTrendSignal();
     return () => clearInterval(trendInterval);
   }, []);
 
@@ -692,9 +770,9 @@ export default function TradingBotDashboard() {
     <div className="h-screen overflow-hidden bg-[#06080f] text-white selection:bg-cyan-500/30 flex flex-col">
       {/* Ambient background glow */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-cyan-500/[0.07] rounded-full blur-[120px]" />
-        <div className="absolute top-1/3 -left-40 w-96 h-96 bg-violet-500/[0.05] rounded-full blur-[120px]" />
-        <div className="absolute -bottom-40 right-1/3 w-96 h-96 bg-emerald-500/[0.05] rounded-full blur-[120px]" />
+        <div className="absolute -top-40 -right-40 w-96 h-96 bg-cyan-500/[0.17] rounded-full blur-[120px]" />
+        <div className="absolute top-1/3 -left-40 w-96 h-96 bg-violet-500/[0.1] rounded-full blur-[120px]" />
+        <div className="absolute -bottom-40 right-1/3 w-96 h-96 bg-emerald-500/[0.15] rounded-full blur-[120px]" />
       </div>
 
       <div className="relative flex flex-col flex-1 min-h-0 w-full px-4 sm:px-6 lg:px-8 py-3">
@@ -760,7 +838,7 @@ export default function TradingBotDashboard() {
 
         {/* Footer */}
         <footer className="mt-2 flex items-center justify-center shrink-0">
-          <span className="text-[8px] text-white/10">MikaBot v0.1</span>
+          <span className="text-[11px] text-white/10">MikaBot v0.1</span>
         </footer>
       </div>
 

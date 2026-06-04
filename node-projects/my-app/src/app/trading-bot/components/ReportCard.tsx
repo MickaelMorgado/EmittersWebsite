@@ -73,13 +73,13 @@ export default function ReportCard({
           {!report ? (
             <>
               <div className="space-y-1.5">
-                <div className="text-[8px] font-bold text-white/60 uppercase">Report Milestones</div>
+                <div className="text-[11px] font-bold text-white/60 uppercase">Report Milestones</div>
 
                 {/* 50-Trade Milestone */}
                 <div className="bg-white/[0.02] border border-cyan-500/[0.1] p-2 rounded">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-[7px] text-cyan-400/80 uppercase font-semibold">50-Trade</span>
-                    <span className="text-[7px] text-white/30 font-mono">{history.length}/50</span>
+                    <span className="text-[10px] text-cyan-400/80 uppercase font-semibold">50-Trade</span>
+                    <span className="text-[10px] text-white/30 font-mono">{history.length}/50</span>
                   </div>
                   <div className="w-full h-1 bg-white/[0.05] rounded overflow-hidden border border-white/[0.08]">
                     <div
@@ -88,12 +88,12 @@ export default function ReportCard({
                     />
                   </div>
                   {history.length < 50 && (
-                    <div className="text-[7px] text-white/40 mt-1">
+                    <div className="text-[10px] text-white/40 mt-1">
                       {50 - history.length} trades until report
                     </div>
                   )}
                   {history.length >= 50 && (
-                    <div className="text-[7px] text-cyan-400 mt-1">
+                    <div className="text-[10px] text-cyan-400 mt-1">
                       ✓ History Agent auto-generating...
                     </div>
                   )}
@@ -102,8 +102,8 @@ export default function ReportCard({
                 {/* 500-Trade Milestone */}
                 <div className="bg-white/[0.02] border border-amber-500/[0.1] p-2 rounded">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-[7px] text-amber-400/80 uppercase font-semibold">500-Trade</span>
-                    <span className="text-[7px] text-white/30 font-mono">{history.length}/500</span>
+                    <span className="text-[10px] text-amber-400/80 uppercase font-semibold">500-Trade</span>
+                    <span className="text-[10px] text-white/30 font-mono">{history.length}/500</span>
                   </div>
                   <div className="w-full h-1 bg-white/[0.05] rounded overflow-hidden border border-white/[0.08]">
                     <div
@@ -112,30 +112,30 @@ export default function ReportCard({
                     />
                   </div>
                   {history.length < 500 && (
-                    <div className="text-[7px] text-white/40 mt-1">
+                    <div className="text-[10px] text-white/40 mt-1">
                       {500 - history.length} trades until report
                     </div>
                   )}
                   {history.length >= 500 && (
-                    <div className="text-[7px] text-amber-400 mt-1">
+                    <div className="text-[10px] text-amber-400 mt-1">
                       ✓ History Agent auto-generating...
                     </div>
                   )}
                 </div>
               </div>
 
-              <div className="pt-1.5 border-t border-white/[0.05] text-[7px] text-white/40">
+              <div className="pt-1.5 border-t border-white/[0.05] text-[10px] text-white/40">
                 <p>History Agent automatically generates reports at each milestone.</p>
               </div>
             </>
           ) : report.error ? (
             <>
-              <div className="text-[8px] text-red-400 p-1.5 bg-red-500/10 rounded border border-red-500/15">
+              <div className="text-[11px] text-red-400 p-1.5 bg-red-500/10 rounded border border-red-500/15">
                 {report.error}
               </div>
               <button
                 onClick={onCloseReport}
-                className="w-full px-2 py-1 text-[7px] text-white/40 hover:text-white/60 transition-colors"
+                className="w-full px-2 py-1 text-[10px] text-white/40 hover:text-white/60 transition-colors"
               >
                 Close
               </button>
@@ -144,8 +144,8 @@ export default function ReportCard({
             <>
               <div className="space-y-1.5 flex-1 min-h-0 overflow-y-auto">
                 <div className="bg-white/[0.03] border border-white/[0.05] p-1.5 rounded">
-                  <div className="text-[7px] font-bold text-white/50 mb-1 uppercase">Metrics</div>
-                  <div className="space-y-0.5 text-[7px] text-white/50 font-mono">
+                  <div className="text-[10px] font-bold text-white/50 mb-1 uppercase">Metrics</div>
+                  <div className="space-y-0.5 text-[10px] text-white/50 font-mono">
                     <div className="flex justify-between">
                       <span>WR:</span>
                       <span className="text-emerald-400">{report.metrics?.winRate}%</span>
@@ -163,8 +163,8 @@ export default function ReportCard({
                   </div>
                 </div>
                 <div className="bg-white/[0.03] border border-white/[0.05] p-1.5 rounded flex-1 min-h-0 overflow-y-auto">
-                  <div className="text-[7px] font-bold text-white/50 mb-1 uppercase">Analysis</div>
-                  <p className="text-[7px] leading-relaxed text-white/45">
+                  <div className="text-[10px] font-bold text-white/50 mb-1 uppercase">Analysis</div>
+                  <p className="text-[10px] leading-relaxed text-white/45">
                     {report.analysis}
                   </p>
                 </div>
@@ -178,12 +178,12 @@ export default function ReportCard({
                     <h3 className="text-[9px] font-semibold text-white/50 tracking-wide">Master</h3>
                   </div>
                   <div className="bg-white/[0.03] border border-violet-500/[0.15] p-3 rounded">
-                    <p className="text-[8px] leading-relaxed text-white/70">
+                    <p className="text-[11px] leading-relaxed text-white/70">
                       {reportHistory.globalRecommendation.recommendation}
                     </p>
                   </div>
                   {reportHistory.globalRecommendation.keyInsights && reportHistory.globalRecommendation.keyInsights.length > 0 && (
-                    <div className="mt-3 space-y-1 text-[7px] text-white/50">
+                    <div className="mt-3 space-y-1 text-[10px] text-white/50">
                       {reportHistory.globalRecommendation.keyInsights.slice(0, 2).map((insight, i) => (
                         <div key={i} className="flex gap-1">
                           <span className="text-violet-400 shrink-0">•</span>
@@ -197,7 +197,7 @@ export default function ReportCard({
 
               <button
                 onClick={onCloseReport}
-                className="w-full px-2 py-1 text-[7px] text-white/40 hover:text-white/60 transition-colors mt-4"
+                className="w-full px-2 py-1 text-[10px] text-white/40 hover:text-white/60 transition-colors mt-4"
               >
                 Close
               </button>

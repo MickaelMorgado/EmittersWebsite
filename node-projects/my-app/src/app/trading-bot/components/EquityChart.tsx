@@ -88,7 +88,7 @@ export default function EquityChart({ data }: EquityChartProps) {
             className="p-1 hover:bg-white/[0.08] disabled:opacity-30 disabled:cursor-not-allowed rounded transition-colors"
             title="Pan left"
           >
-            <span className="text-[8px] text-white/50">←</span>
+            <span className="text-[11px] text-white/50">←</span>
           </button>
           <button
             onClick={handleZoomIn}
@@ -118,7 +118,7 @@ export default function EquityChart({ data }: EquityChartProps) {
             className="p-1 hover:bg-white/[0.08] disabled:opacity-30 disabled:cursor-not-allowed rounded transition-colors"
             title="Pan right"
           >
-            <span className="text-[8px] text-white/50">→</span>
+            <span className="text-[11px] text-white/50">→</span>
           </button>
         </div>
         <div className="flex items-center gap-2">
@@ -138,7 +138,7 @@ export default function EquityChart({ data }: EquityChartProps) {
               background: `linear-gradient(to right, rgba(34,211,238,0.4) 0%, rgba(34,211,238,0.4) ${(startIndex / Math.max(data.length - 1, 1)) * 100}%, rgba(255,255,255,0.1) ${(startIndex / Math.max(data.length - 1, 1)) * 100}%, rgba(255,255,255,0.1) 100%)`
             }}
           />
-          <span className="text-[8px] text-white/40 font-mono whitespace-nowrap">
+          <span className="text-[11px] text-white/40 font-mono whitespace-nowrap">
             {startIndex + 1}-{endIndex + 1} / {data.length}
           </span>
         </div>

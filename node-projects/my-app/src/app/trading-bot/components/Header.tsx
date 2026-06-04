@@ -41,9 +41,9 @@ export default function Header({ version, stats, loading, onRefresh, debugMode =
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-lg font-semibold tracking-tight text-white">MikaBot</h1>
-            <span className="text-[8px] font-mono px-1 py-0.5 bg-cyan-500/20 text-cyan-400">v{version}</span>
+            <span className="text-[11px] font-mono px-1 py-0.5 bg-cyan-500/20 text-cyan-400">v{version}</span>
             {debugMode && (
-              <span className="text-[8px] font-mono px-1.5 py-0.5 bg-orange-500/30 text-orange-400 rounded flex items-center gap-1">
+              <span className="text-[11px] font-mono px-1.5 py-0.5 bg-orange-500/30 text-orange-400 rounded flex items-center gap-1">
                 <Bug className="w-2.5 h-2.5" />
                 DEBUG
               </span>
@@ -51,7 +51,7 @@ export default function Header({ version, stats, loading, onRefresh, debugMode =
           </div>
           <div className="flex items-center gap-2 mt-0.5">
             <PulsingDot />
-            <span className="text-[8px] font-medium text-white/40 uppercase tracking-wider">{debugMode ? 'Debug Mode' : 'Live'}</span>
+            <span className="text-[11px] font-medium text-white/40 uppercase tracking-wider">{debugMode ? 'Debug Mode' : 'Live'}</span>
           </div>
         </div>
       </div>
@@ -61,19 +61,19 @@ export default function Header({ version, stats, loading, onRefresh, debugMode =
         <div className="flex items-center gap-3 px-3 py-1.5 bg-white/[0.02] border border-white/[0.05] rounded">
           <div className="flex items-center gap-1">
             <Activity className="w-3 h-3 text-cyan-400/50" />
-            <span className="text-[9px] text-white/35 uppercase tracking-wider">T</span>
+            <span className="text-xs text-white/35 uppercase tracking-wider">T</span>
             <span className="text-xs font-bold text-white/80 font-mono">{stats.totalTrades}</span>
           </div>
           <div className="w-px h-3 bg-white/[0.05]" />
           <div className="flex items-center gap-1">
             <Target className="w-3 h-3 text-emerald-400/50" />
-            <span className="text-[9px] text-white/35 uppercase">WR</span>
+            <span className="text-xs text-white/35 uppercase">WR</span>
             <span className="text-xs font-bold text-emerald-400 font-mono">{stats.winRate}%</span>
           </div>
           <div className="w-px h-3 bg-white/[0.05]" />
           <div className="flex items-center gap-1">
             <DollarSign className="w-3 h-3 text-emerald-400/50" />
-            <span className="text-[9px] text-white/35 uppercase">P&L</span>
+            <span className="text-xs text-white/35 uppercase">P&L</span>
             <span className={`text-xs font-bold font-mono ${stats.totalPnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
               {stats.totalPnl >= 0 ? '+' : ''}{stats.totalPnl.toFixed(2)}
             </span>

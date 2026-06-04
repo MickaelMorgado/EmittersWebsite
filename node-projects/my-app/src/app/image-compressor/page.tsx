@@ -847,7 +847,7 @@ if (vid.croppedBlob && vid.status === "done") {
                             fill
                             className="object-cover"
                           />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent transition-opacity">
                             <div className="absolute bottom-0 left-0 right-0 p-2">
                               <p className="text-xs truncate font-medium">
                                 {img.file.name}
@@ -865,7 +865,7 @@ if (vid.croppedBlob && vid.status === "done") {
                           </div>
                           <button
                             onClick={() => removeImage(img.id)}
-                            className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500"
+                            className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/60 flex items-center justify-center transition-opacity hover:bg-red-500"
                           >
                             <X className="w-3 h-3" />
                           </button>
@@ -1158,7 +1158,7 @@ if (vid.croppedBlob && vid.status === "done") {
                             src={vid.preview}
                             className="w-full h-full object-cover"
                           />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent transition-opacity">
                             <div className="absolute bottom-0 left-0 right-0 p-2">
                               <p className="text-xs truncate font-medium">
                                 {vid.file.name}
@@ -1176,7 +1176,7 @@ if (vid.croppedBlob && vid.status === "done") {
                           </div>
                           <button
                             onClick={() => removeVideo(vid.id)}
-                            className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500"
+                            className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/60 flex items-center justify-center transition-opacity hover:bg-red-500"
                           >
                             <X className="w-3 h-3" />
                           </button>
@@ -1188,7 +1188,7 @@ if (vid.croppedBlob && vid.status === "done") {
                             className={`absolute top-2 left-2 w-6 h-6 rounded-full flex items-center justify-center transition-opacity ${
                               editingVideoId === vid.id 
                                 ? "bg-purple-500 opacity-100" 
-                                : "bg-black/60 opacity-0 group-hover:opacity-100 hover:bg-purple-500"
+                                : "bg-black/60 hover:bg-purple-500"
                             }`}
                           >
                             <Pencil className="w-3 h-3" />

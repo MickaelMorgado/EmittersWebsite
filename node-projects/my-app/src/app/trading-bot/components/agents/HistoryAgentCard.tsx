@@ -1,7 +1,9 @@
 "use client";
 
-import { Bot, Settings, FileText, TrendingUp, TrendingDown } from 'lucide-react';
-import { ReportMetrics, BotStats, SimulatedAgentOutput } from '../AIReportsSection';
+import { Bot, FileText, Settings, TrendingDown, TrendingUp } from 'lucide-react';
+import { BotStats, ReportMetrics, SimulatedAgentOutput } from '../AIReportsSection';
+import AgentStatusBadge from './AgentStatusBadge';
+import AgentStructuredOutput from './AgentStructuredOutput';
 
 interface Trade {
   id: string;
@@ -100,33 +102,33 @@ export default function HistoryAgentCard({
     }`}>
       <div className="flex items-center justify-between gap-1.5 mb-1">
         <div className="flex items-center gap-1">
-          <Bot className="agent-icon w-2.5 h-2.5 text-emerald-400/60" />
-          <span className="agent-title text-[8px] font-bold text-emerald-300/80 uppercase tracking-wider">History</span>
-          <span className="text-[7px] text-emerald-400/50 font-mono">{formatTimeAgo(agentLastRun.history)}</span>
+          <Bot className="agent-icon w-3.5 h-3.5 text-emerald-400/60" />
+          <span className="agent-title text-[11px] font-bold text-emerald-300/80 uppercase tracking-wider">History</span>
+          <span className="text-[10px] text-emerald-400/50 font-mono">{formatTimeAgo(agentLastRun.history)}</span>
         </div>
         <div className="flex items-center gap-1">
-          <span className={`text-[7px] px-1.5 py-0.5 rounded font-bold ${
-            simulatedAgents?.history?.score
-              ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-              : simulatedAgents?.history
-              ? 'bg-yellow-500/15 text-yellow-400 border border-yellow-500/20'
-              : 'bg-slate-500/10 text-slate-400 border border-slate-500/20'
-          }`}>
-            {simulatedAgents?.history?.score ? 'APPROVED' : simulatedAgents?.history ? 'ANALYZING' : 'OFFLINE'}
-          </span>
+          <AgentStatusBadge
+            status={
+              activeAgent === 'history' ? 'analyzing'
+              : simulatedAgents?.history?.score ? 'approved'
+              : simulatedAgents?.history ? 'rejected'
+              : 'offline'
+            }
+            color="emerald"
+          />
           <button
             onClick={onRulesClick}
-            className="p-0.5 hover:bg-emerald-500/10 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+            className="p-0.5 hover:bg-emerald-500/10 rounded transition-opacity"
             title="View rules"
           >
-            <Settings className="w-2.5 h-2.5 text-emerald-400/60" />
+            <Settings className="w-3.5 h-3.5 text-emerald-400/60" />
           </button>
           <button
             onClick={onReportsClick}
-            className="p-0.5 hover:bg-emerald-500/10 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+            className="p-0.5 hover:bg-emerald-500/10 rounded transition-opacity"
             title="View reports"
           >
-            <FileText className="w-2.5 h-2.5 text-emerald-400/60" />
+            <FileText className="w-3.5 h-3.5 text-emerald-400/60" />
           </button>
         </div>
       </div>
@@ -143,15 +145,15 @@ export default function HistoryAgentCard({
       {/* Recent Trades Section */}
       {recentTrades.length > 0 && (
         <div className="mb-2 pb-2 border-b border-white/[0.05] space-y-1">
-          <p className="text-[7px] text-white/40 font-medium uppercase">Last {recentTrades.length} Trades</p>
+          <p className="text-[10px] text-white/40 font-medium uppercase">Last {recentTrades.length} Trades</p>
           <div className="space-y-0.5">
             {recentTrades.slice().reverse().map((trade, idx) => (
-              <div key={trade.id} className="flex items-center justify-between text-[7px] bg-white/[0.02] p-1 rounded">
+              <div key={trade.id} className="flex items-center justify-between text-[10px] bg-white/[0.02] p-1 rounded">
                 <div className="flex items-center gap-1">
                   {trade.result === 'WIN' ? (
-                    <TrendingUp className="w-2 h-2 text-emerald-400" />
+                    <TrendingUp className="w-3 h-3 text-emerald-400" />
                   ) : (
-                    <TrendingDown className="w-2 h-2 text-red-400" />
+                    <TrendingDown className="w-3 h-3 text-red-400" />
                   )}
                   <span className="text-white/60">{trade.type}</span>
                 </div>
@@ -167,8 +169,8 @@ export default function HistoryAgentCard({
       {/* RR Target & Recommendation Section */}
       <div className="mb-2 pb-2 border-b border-white/[0.05]">
         <div className="flex justify-between items-center mb-1">
-          <span className="text-[7px] text-white/40 uppercase font-bold">Recommended R:R</span>
-          <span className={`text-[9px] font-bold font-mono ${
+          <span className="text-[10px] text-white/40 uppercase font-bold">Recommended R:R</span>
+          <span className={`text-xs font-bold font-mono ${
             optimalRRTarget.includes('3') ? 'text-emerald-400' :
             optimalRRTarget.includes('2') ? 'text-emerald-300' :
             'text-amber-400'
@@ -176,7 +178,7 @@ export default function HistoryAgentCard({
             {optimalRRTarget}
           </span>
         </div>
-        <p className="text-[7px] text-white/50 leading-tight">
+        <p className="text-[10px] text-white/50 leading-tight">
           {optimalRRTarget.includes('3') ? 'Based on strong avg win/loss ratio' :
            optimalRRTarget.includes('2') ? 'Moderate performance - balanced approach' :
            optimalRRTarget.includes('1.5') ? 'Conservative - build consistency' :
@@ -185,11 +187,11 @@ export default function HistoryAgentCard({
       </div>
 
       {/* Metrics Section */}
-      <p className="text-[8px] leading-tight text-white/45 mb-2">
+      <p className="text-[11px] leading-tight text-white/45 mb-2">
         {stats.totalTrades > 100 ? '📊 Excellent dataset' : stats.totalTrades > 50 ? '📋 Good data' : '⏳ Build more trades'}
       </p>
 
-      <div className="text-[7px] space-y-0.5 border-t border-white/[0.05] pt-1">
+      <div className="text-[10px] space-y-0.5 border-t border-white/[0.05] pt-1">
         <div className="flex justify-between">
           <span className="text-white/30">Recent Win Rate</span>
           <span className={`font-mono font-bold ${recentWins > recentLosses ? 'text-emerald-400' : recentWins < recentLosses ? 'text-red-400' : 'text-amber-400'}`}>
@@ -227,6 +229,15 @@ export default function HistoryAgentCard({
           </span>
         </div>
       </div>
+      <AgentStructuredOutput fields={[
+        { key: 'agent',       value: 'history' },
+        { key: 'status',      value: activeAgent === 'history' ? 'analyzing' : simulatedAgents?.history?.score ? 'approved' : simulatedAgents?.history ? 'rejected' : 'offline' },
+        { key: 'rr_ratio',    value: simulatedAgents?.history?.rrTarget ?? optimalRRTarget },
+        { key: 'win_rate',    value: recentTrades.length > 0 ? Number(recentWinRate) : null },
+        { key: 'consistency', value: simulatedAgents?.history?.consistency ?? null },
+        { key: 'expectancy',  value: Number(expectancy.toFixed(2)) },
+        { key: 'score',       value: simulatedAgents?.history?.score ?? null },
+      ]} />
     </div>
   );
 }

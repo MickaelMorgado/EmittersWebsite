@@ -155,7 +155,7 @@ export default function DebugPanel({
                 {signalLogs.map(log => (
                   <div
                     key={log.id}
-                    className="text-[8px] text-white/60 font-mono flex justify-between px-2 py-0.5 rounded bg-slate-800/20"
+                    className="text-[11px] text-white/60 font-mono flex justify-between px-2 py-0.5 rounded bg-slate-800/20"
                   >
                     <span className="text-white/40">{log.timestamp}</span>
                     <span className="text-yellow-400">{log.agent}</span>
@@ -196,7 +196,7 @@ export default function DebugPanel({
           </div>
 
           {/* Footer */}
-          <div className="text-[7px] text-white/30 italic pt-2 border-t border-slate-700/30">
+          <div className="text-[10px] text-white/30 italic pt-2 border-t border-slate-700/30">
             Debug mode simulates agent triggers at realistic intervals. Manual triggers bypass timers.
           </div>
         </div>

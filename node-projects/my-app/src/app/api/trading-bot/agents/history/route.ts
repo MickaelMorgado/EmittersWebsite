@@ -1,4 +1,3 @@
-import { chatAI, parseJSON } from '@/lib/ai';
 import { writeFileSync, readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
@@ -17,114 +16,84 @@ interface HistoryRecommendation {
   reasoning: string;
 }
 
-export async function POST(request: Request) {
+export async function POST(_request: Request) {
   try {
-    // Read trade history from trades.json
     const tradesPath = join(process.env.HOME || '/tmp', 'development/MikaBot/trades.json');
 
     if (!existsSync(tradesPath)) {
-      return Response.json(
-        { error: 'No trade history available' },
-        { status: 404 }
-      );
+      return Response.json({ error: 'No trade history available' }, { status: 404 });
     }
 
-    const tradesContent = readFileSync(tradesPath, 'utf-8');
-    const tradesData = JSON.parse(tradesContent);
-
-    const trades = tradesData.history || [];
+    const tradesData = JSON.parse(readFileSync(tradesPath, 'utf-8'));
+    const trades: any[] = tradesData.history || [];
     const total = trades.length;
 
     if (total === 0) {
-      return Response.json(
-        {
-          timestamp: new Date().toISOString(),
-          symbol: 'BTCUSD',
-          total_trades: 0,
-          win_rate: 0,
-          profit_factor: 0,
-          avg_win: 0,
-          avg_loss: 0,
-          recommended_rr_ratio: '1:1.5',
-          recommended_sl_pips: 50,
-          consistency_score: 0,
-          recent_trades_24h: 0,
-          reasoning: 'Insufficient trade history'
-        },
-        { status: 200 }
-      );
+      const empty: HistoryRecommendation = {
+        timestamp: new Date().toISOString(),
+        symbol: 'BTCUSD',
+        total_trades: 0,
+        win_rate: 0,
+        profit_factor: 0,
+        avg_win: 0,
+        avg_loss: 0,
+        recommended_rr_ratio: '1:1.5',
+        recommended_sl_pips: 50,
+        consistency_score: 0,
+        recent_trades_24h: 0,
+        reasoning: 'Insufficient trade history — using conservative defaults',
+      };
+      return Response.json(empty);
     }
 
-    const wins = trades.filter((t: any) => t.profit > 0).length;
-    const losses = total - wins;
-    const winRate = wins / total;
+    // ── Core stats ───────────────────────────────────────────────────────────
+    const winning = trades.filter(t => (t.profit ?? t.netProfit ?? 0) > 0);
+    const losing  = trades.filter(t => (t.profit ?? t.netProfit ?? 0) <= 0);
 
-    const winningTrades = trades.filter((t: any) => t.profit > 0);
-    const losingTrades = trades.filter((t: any) => t.profit <= 0);
-
-    const avgWin = winningTrades.length > 0
-      ? winningTrades.reduce((sum: number, t: any) => sum + (t.profit || 0), 0) / winningTrades.length
-      : 0;
-
-    const avgLoss = losingTrades.length > 0
-      ? losingTrades.reduce((sum: number, t: any) => sum + (t.profit || 0), 0) / losingTrades.length
-      : 0;
-
-    const grossProfit = winningTrades.reduce((sum: number, t: any) => sum + (t.profit || 0), 0);
-    const grossLoss = Math.abs(losingTrades.reduce((sum: number, t: any) => sum + (t.profit || 0), 0));
-
+    const winRate     = winning.length / total;
+    const grossProfit = winning.reduce((s, t) => s + (t.profit ?? t.netProfit ?? 0), 0);
+    const grossLoss   = Math.abs(losing.reduce((s, t) => s + (t.profit ?? t.netProfit ?? 0), 0));
     const profitFactor = grossLoss > 0 ? grossProfit / grossLoss : 0;
 
-    const prompt = `You are a History Analysis Agent for crypto trading.
+    const avgWin = winning.length > 0 ? grossProfit / winning.length : 0;
+    const avgLoss = losing.length > 0 ? grossLoss / losing.length : 0;
 
-Trade History Analysis:
-- Total Trades: ${total}
-- Wins: ${wins}, Losses: ${losses}
-- Win Rate: ${(winRate * 100).toFixed(1)}%
-- Average Win: $${avgWin.toFixed(2)}
-- Average Loss: $${avgLoss.toFixed(2)}
-- Gross Profit: $${grossProfit.toFixed(2)}
-- Gross Loss: $${grossLoss.toFixed(2)}
-- Profit Factor: ${profitFactor.toFixed(2)}
+    // ── Recommended R:R from profit factor ──────────────────────────────────
+    const recommended_rr_ratio =
+      profitFactor >= 2.0  ? '1:4'   :
+      profitFactor >= 1.5  ? '1:3'   :
+      profitFactor >= 1.0  ? '1:1.5' :
+      '1:1';
 
-Respond ONLY with valid JSON (no markdown code blocks):
-{
-  "recommended_rr_ratio": "1:1|1:1.5|1:2|1:3|1:4",
-  "recommended_sl_pips": 30-100,
-  "consistency_score": 0.0-1.0,
-  "reasoning": "Brief explanation"
-}
+    // ── Recommended SL pips from avg loss magnitude ──────────────────────────
+    // avgLoss is in $; for BTCUSD pip_value = 1.0, so rough pips ≈ avgLoss
+    const recommended_sl_pips =
+      avgLoss < 5   ? 30 :
+      avgLoss < 15  ? 50 :
+      avgLoss < 30  ? 70 :
+      100;
 
-Decision Rules:
-- Profit Factor >= 2.0 → Recommend "1:4" RR, high consistency
-- Profit Factor 1.5-2.0 → Recommend "1:3" RR
-- Profit Factor 1.0-1.5 → Recommend "1:1.5" RR
-- Profit Factor < 1.0 → Recommend "1:1" RR, low consistency
-- Recommended SL in pips based on avg loss size (30-100 range)
-- Consistency = sample weight × win rate stability
-  - 100+ trades: full weight
-  - 50-99 trades: 0.8x weight
-  - 20-49 trades: 0.5x weight
-  - <20 trades: 0.2x weight
-- Win rate near 50%: stability 1.0 (predictable)
-- Win rate >70% or <30%: stability 0.6 (could revert)`;
+    // ── Consistency score: sample weight × win-rate stability ────────────────
+    const sampleWeight =
+      total >= 100 ? 1.0 :
+      total >= 50  ? 0.8 :
+      total >= 20  ? 0.5 :
+      0.2;
 
-    const response = await chatAI(prompt, { provider: 'ollama', temperature: 0.3 });
+    // Win rates near 50% are most "stable" (mean-reverting); extremes risk reversal
+    const winRateStability = (winRate > 0.3 && winRate < 0.7) ? 1.0 : 0.6;
+    const consistency_score = parseFloat((sampleWeight * winRateStability).toFixed(3));
 
-    if (response.error) {
-      console.error('[HISTORY AGENT] Ollama error:', response.error);
-      return Response.json({ error: response.error }, { status: 500 });
-    }
+    // ── Recent 24h trades ────────────────────────────────────────────────────
+    const yesterday = new Date(Date.now() - 86400000);
+    const recent_trades_24h = trades.filter(t => {
+      try { return new Date(t.time) >= yesterday; } catch { return false; }
+    }).length;
 
-    const parsed = parseJSON<any>(response.content);
-
-    if (!parsed || !parsed.recommended_rr_ratio) {
-      console.error('[HISTORY AGENT] Failed to parse:', response.content);
-      return Response.json(
-        { error: 'Failed to parse agent response', raw: response.content },
-        { status: 400 }
-      );
-    }
+    const reasoning =
+      `PF ${profitFactor.toFixed(2)} → ${recommended_rr_ratio} R:R | ` +
+      `WR ${(winRate * 100).toFixed(1)}% | ` +
+      `Consistency ${(consistency_score * 100).toFixed(0)}% (${total} trades)`;
 
     const recommendation: HistoryRecommendation = {
       timestamp: new Date().toISOString(),
@@ -134,28 +103,22 @@ Decision Rules:
       profit_factor: parseFloat(profitFactor.toFixed(2)),
       avg_win: parseFloat(avgWin.toFixed(2)),
       avg_loss: parseFloat(avgLoss.toFixed(2)),
-      recommended_rr_ratio: parsed.recommended_rr_ratio || '1:1.5',
-      recommended_sl_pips: parsed.recommended_sl_pips || 50,
-      consistency_score: Math.min(1, Math.max(0, parsed.consistency_score || 0.5)),
-      recent_trades_24h: Math.min(5, trades.length),
-      reasoning: parsed.reasoning || 'Analysis complete'
+      recommended_rr_ratio,
+      recommended_sl_pips,
+      consistency_score,
+      recent_trades_24h,
+      reasoning,
     };
 
-    // Save to file
-    const path = join(process.env.HOME || '/tmp', 'development/MikaBot/history_recommendation.json');
-    writeFileSync(path, JSON.stringify(recommendation, null, 2), 'utf-8');
+    const outPath = join(process.env.HOME || '/tmp', 'development/MikaBot/history_recommendation.json');
+    writeFileSync(outPath, JSON.stringify(recommendation, null, 2), 'utf-8');
 
-    console.log(
-      `[HISTORY AGENT] RR ${recommendation.recommended_rr_ratio}, SL ${recommendation.recommended_sl_pips}p, WR ${(recommendation.win_rate * 100).toFixed(1)}%`
-    );
+    console.log(`[HISTORY AGENT] RR ${recommendation.recommended_rr_ratio} | WR ${(winRate * 100).toFixed(1)}% | PF ${profitFactor.toFixed(2)} | Consistency ${(consistency_score * 100).toFixed(0)}%`);
 
     return Response.json(recommendation);
   } catch (error) {
     console.error('[HISTORY AGENT] Error:', error);
-    return Response.json(
-      { error: `Server error: ${String(error)}` },
-      { status: 500 }
-    );
+    return Response.json({ error: `Server error: ${String(error)}` }, { status: 500 });
   }
 }
 
@@ -164,7 +127,7 @@ export function OPTIONS() {
     headers: {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type'
-    }
+      'Access-Control-Allow-Headers': 'Content-Type',
+    },
   });
 }

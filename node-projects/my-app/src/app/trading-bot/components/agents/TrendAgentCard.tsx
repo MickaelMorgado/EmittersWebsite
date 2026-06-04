@@ -1,8 +1,8 @@
 "use client";
 
-import { Bot, Settings, FileText } from 'lucide-react';
-import { ReportMetrics } from '../AIReportsSection';
-import { SimulatedAgentOutput } from '../AIReportsSection';
+import { Bot, FileText, Settings } from 'lucide-react';
+import { ReportMetrics, SimulatedAgentOutput } from '../AIReportsSection';
+import AgentStatusBadge from './AgentStatusBadge';
 
 interface TrendAgentCardProps {
   activeAgent: string | null;
@@ -39,33 +39,28 @@ export default function TrendAgentCard({
     }`}>
       <div className="flex items-center justify-between gap-1.5 mb-1">
         <div className="flex items-center gap-1">
-          <Bot className="agent-icon w-2.5 h-2.5 text-cyan-400/60" />
-          <span className="agent-title text-[8px] font-bold text-cyan-300/80 uppercase tracking-wider">Trend</span>
-          <span className="text-[7px] text-cyan-400/50 font-mono">{formatTimeAgo(agentLastRun.trend)}</span>
+          <Bot className="agent-icon w-3.5 h-3.5 text-cyan-400/60" />
+          <span className="agent-title text-[11px] font-bold text-cyan-300/80 uppercase tracking-wider">Trend</span>
+          <span className="text-[10px] text-cyan-400/50 font-mono">{formatTimeAgo(agentLastRun.trend)}</span>
         </div>
         <div className="flex items-center gap-1">
-          <span className={`text-[7px] px-1.5 py-0.5 rounded font-bold ${
-            simulatedAgents?.trend?.entry_allowed
-              ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30'
-              : simulatedAgents?.trend
-              ? 'bg-yellow-500/15 text-yellow-400 border border-yellow-500/20'
-              : 'bg-slate-500/10 text-slate-400 border border-slate-500/20'
-          }`}>
-            {simulatedAgents?.trend?.entry_allowed ? 'APPROVED' : simulatedAgents?.trend ? 'ANALYZING' : 'OFFLINE'}
-          </span>
+          <AgentStatusBadge
+            status={simulatedAgents?.trend?.entry_allowed ? 'approved' : simulatedAgents?.trend ? 'analyzing' : 'offline'}
+            color="cyan"
+          />
           <button
             onClick={onRulesClick}
-            className="p-0.5 hover:bg-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity"
+            className="p-0.5 hover:bg-cyan-500/10 transition-opacity"
             title="View rules"
           >
-            <Settings className="w-2.5 h-2.5 text-cyan-400/60" />
+            <Settings className="w-3.5 h-3.5 text-cyan-400/60" />
           </button>
           <button
             onClick={onReportsClick}
-            className="p-0.5 hover:bg-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity"
+            className="p-0.5 hover:bg-cyan-500/10 transition-opacity"
             title="View reports"
           >
-            <FileText className="w-2.5 h-2.5 text-cyan-400/60" />
+            <FileText className="w-3.5 h-3.5 text-cyan-400/60" />
           </button>
         </div>
       </div>
@@ -81,7 +76,7 @@ export default function TrendAgentCard({
           }}
         />
       </div>
-      <p className="text-[8px] leading-tight text-white/45 mb-1.5">
+      <p className="text-[11px] leading-tight text-white/45 mb-1.5">
         {simulatedAgents
           ? `${simulatedAgents.trend.direction === 'BUY' ? '📈' : simulatedAgents.trend.direction === 'SELL' ? '📉' : '◼'} ${simulatedAgents.trend.direction}`
           : reports.longestWinStreak > 3
@@ -90,10 +85,10 @@ export default function TrendAgentCard({
           ? '📉 Downtrend caution'
           : '◼ Neutral trend'}
       </p>
-      <div className="text-[7px] space-y-0.5 border-t border-white/[0.05] pt-1">
+      <div className="text-[10px] space-y-0.5 border-t border-white/[0.05] pt-1">
         <div className="flex justify-between">
           <span className="text-white/30">MA9 / MA21 / MA50</span>
-          <span className="text-white/60 font-mono text-[6px]">
+          <span className="text-white/60 font-mono text-xs">
             {simulatedAgents?.trend?.ma_9
               ? `${simulatedAgents.trend.ma_9.toFixed(2)} / ${simulatedAgents.trend.ma_21?.toFixed(2) || 'N/A'} / ${simulatedAgents.trend.ma_50?.toFixed(2) || 'N/A'}`
               : 'Updating...'}

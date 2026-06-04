@@ -5,11 +5,11 @@ import type React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -303,7 +303,7 @@ export default function Component() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-blue-100 hover:text-blue-600"
+                          className="h-6 w-6 transition-opacity hover:bg-blue-100 hover:text-blue-600"
                           onClick={(e) => handleEditPrompt(e, savedPrompt)}
                         >
                           <Edit className="w-3 h-3" />
@@ -311,7 +311,7 @@ export default function Component() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-100 hover:text-red-600"
+                          className="h-6 w-6 transition-opacity hover:bg-red-100 hover:text-red-600"
                           onClick={(e) => handleDeletePrompt(e, savedPrompt.id)}
                         >
                           <Trash2 className="w-3 h-3" />

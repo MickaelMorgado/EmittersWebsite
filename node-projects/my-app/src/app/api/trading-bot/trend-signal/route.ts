@@ -44,27 +44,42 @@ export async function GET(request: Request) {
       }
     }
 
+    // Derive ma_50_trend in real-time from live MA data (price vs MA50).
+    // Never use the cached trendSignal value — that's only as fresh as the last agent run.
+    const price = maData?.price || 0;
+    const ma_slow = maData?.ma_slow || 0;
+    const ma_50_trend: 'Uptrend' | 'Downtrend' | 'Neutral' =
+      price > 0 && ma_slow > 0
+        ? price > ma_slow ? 'Uptrend'
+        : price < ma_slow ? 'Downtrend'
+        : 'Neutral'
+        : 'Neutral';
+
     // Merge: Use real-time MA data from EA + Trend Agent analysis
     return NextResponse.json({
       // Real-time MA data from EA (updates every tick)
       ma_9: maData?.ma_fast || 0,
       ma_21: maData?.ma_medium || 0,
-      ma_50: maData?.ma_slow || 0,
+      ma_50: ma_slow,
       crossover_detected: maData?.crossover_detected || false,
       crossover_direction: maData?.crossover_direction || '',
 
-      // Trend Agent analysis (direction, confidence, entry_allowed)
+      // ma_50_trend: derived live from EA price vs MA50 (not cached)
+      ma_50_trend,
+
+      // Trend Agent analysis (direction, confidence, entry_allowed — from last agent run)
       direction: trendSignal?.direction || 'NEUTRAL',
       confidence: trendSignal?.confidence || 0,
-      ma_50_trend: trendSignal?.ma_50_trend || 'Neutral',
       crossover_status: trendSignal?.crossover_status || 'NONE',
       entry_allowed: trendSignal?.entry_allowed ?? false,
       trend_strength: trendSignal?.trend_strength || 'Moderate',
 
       // Metadata
       timestamp: trendSignal?.timestamp || new Date().toISOString(),
+      // ma_timestamp: raw candle time from EA (changes every new candle close)
+      ma_timestamp: maData?.timestamp || '',
       symbol: 'BTCUSD',
-      price: maData?.price || 0,
+      price,
       reasoning: trendSignal?.reasoning || 'Analyzing...'
     });
   } catch (error) {
