@@ -55,9 +55,9 @@ export default function TradeHistorySection({ history }: TradeHistorySectionProp
                       {trade.type}
                     </span>
                     <span className="text-xs font-mono text-white/70">
-                      {trade.openPrice ? (
-                        <>{trade.openPrice.toFixed(5)}<span className="text-white/20">&rarr;</span>{trade.price.toFixed(5)}</>
-                      ) : trade.price.toFixed(5)}
+                        {trade.time ? (
+                          <>{trade.time}<span className="text-white/20">&rarr;</span>{trade.time}</>
+                        ) : trade.time}
                     </span>
                   </div>
                   <div className="text-sm text-white/20 font-mono">{trade.time}</div>

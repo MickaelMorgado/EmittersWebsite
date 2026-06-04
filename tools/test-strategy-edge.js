@@ -13,14 +13,12 @@ const { chromium } = require('playwright');
   await page.waitForTimeout(3000);
 
   // Check current config
-  const config = await page.evaluate(() => {
-    return {
+  const config = await page.evaluate(() => ({
       strategy: document.getElementById('strategyInput')?.value,
       sl: document.getElementById('SLPoints').value,
       tp: document.getElementById('TPPoints').value,
       multiPos: getMultiPositionConfig()
-    };
-  });
+    }));
   
   console.log('Current config:', JSON.stringify(config, null, 2));
 

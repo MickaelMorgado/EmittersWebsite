@@ -22,9 +22,7 @@ const TradeFilterAnalysis = {
     const dataMap = this.buildDataMap(rawData);
 
     // Enrich trades with market condition data
-    const enrichedTrades = closedTrades.map(trade => {
-      return this.enrichTradeWithMarketData(trade, dataMap, rawData);
-    });
+    const enrichedTrades = closedTrades.map(trade => this.enrichTradeWithMarketData(trade, dataMap, rawData));
 
     // Analyze patterns
     const analysis = {

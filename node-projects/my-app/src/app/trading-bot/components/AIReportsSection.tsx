@@ -111,6 +111,7 @@ interface AIReportsSectionProps {
   reportLoading: boolean;
   reportHistory: ReportHistory | null;
   generateReport: (tradeCount: number) => void;
+  fetchReportHistory?: () => void;
   onCloseReport: () => void;
   lastSignal?: { signal: string; timestamp: string } | null;
   simulatedAgents?: SimulatedAgentOutput | null;
@@ -192,6 +193,7 @@ export default function AIReportsSection({
   reportLoading,
   reportHistory,
   generateReport,
+  fetchReportHistory,
   onCloseReport,
   lastSignal,
   simulatedAgents,
@@ -621,6 +623,7 @@ export default function AIReportsSection({
               reportHistory={reportHistory}
               onCloseReport={onCloseReport}
               history={history}
+              onGenerateReport={fetchReportHistory}
             />
 
             {/* Left: Live Analysis or Session Summary — 6 cols */}

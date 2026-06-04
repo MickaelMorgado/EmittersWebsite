@@ -1,13 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
+import { chatAI, parseJSON } from '@/lib/ai';
 
-const NOTES_DIR = '/Users/mickael/development/MikaBot/notes';
-const NOTES_50 = path.join(NOTES_DIR, '50-trade-notes.json');
-const NOTES_500 = path.join(NOTES_DIR, '500-trade-notes.json');
+// Allow up to 5 minutes — OpenRouter free models can be slow under load
+export const maxDuration = 300;
+
+const NOTES_DIR  = '/Users/mickael/development/MikaBot/notes';
+const NOTES_50   = path.join(NOTES_DIR, '50-trade-notes.json');
+const NOTES_500  = path.join(NOTES_DIR, '500-trade-notes.json');
 const GLOBAL_REC = path.join(NOTES_DIR, 'global-recommendation.json');
 const TRADES_PATH = '/Users/mickael/development/MikaBot/trades.json';
-const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 
 interface TradeHistory {
   ticket?: number;
@@ -119,391 +122,171 @@ function calculateMetrics(trades: TradeHistory[]): ReportMetrics {
   };
 }
 
-// Generate or update 50-trade notes
+/** Merge LLM updates into existing note items */
+function mergeNoteUpdates(previousItems: NoteItem[], updates: any[]): NoteItem[] {
+  const isMalformed = (c: string) => /\{\s*"id"\s*:|\[\s*\{|"action"\s*:\s*"add"/i.test(c);
+  const items = (previousItems ?? []).filter(n => !isMalformed(n.content));
+  for (const u of updates) {
+    if (!u?.content) continue;
+    const action = u.action ?? 'add';
+    if (action === 'add') {
+      items.push({
+        id: `note_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        content: u.content,
+        addedAt: new Date().toISOString(),
+        lastUpdatedAt: new Date().toISOString(),
+        status: 'active',
+      });
+    } else if (action === 'update') {
+      const existing = items.find(n => n.id === u.id || n.content.startsWith(u.content.split(' ')[0]));
+      if (existing) { existing.content = u.content; existing.lastUpdatedAt = new Date().toISOString(); }
+    } else if (action === 'deprecate') {
+      const existing = items.find(n => n.id === u.id || n.content.startsWith(u.content.split(' ')[0]));
+      if (existing) { existing.status = 'deprecated'; existing.lastUpdatedAt = new Date().toISOString(); }
+    } else {
+      items.push({
+        id: `note_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        content: u.content,
+        addedAt: new Date().toISOString(),
+        lastUpdatedAt: new Date().toISOString(),
+        status: 'active',
+      });
+    }
+  }
+  return items;
+}
+
 async function generate50TradeNotes(trades: TradeHistory[], cycleNumber: number, previousNotes: Notes | null): Promise<Notes> {
-  if (!OPENROUTER_API_KEY) {
-    return {
-      cycleNumber,
-      totalTrades: cycleNumber * 50,
-      generatedAt: new Date().toISOString(),
-      items: [],
-      summary: 'API key not configured'
-    };
-  }
-
   const metrics = calculateMetrics(trades);
-  const previousNotesText = previousNotes
-    ? previousNotes.items
-        .filter(n => n.status === 'active')
-        .map(n => `- ${n.content}`)
-        .join('\n')
-    : 'None - this is the first analysis';
 
-  const prompt = `You are a trading improvement coach. You've been analyzing trades and building a list of actionable insights.
+  const prompt = `Trading data for ${metrics.totalTrades} trades:
+Win rate: ${metrics.winRate}%, P&L: $${metrics.totalPnL}, Profit factor: ${metrics.profitFactor}
+Avg win: $${metrics.avgWin}, Avg loss: $${metrics.avgLoss}
+Best streak: ${metrics.maxWinStreak} wins, Worst: ${metrics.maxLossStreak} losses
+BUY: ${metrics.buyCount}, SELL: ${metrics.sellCount}
 
-PREVIOUS NOTES (from earlier 50-trade cycles):
-${previousNotesText}
-
-CURRENT 50-TRADE CYCLE METRICS (Trades ${(cycleNumber - 1) * 50 + 1}-${cycleNumber * 50}):
-- Win Rate: ${metrics.winRate}%
-- Trades: ${metrics.totalTrades}
-- Total P&L: $${metrics.totalPnL}
-- Avg Trade: $${metrics.avgTrade}
-- Avg Win: $${metrics.avgWin} | Avg Loss: $${metrics.avgLoss}
-- Profit Factor: ${metrics.profitFactor}
-- Buy: ${metrics.buyCount} | Sell: ${metrics.sellCount}
-- Win Streak: ${metrics.maxWinStreak} | Loss Streak: ${metrics.maxLossStreak}
-
-YOUR TASK:
-1. Review the previous notes - are they still valid and relevant?
-2. Mark notes as "deprecated" if they no longer apply or the trader has solved them
-3. Add NEW insights if you see patterns or issues in the current cycle
-4. Update existing notes if they need refinement based on new data
-5. Provide 4-6 active, actionable insights total
-
-Format your response as a JSON array with this structure:
-[
-  {
-    "id": "unique_id",
-    "content": "specific actionable insight",
-    "action": "add|update|keep|deprecate",
-    "reason": "brief explanation"
-  }
-]
-
-Focus on:
-- Trading edge/strategy improvements
-- Risk management issues
-- Consistency problems
-- Entry/exit timing patterns
-- Trade sizing or position management`;
+Respond with exactly 4 trading improvements as a JSON array.
+Each "content" must be ONE complete, actionable sentence (15-30 words) describing a specific improvement.
+Output ONLY the JSON array. No prose, no labels, no code fences.
+Example: [{"id":"1","content":"Tighten stop-loss on SELL entries to cap average loss below $20.","action":"add"}]`;
 
   try {
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
-        'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://trading-bot.local',
-        'X-Title': 'Trading Bot Reports'
-      },
-      body: JSON.stringify({
-        model: 'google/gemma-3n-e4b-it:free',
-        messages: [{ role: 'user', content: prompt }],
-        temperature: 0.7,
-        max_tokens: 800
-      })
-    });
+    const res = await chatAI(prompt, { provider: 'openrouter', temperature: 0.3 });
+    console.log(`[50-trade-notes] raw response: ${res.content.substring(0, 200)}`);
 
-    if (!response.ok) {
-      console.error('[50-trade-notes] API error');
-      return {
-        cycleNumber,
-        totalTrades: cycleNumber * 50,
-        generatedAt: new Date().toISOString(),
-        items: previousNotes?.items || [],
-        summary: 'Failed to update notes'
-      };
-    }
+    let updates: any[] = parseJSON<any[]>(res.content) ?? [];
 
-    const data = await response.json();
-    const aiResponse = data.choices[0]?.message?.content || '[]';
-
-    // Parse AI response
-    let updates: any[] = [];
-    try {
-      const jsonMatch = aiResponse.match(/\[[\s\S]*\]/);
-      if (jsonMatch) {
-        updates = JSON.parse(jsonMatch[0]);
-      }
-    } catch (e) {
-      console.error('[50-trade-notes] Failed to parse AI response');
-    }
-
-    // Merge with previous notes
-    const newItems = previousNotes ? [...previousNotes.items] : [];
-
-    for (const update of updates) {
-      if (update.action === 'add') {
-        newItems.push({
-          id: `note_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          content: update.content,
-          addedAt: new Date().toISOString(),
-          lastUpdatedAt: new Date().toISOString(),
-          status: 'active'
-        });
-      } else if (update.action === 'update') {
-        const existing = newItems.find(n => n.id === update.id || n.content.includes(update.content.split(' ')[0]));
-        if (existing) {
-          existing.content = update.content;
-          existing.lastUpdatedAt = new Date().toISOString();
-        }
-      } else if (update.action === 'deprecate') {
-        const existing = newItems.find(n => n.id === update.id || n.content.includes(update.content.split(' ')[0]));
-        if (existing) {
-          existing.status = 'deprecated';
-          existing.lastUpdatedAt = new Date().toISOString();
-        }
+    if (updates.length === 0 && res.content.trim().length > 20) {
+      const cleaned = res.content
+        .replace(/```[\s\S]*?```/g, ' ')
+        .replace(/\{[\s\S]*?\}/g, ' ')
+        .replace(/\[[\s\S]*?\]/g, ' ')
+        .replace(/^[\s,;:.\-]+/, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+      const firstSentence = cleaned.split(/(?<=[.!?])\s+/)[0] ?? cleaned;
+      const fallback = (firstSentence.length > 15 ? firstSentence : cleaned).substring(0, 300);
+      if (fallback.length > 15) {
+        updates = [{ id: '1', content: fallback, action: 'add' }];
       }
     }
 
-    const summary = `Cycle #${cycleNumber} (${cycleNumber * 50} total trades) | WR: ${metrics.winRate}% | P&L: $${metrics.totalPnL} | ${newItems.filter(n => n.status === 'active').length} active insights`;
-
+    const items = mergeNoteUpdates(previousNotes?.items ?? [], updates);
+    const active = items.filter(n => n.status === 'active').length;
+    console.log(`[50-trade-notes] ${res.provider} | Cycle #${cycleNumber} | ${active} insights`);
     return {
       cycleNumber,
       totalTrades: cycleNumber * 50,
       generatedAt: new Date().toISOString(),
-      items: newItems,
-      summary
+      items,
+      summary: `Cycle #${cycleNumber} | WR: ${metrics.winRate}% | ${active} insights`,
     };
   } catch (error) {
     console.error('[50-trade-notes] Error:', error);
-    return {
-      cycleNumber,
-      totalTrades: cycleNumber * 50,
-      generatedAt: new Date().toISOString(),
-      items: previousNotes?.items || [],
-      summary: 'Error updating notes'
-    };
+    return { cycleNumber, totalTrades: cycleNumber * 50, generatedAt: new Date().toISOString(), items: previousNotes?.items ?? [], summary: 'Error' };
   }
 }
 
-// Generate or update 500-trade notes
 async function generate500TradeNotes(trades: TradeHistory[], cycleNumber: number, previousNotes: Notes | null): Promise<Notes> {
-  if (!OPENROUTER_API_KEY) {
-    return {
-      cycleNumber,
-      totalTrades: cycleNumber * 500,
-      generatedAt: new Date().toISOString(),
-      items: [],
-      summary: 'API key not configured'
-    };
-  }
-
   const metrics = calculateMetrics(trades);
-  const previousNotesText = previousNotes
-    ? previousNotes.items
-        .filter(n => n.status === 'active')
-        .map(n => `- ${n.content}`)
-        .join('\n')
-    : 'None - this is the first 500-trade analysis';
 
-  const prompt = `You are a professional trading coach conducting a 500-trade strategic review.
+  const prompt = `Trading performance over ${metrics.totalTrades} trades:
+Win rate: ${metrics.winRate}%, Total P&L: $${metrics.totalPnL}, Profit factor: ${metrics.profitFactor}
+Best win streak: ${metrics.maxWinStreak}, Worst loss streak: ${metrics.maxLossStreak}
 
-PREVIOUS 500-TRADE STRATEGIC NOTES:
-${previousNotesText}
-
-CURRENT 500-TRADE CYCLE METRICS (Trades ${(cycleNumber - 1) * 500 + 1}-${cycleNumber * 500}):
-- Win Rate: ${metrics.winRate}%
-- Total Trades: ${metrics.totalTrades}
-- Total P&L: $${metrics.totalPnL}
-- Avg Trade: $${metrics.avgTrade}
-- Profit Factor: ${metrics.profitFactor}
-- Max Win Streak: ${metrics.maxWinStreak}
-- Max Loss Streak: ${metrics.maxLossStreak}
-
-YOUR TASK:
-1. Assess whether previous strategic notes still apply
-2. Mark notes as "deprecated" if the issue has been resolved
-3. Add NEW high-level strategic insights
-4. Update existing notes with long-term trend data
-5. Provide 3-5 strategic, actionable insights for the NEXT 500 trades
-
-Format as JSON array:
-[
-  {
-    "id": "unique_id",
-    "content": "strategic insight for next 500-trade cycle",
-    "action": "add|update|keep|deprecate",
-    "reason": "strategic justification"
-  }
-]
-
-Focus on:
-- Overall strategy effectiveness
-- Risk/reward optimization
-- Position sizing for next cycle
-- Market condition adaptation
-- Long-term skill improvement`;
+Respond with exactly 3 high-level strategic improvements as a JSON array.
+Each "content" must be ONE complete, actionable strategic sentence (15-30 words).
+Output ONLY the JSON array. No prose, no labels, no code fences.
+Example: [{"id":"1","content":"Reduce position size during losing streaks to preserve capital and limit drawdown.","action":"add"}]`;
 
   try {
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
-        'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://trading-bot.local',
-        'X-Title': 'Trading Bot Reports'
-      },
-      body: JSON.stringify({
-        model: 'google/gemma-3n-e4b-it:free',
-        messages: [{ role: 'user', content: prompt }],
-        temperature: 0.7,
-        max_tokens: 600
-      })
-    });
+    const res = await chatAI(prompt, { provider: 'openrouter', temperature: 0.3 });
+    console.log(`[500-trade-notes] raw response: ${res.content.substring(0, 200)}`);
 
-    if (!response.ok) {
-      console.error('[500-trade-notes] API error');
-      return {
-        cycleNumber,
-        totalTrades: cycleNumber * 500,
-        generatedAt: new Date().toISOString(),
-        items: previousNotes?.items || [],
-        summary: 'Failed to update notes'
-      };
-    }
+    let updates: any[] = parseJSON<any[]>(res.content) ?? [];
 
-    const data = await response.json();
-    const aiResponse = data.choices[0]?.message?.content || '[]';
-
-    let updates: any[] = [];
-    try {
-      const jsonMatch = aiResponse.match(/\[[\s\S]*\]/);
-      if (jsonMatch) {
-        updates = JSON.parse(jsonMatch[0]);
-      }
-    } catch (e) {
-      console.error('[500-trade-notes] Failed to parse AI response');
-    }
-
-    const newItems = previousNotes ? [...previousNotes.items] : [];
-
-    for (const update of updates) {
-      if (update.action === 'add') {
-        newItems.push({
-          id: `note_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          content: update.content,
-          addedAt: new Date().toISOString(),
-          lastUpdatedAt: new Date().toISOString(),
-          status: 'active'
-        });
-      } else if (update.action === 'update') {
-        const existing = newItems.find(n => n.id === update.id || n.content.includes(update.content.split(' ')[0]));
-        if (existing) {
-          existing.content = update.content;
-          existing.lastUpdatedAt = new Date().toISOString();
-        }
-      } else if (update.action === 'deprecate') {
-        const existing = newItems.find(n => n.id === update.id || n.content.includes(update.content.split(' ')[0]));
-        if (existing) {
-          existing.status = 'deprecated';
-          existing.lastUpdatedAt = new Date().toISOString();
-        }
+    if (updates.length === 0 && res.content.trim().length > 20) {
+      const cleaned = res.content
+        .replace(/```[\s\S]*?```/g, ' ')
+        .replace(/\{[\s\S]*?\}/g, ' ')
+        .replace(/\[[\s\S]*?\]/g, ' ')
+        .replace(/^[\s,;:.\-]+/, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+      const firstSentence = cleaned.split(/(?<=[.!?])\s+/)[0] ?? cleaned;
+      const fallback = (firstSentence.length > 15 ? firstSentence : cleaned).substring(0, 300);
+      if (fallback.length > 15) {
+        updates = [{ id: '1', content: fallback, action: 'add' }];
       }
     }
 
-    const summary = `500-Trade Cycle #${cycleNumber} (${cycleNumber * 500} total) | WR: ${metrics.winRate}% | P&L: $${metrics.totalPnL} | ${newItems.filter(n => n.status === 'active').length} active strategies`;
-
+    const items = mergeNoteUpdates(previousNotes?.items ?? [], updates);
+    const active = items.filter(n => n.status === 'active').length;
+    console.log(`[500-trade-notes] ${res.provider} | Cycle #${cycleNumber} | ${active} strategies`);
     return {
       cycleNumber,
       totalTrades: cycleNumber * 500,
       generatedAt: new Date().toISOString(),
-      items: newItems,
-      summary
+      items,
+      summary: `Cycle #${cycleNumber} | WR: ${metrics.winRate}% | ${active} strategies`,
     };
   } catch (error) {
     console.error('[500-trade-notes] Error:', error);
-    return {
-      cycleNumber,
-      totalTrades: cycleNumber * 500,
-      generatedAt: new Date().toISOString(),
-      items: previousNotes?.items || [],
-      summary: 'Error updating notes'
-    };
+    return { cycleNumber, totalTrades: cycleNumber * 500, generatedAt: new Date().toISOString(), items: previousNotes?.items ?? [], summary: 'Error' };
   }
 }
 
-// Generate or update global recommendation
 async function generateGlobalRecommendation(notes50: Notes | null, notes500: Notes | null, totalTrades: number): Promise<GlobalRecommendation> {
-  if (!OPENROUTER_API_KEY) {
-    return {
-      lastUpdatedAt: new Date().toISOString(),
-      totalTrades,
-      recommendation: 'API key not configured',
-      keyInsights: []
-    };
-  }
-
-  const insights50 = notes50 ? notes50.items.filter(n => n.status === 'active').map(n => `- ${n.content}`).join('\n') : 'None yet';
+  const insights50  = notes50  ? notes50.items.filter(n => n.status === 'active').map(n => `- ${n.content}`).join('\n')  : 'None yet';
   const insights500 = notes500 ? notes500.items.filter(n => n.status === 'active').map(n => `- ${n.content}`).join('\n') : 'None yet';
 
-  const prompt = `You are a master trading strategist synthesizing all insights from ${totalTrades} trades.
+  const prompt = `You are a master trading strategist synthesising ${totalTrades} trades of insights.
 
-50-TRADE TACTICAL INSIGHTS (current focus areas):
+50-TRADE TACTICAL NOTES:
 ${insights50}
 
-500-TRADE STRATEGIC INSIGHTS (long-term direction):
+500-TRADE STRATEGIC NOTES:
 ${insights500}
 
-Create ONE unified, actionable master recommendation that:
-1. Synthesizes both tactical and strategic insights
-2. Prioritizes what to focus on RIGHT NOW
-3. Explains expected impact on trading performance
-4. Is written in 2-3 sentences for immediate clarity
-
-Also provide 3-4 KEY INSIGHTS as bullet points that summarize the path forward.
+Write ONE unified master recommendation (2-3 complete sentences) and 3-4 key insights.
+Each key insight must be ONE complete, actionable sentence (15-30 words).
 
 Respond in JSON:
-{
-  "recommendation": "master recommendation text",
-  "keyInsights": ["insight 1", "insight 2", "insight 3"]
-}`;
+{ "recommendation": "...", "keyInsights": ["...", "..."] }`;
 
   try {
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
-        'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://trading-bot.local',
-        'X-Title': 'Trading Bot Reports'
-      },
-      body: JSON.stringify({
-        model: 'google/gemma-3n-e4b-it:free',
-        messages: [{ role: 'user', content: prompt }],
-        temperature: 0.7,
-        max_tokens: 400
-      })
-    });
-
-    if (!response.ok) {
-      console.error('[global-recommendation] API error');
-      return {
-        lastUpdatedAt: new Date().toISOString(),
-        totalTrades,
-        recommendation: 'Failed to generate recommendation',
-        keyInsights: []
-      };
-    }
-
-    const data = await response.json();
-    const aiResponse = data.choices[0]?.message?.content || '{}';
-
-    let result = { recommendation: '', keyInsights: [] as string[] };
-    try {
-      const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        result = JSON.parse(jsonMatch[0]);
-      }
-    } catch (e) {
-      console.error('[global-recommendation] Failed to parse AI response');
-    }
-
+    const res = await chatAI(prompt, { provider: 'openrouter', temperature: 0.7 });
+    const result = parseJSON<{ recommendation: string; keyInsights: string[] }>(res.content);
+    console.log(`[global-recommendation] ${res.provider} | ${totalTrades} trades`);
     return {
       lastUpdatedAt: new Date().toISOString(),
       totalTrades,
-      recommendation: result.recommendation || 'Processing insights...',
-      keyInsights: result.keyInsights || []
+      recommendation: result?.recommendation || 'Analysing...',
+      keyInsights: result?.keyInsights || [],
     };
   } catch (error) {
     console.error('[global-recommendation] Error:', error);
-    return {
-      lastUpdatedAt: new Date().toISOString(),
-      totalTrades,
-      recommendation: 'Error generating recommendation',
-      keyInsights: []
-    };
+    return { lastUpdatedAt: new Date().toISOString(), totalTrades, recommendation: 'Error generating recommendation', keyInsights: [] };
   }
 }
 
@@ -530,7 +313,16 @@ export async function GET() {
   }
 }
 
-export async function POST() {
+/**
+ * POST /api/trading-bot/report-history
+ *
+ * Auto mode (no body): runs whichever cycles have new trades.
+ *
+ * Force mode (JSON body): { target: "50" | "500" | "global" }
+ *   Generates that section immediately using the most recent trades,
+ *   regardless of whether the cycle threshold has been reached.
+ */
+export async function POST(req: NextRequest) {
   try {
     ensureNotesDir();
 
@@ -543,52 +335,67 @@ export async function POST() {
     const allTrades = tradesData.history || [];
     const totalTrades = allTrades.length;
 
-    // Check if we need to update 50-trade notes (every 50 trades)
-    const cycle50 = Math.floor(totalTrades / 50);
-    const previous50Notes = fs.existsSync(NOTES_50) ? JSON.parse(fs.readFileSync(NOTES_50, 'utf-8')) : null;
+    // Read force target from body (if provided)
+    let forceTarget: '50' | '500' | 'global' | null = null;
+    try {
+      const body = await req.json();
+      if (body?.target) forceTarget = body.target;
+    } catch { /* no body — auto mode */ }
 
-    if (cycle50 > 0 && (!previous50Notes || previous50Notes.cycleNumber < cycle50)) {
-      const startIdx = (cycle50 - 1) * 50;
-      const endIdx = cycle50 * 50;
-      const trades50 = allTrades.slice(startIdx, endIdx);
-
-      if (trades50.length >= 50) {
-        const notes50 = await generate50TradeNotes(trades50, cycle50, previous50Notes);
-        fs.writeFileSync(NOTES_50, JSON.stringify(notes50, null, 2));
-        console.log(`[notes] Updated 50-trade notes - Cycle #${cycle50}`);
-      }
-    }
-
-    // Check if we need to update 500-trade notes (every 500 trades)
-    const cycle500 = Math.floor(totalTrades / 500);
+    const previous50Notes  = fs.existsSync(NOTES_50)  ? JSON.parse(fs.readFileSync(NOTES_50, 'utf-8'))  : null;
     const previous500Notes = fs.existsSync(NOTES_500) ? JSON.parse(fs.readFileSync(NOTES_500, 'utf-8')) : null;
 
-    if (cycle500 > 0 && (!previous500Notes || previous500Notes.cycleNumber < cycle500)) {
-      const startIdx = (cycle500 - 1) * 500;
-      const endIdx = cycle500 * 500;
-      const trades500 = allTrades.slice(startIdx, endIdx);
+    // ── 50-trade notes ──────────────────────────────────────────────────────
+    const cycle50 = Math.max(1, Math.floor(totalTrades / 50)) || 1;
+    const should50 = forceTarget === '50'
+      || (!forceTarget && totalTrades >= 50 && (!previous50Notes || previous50Notes.cycleNumber < Math.floor(totalTrades / 50)));
 
-      if (trades500.length >= 500) {
-        const notes500 = await generate500TradeNotes(trades500, cycle500, previous500Notes);
-        fs.writeFileSync(NOTES_500, JSON.stringify(notes500, null, 2));
-        console.log(`[notes] Updated 500-trade notes - Cycle #${cycle500}`);
+    if (should50) {
+      // Use the most recent 50 trades for on-demand generation
+      const trades50 = forceTarget === '50'
+        ? allTrades.slice(-Math.min(50, totalTrades))
+        : allTrades.slice((cycle50 - 1) * 50, cycle50 * 50);
+
+      if (trades50.length > 0) {
+        const notes50 = await generate50TradeNotes(trades50, cycle50, previous50Notes);
+        fs.writeFileSync(NOTES_50, JSON.stringify(notes50, null, 2));
+        console.log(`[notes] 50-trade notes generated (force=${!!forceTarget}) — Cycle #${cycle50}`);
       }
     }
 
-    // Generate/update global recommendation
-    const notes50Current = fs.existsSync(NOTES_50) ? JSON.parse(fs.readFileSync(NOTES_50, 'utf-8')) : null;
-    const notes500Current = fs.existsSync(NOTES_500) ? JSON.parse(fs.readFileSync(NOTES_500, 'utf-8')) : null;
-    const globalRec = await generateGlobalRecommendation(notes50Current, notes500Current, totalTrades);
-    fs.writeFileSync(GLOBAL_REC, JSON.stringify(globalRec, null, 2));
+    // ── 500-trade notes ─────────────────────────────────────────────────────
+    const cycle500 = Math.max(1, Math.floor(totalTrades / 500)) || 1;
+    const should500 = forceTarget === '500'
+      || (!forceTarget && totalTrades >= 500 && (!previous500Notes || previous500Notes.cycleNumber < Math.floor(totalTrades / 500)));
+
+    if (should500) {
+      const trades500 = forceTarget === '500'
+        ? allTrades.slice(-Math.min(500, totalTrades))
+        : allTrades.slice((cycle500 - 1) * 500, cycle500 * 500);
+
+      if (trades500.length > 0) {
+        const notes500 = await generate500TradeNotes(trades500, cycle500, previous500Notes);
+        fs.writeFileSync(NOTES_500, JSON.stringify(notes500, null, 2));
+        console.log(`[notes] 500-trade notes generated (force=${!!forceTarget}) — Cycle #${cycle500}`);
+      }
+    }
+
+    // ── Global recommendation ───────────────────────────────────────────────
+    const shouldGlobal = forceTarget === 'global' || should50 || should500;
+    if (shouldGlobal) {
+      const n50  = fs.existsSync(NOTES_50)  ? JSON.parse(fs.readFileSync(NOTES_50, 'utf-8'))  : null;
+      const n500 = fs.existsSync(NOTES_500) ? JSON.parse(fs.readFileSync(NOTES_500, 'utf-8')) : null;
+      const globalRec = await generateGlobalRecommendation(n50, n500, totalTrades);
+      fs.writeFileSync(GLOBAL_REC, JSON.stringify(globalRec, null, 2));
+    }
 
     return NextResponse.json({
       success: true,
       totalTrades,
-      cycle50,
-      cycle500,
-      updated50: (!previous50Notes || previous50Notes.cycleNumber < cycle50),
-      updated500: (!previous500Notes || previous500Notes.cycleNumber < cycle500),
-      message: `Notes updated - ${totalTrades} total trades processed`
+      target: forceTarget ?? 'auto',
+      message: forceTarget
+        ? `Force-generated ${forceTarget}-trade notes from ${totalTrades} trades`
+        : `Auto cycle check — ${totalTrades} total trades`,
     });
   } catch (error) {
     console.error('[notes-history] POST error:', error);

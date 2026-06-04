@@ -813,6 +813,7 @@ export default function TradingBotDashboard() {
             reportLoading={reportLoading}
             reportHistory={reportHistory}
             generateReport={generateReport}
+            fetchReportHistory={fetchReportHistory}
             onCloseReport={() => setReport(null)}
             lastSignal={lastSignal}
             simulatedAgents={simulatedAgents}

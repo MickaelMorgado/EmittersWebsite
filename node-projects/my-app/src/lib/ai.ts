@@ -7,9 +7,9 @@ const OPENROUTER_KEY = process.env.OPENROUTER_API_KEY || process.env.NEXT_PUBLIC
 
 const OPENROUTER_TEXT_MODELS = [
   process.env.OPENROUTER_MODEL,
-  'deepseek/deepseek-v4-flash:free',
-  'qwen/qwen3-next-80b-a3b-instruct:free',
-  'meta-llama/llama-3.3-70b-instruct:free',
+  'google/gemma-4-31b-it:free',
+  'openai/gpt-oss-20b:free',
+  'nvidia/nemotron-3-nano-30b-a3b:free',
 ].filter(Boolean) as string[];
 
 // Ollama config
@@ -237,11 +237,26 @@ export function parseJSON<T>(response: string): T | null {
       }
     }
 
-    // Try finding JSON object in response (between first { and last })
-    const jsonMatch = response.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
+    const stripPrefix = response.replace(/^[\s\S]*?(?=[\{\[])/, '');
+    try {
+      return JSON.parse(stripPrefix);
+    } catch {
+      // continue
+    }
+
+    const objectMatch = response.match(/\{[\s\S]*\}/);
+    if (objectMatch) {
       try {
-        return JSON.parse(jsonMatch[0]);
+        return JSON.parse(objectMatch[0]);
+      } catch {
+        // continue
+      }
+    }
+
+    const arrayMatch = response.match(/\[[\s\S]*\]/);
+    if (arrayMatch) {
+      try {
+        return JSON.parse(arrayMatch[0]);
       } catch {
         return null;
       }
