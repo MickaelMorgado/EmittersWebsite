@@ -1,9 +1,14 @@
 # Active Context
-
 ## Current Focus
 - **Proactive Agent System**: Auto-spawn agents on trigger keywords
 - **Pre-Push Quality Pipeline**: Automated lint, TypeScript, build checks before push
 - **Post-Push Documentation**: Automatic memory-bank updates after push
+
+## Recent Changes (2026-06-04)
+- **OpenRouter Migration for Trade Analysis**: trade-analysis flow (`/api/trading-bot/report-history`) now pins to OpenRouter and runs through a new free model chain (`google/gemma-4-31b-it:free` → `openai/gpt-oss-20b:free` → `nvidia/nemotron-3-nano-30b-a3b:free`) with `OPENROUTER_MODEL` env override; replaces the chain that was returning empty responses in production.
+- **mergeNoteUpdates Hardening**: filters malformed legacy items (items whose `content` is itself raw JSON) and defaults unknown action verbs to `add` instead of silently dropping the update.
+- **ReportCard → Learning Board**: card UI renamed and restructured to surface 50-trade / 500-trade / global insights as a unified "Learning Board" view.
+- **parseJSON Hardening**: added prefix-strip and array-match fallback stages; the prior single `{[\s\S]*}` regex was over-matching into prose.
 
 ## Recent Changes (2026-02-22)
 - Created AGENTS.md with proactive agent mode and auto-spawn triggers

@@ -51,3 +51,41 @@ On each parsed candle (`results.data`):
 ### 5. Modularity & Event-Driven Flow
 - Core functions are attached to `window` for global access (e.g., `window.calcATR`, `window.profitabilityCalculation`).
 - Event listeners orchestrate pipeline triggers (file input change, button clicks, select “change”).
+
+## AI Provider Layer (`node-projects/my-app/src/lib/ai.ts`)
+
+The `chatAI()` helper is a unified entry point that fronts three independent LLM providers, allowing the rest of the codebase to remain provider-agnostic.
+
+### Providers exposed
+- **OpenAI** — direct `https://api.openai.com/v1/chat/completions`, model overridable via `OPENAI_MODEL` (default `gpt-4o-mini`), `max_tokens: 800`.
+- **OpenRouter** — `https://openrouter.ai/api/v1/chat/completions`, `max_tokens: 800`, sends `HTTP-Referer` / `X-Title` headers for OpenRouter attribution. Runs through a **sequential model chain** (see below).
+- **Ollama (local)** — `http://localhost:11434/api/chat` with `OLLAMA_HOST` and `OLLAMA_MODEL` env vars (default `llama2:7b`), streams disabled.
+
+### Provider selection & fallback
+- `chatAI(prompt, { provider: 'openai' | 'openrouter' | 'ollama' })` forces a specific provider.
+- When no `provider` is supplied (auto mode) and `OPENAI_API_KEY` is set, OpenAI is tried first; on empty content it falls back to OpenRouter. With no OpenAI key, OpenRouter is the default.
+- When a specific provider is forced and `fallback: false`, the call returns whatever that provider produced even on failure.
+- All three providers return a uniform `AIResponse { content, provider, error? }` shape.
+
+### OpenRouter model chain (with env override)
+```ts
+const OPENROUTER_TEXT_MODELS = [
+  process.env.OPENROUTER_MODEL,                          // env override
+  'google/gemma-4-31b-it:free',
+  'openai/gpt-oss-20b:free',
+  'nvidia/nemotron-3-nano-30b-a3b:free',
+].filter(Boolean);
+```
+- Tried **sequentially**; first model to return non-empty `choices[0].message.content` wins.
+- All models capped at `max_tokens: 800`.
+- **Why this chain:** the previous chain (`deepseek-v4-flash:free`, `qwen3-next-80b-a3b-instruct:free`, `llama-3.3-70b-instruct:free`) was returning empty / errored responses in production, breaking trade-analysis notes generation.
+
+### `parseJSON` strategy
+`parseJSON<T>(response: string): T | null` tries in order:
+1. **Direct** `JSON.parse(response)`.
+2. **Markdown fence** — extract first ```json … ``` block.
+3. **Prefix strip** — drop everything before the first `{` or `[` and re-parse.
+4. **Object match** — first `{…}` substring.
+5. **Array match** — first `[…]` substring.
+6. Returns `null` on full failure.
+- This was hardened in 1.2.1: the older single `{[\s\S]*}` regex over-matched into prose when the LLM emitted commentary alongside JSON; adding prefix-strip and array-match recovers the actual payload.

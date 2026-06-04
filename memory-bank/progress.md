@@ -9,6 +9,32 @@
 - [x] Wrote functions.md  
 - [x] Wrote progress.md
 
+## 2026-06-04: OpenRouter Migration for Trade Analysis
+
+### OpenRouter Model Chain Swap (architecture / fix)
+- **File**: `node-projects/my-app/src/lib/ai.ts`
+- **Scope**: `chatAI()` and the OpenRouter code path in `node-projects/my-app/src/app/api/trading-bot/report-history/route.ts` (all three note generators — 50-trade, 500-trade, global recommendation — now pass `{ provider: 'openrouter' }`).
+- **New chain**: `OPENROUTER_MODEL` env override → `google/gemma-4-31b-it:free` → `openai/gpt-oss-20b:free` → `nvidia/nemotron-3-nano-30b-a3b:free`. Sequential, first non-empty `choices[0].message.content` wins, `max_tokens: 800`.
+- **Reason**: prior chain (`deepseek-v4-flash:free`, `qwen3-next-80b-a3b-instruct:free`, `llama-3.3-70b-instruct:free`) was returning empty/errored responses in production, breaking all three note generators.
+- **API route**: `maxDuration` raised to 300s to tolerate OpenRouter free-tier latency.
+
+### mergeNoteUpdates Hardening (logic)
+- **File**: `node-projects/my-app/src/app/api/trading-bot/report-history/route.ts`
+- **Change**: filters out malformed legacy items whose `content` itself looks like raw JSON (matches `{"id":` / `[{` / `"action":"add"`), preventing the merger from carrying forward corrupted history.
+- **Change**: unknown action verbs (anything other than `add` / `update` / `deprecate`) now default to `add` instead of being silently dropped.
+
+### parseJSON Hardening (parser)
+- **File**: `node-projects/my-app/src/lib/ai.ts`
+- **Change**: extended parse strategy from `direct → markdown-fence → objectMatch` to `direct → markdown-fence → stripPrefix → objectMatch → arrayMatch`. The old single `{[\s\S]*}` regex was over-matching into prose when LLMs emitted commentary alongside JSON.
+
+### ReportCard → Learning Board (UI)
+- **Files**: `node-projects/my-app/src/app/trading-bot/components/ReportCard.tsx`, `AIReportsSection.tsx`, `TradeHistorySection.tsx`, `page.tsx`
+- **Change**: report card visual treatment refactored into a "Learning Board" layout, unifying the 50-trade, 500-trade, and global-recommendation views under a single label.
+
+### versions.json (1.2.0 → 1.2.1)
+- **File**: `node-projects/my-app/src/data/versions.json`
+- **Change**: my-app bumped 1.2.0 → 1.2.1 (releasedAt 2026-06-04); 1.2.0 moved to history; history remains capped at 3 entries.
+
 ## 2026-03-18: Cursor Follower & Streaming Tools
 
 ### ✅ Cursor Follower Application
