@@ -3,6 +3,8 @@
 import { Bot, FileText, Settings } from 'lucide-react';
 import { ReportMetrics, SimulatedAgentOutput } from '../AIReportsSection';
 import AgentStatusBadge from './AgentStatusBadge';
+import AgentStructuredOutput from './AgentStructuredOutput';
+import MiniOHLCChart from './MiniOHLCChart';
 
 interface TrendAgentCardProps {
   activeAgent: string | null;
@@ -123,6 +125,24 @@ export default function TrendAgentCard({
           </span>
         </div>
       </div>
+
+      {/* ── Live OHLC Chart ── */}
+      <div className="border-t border-white/[0.05] pt-2 mt-1">
+        <span className="text-[9px] font-bold text-white/20 uppercase tracking-widest">BTCUSDT · 1m</span>
+        <MiniOHLCChart
+          crossoverStatus={simulatedAgents?.trend?.crossover_status}
+        />
+      </div>
+
+      <AgentStructuredOutput fields={[
+        { key: 'agent',         value: 'trend' },
+        { key: 'status',        value: activeAgent === 'trend' ? 'analyzing' : simulatedAgents?.trend?.entry_allowed ? 'approved' : simulatedAgents?.trend ? 'rejected' : 'offline' },
+        { key: 'direction',     value: simulatedAgents?.trend?.direction ?? null },
+        { key: 'entry_allowed', value: simulatedAgents?.trend?.entry_allowed ?? null },
+        { key: 'crossover',     value: simulatedAgents?.trend?.crossover_status ?? null },
+        { key: 'ma_trend',      value: simulatedAgents?.trend?.ma_50_trend ?? null },
+        { key: 'score',         value: simulatedAgents?.trend?.score ?? null },
+      ]} />
     </div>
   );
 }
