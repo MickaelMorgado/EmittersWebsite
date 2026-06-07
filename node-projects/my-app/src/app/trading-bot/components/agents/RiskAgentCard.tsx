@@ -13,6 +13,8 @@ interface RiskAgentCardProps {
   positionSizing: { positionSize: string; riskAmount: number };
   onRulesClick: () => void;
   onReportsClick: () => void;
+  /** Opens the agent's detail popup directly on its "State" tab — wired to the status badge. */
+  onStateClick?: () => void;
   formatTimeAgo: (timestamp: string) => string;
 }
 
@@ -36,6 +38,7 @@ export default function RiskAgentCard({
   positionSizing,
   onRulesClick,
   onReportsClick,
+  onStateClick,
 }: RiskAgentCardProps) {
   return (
     <div className={`bg-gradient-to-br from-red-500/[0.06] to-rose-500/[0.02] border border-red-500/[0.1] p-2 group hover:border-red-500/[0.2] transition-colors rounded ${
@@ -56,6 +59,7 @@ export default function RiskAgentCard({
               : 'offline'
             }
             color="red"
+            onClick={onStateClick}
           />
           <button
             onClick={onRulesClick}

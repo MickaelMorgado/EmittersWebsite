@@ -4,6 +4,9 @@
 - **Pre-Push Quality Pipeline**: Automated lint, TypeScript, build checks before push
 - **Post-Push Documentation**: Automatic memory-bank updates after push
 
+## Recent Changes (2026-06-07)
+- Just shipped: live trend card candle-age ticker (timezone-safe, 1s tick), plain-language news recap, persistent risk-settings endpoint, OpenRouter chain reorder with 45s per-model timeout, compact agent cards. Build baseline clean (fixed 4 pre-existing type errors). my-app 1.3.0.
+
 ## Recent Changes (2026-06-04)
 - **OpenRouter Migration for Trade Analysis**: trade-analysis flow (`/api/trading-bot/report-history`) now pins to OpenRouter and runs through a new free model chain (`google/gemma-4-31b-it:free` → `openai/gpt-oss-20b:free` → `nvidia/nemotron-3-nano-30b-a3b:free`) with `OPENROUTER_MODEL` env override; replaces the chain that was returning empty responses in production.
 - **mergeNoteUpdates Hardening**: filters malformed legacy items (items whose `content` is itself raw JSON) and defaults unknown action verbs to `add` instead of silently dropping the update.

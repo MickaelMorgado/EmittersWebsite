@@ -9,6 +9,15 @@
 - [x] Wrote functions.md  
 - [x] Wrote progress.md
 
+## 2026-06-07 — Trading Bot v1.3.0
+
+- Live trend ticker (timezone-safe candle age)
+- Plain-language news recap (non-trader audience)
+- New /api/trading-bot/risk-settings endpoint (persistent daily/weekly/monthly drawdown %)
+- OpenRouter chain reorder fastest→slowest + 45s per-model timeout + maxTokens option
+- Compact agent cards (debug blocks removed, smaller fonts)
+- Build green: fixed 4 pre-existing type errors (agents-status enum, stats:{}, chatAI boolean, STATUS_STYLES)
+
 ## 2026-06-04: OpenRouter Migration for Trade Analysis
 
 ### OpenRouter Model Chain Swap (architecture / fix)

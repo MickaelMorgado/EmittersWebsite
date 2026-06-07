@@ -13,6 +13,8 @@ interface TrendAgentCardProps {
   simulatedAgents?: SimulatedAgentOutput | null;
   onRulesClick: () => void;
   onReportsClick: () => void;
+  /** Opens the agent's detail popup directly on its "State" tab — wired to the status badge. */
+  onStateClick?: () => void;
   formatTimeAgo: (timestamp: string) => string;
 }
 
@@ -42,6 +44,7 @@ export default function TrendAgentCard({
   simulatedAgents,
   onRulesClick,
   onReportsClick,
+  onStateClick,
 }: TrendAgentCardProps) {
   // Tick every second so the "Xs/Xm ago" badge counts up live and is correct
   // immediately on mount/refresh — it's derived straight from the candle's
@@ -79,6 +82,7 @@ export default function TrendAgentCard({
           <AgentStatusBadge
             status={activeAgent === 'trend' ? 'analyzing' : simulatedAgents?.trend?.entry_allowed ? 'approved' : simulatedAgents?.trend ? 'rejected' : 'offline'}
             color="cyan"
+            onClick={onStateClick}
           />
           <button
             onClick={onRulesClick}
@@ -111,7 +115,7 @@ export default function TrendAgentCard({
       <div className="text-[10px] space-y-0.5 border-t border-white/[0.05] pt-1">
         <div className="flex justify-between">
           <span className="text-white/30">MA9 / MA21 / MA50</span>
-          <span className="text-white/60 font-mono text-xs">
+          <span className="text-white/60 font-mono">
             {simulatedAgents?.trend?.ma_9
               ? `${simulatedAgents.trend.ma_9.toFixed(2)} / ${simulatedAgents.trend.ma_21?.toFixed(2) || 'N/A'} / ${simulatedAgents.trend.ma_50?.toFixed(2) || 'N/A'}`
               : 'Updating...'}

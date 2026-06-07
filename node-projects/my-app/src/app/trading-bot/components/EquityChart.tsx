@@ -1,8 +1,9 @@
 "use client";
 
-import { TrendingUp, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
-import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis, ReferenceLine } from 'recharts';
-import { useState, useMemo, useEffect } from 'react';
+import { RotateCcw, TrendingUp, ZoomIn, ZoomOut } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { Area, AreaChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import RangeZoomSlider from './RangeZoomSlider';
 
 interface EquityChartProps {
   data: { trade: string; equity: number }[];
@@ -79,8 +80,8 @@ export default function EquityChart({ data }: EquityChartProps) {
 
   return (
     <div className="bg-white/[0.02] border border-white/[0.05] flex flex-col min-h-0 rounded h-full">
-      <div className="flex items-center justify-between px-3 py-1.5 border-b border-white/[0.05] shrink-0">
-        <div className="flex items-center gap-1.5">
+      <div className="flex items-center justify-between px-3 py-1 border-b border-white/[0.05] shrink-0">
+        <div className="flex items-center gap-1">
           <TrendingUp className="w-3 h-3 text-cyan-400/40" />
           <h2 className="text-[10px] font-semibold text-white/50 tracking-wide">Equity</h2>
         </div>
@@ -91,72 +92,73 @@ export default function EquityChart({ data }: EquityChartProps) {
         )}
       </div>
 
-      {/* Controls */}
-      <div className="flex items-center justify-between px-3 py-1.5 border-b border-white/[0.05] bg-white/[0.01] gap-2 shrink-0">
-        <div className="flex gap-1">
-          <button
-            onClick={handlePanLeft}
-            disabled={startIndex === 0}
-            className="p-1 hover:bg-white/[0.08] disabled:opacity-30 disabled:cursor-not-allowed rounded transition-colors"
-            title="Pan left"
-          >
-            <span className="text-[11px] text-white/50">←</span>
-          </button>
-          <button
-            onClick={handleZoomIn}
-            className="p-1 hover:bg-white/[0.08] rounded transition-colors"
-            title="Zoom in"
-          >
-            <ZoomIn className="w-3 h-3 text-white/50" />
-          </button>
-          <button
-            onClick={handleZoomOut}
-            disabled={endIndex - startIndex >= data.length - 1}
-            className="p-1 hover:bg-white/[0.08] disabled:opacity-30 disabled:cursor-not-allowed rounded transition-colors"
-            title="Zoom out"
-          >
-            <ZoomOut className="w-3 h-3 text-white/50" />
-          </button>
-          <button
-            onClick={handleReset}
-            className="p-1 hover:bg-white/[0.08] rounded transition-colors"
-            title="Reset view"
-          >
-            <RotateCcw className="w-3 h-3 text-white/50" />
-          </button>
-          <button
-            onClick={handlePanRight}
-            disabled={endIndex === data.length - 1}
-            className="p-1 hover:bg-white/[0.08] disabled:opacity-30 disabled:cursor-not-allowed rounded transition-colors"
-            title="Pan right"
-          >
-            <span className="text-[11px] text-white/50">→</span>
-          </button>
-        </div>
-        <div className="flex items-center gap-2">
-          <input
-            type="range"
-            min="0"
-            max={Math.max(data.length - 1, 0)}
-            value={startIndex}
-            onChange={(e) => {
-              const newStart = parseInt(e.target.value);
-              const range = endIndex - startIndex;
-              setStartIndex(newStart);
-              setEndIndex(Math.min(data.length - 1, newStart + range));
-            }}
-            className="h-1 bg-white/[0.1] rounded appearance-none cursor-pointer w-24"
-            style={{
-              background: `linear-gradient(to right, rgba(34,211,238,0.4) 0%, rgba(34,211,238,0.4) ${(startIndex / Math.max(data.length - 1, 1)) * 100}%, rgba(255,255,255,0.1) ${(startIndex / Math.max(data.length - 1, 1)) * 100}%, rgba(255,255,255,0.1) 100%)`
-            }}
-          />
-          <span className="text-[11px] text-white/40 font-mono whitespace-nowrap">
-            {startIndex + 1}-{endIndex + 1} / {data.length}
-          </span>
-        </div>
-      </div>
+      <div className="relative flex-1 min-h-0 p-2">
+        {/* Floating toolbar — nav buttons + position readout, overlaid in the
+            corner instead of consuming a dedicated header row. Appears on
+            hover so the chart stays clean at rest and reclaims that vertical
+            space; the range-zoom brush below remains the primary control. */}
+        {data.length > 1 && (
+          <div className="absolute top-1 right-1 z-20 flex items-center gap-1 px-1 py-0.5 rounded bg-[#0d1117]/70 backdrop-blur-sm border border-white/[0.06] opacity-0 hover:opacity-100 focus-within:opacity-100 transition-opacity">
+            <div className="flex gap-1 shrink-0">
+              <button
+                onClick={handlePanLeft}
+                disabled={startIndex === 0}
+                className="p-0.5 hover:bg-white/[0.08] disabled:opacity-30 disabled:cursor-not-allowed rounded transition-colors"
+                title="Pan left"
+              >
+                <span className="text-[10px] text-white/50 leading-none">←</span>
+              </button>
+              <button
+                onClick={handleZoomIn}
+                className="p-0.5 hover:bg-white/[0.08] rounded transition-colors"
+                title="Zoom in"
+              >
+                <ZoomIn className="w-2.5 h-2.5 text-white/50" />
+              </button>
+              <button
+                onClick={handleZoomOut}
+                disabled={endIndex - startIndex >= data.length - 1}
+                className="p-0.5 hover:bg-white/[0.08] disabled:opacity-30 disabled:cursor-not-allowed rounded transition-colors"
+                title="Zoom out"
+              >
+                <ZoomOut className="w-2.5 h-2.5 text-white/50" />
+              </button>
+              <button
+                onClick={handleReset}
+                className="p-0.5 hover:bg-white/[0.08] rounded transition-colors"
+                title="Reset view"
+              >
+                <RotateCcw className="w-2.5 h-2.5 text-white/50" />
+              </button>
+              <button
+                onClick={handlePanRight}
+                disabled={endIndex === data.length - 1}
+                className="p-0.5 hover:bg-white/[0.08] disabled:opacity-30 disabled:cursor-not-allowed rounded transition-colors"
+                title="Pan right"
+              >
+                <span className="text-[10px] text-white/50 leading-none">→</span>
+              </button>
+            </div>
+            <span className="text-[9px] text-white/40 font-mono whitespace-nowrap pl-1 border-l border-white/[0.08]">
+              {startIndex + 1}-{endIndex + 1}/{data.length}
+            </span>
+          </div>
+        )}
 
-      <div className="flex-1 min-h-0 px-2 py-1">
+        {/* Range-zoom brush — a full-height windowing mask over the chart's
+            plot area itself (TradingView-style), not a separate floating bar.
+            Drag the clear window to pan, or its edge-rails to resize/zoom. */}
+        {data.length > 1 && (
+          <div className="absolute inset-2 z-10">
+            <RangeZoomSlider
+              max={data.length}
+              startIndex={startIndex}
+              endIndex={endIndex}
+              onChange={(s, e) => { setStartIndex(s); setEndIndex(e); }}
+              color="rgba(34,211,238,0.8)"
+            />
+          </div>
+        )}
         {data.length === 0 ? (
           <div className="flex items-center justify-center h-full text-white/20 text-xs">No data yet</div>
         ) : visibleData.length === 0 ? (

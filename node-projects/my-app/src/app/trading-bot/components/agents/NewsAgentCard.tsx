@@ -12,6 +12,8 @@ interface NewsAgentCardProps {
   displayNews: any[];
   onRulesClick: () => void;
   onReportsClick: () => void;
+  /** Opens the agent's detail popup directly on its "State" tab — wired to the status badge. */
+  onStateClick?: () => void;
   formatTimeAgo: (timestamp: string) => string;
 }
 
@@ -34,6 +36,7 @@ export default function NewsAgentCard({
   displayNews,
   onRulesClick,
   onReportsClick,
+  onStateClick,
 }: NewsAgentCardProps) {
   return (
     <div className={`bg-gradient-to-br from-violet-500/[0.06] to-purple-500/[0.02] border border-violet-500/[0.1] p-2 group hover:border-violet-500/[0.2] transition-colors rounded flex flex-col ${
@@ -54,6 +57,7 @@ export default function NewsAgentCard({
               : 'approved'
             }
             color="violet"
+            onClick={onStateClick}
           />
           <button
             onClick={onRulesClick}

@@ -614,6 +614,10 @@ export default function AIReportsSection({
                   setSelectedAgent('trend');
                   setActiveTab('reports');
                 }}
+                onStateClick={() => {
+                  setSelectedAgent('trend');
+                  setActiveTab('state');
+                }}
                 formatTimeAgo={formatTimeAgo}
               />
 
@@ -631,6 +635,10 @@ export default function AIReportsSection({
                 onReportsClick={() => {
                   setSelectedAgent('news');
                   setActiveTab('reports');
+                }}
+                onStateClick={() => {
+                  setSelectedAgent('news');
+                  setActiveTab('state');
                 }}
                 formatTimeAgo={formatTimeAgo}
               />
@@ -652,6 +660,10 @@ export default function AIReportsSection({
                   setSelectedAgent('history');
                   setActiveTab('reports');
                 }}
+                onStateClick={() => {
+                  setSelectedAgent('history');
+                  setActiveTab('state');
+                }}
                 formatTimeAgo={formatTimeAgo}
               />
 
@@ -670,6 +682,10 @@ export default function AIReportsSection({
                 onReportsClick={() => {
                   setSelectedAgent('risk');
                   setActiveTab('reports');
+                }}
+                onStateClick={() => {
+                  setSelectedAgent('risk');
+                  setActiveTab('state');
                 }}
                 formatTimeAgo={formatTimeAgo}
               />

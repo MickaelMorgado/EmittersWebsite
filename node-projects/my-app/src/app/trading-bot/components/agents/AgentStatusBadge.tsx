@@ -6,6 +6,9 @@ interface AgentStatusBadgeProps {
   color: AccentColor;
   /** Override the displayed label */
   label?: string;
+  /** When provided, the badge becomes clickable — opens the agent's
+   *  detail popup directly on its "State" tab (current snapshot). */
+  onClick?: () => void;
 }
 
 const approvedStyles: Record<AccentColor, string> = {
@@ -29,10 +32,17 @@ const DEFAULT_LABELS: Record<AgentStatus, string> = {
   offline:   'OFFLINE',
 };
 
-export default function AgentStatusBadge({ status, color, label }: AgentStatusBadgeProps) {
-  return (
-    <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${STATUS_STYLES[status]}`}>
-      {label ?? DEFAULT_LABELS[status]}
-    </span>
-  );
+export default function AgentStatusBadge({ status, color, label, onClick }: AgentStatusBadgeProps) {
+  const className = `text-[10px] px-1.5 py-0.5 rounded font-bold ${STATUS_STYLES[status]} ${onClick ? 'cursor-pointer hover:brightness-125 transition-[filter]' : ''}`;
+  const text = label ?? DEFAULT_LABELS[status];
+
+  if (onClick) {
+    return (
+      <button onClick={onClick} className={className} title="View current state">
+        {text}
+      </button>
+    );
+  }
+
+  return <span className={className}>{text}</span>;
 }

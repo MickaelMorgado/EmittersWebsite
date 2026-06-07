@@ -29,6 +29,8 @@ interface HistoryAgentCardProps {
   history?: Trade[];
   onRulesClick: () => void;
   onReportsClick: () => void;
+  /** Opens the agent's detail popup directly on its "State" tab — wired to the status badge. */
+  onStateClick?: () => void;
   formatTimeAgo: (timestamp: string) => string;
 }
 
@@ -79,6 +81,7 @@ export default function HistoryAgentCard({
   history = [],
   onRulesClick,
   onReportsClick,
+  onStateClick,
 }: HistoryAgentCardProps) {
   // Calculate recent trade performance
   const recentTrades = history.slice(-5);
@@ -114,6 +117,7 @@ export default function HistoryAgentCard({
               : 'offline'
             }
             color="emerald"
+            onClick={onStateClick}
           />
           <button
             onClick={onRulesClick}

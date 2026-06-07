@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-06-07
+
+### Added
+- Live trend card candle-age ticker (timezone-safe, ticks every 1s, no polling lag)
+- News agent plain_summary field rendered as "In Plain Words" section
+- News agent rejection_reason + Trend agent reasoning fields propagated through dashboard
+- /api/trading-bot/risk-settings endpoint (GET/POST) persisting daily/weekly/monthly drawdown %
+- New maxTokens chat option (800 default, 250 for short recaps)
+
+### Changed
+- OpenRouter model chain reordered fastest→slowest with 45s per-model AbortController timeout
+- Trend dashboard polling refactored to recursive setTimeout (no race on new-candle compare)
+- Agent cards compacted (removed debug blocks, smaller fonts)
+
+### Fixed
+- Polling race between concurrent trend-signal fetches
+- 4 pre-existing baseline build errors (agents-status enum, stats:{}, chatAI boolean, STATUS_STYLES color)
+
 ## [Unreleased]
 
 ### Added
