@@ -1,9 +1,8 @@
 "use client";
 
-import { Bot, FileText, Settings, TrendingDown, TrendingUp } from 'lucide-react';
+import { Bot, FileText, Settings } from 'lucide-react';
 import { BotStats, ReportMetrics, SimulatedAgentOutput } from '../AIReportsSection';
 import AgentStatusBadge from './AgentStatusBadge';
-import AgentStructuredOutput from './AgentStructuredOutput';
 
 interface Trade {
   id: string;
@@ -45,7 +44,7 @@ function formatTimeAgo(timestamp: string): string {
 }
 
 // Calculate optimal R:R ratio based on historical performance
-function calculateOptimalRRTarget(history: Trade[], reports: ReportMetrics): string {
+function calculateOptimalRRTarget(history: Trade[], _reports: ReportMetrics): string {
   if (history.length < 10) return '1:1.5'; // Default for low sample
 
   // Get closed trades only (has result)
@@ -76,7 +75,7 @@ export default function HistoryAgentCard({
   stats,
   reports,
   simulatedAgents,
-  reportHistory,
+  reportHistory, // eslint-disable-line @typescript-eslint/no-unused-vars
   history = [],
   onRulesClick,
   onReportsClick,
@@ -142,54 +141,35 @@ export default function HistoryAgentCard({
           }}
         />
       </div>
-      {/* Recent Trades Section */}
+      {/* Recent Trades compact row */}
       {recentTrades.length > 0 && (
-        <div className="mb-2 pb-2 border-b border-white/[0.05] space-y-1">
-          <p className="text-[10px] text-white/40 font-medium uppercase">Last {recentTrades.length} Trades</p>
-          <div className="space-y-0.5">
-            {recentTrades.slice().reverse().map((trade, idx) => (
-              <div key={trade.id} className="flex items-center justify-between text-[10px] bg-white/[0.02] p-1 rounded">
-                <div className="flex items-center gap-1">
-                  {trade.result === 'WIN' ? (
-                    <TrendingUp className="w-3 h-3 text-emerald-400" />
-                  ) : (
-                    <TrendingDown className="w-3 h-3 text-red-400" />
-                  )}
-                  <span className="text-white/60">{trade.type}</span>
-                </div>
-                <span className={`font-mono font-bold ${trade.pnl && trade.pnl > 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                  {trade.pnl ? (trade.pnl > 0 ? '+' : '') + trade.pnl.toFixed(2) : '—'}
-                </span>
-              </div>
-            ))}
-          </div>
+        <div className="mb-1 flex items-center gap-1">
+          <span className="text-[9px] text-white/30 uppercase">Last {recentTrades.length}:</span>
+          {recentTrades.slice().reverse().map((trade) => (
+            <span
+              key={trade.id}
+              className={`text-[9px] font-bold ${trade.result === 'WIN' ? 'text-emerald-400' : 'text-red-400'}`}
+            >
+              {trade.result === 'WIN' ? '▲' : '▼'}
+            </span>
+          ))}
+          <span className={`ml-auto text-[9px] font-mono font-bold ${totalRecentPnL >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+            {totalRecentPnL >= 0 ? '+' : ''}{totalRecentPnL.toFixed(2)}
+          </span>
         </div>
       )}
 
-      {/* RR Target & Recommendation Section */}
-      <div className="mb-2 pb-2 border-b border-white/[0.05]">
-        <div className="flex justify-between items-center mb-1">
-          <span className="text-[10px] text-white/40 uppercase font-bold">Recommended R:R</span>
-          <span className={`text-xs font-bold font-mono ${
-            optimalRRTarget.includes('3') ? 'text-emerald-400' :
-            optimalRRTarget.includes('2') ? 'text-emerald-300' :
-            'text-amber-400'
-          }`}>
-            {optimalRRTarget}
-          </span>
-        </div>
-        <p className="text-[10px] text-white/50 leading-tight">
-          {optimalRRTarget.includes('3') ? 'Based on strong avg win/loss ratio' :
-           optimalRRTarget.includes('2') ? 'Moderate performance - balanced approach' :
-           optimalRRTarget.includes('1.5') ? 'Conservative - build consistency' :
-           'Portfolio needs improvement'}
-        </p>
+      {/* RR Target row */}
+      <div className="flex justify-between items-center mb-1">
+        <span className="text-[10px] text-white/40 uppercase font-bold">Rec. R:R</span>
+        <span className={`text-[10px] font-bold font-mono ${
+          optimalRRTarget.includes('3') ? 'text-emerald-400' :
+          optimalRRTarget.includes('2') ? 'text-emerald-300' :
+          'text-amber-400'
+        }`}>
+          {optimalRRTarget}
+        </span>
       </div>
-
-      {/* Metrics Section */}
-      <p className="text-[11px] leading-tight text-white/45 mb-2">
-        {stats.totalTrades > 100 ? '📊 Excellent dataset' : stats.totalTrades > 50 ? '📋 Good data' : '⏳ Build more trades'}
-      </p>
 
       <div className="text-[10px] space-y-0.5 border-t border-white/[0.05] pt-1">
         <div className="flex justify-between">
@@ -229,15 +209,6 @@ export default function HistoryAgentCard({
           </span>
         </div>
       </div>
-      <AgentStructuredOutput fields={[
-        { key: 'agent',       value: 'history' },
-        { key: 'status',      value: activeAgent === 'history' ? 'analyzing' : simulatedAgents?.history?.score ? 'approved' : simulatedAgents?.history ? 'rejected' : 'offline' },
-        { key: 'rr_ratio',    value: simulatedAgents?.history?.rrTarget ?? optimalRRTarget },
-        { key: 'win_rate',    value: recentTrades.length > 0 ? Number(recentWinRate) : null },
-        { key: 'consistency', value: simulatedAgents?.history?.consistency ?? null },
-        { key: 'expectancy',  value: Number(expectancy.toFixed(2)) },
-        { key: 'score',       value: simulatedAgents?.history?.score ?? null },
-      ]} />
     </div>
   );
 }

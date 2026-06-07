@@ -5,11 +5,13 @@ const OPENAI_KEY =
   process.env.NEXT_PUBLIC_OPENAI_KEY;
 const OPENROUTER_KEY = process.env.OPENROUTER_API_KEY || process.env.NEXT_PUBLIC_OPENROUTER_KEY;
 
+// Ordered fastest → slowest. Small 7-8b models respond in <15s on free tier.
 const OPENROUTER_TEXT_MODELS = [
   process.env.OPENROUTER_MODEL,
-  'google/gemma-4-31b-it:free',
-  'openai/gpt-oss-20b:free',
-  'nvidia/nemotron-3-nano-30b-a3b:free',
+  'meta-llama/llama-3.1-8b-instruct:free',   // fast, great at JSON
+  'mistralai/mistral-7b-instruct:free',        // fast fallback
+  'google/gemma-3-4b-it:free',                 // small, quick
+  'google/gemma-4-31b-it:free',               // slower, last resort
 ].filter(Boolean) as string[];
 
 // Ollama config
@@ -26,8 +28,9 @@ export interface AIResponse {
 
 export interface ChatOptions {
   provider?: AIProvider; // Force specific provider: 'ollama', 'openai', 'openrouter'
-  fallback?: boolean; // Allow fallback if primary fails (default: true)
-  temperature?: number; // For Ollama (default: 0.3 for agents, 0.7 for general)
+  fallback?: boolean;    // Allow fallback if primary fails (default: true)
+  temperature?: number;  // default: 0.3
+  maxTokens?: number;    // default: 800; use ~200 for short JSON responses
 }
 
 /**
@@ -36,7 +39,7 @@ export interface ChatOptions {
  * @param options Provider selection, fallback behavior, temperature
  */
 export async function chatAI(prompt: string, options?: ChatOptions): Promise<AIResponse> {
-  const { provider, fallback = true, temperature } = options || {};
+  const { provider, fallback = true, temperature, maxTokens } = options || {};
   let lastError = '';
 
   // Force Ollama if specified
@@ -46,14 +49,14 @@ export async function chatAI(prompt: string, options?: ChatOptions): Promise<AIR
 
   // Force OpenAI if specified
   if (provider === 'openai') {
-    const result = await chatOpenAI(prompt, temperature);
+    const result = await chatOpenAI(prompt, temperature, maxTokens);
     if (result.content || !fallback) return result;
     lastError = result.error || 'OpenAI failed';
   }
 
   // Force OpenRouter if specified
   if (provider === 'openrouter') {
-    const result = await chatOpenRouter(prompt, temperature);
+    const result = await chatOpenRouter(prompt, temperature, maxTokens);
     if (result.content || !fallback) return result;
     lastError = result.error || 'OpenRouter failed';
   }
@@ -61,7 +64,7 @@ export async function chatAI(prompt: string, options?: ChatOptions): Promise<AIR
   // No specific provider: try OpenAI first, then OpenRouter
   if (!provider) {
     if (OPENAI_KEY) {
-      const result = await chatOpenAI(prompt, temperature);
+      const result = await chatOpenAI(prompt, temperature, maxTokens);
       if (result.content) return result;
       lastError = result.error || 'OpenAI failed';
 
@@ -69,7 +72,7 @@ export async function chatAI(prompt: string, options?: ChatOptions): Promise<AIR
     }
 
     if (OPENROUTER_KEY) {
-      return chatOpenRouter(prompt, temperature);
+      return chatOpenRouter(prompt, temperature, maxTokens);
     }
   }
 
@@ -126,7 +129,7 @@ async function chatOllama(prompt: string, temperature = 0.3): Promise<AIResponse
 /**
  * Chat via OpenAI
  */
-async function chatOpenAI(prompt: string, temperature?: number): Promise<AIResponse> {
+async function chatOpenAI(prompt: string, temperature?: number, maxTokens?: number): Promise<AIResponse> {
   if (!OPENAI_KEY) {
     return {
       content: '',
@@ -145,7 +148,7 @@ async function chatOpenAI(prompt: string, temperature?: number): Promise<AIRespo
       body: JSON.stringify({
         model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
         messages: [{ role: 'user', content: prompt }],
-        max_tokens: 800,
+        max_tokens: maxTokens ?? 800,
         ...(temperature !== undefined && { temperature })
       })
     });
@@ -173,7 +176,10 @@ async function chatOpenAI(prompt: string, temperature?: number): Promise<AIRespo
 /**
  * Chat via OpenRouter
  */
-async function chatOpenRouter(prompt: string, temperature?: number): Promise<AIResponse> {
+// Per-model timeout — don't let one slow free model block all retries
+const MODEL_TIMEOUT_MS = 45_000;
+
+async function chatOpenRouter(prompt: string, temperature?: number, maxTokens?: number): Promise<AIResponse> {
   if (!OPENROUTER_KEY) {
     return {
       content: '',
@@ -183,9 +189,12 @@ async function chatOpenRouter(prompt: string, temperature?: number): Promise<AIR
   }
 
   for (const model of OPENROUTER_TEXT_MODELS) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), MODEL_TIMEOUT_MS);
     try {
       const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
+        signal: controller.signal,
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${OPENROUTER_KEY}`,
@@ -195,27 +204,31 @@ async function chatOpenRouter(prompt: string, temperature?: number): Promise<AIR
         body: JSON.stringify({
           model,
           messages: [{ role: 'user', content: prompt }],
-          max_tokens: 800,
+          max_tokens: maxTokens ?? 800,
           ...(temperature !== undefined && { temperature })
         })
       });
+      clearTimeout(timer);
 
       const data = await res.json();
 
       if (data.choices?.[0]?.message?.content) {
+        console.log(`[openrouter] ✓ ${model}`);
         return { content: data.choices[0].message.content, provider: 'openrouter' };
       }
 
-      console.log(`OpenRouter ${model} failed:`, data.error?.message);
-    } catch (err) {
-      console.log(`OpenRouter ${model} error:`, String(err));
+      console.log(`[openrouter] ${model} failed:`, data.error?.message);
+    } catch (err: any) {
+      clearTimeout(timer);
+      const reason = err.name === 'AbortError' ? 'timed out (45s)' : String(err);
+      console.log(`[openrouter] ${model} error: ${reason}`);
     }
   }
 
   return {
     content: '',
     provider: 'openrouter',
-    error: 'All OpenRouter models failed'
+    error: 'All OpenRouter models failed or timed out'
   };
 }
 

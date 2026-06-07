@@ -1,7 +1,7 @@
 "use client";
 
-import { AlertTriangle, BarChart3, Brain, Check, Copy, RefreshCw, Sparkles, Target, TrendingUp, Zap } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { AlertTriangle, BarChart3, Brain, Check, Copy, RefreshCw, Sparkles, Target, TrendingUp, Zap } from 'lucide-react';
 import { useState } from 'react';
 
 interface Trade {
@@ -93,33 +93,27 @@ function PostIt({
   }
 
   return (
-    <div className={`group relative rounded border ${c.border} ${c.bg} ${c.hover} p-2 pl-2.5 pr-7 transition-colors ${deprecated ? 'opacity-35' : ''}`}>
-      <div className="flex items-center justify-between mb-1">
-        <div className="flex items-center gap-1.5">
-          <span className={`w-1.5 h-1.5 rounded-full ${c.dot} opacity-70`} />
-          <Icon className={`w-2.5 h-2.5 ${c.icon}`} />
-          {index !== undefined && total !== undefined && total > 1 && (
-            <span className={`text-[9px] font-mono ${c.num}`}>{index + 1}/{total}</span>
-          )}
-        </div>
+    <div className={`group relative rounded border ${c.border} ${c.bg} ${c.hover} px-1.5 py-1 pr-5 transition-colors ${deprecated ? 'opacity-35' : ''}`}>
+      <div className="flex items-center gap-1 mb-0.5">
+        <span className={`w-1 h-1 rounded-full ${c.dot} opacity-70 shrink-0`} />
+        <Icon className={`w-2 h-2 ${c.icon} shrink-0`} />
+        {index !== undefined && total !== undefined && total > 1 && (
+          <span className={`text-[8px] font-mono ${c.num}`}>{index + 1}/{total}</span>
+        )}
+        <span className={`text-[9px] font-mono ${c.ts} ml-auto`}>
+          {deprecated ? <span className="text-[8px] text-white/25 uppercase tracking-wide">resolved</span> : timeAgo(item.lastUpdatedAt)}
+        </span>
         <button
           onClick={copy}
-          className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity text-white/25 hover:text-white/70"
+          className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity text-white/25 hover:text-white/70"
           title="Copy insight"
         >
-          {copied
-            ? <Check className="w-2.5 h-2.5 text-emerald-400" />
-            : <Copy className="w-2.5 h-2.5" />}
+          {copied ? <Check className="w-2 h-2 text-emerald-400" /> : <Copy className="w-2 h-2" />}
         </button>
       </div>
-      <p className={`text-[11px] leading-snug ${deprecated ? 'line-through text-white/30' : 'text-white/75'}`}>
+      <p className={`text-[10px] leading-snug ${deprecated ? 'line-through text-white/30' : 'text-white/70'}`}>
         {item.content}
       </p>
-      <div className="flex items-center mt-1.5">
-        {deprecated
-          ? <span className="text-[9px] text-white/25 uppercase tracking-wide">resolved</span>
-          : <span className={`text-[9px] font-mono ${c.ts}`}>{timeAgo(item.lastUpdatedAt)}</span>}
-      </div>
     </div>
   );
 }
@@ -146,7 +140,7 @@ function PostItSection({
   const progress   = Math.min((total / milestone) * 100, 100);
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-1.5">
       {/* Section header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
@@ -161,7 +155,7 @@ function PostItSection({
           title={`Force-generate ${label} notes from last ${milestone} trades`}
         >
           <RefreshCw className={`w-2.5 h-2.5 ${generating ? 'animate-spin' : ''}`} />
-          {generating ? 'Analysing…' : 'Generate'}
+          {generating ? 'Analysing…' : 'Gen'}
         </button>
       </div>
 
@@ -171,39 +165,40 @@ function PostItSection({
           style={{ width: `${progress}%` }} />
       </div>
 
-      {/* Post-its or empty state */}
-      {active.length === 0 && deprecated.length === 0 ? (
-        <div className={`rounded border ${c.dashed} border-dashed p-3 text-center`}>
-          <p className="text-[10px] text-white/25">
-            {generating
-              ? 'LLM analysing your trades…'
-              : total < milestone
-              ? `${milestone - total} more trades · or click Generate`
-              : 'Click Generate to analyse'}
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-2">
-          {active.map((item, i) => <PostIt key={item.id} item={item} accent={accent} index={i} total={active.length} />)}
-          {deprecated.length > 0 && (
-            <details className="group">
-              <summary className="text-[9px] text-white/20 cursor-pointer hover:text-white/40 list-none flex items-center gap-1">
-                <span className="group-open:rotate-90 transition-transform inline-block">▶</span>
-                {deprecated.length} resolved
-              </summary>
-              <div className="mt-1.5 space-y-1.5">
-                {deprecated.map((item, i) => <PostIt key={item.id} item={item} accent={accent} index={i} total={deprecated.length} />)}
-              </div>
-            </details>
-          )}
-        </div>
-      )}
-
-      {notes && (
-        <p className="text-[9px] text-white/20 font-mono">
-          Cycle #{notes.cycleNumber} · {timeAgo(notes.generatedAt)}
-        </p>
-      )}
+      {/* Scrollable post-its */}
+      <div className="overflow-y-auto" style={{ maxHeight: 125 }}>
+        {active.length === 0 && deprecated.length === 0 ? (
+          <div className={`rounded border ${c.dashed} border-dashed p-3 text-center`}>
+            <p className="text-[10px] text-white/25">
+              {generating
+                ? 'LLM analysing…'
+                : total < milestone
+                ? `${milestone - total} more · or Gen`
+                : 'Click Gen to analyse'}
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-1.5">
+            {active.map((item, i) => <PostIt key={item.id} item={item} accent={accent} index={i} total={active.length} />)}
+            {deprecated.length > 0 && (
+              <details className="group">
+                <summary className="text-[9px] text-white/20 cursor-pointer hover:text-white/40 list-none flex items-center gap-1">
+                  <span className="group-open:rotate-90 transition-transform inline-block">▶</span>
+                  {deprecated.length} resolved
+                </summary>
+                <div className="mt-1 space-y-1">
+                  {deprecated.map((item, i) => <PostIt key={item.id} item={item} accent={accent} index={i} total={deprecated.length} />)}
+                </div>
+              </details>
+            )}
+            {notes && (
+              <p className="text-[9px] text-white/20 font-mono pt-0.5">
+                Cycle #{notes.cycleNumber} · {timeAgo(notes.generatedAt)}
+              </p>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -226,12 +221,14 @@ export default function ReportCard({
     try {
       // 3-minute timeout — OpenRouter free models can be slow under load
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 180_000);
+      const timer = setTimeout(() => controller.abort(), 290_000); // just under server's 300s maxDuration
 
+      // Map UI target '500' → '200' (backend uses 200-trade milestone)
+      const apiTarget = target === '500' ? '200' : target;
       const res = await fetch('/api/trading-bot/report-history', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ target }),
+        body: JSON.stringify({ target: apiTarget }),
         signal: controller.signal,
       });
       clearTimeout(timer);
@@ -270,32 +267,29 @@ export default function ReportCard({
 
       <div className="overflow-y-auto flex-1 min-h-0 px-4 py-3 space-y-4">
 
-        {/* 50-Trade post-its */}
-        <PostItSection
-          notes={reportHistory?.notes50 ?? null}
-          accent="cyan"
-          label="50-Trade Insights"
-          icon={<Target className="w-3 h-3 text-cyan-400/50" />}
-          total={total}
-          milestone={50}
-          onGenerate={() => runGeneration('50')}
-          generating={gen50}
-        />
-
-        {/* Divider */}
-        <div className="border-t border-white/[0.04]" />
-
-        {/* 500-Trade post-its */}
-        <PostItSection
-          notes={reportHistory?.notes500 ?? null}
-          accent="amber"
-          label="500-Trade Strategy"
-          icon={<TrendingUp className="w-3 h-3 text-amber-400/50" />}
-          total={total}
-          milestone={500}
-          onGenerate={() => runGeneration('500')}
-          generating={gen500}
-        />
+        {/* 50 + 500 side by side */}
+        <div className="grid grid-cols-2 gap-3">
+          <PostItSection
+            notes={reportHistory?.notes50 ?? null}
+            accent="cyan"
+            label="50-Trade"
+            icon={<Target className="w-3 h-3 text-cyan-400/50" />}
+            total={total}
+            milestone={50}
+            onGenerate={() => runGeneration('50')}
+            generating={gen50}
+          />
+          <PostItSection
+            notes={reportHistory?.notes500 ?? null}
+            accent="amber"
+            label="200-Trade"
+            icon={<TrendingUp className="w-3 h-3 text-amber-400/50" />}
+            total={total}
+            milestone={200}
+            onGenerate={() => runGeneration('500')}
+            generating={gen500}
+          />
+        </div>
 
         {/* Divider */}
         <div className="border-t border-white/[0.04]" />

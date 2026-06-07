@@ -1,9 +1,9 @@
 "use client";
 
+import { useEffect, useState } from 'react';
 import { Bot, FileText, Settings } from 'lucide-react';
 import { ReportMetrics, SimulatedAgentOutput } from '../AIReportsSection';
 import AgentStatusBadge from './AgentStatusBadge';
-import AgentStructuredOutput from './AgentStructuredOutput';
 import MiniOHLCChart from './MiniOHLCChart';
 
 interface TrendAgentCardProps {
@@ -27,6 +27,14 @@ function formatTimeAgo(timestamp: string): string {
   return `${Math.floor(seconds / 86400)}d ago`;
 }
 
+function formatSeconds(totalSeconds: number): string {
+  const seconds = Math.max(0, Math.floor(totalSeconds));
+  if (seconds < 60) return `${seconds}s ago`;
+  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+  return `${Math.floor(seconds / 86400)}d ago`;
+}
+
 export default function TrendAgentCard({
   activeAgent,
   agentLastRun,
@@ -35,6 +43,28 @@ export default function TrendAgentCard({
   onRulesClick,
   onReportsClick,
 }: TrendAgentCardProps) {
+  // Tick every second so the "Xs/Xm ago" badge counts up live and is correct
+  // immediately on mount/refresh — it's derived straight from the candle's
+  // own open time (ma_data.json's timestamp), not from a locally-tracked
+  // "last fetched" moment that could lag behind reality.
+  const [, forceTick] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => forceTick(t => t + 1), 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  // Timezone-safe live age: the API hands us "seconds since candle opened"
+  // (computed purely from the broker's own clocks, so broker/local timezone
+  // offsets cancel out) plus the local Date.now() when we received it. We
+  // simply add the elapsed wall-clock time since then — this is correct the
+  // instant the page loads/refreshes, no waiting for the next poll.
+  const baseAge = simulatedAgents?.trend?.candle_age_seconds;
+  const measuredAt = simulatedAgents?.trend?.candle_age_measured_at;
+  const lastRunLabel =
+    typeof baseAge === 'number' && typeof measuredAt === 'number'
+      ? formatSeconds(baseAge + (Date.now() - measuredAt) / 1000)
+      : formatTimeAgo(agentLastRun.trend);
+
   return (
     <div className={`bg-gradient-to-br from-cyan-500/[0.06] to-blue-500/[0.02] border border-cyan-500/[0.1] p-2 group hover:border-cyan-500/[0.2] transition-colors rounded ${
       activeAgent === 'trend' ? 'agent-active-trend' : ''
@@ -43,11 +73,11 @@ export default function TrendAgentCard({
         <div className="flex items-center gap-1">
           <Bot className="agent-icon w-3.5 h-3.5 text-cyan-400/60" />
           <span className="agent-title text-[11px] font-bold text-cyan-300/80 uppercase tracking-wider">Trend</span>
-          <span className="text-[10px] text-cyan-400/50 font-mono">{formatTimeAgo(agentLastRun.trend)}</span>
+          <span className="text-[10px] text-cyan-400/50 font-mono">{lastRunLabel}</span>
         </div>
         <div className="flex items-center gap-1">
           <AgentStatusBadge
-            status={simulatedAgents?.trend?.entry_allowed ? 'approved' : simulatedAgents?.trend ? 'analyzing' : 'offline'}
+            status={activeAgent === 'trend' ? 'analyzing' : simulatedAgents?.trend?.entry_allowed ? 'approved' : simulatedAgents?.trend ? 'rejected' : 'offline'}
             color="cyan"
           />
           <button
@@ -78,15 +108,6 @@ export default function TrendAgentCard({
           }}
         />
       </div>
-      <p className="text-[11px] leading-tight text-white/45 mb-1.5">
-        {simulatedAgents
-          ? `${simulatedAgents.trend.direction === 'BUY' ? '📈' : simulatedAgents.trend.direction === 'SELL' ? '📉' : '◼'} ${simulatedAgents.trend.direction}`
-          : reports.longestWinStreak > 3
-          ? '📈 Strong uptrend'
-          : reports.longestLoseStreak > 3
-          ? '📉 Downtrend caution'
-          : '◼ Neutral trend'}
-      </p>
       <div className="text-[10px] space-y-0.5 border-t border-white/[0.05] pt-1">
         <div className="flex justify-between">
           <span className="text-white/30">MA9 / MA21 / MA50</span>
@@ -127,22 +148,12 @@ export default function TrendAgentCard({
       </div>
 
       {/* ── Live OHLC Chart ── */}
-      <div className="border-t border-white/[0.05] pt-2 mt-1">
+      <div className="border-t border-white/[0.05] pt-1 mt-1">
         <span className="text-[9px] font-bold text-white/20 uppercase tracking-widest">BTCUSDT · 1m</span>
         <MiniOHLCChart
           crossoverStatus={simulatedAgents?.trend?.crossover_status}
         />
       </div>
-
-      <AgentStructuredOutput fields={[
-        { key: 'agent',         value: 'trend' },
-        { key: 'status',        value: activeAgent === 'trend' ? 'analyzing' : simulatedAgents?.trend?.entry_allowed ? 'approved' : simulatedAgents?.trend ? 'rejected' : 'offline' },
-        { key: 'direction',     value: simulatedAgents?.trend?.direction ?? null },
-        { key: 'entry_allowed', value: simulatedAgents?.trend?.entry_allowed ?? null },
-        { key: 'crossover',     value: simulatedAgents?.trend?.crossover_status ?? null },
-        { key: 'ma_trend',      value: simulatedAgents?.trend?.ma_50_trend ?? null },
-        { key: 'score',         value: simulatedAgents?.trend?.score ?? null },
-      ]} />
     </div>
   );
 }

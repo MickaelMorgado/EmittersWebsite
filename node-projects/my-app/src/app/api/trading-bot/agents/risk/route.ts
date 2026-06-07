@@ -1,5 +1,6 @@
 import { writeFileSync, readFileSync, existsSync } from 'fs';
 import { join } from 'path';
+import { readRiskSettings } from '@/lib/risk-settings';
 
 const PIP_VALUES: Record<string, number> = {
   BTCUSD: 1.0,
@@ -18,7 +19,7 @@ export async function POST(request: Request) {
     const body = await request.json().catch(() => ({}));
     const {
       signal,
-      confidence = 0,
+      _confidence = 0,
       symbol = 'BTCUSD',
       rr_ratio = '1:3',
       history_sl_pips = 50,
@@ -47,31 +48,46 @@ export async function POST(request: Request) {
       .reduce((s: number, p: any) => s + (p.profit ?? 0), 0);
     const account_equity = ACCOUNT_BASE + floatingPnL;
 
-    // ── Daily / monthly loss from closed trades ──────────────────────────────
+    // ── Daily / weekly / monthly loss from closed trades ─────────────────────
+    // Drawdown thresholds are user-configurable (see risk_settings.json,
+    // editable from the Risk Agent's Rules panel) rather than hardcoded.
+    const riskSettings = readRiskSettings();
+
     const now        = new Date();
     const todayStr   = now.toDateString();
+    // Week starts Monday — matches how most prop-firm / broker drawdown
+    // windows are defined, and gives traders a familiar weekly reset point.
+    const dayOfWeek  = now.getDay(); // 0=Sun..6=Sat
+    const daysSinceMonday = (dayOfWeek + 6) % 7;
+    const weekStart  = new Date(now.getFullYear(), now.getMonth(), now.getDate() - daysSinceMonday);
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
     const allTrades: any[] = trades.history ?? [];
+
+    const sumSince = (from: Date) => allTrades
+      .filter(t => { try { return new Date(t.time) >= from; } catch { return false; } })
+      .reduce((s, t) => s + (t.profit ?? t.netProfit ?? 0), 0);
 
     const daily_loss = allTrades
       .filter(t => { try { return new Date(t.time).toDateString() === todayStr; } catch { return false; } })
       .reduce((s, t) => s + (t.profit ?? t.netProfit ?? 0), 0);
 
-    const monthly_loss = allTrades
-      .filter(t => { try { return new Date(t.time) >= monthStart; } catch { return false; } })
-      .reduce((s, t) => s + (t.profit ?? t.netProfit ?? 0), 0);
+    const weekly_loss  = sumSince(weekStart);
+    const monthly_loss = sumSince(monthStart);
 
-    const daily_limit   = account_equity * 0.05;
-    const monthly_limit = account_equity * 0.10;
+    const daily_limit   = account_equity * (riskSettings.daily_drawdown_pct   / 100);
+    const weekly_limit  = account_equity * (riskSettings.weekly_drawdown_pct  / 100);
+    const monthly_limit = account_equity * (riskSettings.monthly_drawdown_pct / 100);
 
     // ── Risk gates ───────────────────────────────────────────────────────────
     let rejection_reason: string | null = null;
 
     if (daily_loss <= -daily_limit)
-      rejection_reason = `Daily loss limit reached (${daily_loss.toFixed(2)} / -${daily_limit.toFixed(2)})`;
+      rejection_reason = `Daily loss limit reached (${daily_loss.toFixed(2)} / -${daily_limit.toFixed(2)} · ${riskSettings.daily_drawdown_pct}% of equity)`;
+    else if (weekly_loss <= -weekly_limit)
+      rejection_reason = `Weekly loss limit reached (${weekly_loss.toFixed(2)} / -${weekly_limit.toFixed(2)} · ${riskSettings.weekly_drawdown_pct}% of equity)`;
     else if (monthly_loss <= -monthly_limit)
-      rejection_reason = `Monthly loss limit reached (${monthly_loss.toFixed(2)} / -${monthly_limit.toFixed(2)})`;
+      rejection_reason = `Monthly loss limit reached (${monthly_loss.toFixed(2)} / -${monthly_limit.toFixed(2)} · ${riskSettings.monthly_drawdown_pct}% of equity)`;
     else if (open_positions_count >= 5)
       rejection_reason = `Max open positions reached (${open_positions_count}/5)`;
 
@@ -110,7 +126,12 @@ export async function POST(request: Request) {
       max_loss,
       account_equity:          parseFloat(account_equity.toFixed(2)),
       current_daily_loss:      parseFloat(daily_loss.toFixed(2)),
+      current_weekly_loss:     parseFloat(weekly_loss.toFixed(2)),
       current_monthly_loss:    parseFloat(monthly_loss.toFixed(2)),
+      daily_limit:             parseFloat(daily_limit.toFixed(2)),
+      weekly_limit:            parseFloat(weekly_limit.toFixed(2)),
+      monthly_limit:           parseFloat(monthly_limit.toFixed(2)),
+      drawdown_settings:       riskSettings,
       open_positions_count,
       portfolio_risk_percentage: parseFloat(((open_positions_count / 5) * 100).toFixed(1)),
       rejection_reason,
@@ -123,7 +144,7 @@ export async function POST(request: Request) {
     console.log(
       `[RISK AGENT] ${approved ? '✓ APPROVED' : '✗ REJECTED'} ${rejection_reason ?? ''} | ` +
       `Size: ${position_size} | SL: ${stop_loss_pips}p TP: ${take_profit_pips}p | ` +
-      `Daily: ${daily_loss.toFixed(2)} Monthly: ${monthly_loss.toFixed(2)}`
+      `Daily: ${daily_loss.toFixed(2)} Weekly: ${weekly_loss.toFixed(2)} Monthly: ${monthly_loss.toFixed(2)}`
     );
 
     return Response.json(result);

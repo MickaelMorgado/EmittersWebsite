@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { OHLCBar } from '@/app/api/trading-bot/ohlc/route';
 
 // ── Layout constants ────────────────────────────────────────────────────────
-const VW = 480;
+const VW = 800;
 const VH = 270;
 const PAD = { top: 6, right: 52, bottom: 20, left: 2 };
 const CW = VW - PAD.left - PAD.right;
@@ -38,7 +38,7 @@ export default function MiniOHLCChart({ crossoverStatus }: Props) {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       if (data.bars?.length) { setBars(data.bars); setError(null); }
-    } catch (e: any) {
+    } catch (_e: any) {
       setError('Chart unavailable');
     } finally {
       setLoading(false);
@@ -97,7 +97,7 @@ export default function MiniOHLCChart({ crossoverStatus }: Props) {
         viewBox={`0 0 ${VW} ${VH}`}
         preserveAspectRatio="xMidYMid meet"
         className="w-full"
-        style={{ height: 'auto', maxHeight: 170 }}
+        style={{ height: 'auto', maxHeight: 100 }}
       >
         {/* ── Subtle grid ── */}
         {[0, 0.33, 0.67, 1].map(t => {

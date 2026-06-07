@@ -3,7 +3,6 @@
 import { Bot, FileText, Settings } from 'lucide-react';
 import { BotStats, ReportMetrics, SimulatedAgentOutput } from '../AIReportsSection';
 import AgentStatusBadge from './AgentStatusBadge';
-import AgentStructuredOutput from './AgentStructuredOutput';
 
 interface RiskAgentCardProps {
   activeAgent: string | null;
@@ -80,11 +79,6 @@ export default function RiskAgentCard({
           style={{ width: `${reports.maxDrawdown > stats.totalPnl * 0.5 ? 0 : 100}%` }}
         />
       </div>
-      <p className="text-[11px] leading-tight text-white/45 mb-1.5">
-        {reports.maxDrawdown > stats.totalPnl * 0.5
-          ? '⚠️ High drawdown detected'
-          : '✓ Risk within limits'}
-      </p>
       <div className="text-[10px] space-y-0.5 border-t border-white/[0.05] pt-1">
         <div className="flex justify-between">
           <span className="text-white/30">SL Distance</span>
@@ -119,15 +113,6 @@ export default function RiskAgentCard({
           </span>
         </div>
       </div>
-      <AgentStructuredOutput fields={[
-        { key: 'agent',         value: 'risk' },
-        { key: 'status',        value: activeAgent === 'risk' ? 'analyzing' : simulatedAgents?.risk?.score ? 'approved' : simulatedAgents?.risk ? 'rejected' : 'offline' },
-        { key: 'position_size', value: simulatedAgents?.risk?.positionSize ?? null },
-        { key: 'sl_pct',        value: simulatedAgents?.risk?.slDistance ?? null },
-        { key: 'tp_ratio',      value: simulatedAgents?.risk?.tpRatio ?? null },
-        { key: 'risk_amount',   value: positionSizing.riskAmount },
-        { key: 'score',         value: simulatedAgents?.risk?.score ?? null },
-      ]} />
     </div>
   );
 }

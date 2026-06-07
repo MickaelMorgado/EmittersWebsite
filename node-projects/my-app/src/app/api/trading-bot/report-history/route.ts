@@ -8,7 +8,7 @@ export const maxDuration = 300;
 
 const NOTES_DIR  = '/Users/mickael/development/MikaBot/notes';
 const NOTES_50   = path.join(NOTES_DIR, '50-trade-notes.json');
-const NOTES_500  = path.join(NOTES_DIR, '500-trade-notes.json');
+const NOTES_200  = path.join(NOTES_DIR, '200-trade-notes.json');
 const GLOBAL_REC = path.join(NOTES_DIR, 'global-recommendation.json');
 const TRADES_PATH = '/Users/mickael/development/MikaBot/trades.json';
 
@@ -171,7 +171,7 @@ Output ONLY the JSON array. No prose, no labels, no code fences.
 Example: [{"id":"1","content":"Tighten stop-loss on SELL entries to cap average loss below $20.","action":"add"}]`;
 
   try {
-    const res = await chatAI(prompt, { provider: 'openrouter', temperature: 0.3 });
+    const res = await chatAI(prompt, { provider: 'openrouter', temperature: 0.3, maxTokens: 250 });
     console.log(`[50-trade-notes] raw response: ${res.content.substring(0, 200)}`);
 
     let updates: any[] = parseJSON<any[]>(res.content) ?? [];
@@ -207,7 +207,7 @@ Example: [{"id":"1","content":"Tighten stop-loss on SELL entries to cap average 
   }
 }
 
-async function generate500TradeNotes(trades: TradeHistory[], cycleNumber: number, previousNotes: Notes | null): Promise<Notes> {
+async function generate200TradeNotes(trades: TradeHistory[], cycleNumber: number, previousNotes: Notes | null): Promise<Notes> {
   const metrics = calculateMetrics(trades);
 
   const prompt = `Trading performance over ${metrics.totalTrades} trades:
@@ -220,8 +220,8 @@ Output ONLY the JSON array. No prose, no labels, no code fences.
 Example: [{"id":"1","content":"Reduce position size during losing streaks to preserve capital and limit drawdown.","action":"add"}]`;
 
   try {
-    const res = await chatAI(prompt, { provider: 'openrouter', temperature: 0.3 });
-    console.log(`[500-trade-notes] raw response: ${res.content.substring(0, 200)}`);
+    const res = await chatAI(prompt, { provider: 'openrouter', temperature: 0.3, maxTokens: 250 });
+    console.log(`[200-trade-notes] raw response: ${res.content.substring(0, 200)}`);
 
     let updates: any[] = parseJSON<any[]>(res.content) ?? [];
 
@@ -242,40 +242,43 @@ Example: [{"id":"1","content":"Reduce position size during losing streaks to pre
 
     const items = mergeNoteUpdates(previousNotes?.items ?? [], updates);
     const active = items.filter(n => n.status === 'active').length;
-    console.log(`[500-trade-notes] ${res.provider} | Cycle #${cycleNumber} | ${active} strategies`);
+    console.log(`[200-trade-notes] ${res.provider} | Cycle #${cycleNumber} | ${active} strategies`);
     return {
       cycleNumber,
-      totalTrades: cycleNumber * 500,
+      totalTrades: cycleNumber * 200,
       generatedAt: new Date().toISOString(),
       items,
       summary: `Cycle #${cycleNumber} | WR: ${metrics.winRate}% | ${active} strategies`,
     };
   } catch (error) {
-    console.error('[500-trade-notes] Error:', error);
-    return { cycleNumber, totalTrades: cycleNumber * 500, generatedAt: new Date().toISOString(), items: previousNotes?.items ?? [], summary: 'Error' };
+    console.error('[200-trade-notes] Error:', error);
+    return { cycleNumber, totalTrades: cycleNumber * 200, generatedAt: new Date().toISOString(), items: previousNotes?.items ?? [], summary: 'Error' };
   }
 }
 
-async function generateGlobalRecommendation(notes50: Notes | null, notes500: Notes | null, totalTrades: number): Promise<GlobalRecommendation> {
-  const insights50  = notes50  ? notes50.items.filter(n => n.status === 'active').map(n => `- ${n.content}`).join('\n')  : 'None yet';
-  const insights500 = notes500 ? notes500.items.filter(n => n.status === 'active').map(n => `- ${n.content}`).join('\n') : 'None yet';
+// Truncate notes to a short summary to keep prompt tokens minimal
+function summariseNotes(notes: Notes | null, maxItems = 4, maxChars = 100): string {
+  if (!notes) return 'None';
+  return notes.items
+    .filter(n => n.status === 'active')
+    .slice(0, maxItems)
+    .map(n => `- ${n.content.substring(0, maxChars)}`)
+    .join('\n') || 'None';
+}
 
-  const prompt = `You are a master trading strategist synthesising ${totalTrades} trades of insights.
+async function generateGlobalRecommendation(notes50: Notes | null, notes200: Notes | null, totalTrades: number): Promise<GlobalRecommendation> {
+  const insights50  = summariseNotes(notes50,  4, 100);
+  const insights200 = summariseNotes(notes200, 4, 100);
 
-50-TRADE TACTICAL NOTES:
-${insights50}
+  const prompt = `Trades: ${totalTrades}. Summarise into ONE strategy (2 sentences) + 3 key insights (1 sentence each).
 
-500-TRADE STRATEGIC NOTES:
-${insights500}
+TACTICAL: ${insights50}
+STRATEGIC: ${insights200}
 
-Write ONE unified master recommendation (2-3 complete sentences) and 3-4 key insights.
-Each key insight must be ONE complete, actionable sentence (15-30 words).
-
-Respond in JSON:
-{ "recommendation": "...", "keyInsights": ["...", "..."] }`;
+JSON only: {"recommendation":"...","keyInsights":["...","...","..."]}`;
 
   try {
-    const res = await chatAI(prompt, { provider: 'openrouter', temperature: 0.7 });
+    const res = await chatAI(prompt, { provider: 'openrouter', temperature: 0.5, maxTokens: 250 });
     const result = parseJSON<{ recommendation: string; keyInsights: string[] }>(res.content);
     console.log(`[global-recommendation] ${res.provider} | ${totalTrades} trades`);
     return {
@@ -290,17 +293,18 @@ Respond in JSON:
   }
 }
 
+
 export async function GET() {
   try {
     ensureNotesDir();
 
     const notes50 = fs.existsSync(NOTES_50) ? JSON.parse(fs.readFileSync(NOTES_50, 'utf-8')) : null;
-    const notes500 = fs.existsSync(NOTES_500) ? JSON.parse(fs.readFileSync(NOTES_500, 'utf-8')) : null;
+    const notes500 = fs.existsSync(NOTES_200) ? JSON.parse(fs.readFileSync(NOTES_200, 'utf-8')) : null;
     const globalRec = fs.existsSync(GLOBAL_REC) ? JSON.parse(fs.readFileSync(GLOBAL_REC, 'utf-8')) : null;
 
     return NextResponse.json({
       notes50,
-      notes500,
+      notes500, // key kept as notes500 for frontend compatibility
       globalRecommendation: globalRec,
       message: 'Notes system initialized'
     });
@@ -336,14 +340,14 @@ export async function POST(req: NextRequest) {
     const totalTrades = allTrades.length;
 
     // Read force target from body (if provided)
-    let forceTarget: '50' | '500' | 'global' | null = null;
+    let forceTarget: '50' | '200' | 'global' | null = null;
     try {
       const body = await req.json();
       if (body?.target) forceTarget = body.target;
     } catch { /* no body — auto mode */ }
 
     const previous50Notes  = fs.existsSync(NOTES_50)  ? JSON.parse(fs.readFileSync(NOTES_50, 'utf-8'))  : null;
-    const previous500Notes = fs.existsSync(NOTES_500) ? JSON.parse(fs.readFileSync(NOTES_500, 'utf-8')) : null;
+    const previous200Notes = fs.existsSync(NOTES_200) ? JSON.parse(fs.readFileSync(NOTES_200, 'utf-8')) : null;
 
     // ── 50-trade notes ──────────────────────────────────────────────────────
     const cycle50 = Math.max(1, Math.floor(totalTrades / 50)) || 1;
@@ -351,7 +355,6 @@ export async function POST(req: NextRequest) {
       || (!forceTarget && totalTrades >= 50 && (!previous50Notes || previous50Notes.cycleNumber < Math.floor(totalTrades / 50)));
 
     if (should50) {
-      // Use the most recent 50 trades for on-demand generation
       const trades50 = forceTarget === '50'
         ? allTrades.slice(-Math.min(50, totalTrades))
         : allTrades.slice((cycle50 - 1) * 50, cycle50 * 50);
@@ -363,29 +366,31 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // ── 500-trade notes ─────────────────────────────────────────────────────
-    const cycle500 = Math.max(1, Math.floor(totalTrades / 500)) || 1;
-    const should500 = forceTarget === '500'
-      || (!forceTarget && totalTrades >= 500 && (!previous500Notes || previous500Notes.cycleNumber < Math.floor(totalTrades / 500)));
+    // ── 200-trade notes ─────────────────────────────────────────────────────
+    const cycle200 = Math.max(1, Math.floor(totalTrades / 200)) || 1;
+    const should200 = forceTarget === '200'
+      || (!forceTarget && totalTrades >= 200 && (!previous200Notes || previous200Notes.cycleNumber < Math.floor(totalTrades / 200)));
 
-    if (should500) {
-      const trades500 = forceTarget === '500'
-        ? allTrades.slice(-Math.min(500, totalTrades))
-        : allTrades.slice((cycle500 - 1) * 500, cycle500 * 500);
+    if (should200) {
+      const trades200 = forceTarget === '200'
+        ? allTrades.slice(-Math.min(200, totalTrades))
+        : allTrades.slice((cycle200 - 1) * 200, cycle200 * 200);
 
-      if (trades500.length > 0) {
-        const notes500 = await generate500TradeNotes(trades500, cycle500, previous500Notes);
-        fs.writeFileSync(NOTES_500, JSON.stringify(notes500, null, 2));
-        console.log(`[notes] 500-trade notes generated (force=${!!forceTarget}) — Cycle #${cycle500}`);
+      if (trades200.length > 0) {
+        const notes200 = await generate200TradeNotes(trades200, cycle200, previous200Notes);
+        fs.writeFileSync(NOTES_200, JSON.stringify(notes200, null, 2));
+        console.log(`[notes] 200-trade notes generated (force=${!!forceTarget}) — Cycle #${cycle200}`);
       }
     }
 
     // ── Global recommendation ───────────────────────────────────────────────
-    const shouldGlobal = forceTarget === 'global' || should50 || should500;
+    // Only auto-chain global on auto-mode cycles; force-generate is single-shot
+    const shouldGlobal = forceTarget === 'global'
+      || (!forceTarget && (should50 || should200));
     if (shouldGlobal) {
       const n50  = fs.existsSync(NOTES_50)  ? JSON.parse(fs.readFileSync(NOTES_50, 'utf-8'))  : null;
-      const n500 = fs.existsSync(NOTES_500) ? JSON.parse(fs.readFileSync(NOTES_500, 'utf-8')) : null;
-      const globalRec = await generateGlobalRecommendation(n50, n500, totalTrades);
+      const n200 = fs.existsSync(NOTES_200) ? JSON.parse(fs.readFileSync(NOTES_200, 'utf-8')) : null;
+      const globalRec = await generateGlobalRecommendation(n50, n200, totalTrades);
       fs.writeFileSync(GLOBAL_REC, JSON.stringify(globalRec, null, 2));
     }
 

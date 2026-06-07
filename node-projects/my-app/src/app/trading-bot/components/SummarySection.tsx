@@ -79,23 +79,23 @@ export default function SummarySection({ aiAnalysis, stats, reports }: SummarySe
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <div className="text-[11px] text-white/40 uppercase">Win Rate</div>
-                      <div className="text-xl font-bold text-emerald-400">{stats.winRate}%</div>
+                      <div className="text-[10px] text-white/40 uppercase">Win Rate</div>
+                      <div className="text-base font-bold text-emerald-400">{stats.winRate}%</div>
                     </div>
                     <div>
-                      <div className="text-[11px] text-white/40 uppercase">Avg Trade</div>
+                      <div className="text-[10px] text-white/40 uppercase">Avg Trade</div>
                       <div className={`text-base font-bold ${reports.avgTrade >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                         ${reports.avgTrade.toFixed(2)}
                       </div>
                     </div>
                     <div>
-                      <div className="text-[11px] text-white/40 uppercase">Today P&L</div>
-                      <div className={`text-xl font-bold ${stats.totalPnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                      <div className="text-[10px] text-white/40 uppercase">Today P&L</div>
+                      <div className={`text-base font-bold ${stats.totalPnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                         {stats.totalPnl >= 0 ? '+' : ''}{stats.totalPnl.toFixed(2)}
                       </div>
                     </div>
                     <div>
-                      <div className="text-[11px] text-white/40 uppercase">Profit Factor</div>
+                      <div className="text-[10px] text-white/40 uppercase">Profit Factor</div>
                       <div className={`text-base font-bold ${reports.profitFactor >= 1 ? 'text-emerald-400' : 'text-red-400'}`}>
                         {reports.profitFactor === Infinity ? '∞' : reports.profitFactor.toFixed(2)}
                       </div>
@@ -110,19 +110,19 @@ export default function SummarySection({ aiAnalysis, stats, reports }: SummarySe
                   </div>
                   <div className="grid grid-cols-2 gap-x-4 gap-y-2">
                     <div>
-                      <div className="text-xs text-white/30 uppercase tracking-wider">Best Trade</div>
+                      <div className="text-[10px] text-white/30 uppercase tracking-wider">Best Trade</div>
                       <div className="text-base font-bold font-mono text-emerald-400">+{reports.bestTrade.toFixed(2)}</div>
                     </div>
                     <div>
-                      <div className="text-xs text-white/30 uppercase tracking-wider">Worst Trade</div>
+                      <div className="text-[10px] text-white/30 uppercase tracking-wider">Worst Trade</div>
                       <div className="text-base font-bold font-mono text-red-400">{reports.worstTrade.toFixed(2)}</div>
                     </div>
                     <div>
-                      <div className="text-xs text-white/30 uppercase tracking-wider">Avg Win</div>
+                      <div className="text-[10px] text-white/30 uppercase tracking-wider">Avg Win</div>
                       <div className="text-base font-bold font-mono text-emerald-400">+{reports.avgWin.toFixed(2)}</div>
                     </div>
                     <div>
-                      <div className="text-xs text-white/30 uppercase tracking-wider">Avg Loss</div>
+                      <div className="text-[10px] text-white/30 uppercase tracking-wider">Avg Loss</div>
                       <div className="text-base font-bold font-mono text-red-400">-{reports.avgLoss.toFixed(2)}</div>
                     </div>
                   </div>

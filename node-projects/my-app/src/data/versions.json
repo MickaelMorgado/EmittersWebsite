@@ -1,16 +1,23 @@
 {
   "my-app": {
     "current": {
-      "version": "1.2.1",
-      "releasedAt": "2026-06-04",
+      "version": "1.3.0",
+      "releasedAt": "2026-06-07",
       "changes": [
-        "Switch trade-analysis to OpenRouter with working free model chain",
-        "Strengthen report-history prompts",
-        "Fix mergeNoteUpdates to default unknown actions to 'add'",
-        "ReportCard UI overhaul into Learning Board"
+        "Live trend card candle-age ticker (timezone-safe, 1s tick)",
+        "Trend dashboard polling refactored to recursive setTimeout (no race on new-candle compare)",
+        "News agent plain_summary field ('In Plain Words' section for non-trader audience)",
+        "News agent rejection_reason + Trend agent reasoning propagated through dashboard",
+        "New /api/trading-bot/risk-settings endpoint (GET/POST) persisting daily/weekly/monthly drawdown %",
+        "OpenRouter model chain reordered fastest→slowest with 45s per-model AbortController timeout",
+        "New maxTokens chat option (800 default, 250 for short recaps)",
+        "Agent cards compacted — removed debug AgentStructuredOutput blocks, smaller fonts/tighter padding",
+        "Extracted RiskSettings + AgentStatusEnum to src/lib/ for Next.js route-file compliance",
+        "Fixed pre-existing baseline errors: agents-status enum, stats:{}, chatAI boolean arg, STATUS_STYLES color"
       ]
     },
     "history": [
+      { "version": "1.2.1", "releasedAt": "2026-06-04", "changes": ["Switch trade-analysis to OpenRouter with working free model chain", "Strengthen report-history prompts", "Fix mergeNoteUpdates to default unknown actions to 'add'", "ReportCard UI overhaul into Learning Board"] },
       { "version": "1.2.0", "releasedAt": "2026-02-22", "changes": ["Agent workflow system", "SEO optimization", "Version tracking"] },
       { "version": "1.1.0", "releasedAt": "2026-02-15", "changes": ["React 19 migration", "New UI components"] },
       { "version": "1.0.0", "releasedAt": "2026-01-20", "changes": ["Initial release", "15+ interactive projects"] }

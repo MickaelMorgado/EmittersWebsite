@@ -1,13 +1,7 @@
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import { NextResponse } from 'next/server';
-
-// Standard agent status enum
-export enum AgentStatusEnum {
-  GREEN = 'APPROVED',    // Agent approved/ready
-  YELLOW = 'ANALYZING',  // Agent has data but not approved
-  GRAY = 'OFFLINE',      // No agent data yet
-}
+import { AgentStatusEnum } from '@/lib/agent-status';
 
 interface AgentStatusResponse {
   ready: boolean;

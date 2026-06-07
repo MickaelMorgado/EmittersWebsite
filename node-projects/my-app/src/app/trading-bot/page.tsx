@@ -82,10 +82,18 @@ interface SimulatedAgentOutput {
     ma_50_trend?: 'Uptrend' | 'Downtrend' | 'Neutral';
     crossover_status?: 'UP' | 'DOWN' | 'NONE';
     entry_allowed?: boolean;
+    reasoning?: string;
+    // Timezone-safe candle age: seconds-since-open as computed by the server
+    // from the broker's own two clocks, plus the local Date.now() at the
+    // moment we fetched it — together these let the card tick up live
+    // (candle_age_seconds + elapsed-since-measured_at) without ever needing
+    // to compare a broker timestamp directly to the browser's clock.
+    candle_age_seconds?: number;
+    candle_age_measured_at?: number;
   };
   history: { rrTarget: string; consistency: number; score: number };
   risk: { slDistance: number; tpRatio: string; positionSize: string; score: number };
-  news: { sentiment: 'Bullish' | 'Neutral' | 'Bearish'; volatility: number; score: number; approved?: boolean; high_impact_count?: number };
+  news: { sentiment: 'Bullish' | 'Neutral' | 'Bearish'; volatility: number; score: number; approved?: boolean; high_impact_count?: number; rejection_reason?: string | null; plain_summary?: string | null };
 }
 
 interface ReportHistory {
@@ -183,6 +191,8 @@ export default function TradingBotDashboard() {
                   score:             agentData.score,
                   approved:          agentData.approved,
                   high_impact_count: agentData.high_impact_count,
+                  rejection_reason:  agentData.rejection_reason ?? null,
+                  plain_summary:     agentData.plain_summary ?? null,
                 },
               };
             });
@@ -514,16 +524,27 @@ export default function TradingBotDashboard() {
     };
   }, [fetchTrades, fetchReportHistory, fetchNews]);
 
-  // Real-time Trend Agent data polling — reads ma_data every second.
-  // Fires the Trend Agent LLM once per new candle (ma_timestamp change).
+  // Real-time Trend Agent watcher.
+  //
+  // Single self-scheduling chain (recursive setTimeout, never setInterval) —
+  // by construction there is only ever ONE read in flight at a time, so the
+  // "new candle" comparison can never race with itself. Each cycle:
+  //   1. reads ma_data (also refreshes the live MA display values)
+  //   2. fires the Trend Agent exactly once if — and only if — ma_timestamp
+  //      changed since the last cycle (i.e. the 1m candle actually closed)
+  //   3. schedules the next read only once this one is fully done
   useEffect(() => {
-    const fetchTrendSignal = async () => {
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+
+    const readAndMaybeAct = async () => {
       try {
         const res = await fetch('/api/trading-bot/trend-signal');
         if (!res.ok) return;
         const trendData = await res.json();
+        if (cancelled) return;
 
-        // Always update live MA display values (price, MA9/21/50, ma_50_trend)
+        // Always refresh live MA display values (price, MA9/21/50, ma_50_trend)
         setSimulatedAgents(prev => {
           const base: SimulatedAgentOutput = prev || {
             trend:   { direction: 'NEUTRAL', score: 0 },
@@ -539,64 +560,81 @@ export default function TradingBotDashboard() {
               ma_21:       trendData.ma_21       || base.trend.ma_21,
               ma_50:       trendData.ma_50       || base.trend.ma_50,
               ma_50_trend: trendData.ma_50_trend || base.trend.ma_50_trend,
+              // Timezone-safe age of the current candle: the API computes
+              // "seconds since open" using only the broker's own clocks (so
+              // broker/local timezone offsets cancel out), and we stamp the
+              // local time we received it so the card can tick it up live.
+              ...(typeof trendData.candle_age_seconds === 'number'
+                ? { candle_age_seconds: trendData.candle_age_seconds, candle_age_measured_at: Date.now() }
+                : {}),
             },
           };
         });
 
-        // New candle detected (ma_timestamp changed) — fire Trend Agent once
+        // The ONLY trigger for acting: the candle's timestamp actually changed.
         const maTimestamp: string = trendData.ma_timestamp || '';
-        if (maTimestamp && maTimestamp !== lastCandleTimestamp.current) {
-          lastCandleTimestamp.current = maTimestamp;
-          console.log('[DASHBOARD] 🕯️ New candle:', maTimestamp,
-            '| crossover:', trendData.crossover_detected,
-            trendData.crossover_direction ? `(${trendData.crossover_direction})` : '');
+        const isNewCandle = !!maTimestamp && maTimestamp !== lastCandleTimestamp.current;
+        if (!isNewCandle) return;
 
-          try {
-            const agentRes = await fetch('/api/trading-bot/agents/trend', { method: 'POST' });
-            if (agentRes.ok) {
-              const agentData = await agentRes.json();
-              console.log('[TREND AGENT] ✓', agentData.direction,
-                '| entry_allowed:', agentData.entry_allowed,
-                '| MA50 trend:', agentData.ma_50_trend,
-                '| confidence:', agentData.confidence + '%');
+        lastCandleTimestamp.current = maTimestamp;
+        console.log('[DASHBOARD] 🕯️ New candle:', maTimestamp,
+          '| crossover:', trendData.crossover_detected,
+          trendData.crossover_direction ? `(${trendData.crossover_direction})` : '');
 
-              setSimulatedAgents(prev => {
-                const base: SimulatedAgentOutput = prev || {
-                  trend:   { direction: 'NEUTRAL', score: 0 },
-                  history: { rrTarget: '1:3', consistency: 0, score: 0 },
-                  risk:    { slDistance: 0, tpRatio: '1:3', positionSize: '0.02', score: 0 },
-                  news:    { sentiment: 'Neutral', volatility: 0, score: 0 },
-                };
-                return {
-                  ...base,
-                  trend: {
-                    direction:        agentData.direction        || 'NEUTRAL',
-                    score:            Math.max(0, (agentData.confidence || 0) / 4),
-                    ma_9:             agentData.ma_9,
-                    ma_21:            agentData.ma_21,
-                    ma_50:            agentData.ma_50,
-                    ma_50_trend:      agentData.ma_50_trend,
-                    crossover_status: agentData.crossover_status,
-                    entry_allowed:    agentData.entry_allowed,
-                  },
-                };
-              });
-            } else {
-              console.error('[TREND AGENT] ✗ HTTP', agentRes.status);
-            }
-          } catch (agentErr) {
-            console.error('[TREND AGENT] ✗ Call failed:', agentErr);
+        try {
+          const agentRes = await fetch('/api/trading-bot/agents/trend', { method: 'POST' });
+          if (cancelled) return;
+          if (agentRes.ok) {
+            const agentData = await agentRes.json();
+            console.log('[TREND AGENT] ✓', agentData.direction,
+              '| entry_allowed:', agentData.entry_allowed,
+              '| MA50 trend:', agentData.ma_50_trend,
+              '| confidence:', agentData.confidence + '%');
+
+            setSimulatedAgents(prev => {
+              const base: SimulatedAgentOutput = prev || {
+                trend:   { direction: 'NEUTRAL', score: 0 },
+                history: { rrTarget: '1:3', consistency: 0, score: 0 },
+                risk:    { slDistance: 0, tpRatio: '1:3', positionSize: '0.02', score: 0 },
+                news:    { sentiment: 'Neutral', volatility: 0, score: 0 },
+              };
+              return {
+                ...base,
+                trend: {
+                  ...base.trend,
+                  direction:        agentData.direction        || 'NEUTRAL',
+                  score:            Math.max(0, (agentData.confidence || 0) / 4),
+                  ma_9:             agentData.ma_9,
+                  ma_21:            agentData.ma_21,
+                  ma_50:            agentData.ma_50,
+                  ma_50_trend:      agentData.ma_50_trend,
+                  crossover_status: agentData.crossover_status,
+                  entry_allowed:    agentData.entry_allowed,
+                  reasoning:        agentData.reasoning,
+                },
+              };
+            });
+          } else if (agentRes.status !== 503) {
+            // 503 = transient (mid-write or EA not started) — ignore silently
+            console.error('[TREND AGENT] ✗ HTTP', agentRes.status);
           }
+        } catch (agentErr) {
+          console.error('[TREND AGENT] ✗ Call failed:', agentErr);
         }
-
-      } catch (error) {
+      } catch (_error) {
         // Silently fail
+      } finally {
+        // Only schedule the next read once this one is fully resolved —
+        // guarantees a single, sequential, never-overlapping chain.
+        if (!cancelled) timer = setTimeout(readAndMaybeAct, 1000);
       }
     };
 
-    const trendInterval = setInterval(fetchTrendSignal, 1000);
-    fetchTrendSignal();
-    return () => clearInterval(trendInterval);
+    readAndMaybeAct();
+    return () => {
+      cancelled = true;
+      if (timer) clearTimeout(timer);
+    };
   }, []);
 
   const refreshData = async () => {

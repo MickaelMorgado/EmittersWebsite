@@ -11,26 +11,13 @@ export interface OHLCBar {
   ma50: number | null;
 }
 
-/** Exponential Moving Average over an array of closes. */
-function computeEMA(closes: number[], period: number): (number | null)[] {
-  const k = 2 / (period + 1);
-  const result: (number | null)[] = [];
-  let prev: number | null = null;
-
-  for (let i = 0; i < closes.length; i++) {
-    if (i < period - 1) {
-      result.push(null);
-    } else if (i === period - 1) {
-      const sma = closes.slice(0, period).reduce((a, b) => a + b, 0) / period;
-      prev = sma;
-      result.push(sma);
-    } else {
-      const val = closes[i] * k + (prev as number) * (1 - k);
-      prev = val;
-      result.push(val);
-    }
-  }
-  return result;
+/** Simple Moving Average over an array of closes. */
+function computeSMA(closes: number[], period: number): (number | null)[] {
+  return closes.map((_, i) =>
+    i < period - 1
+      ? null
+      : closes.slice(i - period + 1, i + 1).reduce((a, b) => a + b, 0) / period
+  );
 }
 
 export async function GET(request: Request) {
@@ -40,7 +27,7 @@ export async function GET(request: Request) {
 
     // Fetch from Binance (public, no auth)
     const binanceUrl =
-      `https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1m&limit=${limit + 50}`; // extra for EMA warmup
+      `https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1m&limit=${limit + 50}`; // extra bars so SMA has data from bar 0
 
     const res = await fetch(binanceUrl, {
       signal: AbortSignal.timeout(5000),
@@ -62,15 +49,15 @@ export async function GET(request: Request) {
     }));
 
     const closes = raw.map(b => b.close);
-    const ema9   = computeEMA(closes, 9);
-    const ema21  = computeEMA(closes, 21);
-    const ema50  = computeEMA(closes, 50);
+    const sma9   = computeSMA(closes, 9);
+    const sma21  = computeSMA(closes, 21);
+    const sma50  = computeSMA(closes, 50);
 
     const bars: OHLCBar[] = raw.map((b, i) => ({
       ...b,
-      ma9:  ema9[i],
-      ma21: ema21[i],
-      ma50: ema50[i],
+      ma9:  sma9[i],
+      ma21: sma21[i],
+      ma50: sma50[i],
     }));
 
     // Return only the last `limit` bars (warmup bars discarded)

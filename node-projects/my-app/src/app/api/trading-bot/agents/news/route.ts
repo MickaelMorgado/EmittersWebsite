@@ -11,6 +11,7 @@
  */
 
 import { NextResponse } from 'next/server';
+import { chatAI } from '@/lib/ai';
 
 interface NewsItem {
   title: string;
@@ -33,6 +34,63 @@ interface NewsAgentOutput {
   rejection_reason: string | null;
   top_headlines: string[];
   reasoning: string;
+  // Plain-language "explain it to me like I'm not a trader" recap of the most
+  // important fetched headlines — written in everyday words so the user can
+  // build economic understanding over time, not just see jargon-y metrics.
+  plain_summary: string | null;
+}
+
+/**
+ * Asks the local LLM to recap the day's top headlines in plain, jargon-free
+ * language — a couple of short sentences a non-trader could read and actually
+ * learn something from (what happened, why it might matter). Best-effort: if
+ * the model is unavailable or returns nothing usable, we simply omit it.
+ */
+async function generatePlainSummary(
+  items: NewsItem[],
+  context: { symbol: string; overallSentiment: 'Bullish' | 'Neutral' | 'Bearish'; highImpactCount: number }
+): Promise<string | null> {
+  if (items.length === 0) return null;
+
+  const headlineList = items
+    .slice(0, 5)
+    .map((n, i) => `${i + 1}. "${n.title}" (${n.analysis?.sentiment ?? 'Neutral'} sentiment, ${n.analysis?.impact ?? 'Low'} impact)`)
+    .join('\n');
+
+  const directionHint =
+    context.overallSentiment === 'Bullish' ? 'leaning upward (more positive than negative news)' :
+    context.overallSentiment === 'Bearish' ? 'leaning downward (more negative than positive news)' :
+    'mixed / no clear lean either way';
+
+  const prompt = `You are explaining financial news to a curious beginner who has never traded before and doesn't know trading jargon.
+
+Asset being traded: ${context.symbol}
+Overall tone of today's news for this asset: ${directionHint}
+High-impact (likely to move the market) headlines today: ${context.highImpactCount}
+
+Here are today's top market headlines:
+${headlineList}
+
+Write a short, friendly recap (3-5 sentences, plain everyday English, no jargon like "VIX", "bullish/bearish", "basis points" — explain any concept in simple terms if you must mention it). Cover:
+1. What's happening in the news, and why someone might care.
+2. In plain words, what this kind of news could mean for the price direction of ${context.symbol} (e.g. "news like this often nudges prices up/down/sideways because...") — frame this as "here's one way to think about it", NOT as a prediction or instruction to buy/sell. Make clear that markets are unpredictable and this is just context, not advice.
+
+Do not give trading advice, do not tell the reader to buy or sell. Return ONLY the recap text, no preamble, no markdown, no quotes.`;
+
+  try {
+    // Match the provider used elsewhere in the app for natural-language
+    // explanations/recaps (see report-history's trade-notes generation) —
+    // 'ollama' is reserved for the trading-decision agents (Trend/History/
+    // Risk per CLAUDE.md), while explanatory summaries use 'openrouter'.
+    const response = await chatAI(prompt, { provider: 'openrouter', temperature: 0.4, maxTokens: 250 });
+    const text = response?.content?.trim();
+    if (!text) return null;
+    // Guard against the model echoing instructions or wrapping in quotes/markdown
+    return text.replace(/^["'`]+|["'`]+$/g, '').replace(/^```[a-z]*\n?|```$/g, '').trim() || null;
+  } catch (e) {
+    console.warn('[NEWS AGENT] Plain-summary generation failed:', e);
+    return null;
+  }
 }
 
 export async function POST(request: Request) {
@@ -69,6 +127,7 @@ export async function POST(request: Request) {
         rejection_reason:  null,
         top_headlines:     [],
         reasoning:         'No news data available — proceeding with caution',
+        plain_summary:     null,
       };
       console.log('[NEWS AGENT] No news — default APPROVE');
       return NextResponse.json(out);
@@ -124,6 +183,15 @@ export async function POST(request: Request) {
       `${overallSentiment} sentiment | VIX-proxy ${volatility.toFixed(0)} | ` +
       `${highImpact.length} high / ${mediumImpact.length} medium impact`;
 
+    // Best-effort plain-language recap — never blocks the agent's decision.
+    // Includes a beginner-friendly take on what the news could mean for the
+    // current asset's price direction (framed as context, not advice).
+    const plain_summary = await generatePlainSummary(top, {
+      symbol: 'BTCUSD',
+      overallSentiment,
+      highImpactCount: highImpact.length,
+    });
+
     const out: NewsAgentOutput = {
       timestamp:         new Date().toISOString(),
       approved,
@@ -134,6 +202,7 @@ export async function POST(request: Request) {
       rejection_reason,
       top_headlines:     top.slice(0, 3).map(n => n.title),
       reasoning,
+      plain_summary,
     };
 
     console.log(

@@ -492,7 +492,7 @@ const [isProcessing, setIsProcessing] = useState(false);
 
     const fullPrompt = `${KUZNETSOV_SYSTEM_PROMPT}\n\nConversation:\n${chatHistory.map(m => `${m.role}: ${m.content}`).join('\n')}\n\nUser: ${userMessage}\n\nKuznetsov:`;
 
-    const result = await chatAI(fullPrompt, true);
+    const result = await chatAI(fullPrompt);
     
     if (!result.content && result.error) {
       throw new Error(result.error);

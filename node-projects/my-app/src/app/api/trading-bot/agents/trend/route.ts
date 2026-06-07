@@ -44,7 +44,19 @@ export async function POST(_request: Request) {
     }
 
     const maContent = readFileSync(maDataPath, 'utf-8');
-    const maData: MAData = JSON.parse(maContent);
+
+    let maData: MAData;
+    try {
+      maData = JSON.parse(maContent);
+    } catch {
+      // File was mid-write by sync script — transient, caller should retry
+      return Response.json({ error: 'MA data temporarily unavailable (mid-write)' }, { status: 503 });
+    }
+
+    // Validate required numeric fields
+    if (!maData.price || !maData.ma_fast || !maData.ma_medium || !maData.ma_slow) {
+      return Response.json({ error: 'MA data incomplete — waiting for EA' }, { status: 503 });
+    }
 
     const { price, ma_fast, ma_medium, ma_slow, crossover_detected, crossover_direction } = maData;
 

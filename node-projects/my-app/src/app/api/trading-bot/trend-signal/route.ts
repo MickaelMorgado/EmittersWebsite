@@ -2,7 +2,7 @@ import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import { NextResponse } from 'next/server';
 
-export async function GET(request: Request) {
+export async function GET(_request: Request) {
   try {
     const basePath = process.env.HOME || '/tmp';
     const trendSignalPath = join(basePath, 'development/MikaBot/trend_signal.json');
@@ -44,6 +44,31 @@ export async function GET(request: Request) {
       }
     }
 
+    // "Seconds since the live reading last changed" — i.e. age of the
+    // CURRENTLY FORMING candle [0] (current_candle_open), not the completed
+    // candle [1] (timestamp) that crossover logic uses. [1] only swaps in
+    // once a new candle opens, so its age oscillates ~0-120s; [0]'s age
+    // resets to ~0 the instant a new candle opens and counts up to ~60s —
+    // matching "ma_data.json's reading just changed → 30s ago" intuitively.
+    //
+    // We diff two BROKER-side clocks (current_candle_open vs server_time)
+    // rather than comparing broker time to the viewer's local clock — both
+    // numbers come from the same EA tick in the same timezone, so any
+    // broker/local offset cancels out, giving a perfectly accurate duration
+    // no matter where the dashboard is viewed from.
+    const parseMtTime = (mt: string): number => {
+      if (!mt) return NaN;
+      const [datePart, timePart] = mt.split(' ');
+      if (!datePart) return NaN;
+      return new Date(`${datePart.replace(/\./g, '-')}T${timePart || '00:00:00'}`).getTime();
+    };
+    const currentCandleOpenMs = parseMtTime(maData?.current_candle_open || '');
+    const brokerNowMs = parseMtTime(maData?.server_time || '');
+    const candle_age_seconds =
+      Number.isFinite(currentCandleOpenMs) && Number.isFinite(brokerNowMs)
+        ? Math.max(0, Math.round((brokerNowMs - currentCandleOpenMs) / 1000))
+        : null;
+
     // Derive ma_50_trend in real-time from live MA data (price vs MA50).
     // Never use the cached trendSignal value — that's only as fresh as the last agent run.
     const price = maData?.price || 0;
@@ -78,6 +103,9 @@ export async function GET(request: Request) {
       timestamp: trendSignal?.timestamp || new Date().toISOString(),
       // ma_timestamp: raw candle time from EA (changes every new candle close)
       ma_timestamp: maData?.timestamp || '',
+      // candle_age_seconds: how long ago THIS candle opened, computed
+      // entirely from broker-side clocks (timezone-safe — see comment above)
+      candle_age_seconds,
       symbol: 'BTCUSD',
       price,
       reasoning: trendSignal?.reasoning || 'Analyzing...'

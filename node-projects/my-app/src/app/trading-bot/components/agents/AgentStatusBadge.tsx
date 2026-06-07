@@ -31,7 +31,7 @@ const DEFAULT_LABELS: Record<AgentStatus, string> = {
 
 export default function AgentStatusBadge({ status, color, label }: AgentStatusBadgeProps) {
   return (
-    <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${STATUS_STYLES[status](color)}`}>
+    <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${STATUS_STYLES[status]}`}>
       {label ?? DEFAULT_LABELS[status]}
     </span>
   );

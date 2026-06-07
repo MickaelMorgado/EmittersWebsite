@@ -1,7 +1,6 @@
 "use client";
 
 import { Activity } from 'lucide-react';
-import { useState } from 'react';
 
 interface Trade {
   id: string;
@@ -86,6 +85,11 @@ export default function OpenPositionsCard({
         </div>
         <span className="text-xs text-cyan-400/40 font-mono">{openPositions.length} active</span>
       </div>
+      {openPositions.length === 0 ? (
+        <div className="flex items-center justify-center py-4 text-xs text-white/30 font-mono">
+          No open positions
+        </div>
+      ) : (
       <div className="space-y-1 overflow-y-auto max-h-28">
         {openPositions.map((pos: Trade, i: number) => {
           const isNew = newPositionIds.has(pos.id);
@@ -120,6 +124,7 @@ export default function OpenPositionsCard({
           );
         })}
       </div>
+      )}
     </div>
   );
 }

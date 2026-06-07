@@ -89,7 +89,7 @@ export async function GET(request: Request) {
       data = JSON.parse(content);
     } catch (parseError) {
       console.log(`[trading-bot GET] ⚠️ Invalid JSON in trades.json, using default empty data`);
-      data = { version: 'N/D', history: [], stats: {} };
+      data = { version: 'N/D', history: [] };
     }
 
     // Read positions file if it exists (real-time)

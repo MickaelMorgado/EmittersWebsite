@@ -2,7 +2,7 @@
 
 import { TrendingUp, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis, ReferenceLine } from 'recharts';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 
 interface EquityChartProps {
   data: { trade: string; equity: number }[];
@@ -24,6 +24,18 @@ function ChartTooltipContent({ active, payload, label }: any) {
 export default function EquityChart({ data }: EquityChartProps) {
   const [startIndex, setStartIndex] = useState(0);
   const [endIndex, setEndIndex] = useState(() => Math.max(data.length - 1, 0));
+  const [hasInitialized, setHasInitialized] = useState(false);
+
+  // Data often arrives asynchronously after mount — once it does, snap the
+  // view to the full history (same as "Reset View") instead of staying at
+  // whatever the initial empty-state range was.
+  useEffect(() => {
+    if (!hasInitialized && data.length > 0) {
+      setStartIndex(0);
+      setEndIndex(data.length - 1);
+      setHasInitialized(true);
+    }
+  }, [data, hasInitialized]);
 
   const visibleData = useMemo(() => {
     if (data.length === 0) return [];
