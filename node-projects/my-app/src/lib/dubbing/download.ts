@@ -1,35 +1,42 @@
-import { ClientType, Innertube, Platform, Types } from "youtubei.js/web";
-
-// Set up JS interpreter for decipher (required for WEB client URLs)
-Platform.shim.eval = async (data: Types.BuildScriptResult) => {
-  return new Function(data.output)();
-};
+import { ClientType, Innertube } from "youtubei.js";
 
 export async function downloadAudio(youtubeUrl: string): Promise<{ audioBuffer: ArrayBuffer; title: string }> {
-  // Use ANDROID client - returns direct URLs without needing decipher
+  console.log("[download] Starting with ANDROID client...");
+
   const yt = await Innertube.create({
     client_type: ClientType.ANDROID,
     generate_session_locally: false,
     enable_session_cache: true,
   });
 
-  let info;
-  try {
-    info = await yt.getInfo(youtubeUrl);
-  } catch {
-    // Fallback: try with WEB client + eval shim
-    const ytWeb = await Innertube.create();
-    info = await ytWeb.getInfo(youtubeUrl);
+  console.log("[download] Innertube created, fetching info...");
+  const info = await yt.getInfo(youtubeUrl);
+  const title = info.basic_info.title ?? "video";
+  console.log("[download] Got info:", title);
+
+  if (!info.streaming_data) {
+    throw new Error("No streaming data available for this video");
   }
 
-  const title = info.basic_info.title ?? "video";
+  const format = info.chooseFormat({ type: "audio", quality: "best" });
+  console.log("[download] Chose format:", format.itag, format.mime_type);
 
-  // Get audio stream via download method (handles decipher internally)
-  const stream = await info.download({
-    type: "audio",
-    quality: "best",
-  });
+  // Try to get URL directly (ANDROID client provides direct URLs)
+  const url = (format as unknown as { url?: string }).url;
 
+  if (url) {
+    console.log("[download] Direct URL found, fetching...");
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Download failed: ${response.status} ${response.statusText}`);
+    }
+    const audioBuffer = await response.arrayBuffer();
+    return { audioBuffer, title };
+  }
+
+  // If no direct URL, try decipher
+  console.log("[download] No direct URL, attempting download via stream...");
+  const stream = await info.download({ type: "audio", quality: "best" });
   const reader = stream.getReader();
   const chunks: Uint8Array[] = [];
 

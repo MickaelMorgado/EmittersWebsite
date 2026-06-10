@@ -21,6 +21,19 @@ import { Suspense, useEffect, useRef, useState } from "react";
 
 type Status = "idle" | "running" | "done" | "error";
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+interface DubbingResponse {
+  success?: boolean;
+  title?: string;
+  language?: string;
+  transcript?: any[];
+  translated?: any[];
+  ttsSegments?: any[];
+  originalAudio?: string;
+  logs?: string[];
+  error?: string;
+}
+
 const LANGUAGES = [
   { code: "fr", label: "French", flag: "\u{1F1EB}\u{1F1F7}" },
   { code: "pt", label: "Portuguese", flag: "\u{1F1E7}\u{1F1F9}" },
@@ -68,16 +81,26 @@ function VideoDubbingContent() {
         body: JSON.stringify({ url: url, language: language }),
       });
 
-      const data = await res.json();
+      const text = await res.text();
+      let data: DubbingResponse;
+      try {
+        data = JSON.parse(text) as DubbingResponse;
+      } catch {
+        setStatus("error");
+        setErrorMsg("Server returned non-JSON: " + text.slice(0, 200));
+        return;
+      }
 
       if (!res.ok) {
         setStatus("error");
         setErrorMsg(data.error || "Unknown error");
+        setLogs(data.logs || []);
         return;
       }
 
       setLogs(data.logs || []);
-      setSegments(data.ttsSegments ? data.ttsSegments.length : 0);
+      const ttsSegs = data.ttsSegments ?? [];
+      setSegments(ttsSegs.length);
 
       const FFmpegModule = await import("@ffmpeg/ffmpeg");
       const UtilModule = await import("@ffmpeg/util");
@@ -95,11 +118,11 @@ function VideoDubbingContent() {
         wasmURL: await toBlobURL(baseURL + "/ffmpeg-core.wasm", "application/wasm"),
       });
 
-      const originalBuf = Uint8Array.from(atob(data.originalAudio), (c) => c.charCodeAt(0));
+      const originalBuf = Uint8Array.from(atob(data.originalAudio ?? ""), (c) => c.charCodeAt(0));
       await ffmpeg.writeFile("original.mp3", originalBuf);
 
-      for (let si = 0; si < data.ttsSegments.length; si++) {
-        const seg = data.ttsSegments[si];
+      for (let si = 0; si < ttsSegs.length; si++) {
+        const seg = ttsSegs[si];
         const segBuf = Uint8Array.from(atob(seg.audioBase64), (c) => c.charCodeAt(0));
         await ffmpeg.writeFile("tts_" + seg.index + ".mp3", segBuf);
       }
@@ -107,27 +130,27 @@ function VideoDubbingContent() {
       const filterParts: string[] = [];
       const inputs: string[] = ["-i", "original.mp3"];
 
-      for (let si = 0; si < data.ttsSegments.length; si++) {
-        const seg = data.ttsSegments[si];
+      for (let si = 0; si < ttsSegs.length; si++) {
+        const seg = ttsSegs[si];
         inputs.push("-i", "tts_" + seg.index + ".mp3");
       }
 
-      for (let si = 0; si < data.ttsSegments.length; si++) {
-        const seg = data.ttsSegments[si];
+      for (let si = 0; si < ttsSegs.length; si++) {
+        const seg = ttsSegs[si];
         const delayMs = Math.round(seg.start * 1000);
         filterParts.push("[" + (si + 1) + ":a]adelay=" + delayMs + "|" + delayMs + "[d" + si + "]");
       }
 
       let mixFilter = "[0:a]volume=0.2[orig]";
-      for (let si = 0; si < data.ttsSegments.length; si++) {
+      for (let si = 0; si < ttsSegs.length; si++) {
         mixFilter += "[d" + si + "]";
       }
-      mixFilter += "amix=inputs=" + (data.ttsSegments.length + 1) + ":normalize=0[out]";
+      mixFilter += "amix=inputs=" + (ttsSegs.length + 1) + ":normalize=0[out]";
       filterParts.push(mixFilter);
 
       let maxEnd = 0;
-      for (let si = 0; si < data.ttsSegments.length; si++) {
-        if (data.ttsSegments[si].end > maxEnd) maxEnd = data.ttsSegments[si].end;
+      for (let si = 0; si < ttsSegs.length; si++) {
+        if (ttsSegs[si].end > maxEnd) maxEnd = ttsSegs[si].end;
       }
 
       await ffmpeg.exec(
