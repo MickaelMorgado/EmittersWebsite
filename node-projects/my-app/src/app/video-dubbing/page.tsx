@@ -208,13 +208,13 @@ export default function VideoDubbingPage() {
                 className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white"
               >
                 <a
-                  href="https://github.com/MickaelMorgado/EmittersWebsite/tree/master/video-dubbing-app"
+                  href="/video-dubbing-app.zip"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
                   <Download className="w-4 h-4 mr-2" />
-                  Download for Windows
-                  <ExternalLink className="w-3 h-3 ml-2 opacity-50" />
+                  Download v1.0
+                  <span className="text-xs opacity-50 ml-2">.zip</span>
                 </a>
               </Button>
             </div>
