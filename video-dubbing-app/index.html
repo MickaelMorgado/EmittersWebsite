@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Video Dubbing</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #000;
+      color: #fff;
+      min-height: 100vh;
+    }
+
+    .bg-glow {
+      position: fixed; inset: 0; pointer-events: none; opacity: 0.15; overflow: hidden;
+    }
+    .bg-glow::before {
+      content: ''; position: absolute; top: -160px; right: -160px;
+      width: 320px; height: 320px; background: #a855f7; filter: blur(120px); border-radius: 50%;
+    }
+    .bg-glow::after {
+      content: ''; position: absolute; bottom: -160px; left: -160px;
+      width: 320px; height: 320px; background: #3b82f6; filter: blur(120px); border-radius: 50%;
+    }
+
+    .container {
+      max-width: 640px; margin: 0 auto; padding: 32px 16px;
+      position: relative; z-index: 1;
+    }
+
+    header {
+      display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      padding-bottom: 24px; margin-bottom: 32px;
+    }
+    header h1 { font-size: 24px; font-weight: 700; text-transform: uppercase; }
+    header .badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      border: 1px solid rgba(255,255,255,0.2); border-radius: 6px;
+      padding: 4px 10px; font-size: 12px; color: rgba(255,255,255,0.6);
+    }
+
+    .card {
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px; padding: 24px; margin-bottom: 24px;
+    }
+    .card-title {
+      font-size: 16px; font-weight: 600; margin-bottom: 16px;
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    label { font-size: 13px; color: rgba(255,255,255,0.5); display: block; margin-bottom: 6px; }
+
+    input[type="text"] {
+      width: 100%; padding: 10px 14px; border-radius: 8px;
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+      color: #fff; font-size: 14px; outline: none; transition: border-color 0.2s;
+    }
+    input[type="text"]:focus { border-color: rgba(255,255,255,0.3); }
+    input[type="text"]::placeholder { color: rgba(255,255,255,0.3); }
+
+    .lang-buttons { display: flex; gap: 8px; }
+    .lang-btn {
+      flex: 1; padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.5);
+      font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s;
+      text-align: center;
+    }
+    .lang-btn.active {
+      background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3); color: #fff;
+    }
+
+    .btn {
+      width: 100%; padding: 12px; border: none; border-radius: 8px;
+      font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #7c3aed, #2563eb); color: #fff;
+    }
+    .btn-primary:hover { background: linear-gradient(135deg, #6d28d9, #1d4ed8); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-success {
+      background: linear-gradient(135deg, #16a34a, #059669); color: #fff;
+    }
+    .btn-success:hover { background: linear-gradient(135deg, #15803d, #047857); }
+
+    .embed { aspect-ratio: 16/9; border-radius: 8px; overflow: hidden; background: #000; }
+    .embed iframe { width: 100%; height: 100%; border: none; }
+
+    .logs {
+      background: rgba(0,0,0,0.4); border-radius: 8px; padding: 16px;
+      font-family: 'Courier New', monospace; font-size: 12px;
+      color: rgba(255,255,255,0.5); max-height: 200px; overflow-y: auto;
+    }
+    .logs .step { color: #a855f7; }
+    .logs .error { color: #ef4444; }
+
+    .progress-bar {
+      width: 100%; height: 6px; background: rgba(255,255,255,0.1);
+      border-radius: 3px; overflow: hidden; margin-top: 12px;
+    }
+    .progress-fill {
+      height: 100%; background: linear-gradient(90deg, #7c3aed, #2563eb);
+      border-radius: 3px; transition: width 0.3s;
+    }
+
+    .result-info { color: #4ade80; font-size: 14px; font-weight: 500; margin-bottom: 12px; }
+    .result-path { font-size: 12px; color: rgba(255,255,255,0.4); word-break: break-all; }
+
+    .error-msg { color: #ef4444; font-size: 14px; }
+
+    video { width: 100%; border-radius: 8px; margin-top: 12px; }
+
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div class="bg-glow"></div>
+
+  <div class="container">
+    <header>
+      <div>
+        <h1>Video Dubbing</h1>
+        <p style="color: rgba(255,255,255,0.5); margin-top: 4px; font-size: 14px;">
+          Dub YouTube videos locally on your machine
+        </p>
+      </div>
+      <span class="badge">&#127909; Local</span>
+    </header>
+
+    <!-- YouTube URL -->
+    <div class="card">
+      <div class="card-title">&#9654; YouTube Video</div>
+      <label>YouTube URL</label>
+      <input type="text" id="url" placeholder="https://youtube.com/watch?v=..." />
+      <div class="embed hidden" id="player-container" style="margin-top: 16px;">
+        <iframe id="player" allowfullscreen></iframe>
+      </div>
+    </div>
+
+    <!-- Language + Process -->
+    <div class="card">
+      <div class="card-title">&#127760; Target Language</div>
+      <div class="lang-buttons" style="margin-bottom: 16px;">
+        <button class="lang-btn active" data-lang="fr">&#127467;&#127479; French</button>
+        <button class="lang-btn" data-lang="pt">&#127463;&#127479; Portuguese</button>
+      </div>
+
+      <label>Whisper Model</label>
+      <div class="lang-buttons" style="margin-bottom: 16px;">
+        <button class="lang-btn active" data-model="tiny">Tiny</button>
+        <button class="lang-btn" data-model="base">Base</button>
+        <button class="lang-btn" data-model="small">Small</button>
+      </div>
+
+      <button class="btn btn-primary" id="process-btn" disabled>
+        &#128266; Process & Dub
+      </button>
+    </div>
+
+    <!-- Progress -->
+    <div class="card hidden" id="progress-card">
+      <div class="card-title" id="progress-title">&#8987; Processing...</div>
+      <div class="logs" id="logs"></div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+      </div>
+    </div>
+
+    <!-- Result -->
+    <div class="card hidden" id="result-card">
+      <div class="result-info">&#10003; Done!</div>
+      <div class="result-path" id="result-path"></div>
+      <video id="result-video" controls></video>
+      <a id="result-download" class="btn btn-success" style="text-decoration: none; margin-top: 12px;">
+        &#11015; Open in File Explorer
+      </a>
+    </div>
+
+    <!-- Error -->
+    <div class="card hidden" id="error-card">
+      <div class="error-msg" id="error-msg"></div>
+    </div>
+  </div>
+
+  <script>
+    const urlInput = document.getElementById("url");
+    const playerContainer = document.getElementById("player-container");
+    const player = document.getElementById("player");
+    const processBtn = document.getElementById("process-btn");
+    const progressCard = document.getElementById("progress-card");
+    const progressTitle = document.getElementById("progress-title");
+    const logsEl = document.getElementById("logs");
+    const progressFill = document.getElementById("progress-fill");
+    const resultCard = document.getElementById("result-card");
+    const resultPath = document.getElementById("result-path");
+    const resultVideo = document.getElementById("result-video");
+    const resultDownload = document.getElementById("result-download");
+    const errorCard = document.getElementById("error-card");
+    const errorMsg = document.getElementById("error-msg");
+
+    let selectedLang = "fr";
+    let selectedModel = "tiny";
+
+    // URL input -> show embed
+    urlInput.addEventListener("input", () => {
+      const val = urlInput.value;
+      const match = val.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+      if (match) {
+        player.src = `https://www.youtube.com/embed/${match[1]}`;
+        playerContainer.classList.remove("hidden");
+        processBtn.disabled = false;
+      } else {
+        playerContainer.classList.add("hidden");
+        processBtn.disabled = true;
+      }
+    });
+
+    // Language buttons
+    document.querySelectorAll(".lang-btn[data-lang]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".lang-btn[data-lang]").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        selectedLang = btn.dataset.lang;
+      });
+    });
+
+    // Model buttons
+    document.querySelectorAll(".lang-btn[data-model]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".lang-btn[data-model]").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        selectedModel = btn.dataset.model;
+      });
+    });
+
+    // Process button
+    processBtn.addEventListener("click", async () => {
+      processBtn.disabled = true;
+      progressCard.classList.remove("hidden");
+      resultCard.classList.add("hidden");
+      errorCard.classList.add("hidden");
+      logsEl.innerHTML = "";
+
+      try {
+        const res = await fetch("/api/dub", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url: urlInput.value, language: selectedLang }),
+        });
+        const data = await res.json();
+
+        if (data.error) {
+          errorCard.classList.remove("hidden");
+          errorMsg.textContent = data.error;
+          processBtn.disabled = false;
+          return;
+        }
+
+        // Listen for SSE progress
+        const evtSource = new EventSource("/api/progress");
+        evtSource.onmessage = (event) => {
+          const state = JSON.parse(event.data);
+
+          // Update logs
+          logsEl.innerHTML = state.logs.map(l => {
+            if (l.startsWith("STEP") || l.startsWith("DONE")) return `<div class="step">${l}</div>`;
+            if (l.startsWith("ERROR")) return `<div class="error">${l}</div>`;
+            return `<div>${l}</div>`;
+          }).join("");
+          logsEl.scrollTop = logsEl.scrollHeight;
+
+          // Update progress
+          progressFill.style.width = state.percent + "%";
+          progressTitle.textContent = state.status === "running"
+            ? `&#8987; Processing... ${state.percent}%`
+            : state.status === "done" ? "&#10003; Done!" : "&#10007; Error";
+
+          if (state.status === "done") {
+            evtSource.close();
+            resultCard.classList.remove("hidden");
+            const r = state.result;
+            resultPath.textContent = r.desktop_path;
+            resultVideo.src = "/api/video/" + encodeURIComponent(r.path);
+            resultDownload.href = "file:///" + r.desktop_path.replace(/\\/g, "/");
+            processBtn.disabled = false;
+          }
+
+          if (state.status === "error") {
+            evtSource.close();
+            errorCard.classList.remove("hidden");
+            errorMsg.textContent = state.error;
+            processBtn.disabled = false;
+          }
+        };
+
+        evtSource.onerror = () => {
+          evtSource.close();
+          processBtn.disabled = false;
+        };
+      } catch (err) {
+        errorCard.classList.remove("hidden");
+        errorMsg.textContent = err.message;
+        processBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
