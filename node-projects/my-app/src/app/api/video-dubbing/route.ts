@@ -1,25 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
-import { execFileSync } from "child_process";
-import { existsSync, mkdirSync, readdirSync } from "fs";
-import { join } from "path";
+import { downloadAudio } from "@/lib/dubbing/download";
+import { transcribeAudio } from "@/lib/dubbing/transcribe";
+import { translateSegments } from "@/lib/dubbing/translate";
+import { generateTTS } from "@/lib/dubbing/tts";
 
-const SCRIPT_PATH = "C:\\Users\\Mickael M\\.opencode\\skills\\video-dubbing\\scripts\\dub.py";
-const OUTPUT_BASE = "C:\\Users\\Mickael M\\development\\personal-memory-bank\\dub_output";
-
-function ensureOutputDir() {
-  if (!existsSync(OUTPUT_BASE)) {
-    mkdirSync(OUTPUT_BASE, { recursive: true });
-  }
-}
-
-function jobId() {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+export async function GET() {
+  return NextResponse.json({
+    status: "Video Dubbing API",
+    methods: ["POST"],
+    body: { url: "string", language: "fr|pt" },
+  });
 }
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { url, language, whisperModel = "base" } = body;
+    const { url, language } = body;
 
     if (!url || !language) {
       return NextResponse.json(
@@ -35,56 +31,38 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    ensureOutputDir();
-    const id = jobId();
-    const workDir = join(OUTPUT_BASE, id);
-    const outputPath = join(workDir, "dubbed_output.mp4");
+    const logs: string[] = [];
 
-    mkdirSync(workDir, { recursive: true });
+    logs.push("STEP 1/4: Downloading audio from YouTube...");
+    const { audioBuffer, title } = await downloadAudio(url);
+    logs.push(`  Downloaded: ${title} (${(audioBuffer.byteLength / 1024 / 1024).toFixed(1)} MB)`);
 
-    const result = execFileSync("python", [
-      SCRIPT_PATH,
-      url,
-      "--lang", language,
-      "--whisper-model", whisperModel,
-      "--workdir", workDir,
-      "--keep-workdir",
-      "--output", outputPath,
-    ], {
-      encoding: "utf-8",
-      timeout: 600_000,
-      maxBuffer: 10 * 1024 * 1024,
-      env: { ...process.env, PYTHONIOENCODING: "utf-8" },
-    });
+    logs.push("STEP 2/4: Transcribing with Whisper...");
+    const transcript = await transcribeAudio(audioBuffer);
+    logs.push(`  Transcribed ${transcript.length} segments`);
 
-    if (!existsSync(outputPath)) {
-      return NextResponse.json(
-        { error: "Pipeline completed but output file not found", log: result },
-        { status: 500 }
-      );
-    }
+    logs.push("STEP 3/4: Translating to target language...");
+    const translated = await translateSegments(transcript, language);
+    logs.push(`  Translated ${translated.length} segments`);
 
-    const files = existsSync(join(workDir, "tts_segments"))
-      ? readdirSync(join(workDir, "tts_segments")).filter((f) => f.endsWith(".wav")).length
-      : 0;
+    logs.push("STEP 4/4: Generating TTS audio...");
+    const ttsSegments = await generateTTS(translated, language);
+    logs.push(`  Generated ${ttsSegments.length} TTS segments`);
+
+    const audioBase64 = Buffer.from(audioBuffer).toString("base64");
 
     return NextResponse.json({
       success: true,
-      jobId: id,
-      downloadUrl: `/api/video-dubbing/download?jobId=${id}`,
-      segments: files,
-      log: result.split("\n").filter((l) => l.startsWith("STEP") || l.startsWith("=") || l.startsWith("  ")),
+      title,
+      language,
+      transcript,
+      translated,
+      ttsSegments,
+      originalAudio: audioBase64,
+      logs,
     });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
     return NextResponse.json({ error: message }, { status: 500 });
   }
-}
-
-export async function GET() {
-  return NextResponse.json({
-    status: "Video Dubbing API",
-    methods: ["POST"],
-    body: { url: "string", language: "fr|pt", whisperModel: "tiny|base|small|medium|large" },
-  });
 }
