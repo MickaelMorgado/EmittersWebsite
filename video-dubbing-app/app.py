@@ -33,32 +33,87 @@ from pathlib import Path
 # ============================================================
 
 
+def install_pip_packages(packages):
+    """Install missing pip packages."""
+    print(f"\n[setup] Installing: {', '.join(packages)}")
+    subprocess.check_call(
+        [sys.executable, "-m", "pip", "install", *packages],
+        stdout=subprocess.DEVNULL,
+    )
+    print("[setup] Done.\n")
+
+
+def install_ytdlp():
+    """Install yt-dlp via pip."""
+    print("[setup] Installing yt-dlp via pip...")
+    subprocess.check_call(
+        [sys.executable, "-m", "pip", "install", "-U", "yt-dlp"],
+        stdout=subprocess.DEVNULL,
+    )
+    print("[setup] yt-dlp installed.\n")
+
+
 def check_deps():
-    missing = []
-    for tool in ["yt-dlp", "ffmpeg", "ffprobe"]:
-        if not shutil.which(tool):
-            missing.append(tool)
-    for pkg, import_name in [
-        ("whisper", "whisper"),
-        ("srt", "srt"),
-        ("googletrans", "googletrans"),
-        ("edge-tts", "edge_tts"),
-    ]:
+    # --- pip packages ---
+    pip_pkgs_to_install = []
+    pip_names = {
+        "whisper": "openai-whisper",
+        "srt": "srt",
+        "googletrans": "googletrans==4.0.0rc1",
+        "edge_tts": "edge-tts",
+    }
+    for import_name, pip_name in pip_names.items():
         try:
             __import__(import_name)
         except ImportError:
-            missing.append(f"pip package: {pkg}")
+            pip_pkgs_to_install.append(pip_name)
 
-    if missing:
-        print("Missing dependencies:")
-        for m in missing:
-            print(f"  - {m}")
-        print("\nInstall with:")
-        print(
-            "  pip install openai-whisper srt googletrans==4.0.0rc1 edge-tts fastapi uvicorn"
-        )
-        print("  And install yt-dlp + ffmpeg from their official sites")
+    if pip_pkgs_to_install:
+        print(f"[setup] Missing Python packages: {', '.join(pip_pkgs_to_install)}")
+        install_pip_packages(pip_pkgs_to_install)
+        # Re-import after install
+        for import_name in pip_names:
+            try:
+                __import__(import_name)
+            except ImportError:
+                print(f"[setup] FAILED to install {pip_names[import_name]}")
+                sys.exit(1)
+
+    # --- yt-dlp ---
+    if not shutil.which("yt-dlp"):
+        print("[setup] yt-dlp not found. Installing via pip...")
+        install_ytdlp()
+        if not shutil.which("yt-dlp"):
+            print("[setup] WARNING: yt-dlp installed but not on PATH.")
+            print("[setup] Try: python -m yt_dlp")
+            # Check if it works as module
+            try:
+                subprocess.check_call(
+                    [sys.executable, "-m", "yt_dlp", "--version"],
+                    stdout=subprocess.DEVNULL,
+                )
+                print("[setup] yt-dlp works as 'python -m yt_dlp'")
+            except Exception:
+                print("[setup] yt-dlp could not be installed automatically.")
+                print("[setup] Install manually: pip install -U yt-dlp")
+                sys.exit(1)
+
+    # --- ffmpeg ---
+    if not shutil.which("ffmpeg"):
+        print("[setup] ffmpeg not found.")
+        print("[setup] ffmpeg must be installed manually:")
+        print("  Windows: winget install FFmpeg")
+        print("  macOS:   brew install ffmpeg")
+        print("  Linux:   sudo apt install ffmpeg")
+        print("  Or download from: https://ffmpeg.org/download.html")
         sys.exit(1)
+
+    if not shutil.which("ffprobe"):
+        print("[setup] ffprobe not found (usually bundled with ffmpeg).")
+        print("[setup] Make sure ffprobe is in your PATH.")
+        sys.exit(1)
+
+    print("[setup] All dependencies OK\n")
 
 
 # ============================================================
@@ -87,14 +142,21 @@ def log(msg):
     progress_state["logs"].append(msg)
 
 
+def get_ytdlp_cmd():
+    """Return the yt-dlp command (binary or python module)."""
+    if shutil.which("yt-dlp"):
+        return ["yt-dlp"]
+    return [sys.executable, "-m", "yt_dlp"]
+
+
 def download_video(url, output_dir):
     log(f"[download] Downloading from: {url}")
     os.makedirs(output_dir, exist_ok=True)
 
     video_template = os.path.join(output_dir, "video.%(ext)s")
     subprocess.run(
-        [
-            "yt-dlp",
+        get_ytdlp_cmd()
+        + [
             "-f",
             "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best",
             "--merge-output-format",
