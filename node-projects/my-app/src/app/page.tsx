@@ -49,6 +49,7 @@ const PROJECTS: { [section: string]: Project[] } = {
     { title: "TikTok Analytics", description: "Connect your TikTok account to load and analyze your video metrics", href: "/tiktok-analytics", accentColor: "0, 200, 255", isPublic: true },
     { title: "STALKER 2 Ammo Tracker", description: "Interactive ammo and weight management dashboard", href: "/stalker2-ammo", accentColor: "255, 126, 0", isPublic: true },
     { title: "Media Processor", description: "Compress images and crop videos with preset ratios", href: "/image-compressor", accentColor: "139, 92, 246", isPublic: true },
+    { title: "Video Dubbing", description: "AI voice dubbing for YouTube videos — translate to French or Portuguese", href: "/video-dubbing", accentColor: "168, 85, 247", isPublic: true },
     { title: "Strudel Live Code", description: "Create music with code - live coding electronic music", href: "/strudel", accentColor: "236, 185, 11", isPublic: true },
     { title: "3D Chess", description: "Multiplayer 3D chess game with Three.js", href: "/chess3d", accentColor: "255, 215, 0", isPublic: true },
     { title: "2D CAD Sketcher", description: "2D CAD drawing app with shapes, lines, and export", href: "/sketcher", accentColor: "156, 163, 175", isPublic: true },

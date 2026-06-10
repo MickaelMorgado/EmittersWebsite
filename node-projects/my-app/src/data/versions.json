@@ -120,5 +120,11 @@
     "history": [
       { "version": "0.1.0", "releasedAt": "2026-03-14", "changes": ["AI Agent management dashboard for OpenClaw"] }
     ]
+  },
+  "video-dubbing": {
+    "current": { "version": "1.0.0", "releasedAt": "2026-06-10", "changes": ["AI voice dubbing for YouTube videos", "French and Portuguese support", "Edge TTS voice generation", "Whisper transcription", "Google Translate integration"] },
+    "history": [
+      { "version": "1.0.0", "releasedAt": "2026-06-10", "changes": ["AI voice dubbing for YouTube videos", "French and Portuguese support", "Edge TTS voice generation", "Whisper transcription", "Google Translate integration"] }
+    ]
   }
 }
