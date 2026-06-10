@@ -73,6 +73,17 @@
       background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3); color: #fff;
     }
 
+    select {
+      width: 100%; padding: 10px 14px; border-radius: 8px;
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+      color: #fff; font-size: 14px; outline: none; cursor: pointer;
+      appearance: none; -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.4)' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 12px center;
+    }
+    select:focus { border-color: rgba(255,255,255,0.3); }
+    select option { background: #1a1a1a; color: #fff; }
+
     .btn {
       width: 100%; padding: 12px; border: none; border-radius: 8px;
       font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s;
@@ -144,11 +155,16 @@
 
     <!-- Language + Process -->
     <div class="card">
-      <div class="card-title">&#127760; Target Language</div>
-      <div class="lang-buttons" style="margin-bottom: 16px;">
-        <button class="lang-btn active" data-lang="fr">&#127467;&#127479; French</button>
-        <button class="lang-btn" data-lang="pt">&#127463;&#127479; Portuguese</button>
-      </div>
+      <div class="card-title">&#127760; Language Pair</div>
+      <label>Translate from → to</label>
+      <select id="lang-pair" style="margin-bottom: 16px;">
+        <option value="en-fr">🇺🇸 English → 🇫🇷 French</option>
+        <option value="en-pt">🇺🇸 English → 🇧🇷 Portuguese</option>
+        <option value="fr-en">🇫🇷 French → 🇺🇸 English</option>
+        <option value="pt-en">🇧🇷 Portuguese → 🇺🇸 English</option>
+        <option value="fr-pt">🇫🇷 French → 🇧🇷 Portuguese</option>
+        <option value="pt-fr">🇧🇷 Portuguese → 🇫🇷 French</option>
+      </select>
 
       <label>Whisper Model</label>
       <div class="lang-buttons" style="margin-bottom: 16px;">
@@ -203,7 +219,6 @@
     const errorCard = document.getElementById("error-card");
     const errorMsg = document.getElementById("error-msg");
 
-    let selectedLang = "fr";
     let selectedModel = "tiny";
 
     // URL input -> show embed
@@ -218,15 +233,6 @@
         playerContainer.classList.add("hidden");
         processBtn.disabled = true;
       }
-    });
-
-    // Language buttons
-    document.querySelectorAll(".lang-btn[data-lang]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        document.querySelectorAll(".lang-btn[data-lang]").forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-        selectedLang = btn.dataset.lang;
-      });
     });
 
     // Model buttons
@@ -250,7 +256,11 @@
         const res = await fetch("/api/dub", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ url: urlInput.value, language: selectedLang }),
+          body: JSON.stringify({
+            url: urlInput.value,
+            source: document.getElementById("lang-pair").value.split("-")[0],
+            target: document.getElementById("lang-pair").value.split("-")[1],
+          }),
         });
         const data = await res.json();
 

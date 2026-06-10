@@ -18,8 +18,12 @@ import {
 } from "lucide-react";
 
 const LANGUAGES = [
-  { code: "fr", label: "French", flag: "\u{1F1EB}\u{1F1F7}" },
-  { code: "pt", label: "Portuguese", flag: "\u{1F1E7}\u{1F1F9}" },
+  { from: "en", to: "fr", fromLabel: "English", toLabel: "French", fromFlag: "\u{1F1FA}\u{1F1F8}", toFlag: "\u{1F1EB}\u{1F1F7}", voice: "Henri (Male)" },
+  { from: "en", to: "pt", fromLabel: "English", toLabel: "Portuguese", fromFlag: "\u{1F1FA}\u{1F1F8}", toFlag: "\u{1F1E7}\u{1F1F9}", voice: "Antonio (Male)" },
+  { from: "fr", to: "en", fromLabel: "French", toLabel: "English", fromFlag: "\u{1F1EB}\u{1F1F7}", toFlag: "\u{1F1FA}\u{1F1F8}", voice: "Guy (Male)" },
+  { from: "pt", to: "en", fromLabel: "Portuguese", toLabel: "English", fromFlag: "\u{1F1E7}\u{1F1F9}", toFlag: "\u{1F1FA}\u{1F1F8}", voice: "Guy (Male)" },
+  { from: "fr", to: "pt", fromLabel: "French", toLabel: "Portuguese", fromFlag: "\u{1F1EB}\u{1F1F7}", toFlag: "\u{1F1E7}\u{1F1F9}", voice: "Antonio (Male)" },
+  { from: "pt", to: "fr", fromLabel: "Portuguese", toLabel: "French", fromFlag: "\u{1F1E7}\u{1F1F9}", toFlag: "\u{1F1EB}\u{1F1F7}", voice: "Henri (Male)" },
 ];
 
 const STATS = [
@@ -244,18 +248,17 @@ export default function VideoDubbingPage() {
             <div className="grid grid-cols-2 gap-3">
               {LANGUAGES.map((lang) => (
                 <div
-                  key={lang.code}
+                  key={`${lang.from}-${lang.to}`}
                   className="flex items-center gap-3 bg-black/20 rounded-lg p-3"
                 >
-                  <span className="text-2xl">{lang.flag}</span>
+                  <span className="text-lg">{lang.fromFlag}</span>
+                  <span className="text-xs text-white/30">→</span>
+                  <span className="text-lg">{lang.toFlag}</span>
                   <div>
-                    <p className="text-sm font-medium">{lang.label}</p>
-                    <p className="text-xs text-white/40">
-                      AI voice:{" "}
-                      {lang.code === "fr"
-                        ? "Henri (Male)"
-                        : "Antonio (Male)"}
+                    <p className="text-sm font-medium">
+                      {lang.fromLabel} → {lang.toLabel}
                     </p>
+                    <p className="text-xs text-white/40">Voice: {lang.voice}</p>
                   </div>
                 </div>
               ))}

@@ -121,7 +121,16 @@ def check_deps():
 # ============================================================
 
 WORK_DIR = tempfile.mkdtemp(prefix="dubbing_")
+LANGUAGE_PAIRS = [
+    {"source": "en", "target": "fr", "label": "English \u2192 French"},
+    {"source": "en", "target": "pt", "label": "English \u2192 Portuguese"},
+    {"source": "fr", "target": "en", "label": "French \u2192 English"},
+    {"source": "pt", "target": "en", "label": "Portuguese \u2192 English"},
+    {"source": "fr", "target": "pt", "label": "French \u2192 Portuguese"},
+    {"source": "pt", "target": "fr", "label": "Portuguese \u2192 French"},
+]
 EDGE_VOICES = {
+    "en": "en-US-GuyNeural",
     "fr": "fr-FR-HenriNeural",
     "pt": "pt-BR-AntonioNeural",
 }
@@ -236,11 +245,11 @@ def transcribe_audio(audio_path, model_size="base"):
     return srt_path
 
 
-def translate_srt(srt_path, target_lang):
+def translate_srt(srt_path, source_lang, target_lang):
     import srt as srt_lib
     from googletrans import Translator
 
-    log(f"[translate] Translating to {target_lang}...")
+    log(f"[translate] Translating {source_lang} -> {target_lang}...")
     progress_state["step"] = "translate"
     progress_state["percent"] = 45
 
@@ -253,7 +262,9 @@ def translate_srt(srt_path, target_lang):
     for i in range(0, len(subtitles), 20):
         batch = subtitles[i : i + 20]
         try:
-            results = translator.translate([s.content for s in batch], dest=target_lang)
+            results = translator.translate(
+                [s.content for s in batch], src=source_lang, dest=target_lang
+            )
             for sub, trans in zip(batch, results):
                 text = re.sub(r"([.!?:])([A-ZÀ-ÖØ-Þa-zà-öø-ÿ])", r"\1 \2", trans.text)
                 text = re.sub(r"  +", " ", text).strip()
@@ -410,7 +421,7 @@ def mix_audio(video_path, tts_dir, original_volume=0.2, output_path=None):
     return output_path
 
 
-async def run_pipeline(youtube_url, target_lang):
+async def run_pipeline(youtube_url, source_lang, target_lang):
     global progress_state
     progress_state = {
         "step": "download",
@@ -432,7 +443,7 @@ async def run_pipeline(youtube_url, target_lang):
         srt_path = transcribe_audio(audio_path)
 
         log("STEP 3/5: Translating...")
-        translated_path = translate_srt(srt_path, target_lang)
+        translated_path = translate_srt(srt_path, source_lang, target_lang)
 
         log("STEP 4/5: Generating TTS...")
         tts_dir = os.path.join(work_dir, "tts_segments")
@@ -485,6 +496,8 @@ class DubbingHandler(BaseHTTPRequestHandler):
 
         if parsed.path == "/" or parsed.path == "/index.html":
             self.serve_file("index.html", "text/html")
+        elif parsed.path == "/api/languages":
+            self.send_json({"pairs": LANGUAGE_PAIRS})
         elif parsed.path == "/api/progress":
             self.sse_progress()
         elif parsed.path.startswith("/api/video/"):
@@ -499,14 +512,16 @@ class DubbingHandler(BaseHTTPRequestHandler):
             length = int(self.headers.get("Content-Length", 0))
             body = json.loads(self.rfile.read(length))
             url = body.get("url", "")
-            lang = body.get("language", "fr")
+            source = body.get("source", "en")
+            target = body.get("target", "fr")
 
-            if not url or lang not in ("fr", "pt"):
+            valid_pairs = [(p["source"], p["target"]) for p in LANGUAGE_PAIRS]
+            if not url or (source, target) not in valid_pairs:
                 self.send_json({"error": "Invalid input"}, 400)
                 return
 
             thread = threading.Thread(
-                target=lambda: asyncio.run(run_pipeline(url, lang)),
+                target=lambda: asyncio.run(run_pipeline(url, source, target)),
                 daemon=True,
             )
             thread.start()
