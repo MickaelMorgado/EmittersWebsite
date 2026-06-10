@@ -469,6 +469,11 @@ async def run_pipeline(youtube_url, target_lang):
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import urllib.parse
 import socket
+from socketserver import ThreadingMixIn
+
+
+class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
+    daemon_threads = True
 
 
 class DubbingHandler(BaseHTTPRequestHandler):
@@ -523,10 +528,8 @@ class DubbingHandler(BaseHTTPRequestHandler):
 
     def serve_video(self, path):
         video_path = path[len("/api/video/") :]
-        video_path = video_path.replace("/", os.sep).replace("\\", os.sep)
-        # Normalize drive letter
-        if len(video_path) > 2 and video_path[1] == ":":
-            video_path = video_path[0].upper() + video_path[1:]
+        video_path = urllib.parse.unquote(video_path)
+        video_path = video_path.replace("/", os.sep)
 
         if not os.path.exists(video_path):
             self.send_error(404)
@@ -582,7 +585,7 @@ def main():
     check_deps()
 
     port = find_port()
-    server = HTTPServer(("127.0.0.1", port), DubbingHandler)
+    server = ThreadedHTTPServer(("127.0.0.1", port), DubbingHandler)
 
     url = f"http://localhost:{port}"
     print(f"\n{'=' * 50}")
