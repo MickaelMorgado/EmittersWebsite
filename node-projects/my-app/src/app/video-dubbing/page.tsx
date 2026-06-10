@@ -303,9 +303,24 @@ function VideoDubbingContent() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-xs text-white/40">
-              Drop the same video file here so Whisper can transcribe the audio
-            </p>
+            <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-3">
+              <p className="text-xs text-purple-300">
+                <span className="font-medium">Step 1:</span>{" "}
+                <a
+                  href="https://cobalt.tools/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline underline-offset-2 hover:text-purple-200"
+                >
+                  Open cobalt.tools
+                </a>{" "}
+                → paste the YouTube URL → download the audio (MP3)
+              </p>
+              <p className="text-xs text-purple-300 mt-1">
+                <span className="font-medium">Step 2:</span>{" "}
+                Drop the audio file below
+              </p>
+            </div>
 
             <div
               onDrop={handleDrop}
@@ -321,7 +336,7 @@ function VideoDubbingContent() {
               <input
                 id="file-input"
                 type="file"
-                accept="video/*,audio/*"
+                accept="audio/*,video/*"
                 onChange={handleFileSelect}
                 className="hidden"
               />
@@ -337,7 +352,10 @@ function VideoDubbingContent() {
                 <div className="space-y-1">
                   <Upload className="w-6 h-6 text-white/30 mx-auto" />
                   <p className="text-sm text-white/50">
-                    Drag & drop video or click to browse
+                    Drag & drop audio file or click to browse
+                  </p>
+                  <p className="text-[10px] text-white/30">
+                    MP3, WAV, M4A, OGG, or any audio format
                   </p>
                 </div>
               )}
@@ -488,12 +506,13 @@ function VideoDubbingContent() {
             <CardTitle className="text-lg">How it works</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-4 gap-2 text-center">
+            <div className="grid grid-cols-5 gap-2 text-center">
               {[
-                { step: "1", label: "Transcribe" },
-                { step: "2", label: "Translate" },
-                { step: "3", label: "TTS" },
-                { step: "4", label: "Play" },
+                { step: "1", label: "Download audio" },
+                { step: "2", label: "Transcribe" },
+                { step: "3", label: "Translate" },
+                { step: "4", label: "TTS" },
+                { step: "5", label: "Play" },
               ].map((s, i) => (
                 <div key={i} className="flex flex-col items-center gap-1">
                   <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-xs font-bold">
