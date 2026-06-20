@@ -425,7 +425,7 @@ export default function ImageCompressorPage() {
 
   const cropVideo = async (
     videoFile: VideoFile,
-targetWidth: number,
+    targetWidth: number,
     targetHeight: number,
     outputFormat: "webm" | "mp4" = "webm",
     trimStartTime: number = 0,
@@ -434,26 +434,21 @@ targetWidth: number,
     return new Promise((resolve, reject) => {
       const video = document.createElement("video");
       video.preload = "metadata";
-      video.muted = true; // Mute to avoid autoplay issues
+      video.muted = false;
       video.playsInline = true;
+      video.crossOrigin = "anonymous";
 
       video.onloadedmetadata = () => {
-        const duration = video.duration;
-        const effectiveEnd = trimEndTime > 0 && trimEndTime > trimStartTime 
-          ? Math.min(trimEndTime, duration) 
-          : duration;
         video.currentTime = trimStartTime;
       };
 
       video.onloadeddata = async () => {
         try {
           const duration = video.duration;
-          const effectiveEnd = trimEndTime > 0 && trimEndTime > trimStartTime 
-            ? Math.min(trimEndTime, duration) 
+          const effectiveEnd = trimEndTime > 0 && trimEndTime > trimStartTime
+            ? Math.min(trimEndTime, duration)
             : duration;
-          const trimDuration = effectiveEnd - trimStartTime;
-          
-          // Create canvas for resizing
+
           const canvas = document.createElement("canvas");
           canvas.width = targetWidth;
           canvas.height = targetHeight;
@@ -463,12 +458,10 @@ targetWidth: number,
             return;
           }
 
-          // Calculate crop to center
           const videoAspect = video.videoWidth / video.videoHeight;
           const targetAspect = targetWidth / targetHeight;
-          
+
           let sx = 0, sy = 0, sw = video.videoWidth, sh = video.videoHeight;
-          
           if (videoAspect > targetAspect) {
             sw = video.videoHeight * targetAspect;
             sx = (video.videoWidth - sw) / 2;
@@ -477,12 +470,28 @@ targetWidth: number,
             sy = (video.videoHeight - sh) / 2;
           }
 
-// Use MediaRecorder to capture video frames
-          const stream = canvas.captureStream(30); // 30 FPS
-          
-// Check supported mime types based on output format
+          const videoStream = canvas.captureStream(30);
+
+          let audioContext: AudioContext | null = null;
+          let audioDestination: MediaStreamAudioDestinationNode | null = null;
+          let combinedStream: MediaStream;
+
+          try {
+            audioContext = new AudioContext();
+            const source = audioContext.createMediaElementSource(video);
+            audioDestination = audioContext.createMediaStreamDestination();
+            source.connect(audioDestination);
+            source.connect(audioContext.destination);
+
+            combinedStream = new MediaStream([
+              ...videoStream.getVideoTracks(),
+              ...audioDestination.stream.getAudioTracks(),
+            ]);
+          } catch {
+            combinedStream = videoStream;
+          }
+
           let mimeType = outputFormat === "mp4" ? "video/mp4" : "video/webm;codecs=vp9";
-          
           if (outputFormat === "webm") {
             if (!MediaRecorder.isTypeSupported(mimeType)) {
               mimeType = "video/webm;codecs=vp9";
@@ -494,7 +503,6 @@ targetWidth: number,
               }
             }
           } else {
-            // For MP4, try different codec combinations
             if (!MediaRecorder.isTypeSupported(mimeType)) {
               mimeType = "video/mp4;codecs=avc1.42E01E,mp4a.40.2";
               if (!MediaRecorder.isTypeSupported(mimeType)) {
@@ -502,28 +510,30 @@ targetWidth: number,
                 if (!MediaRecorder.isTypeSupported(mimeType)) {
                   console.warn("MP4 not supported, falling back to WebM");
                   mimeType = "video/webm;codecs=vp9";
+                  combinedStream = new MediaStream([
+                    ...videoStream.getVideoTracks(),
+                  ]);
                 }
               }
             }
           }
 
-          const recorder = new MediaRecorder(stream, {
-            mimeType
-          });
-
+          const recorder = new MediaRecorder(combinedStream, { mimeType });
           const chunks: Blob[] = [];
-          
+
           recorder.ondataavailable = (e) => {
             if (e.data.size > 0) {
               chunks.push(e.data);
             }
           };
 
-recorder.onstop = () => {
-            const actualMimeType = mimeType.split(';')[0];
-            const actualFormat = actualMimeType.includes('mp4') ? 'mp4' : 'webm';
+          recorder.onstop = () => {
+            const actualMimeType = mimeType.split(";")[0];
             const blob = new Blob(chunks, { type: actualMimeType });
             URL.revokeObjectURL(video.src);
+            if (audioContext && audioContext.state !== "closed") {
+              audioContext.close();
+            }
             resolve({ blob, size: blob.size });
           };
 
@@ -531,10 +541,7 @@ recorder.onstop = () => {
             reject(new Error("Recording failed: " + String(e)));
           };
 
-          // Start recording
-          recorder.start(100); // Collect data every 100ms
-
-          // Play video and draw frames to canvas
+          recorder.start(100);
           video.currentTime = trimStartTime;
           video.play();
 
@@ -548,7 +555,6 @@ recorder.onstop = () => {
               }, 500);
               return;
             }
-            
             if (!video.paused) {
               ctx.drawImage(video, sx, sy, sw, sh, 0, 0, targetWidth, targetHeight);
               requestAnimationFrame(drawFrame);
@@ -557,7 +563,7 @@ recorder.onstop = () => {
 
           drawFrame();
 
-          const maxDuration = Math.min(trimDuration || 30, 30);
+          const maxDuration = Math.min(effectiveEnd - trimStartTime || 30, 30);
           setTimeout(() => {
             if (recorder.state === "recording") {
               recorder.stop();
