@@ -166,4 +166,29 @@
   .gallery-item--horizontal:hover {
     background-size: auto 110%;
   }
+
+  /* PLATFORM BUTTONS MOBILE */
+  .platforms-buttons-container {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .platforms-button {
+    width: 80px;
+    height: 80px;
+  }
+
+  .platforms-button--itchio {
+    background-size: 40px;
+  }
+
+  .platforms-button--itchio:hover {
+    background-size: 50px;
+  }
+
+  .home__content h1 {
+    font-size: 1.6em;
+    letter-spacing: 2px;
+  }
 }
