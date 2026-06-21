@@ -1,5 +1,19 @@
 # System Patterns
 
+## New App Entry Checklist
+
+When adding a new app to the homepage:
+
+1. **`src/app/page.tsx`**: Add entry to `PROJECTS` object with `{ title, description, href, accentColor, isPublic? }`
+2. **Auth protection**: If `isPublic: false` (or omitted), add cookie-based auth check in the page component:
+   - Check `site_unlocked=true` cookie on mount
+   - Show lock screen with password input if not unlocked
+   - Use `AUTH_PASSWORD = process.env.NEXT_PUBLIC_AUTH_PASSWORD` for validation
+   - Pattern: see `investments/page.tsx` or `llm-rules/page.tsx`
+3. **API routes**: If the app has backend logic, create routes under `src/app/api/<app-name>/route.ts`
+4. **Credentials**: Never hardcode secrets — always use `.env` with `NEXT_PUBLIC_` prefix for client-side vars
+5. **Memory bank**: Update `memory-bank/apps-overview.md` with the new entry
+
 ## Project Structure
 - **Root**: Contains the main website (`index.html`) and sub-pages (`mika.html`, `tools.html`).
 - **assets/**: Shared resources (CSS, JS, Images, Videos, Fonts).

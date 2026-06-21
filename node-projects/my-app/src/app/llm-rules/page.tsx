@@ -20,8 +20,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Pencil, Trash2, Save, X, ExternalLink, Copy, Check } from 'lucide-react';
+import { Plus, Pencil, Trash2, Save, X, ExternalLink, Copy, Check, Lock } from 'lucide-react';
 import { useEffect, useState } from 'react';
+
+const AUTH_PASSWORD = process.env.NEXT_PUBLIC_AUTH_PASSWORD;
 
 interface LLMRule {
   id: string;
@@ -51,6 +53,10 @@ const COLOR_MAP: Record<string, string> = {
 };
 
 export default function LLMRulesPage() {
+  const [isUnlocked, setIsUnlocked] = useState(false);
+  const [password, setPassword] = useState('');
+  const [authError, setAuthError] = useState(false);
+
   const [rules, setRules] = useState<LLMRule[]>([]);
   const [sections, setSections] = useState<LLMSection[]>([]);
   const [loading, setLoading] = useState(true);
@@ -67,8 +73,27 @@ export default function LLMRulesPage() {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    Promise.all([fetchRules(), fetchSections()]).then(() => setLoading(false));
+    const isCookieUnlocked = document.cookie.split('; ').find(row => row.startsWith('site_unlocked=true'));
+    if (isCookieUnlocked) {
+      setIsUnlocked(true);
+      Promise.all([fetchRules(), fetchSections()]).then(() => setLoading(false));
+    }
   }, []);
+
+  const handleUnlock = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (password === AUTH_PASSWORD) {
+      setIsUnlocked(true);
+      const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toUTCString();
+      document.cookie = `site_unlocked=true; path=/; expires=${expires}; SameSite=Lax`;
+      Promise.all([fetchRules(), fetchSections()]).then(() => setLoading(false));
+      setAuthError(false);
+      setPassword('');
+    } else {
+      setAuthError(true);
+      setTimeout(() => setAuthError(false), 2000);
+    }
+  };
 
   const fetchRules = async () => {
     const res = await fetch('/api/llm-rules');
@@ -162,6 +187,34 @@ export default function LLMRulesPage() {
     section,
     rules: rules.filter((r) => r.section === section.name),
   }));
+
+  if (!isUnlocked) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center p-4">
+        <Card className="w-full max-w-md bg-zinc-900 border-zinc-800">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold text-center uppercase flex items-center justify-center gap-2">
+              <Lock className="h-5 w-5" /> LLM Rules
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleUnlock} className="space-y-4">
+              <Input
+                type="password"
+                placeholder="Enter password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="bg-zinc-800 border-zinc-700 text-white text-center"
+                autoFocus
+              />
+              {authError && <p className="text-red-500 text-sm text-center">Invalid password</p>}
+              <Button type="submit" className="w-full">Unlock</Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background p-6">
