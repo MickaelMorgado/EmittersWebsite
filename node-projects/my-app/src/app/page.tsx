@@ -37,6 +37,7 @@ const PROJECTS: { [section: string]: Project[] } = {
     { title: "Sounder Project", description: "A sound design tool for creating randomized music", href: "/sounder", accentColor: "244, 63, 94", isPublic: true },
     { title: "PS3 Controller Visualizer", description: "DualShock 3 telemetry with particle-driven buttons", href: "/ps3-visualizer", accentColor: "0, 160, 255", isPublic: true },
     { title: "Daily Todo Tracker", description: "Track your daily habits and see progress over time.", href: "/todo", accentColor: "234, 179, 8" },
+    { title: "LLM Rules Manager", description: "Manage orthography, context, and tool usage rules for AI assistants", href: "/llm-rules", accentColor: "168, 85, 247", isPublic: true },
     { title: "Hips Project", description: "Main and finished landing page", href: "/HipsExample", accentColor: "59, 130, 246" },
     { title: "3D Printer Camera Monitor", description: "Monitor multiple 3D-printer camera feeds", href: "/printer-monitor", accentColor: "255, 50, 50", isPublic: true },
     { title: "EMF Detector Simulator", description: "Portable radiation scanner with real-time sonar feedback", href: "/emf-detector", accentColor: "34, 197, 94", isPublic: true },
