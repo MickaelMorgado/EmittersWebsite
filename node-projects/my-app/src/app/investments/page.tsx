@@ -1,8 +1,8 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { TrendingDown, TrendingUp, Eye, EyeOff } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { TrendingDown, TrendingUp, Eye, EyeOff, RefreshCw } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import InvestmentsSidebar from '@/app/investments/components/InvestmentsSidebar';
@@ -218,16 +218,15 @@ export default function InvestmentsPage() {
   const [stockData, setStockData] = useState<Asset[]>([]);
   const [commodities, setCommodities] = useState<Asset[]>([]);
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState<SelectedAsset | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [blurValues, setBlurValues] = useState(false);
   const [entriesMap, setEntriesMap] = useState<Record<string, Entry[]>>({});
-  const entriesMapRef = useRef<Record<string, Entry[]>>({});
 
   const loadEntries = useCallback(async () => {
     const all = await fetchAllEntries();
     setEntriesMap(all);
-    entriesMapRef.current = all;
     return all;
   }, []);
 
@@ -260,56 +259,58 @@ export default function InvestmentsPage() {
     }
   }, [loadEntries, selectedAsset]);
 
+  const fetchAllPrices = useCallback(async (entries: Record<string, Entry[]>) => {
+    try {
+      const res = await fetch('/api/investments');
+      const data = await res.json();
+      
+      if (Array.isArray(data)) {
+        const allResults = data.filter((d: any) => d && d.price > 0).map((d: any) => {
+          const symEntries = entries[d.symbol] || [];
+          return {
+            symbol: d.symbol,
+            name: getCryptoName(d.symbol) || getStockName(d.symbol),
+            price: d.price,
+            change: d.change,
+            bep: getBEPFromEntries(symEntries),
+            qty: symEntries.reduce((sum: number, e: Entry) => sum + e.qty, 0),
+            currency: getCurrency(d.symbol, symEntries),
+            price24h: d.price
+          };
+        });
+        
+        const withAllocation = (a: any) => (a.qty || 0) * (a.bep || 0);
+        
+        const cryptoResults = allResults.filter((a: any) => ['BTC','ETH','LTC','XRP','SOL','FIL','DOGE','ADA','XTZ'].includes(a.symbol));
+        const stockResults = allResults.filter((a: any) => ['DIB','KVU','EXO','EXOD','XBO','MOTA','XPEV','MSGM','NBIU','IPRP','EDPR','TDG','XGAT'].includes(a.symbol));
+        const commodityResults = allResults.filter((a: any) => ['XAU','XPT','SP500'].includes(a.symbol));
+        
+        if (cryptoResults.length > 0) setCryptoData(cryptoResults.sort((a: any, b: any) => withAllocation(b) - withAllocation(a)));
+        if (stockResults.length > 0) setStockData(stockResults.sort((a: any, b: any) => withAllocation(b) - withAllocation(a)));
+        if (commodityResults.length > 0) setCommodities(commodityResults.sort((a: any, b: any) => withAllocation(b) - withAllocation(a)));
+      }
+    } catch (err) {
+      console.error('Failed to fetch prices:', err);
+    }
+  }, []);
+
+  const handleSync = async () => {
+    setSyncing(true);
+    const entries = await loadEntries();
+    await fetchAllPrices(entries);
+    setSyncing(false);
+  };
+
   useEffect(() => {
     async function init() {
       setLoading(true);
-      const [allEntries] = await Promise.all([loadEntries()]);
+      const entries = await loadEntries();
       setLoading(false);
-
-      async function fetchAllPrices(entries: Record<string, Entry[]>) {
-        try {
-          const res = await fetch('/api/investments');
-          const data = await res.json();
-          
-          if (Array.isArray(data)) {
-            const allResults = data.filter((d: any) => d && d.price > 0).map((d: any) => {
-              const symEntries = entries[d.symbol] || [];
-              return {
-                symbol: d.symbol,
-                name: getCryptoName(d.symbol) || getStockName(d.symbol),
-                price: d.price,
-                change: d.change,
-                bep: getBEPFromEntries(symEntries),
-                qty: symEntries.reduce((sum: number, e: Entry) => sum + e.qty, 0),
-                currency: getCurrency(d.symbol, symEntries),
-                price24h: d.price
-              };
-            });
-            
-            const withAllocation = (a: any) => (a.qty || 0) * (a.bep || 0);
-            
-            const cryptoResults = allResults.filter((a: any) => ['BTC','ETH','LTC','XRP','SOL','FIL','DOGE','ADA','XTZ'].includes(a.symbol));
-            const stockResults = allResults.filter((a: any) => ['DIB','KVU','EXO','EXOD','XBO','MOTA','XPEV','MSGM','NBIU','IPRP','EDPR','TDG','XGAT'].includes(a.symbol));
-            const commodityResults = allResults.filter((a: any) => ['XAU','XPT','SP500'].includes(a.symbol));
-            
-            if (cryptoResults.length > 0) setCryptoData(cryptoResults.sort((a: any, b: any) => withAllocation(b) - withAllocation(a)));
-            if (stockResults.length > 0) setStockData(stockResults.sort((a: any, b: any) => withAllocation(b) - withAllocation(a)));
-            if (commodityResults.length > 0) setCommodities(commodityResults.sort((a: any, b: any) => withAllocation(b) - withAllocation(a)));
-          }
-        } catch (err) {
-          console.error('Failed to fetch prices:', err);
-        }
-        setLoading(false);
-      }
-
-      fetchAllPrices(allEntries);
-      const interval = setInterval(() => fetchAllPrices(entriesMapRef.current), 30000);
-      return () => clearInterval(interval);
+      await fetchAllPrices(entries);
     }
 
-    const cleanup = init();
-    return () => { cleanup.then?.(fn => fn?.()); };
-  }, [loadEntries]);
+    init();
+  }, [loadEntries, fetchAllPrices]);
 
   useEffect(() => {
     const token = localStorage.getItem('investments-token');
@@ -324,14 +325,25 @@ export default function InvestmentsPage() {
     <div className="min-h-screen bg-black text-white p-3 lg:p-4">
       <div className="flex items-center justify-between mb-2">
         <h1 className="text-xl font-bold tracking-tight heading-shine uppercase">Investments</h1>
-        <button
-          onClick={() => setBlurValues(!blurValues)}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-colors"
-          title={blurValues ? 'Show values' : 'Hide values'}
-        >
-          {blurValues ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-          <span className="text-xs">{blurValues ? 'Show' : 'Hide'}</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleSync}
+            disabled={syncing}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-colors disabled:opacity-50"
+            title="Sync prices"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${syncing ? 'animate-spin' : ''}`} />
+            <span className="text-xs">{syncing ? 'Syncing...' : 'Sync'}</span>
+          </button>
+          <button
+            onClick={() => setBlurValues(!blurValues)}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-colors"
+            title={blurValues ? 'Show values' : 'Hide values'}
+          >
+            {blurValues ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+            <span className="text-xs">{blurValues ? 'Show' : 'Hide'}</span>
+          </button>
+        </div>
       </div>
 
       <div className="flex gap-3 h-[calc(100vh-60px)]">
