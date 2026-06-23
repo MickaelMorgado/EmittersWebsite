@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 const CRYPTO_SYMBOLS = ['BTC', 'ETH', 'LTC', 'XRP', 'SOL', 'FIL', 'DOGE', 'ADA', 'XTZ'];
-const STOCK_SYMBOLS = ['DB', 'KVU', 'EXO', 'XBO', 'MOTA', 'AAPL', 'META', 'TTWO', 'XPEV', 'EGL', 'KVUE', 'EXOD', 'DIB', 'XBOTF'];
+const STOCK_SYMBOLS = ['DIB', 'KVU', 'EXO', 'XBO', 'MOTA', 'AAPL', 'META', 'TTWO', 'XPEV', 'EGL', 'KVUE', 'EXOD', 'XBOTF'];
 const METAL_SYMBOLS = ['XAU', 'XPT'];
 
 const YAHOO_STOCK_MAP: Record<string, string> = {
   EGL: 'EGL.LS',
   DIB: 'DIB.MI',
   XBOTF: 'XBOTF',
-  DB: 'DB.MI',
   KVU: 'KVUE',
   EXO: 'EXOD',
   MOTA: 'MOTA.LS',
@@ -70,12 +69,12 @@ export async function GET(
   const { symbol } = await params;
   const { searchParams } = new URL(request.url);
   const range = parseInt(searchParams.get('range') || '30', 10);
-  const limit = Math.min(Math.max(range, 1), 365);
+  const limit = Math.max(range, 1);
 
   let data: { date: string; price: number }[] = [];
 
   if (CRYPTO_SYMBOLS.includes(symbol.toUpperCase())) {
-    data = await fetchBinanceHistory(symbol.toUpperCase(), limit);
+    data = await fetchBinanceHistory(symbol.toUpperCase(), Math.min(limit, 1000));
   } else if (METAL_SYMBOLS.includes(symbol.toUpperCase())) {
     data = await fetchYahooHistory(symbol.toUpperCase(), limit);
   } else if (STOCK_SYMBOLS.includes(symbol.toUpperCase()) || YAHOO_STOCK_MAP[symbol.toUpperCase()]) {

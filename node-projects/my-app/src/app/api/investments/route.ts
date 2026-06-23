@@ -79,11 +79,19 @@ export async function GET() {
     { symbol: 'DOGE', type: 'crypto' },
     { symbol: 'ADA', type: 'crypto' },
     { symbol: 'XTZ', type: 'crypto' },
-    { symbol: 'DB', type: 'stock', yahooSymbol: 'DB.MI' },
+    { symbol: 'DIB', type: 'stock', yahooSymbol: 'DIB.MI' },
     { symbol: 'KVU', type: 'stock', yahooSymbol: 'KVUE' },
     { symbol: 'EXO', type: 'stock', yahooSymbol: 'EXOD' },
+    { symbol: 'EXOD', type: 'stock', yahooSymbol: 'EXOD' },
     { symbol: 'XBO', type: 'stock' },
     { symbol: 'MOTA', type: 'stock', yahooSymbol: 'MOTA.LS' },
+    { symbol: 'XPEV', type: 'stock', yahooSymbol: 'XPEV' },
+    { symbol: 'MSGM', type: 'stock', yahooSymbol: 'MSGM' },
+    { symbol: 'NBIU', type: 'stock', yahooSymbol: 'IBB' },
+    { symbol: 'IPRP', type: 'stock', yahooSymbol: 'IPE.L' },
+    { symbol: 'EDPR', type: 'stock', yahooSymbol: '0RPM.L' },
+    { symbol: 'TDG', type: 'stock', yahooSymbol: 'HMWD.L' },
+    { symbol: 'XGAT', type: 'stock', yahooSymbol: 'XAUG.DE' },
     { symbol: 'SP500', type: 'index', yahooSymbol: '%5EGSPC' },
   ];
 
@@ -93,9 +101,15 @@ export async function GET() {
   ];
 
   const FALLBACK_PRICES: Record<string, { price: number; change: number }> = {
-    DB: { price: 8.50, change: 0 },
+    DIB: { price: 8.50, change: 0 },
     XBO: { price: 0.25, change: 0 },
     MOTA: { price: 4.10, change: 0 },
+    MSGM: { price: 2.80, change: 0 },
+    NBIU: { price: 5.91, change: 0 },
+    IPRP: { price: 30.87, change: 0 },
+    EDPR: { price: 14.22, change: 0 },
+    TDG: { price: 42.35, change: 0 },
+    XGAT: { price: 116.79, change: 0 },
   };
 
   const results = await Promise.all(
