@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Granny in Paradise 🌴</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sand: #f4e2b8;
+            --sand-deep: #e6c98f;
+            --leaf: #2fb56b;
+            --leaf-deep: #1c8a4e;
+            --ocean: #2bb4d6;
+            --sun: #ffd34e;
+            --coral: #ff7a6b;
+            --ink: #2a2540;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 24px;
+            font-family: 'Fredoka', 'Segoe UI', sans-serif;
+            color: #fff;
+            background:
+                radial-gradient(1200px 600px at 80% -10%, #ffe7a3 0%, rgba(255,231,163,0) 55%),
+                radial-gradient(900px 500px at 10% 110%, #3fd0a0 0%, rgba(63,208,160,0) 50%),
+                linear-gradient(160deg, #36c5e0 0%, #2aa7d8 38%, #2d7fc4 100%);
+            overflow-x: hidden;
+        }
+
+        /* floating decorative blobs */
+        body::before, body::after {
+            content: "";
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(2px);
+            opacity: 0.5;
+            pointer-events: none;
+            z-index: 0;
+        }
+        body::before {
+            width: 220px; height: 220px;
+            background: radial-gradient(circle at 30% 30%, #fff7d6, #ffd34e);
+            top: -60px; right: 8%;
+            box-shadow: 0 0 80px 20px rgba(255,211,78,0.45);
+        }
+        body::after {
+            width: 160px; height: 160px;
+            background: radial-gradient(circle at 40% 40%, rgba(255,255,255,0.9), rgba(255,255,255,0.2));
+            bottom: 6%; left: 4%;
+        }
+
+        .game-container {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            padding: 22px;
+            border-radius: 28px;
+            background: rgba(255, 255, 255, 0.14);
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            box-shadow: 0 24px 60px rgba(20, 60, 90, 0.35), inset 0 1px 0 rgba(255,255,255,0.5);
+            backdrop-filter: blur(14px) saturate(140%);
+            -webkit-backdrop-filter: blur(14px) saturate(140%);
+        }
+
+        h1 {
+            font-family: 'Baloo 2', cursive;
+            font-weight: 800;
+            font-size: clamp(1.8em, 4vw, 2.6em);
+            letter-spacing: 0.5px;
+            text-align: center;
+            color: #fff;
+            text-shadow: 0 2px 0 #1c8a4e, 0 4px 0 rgba(0,0,0,0.18), 0 8px 16px rgba(0,0,0,0.25);
+        }
+
+        .info-bar {
+            display: flex;
+            gap: 14px;
+            width: 100%;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 18px;
+            border-radius: 999px;
+            font-weight: 600;
+            font-size: 1.05em;
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.4);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.45), 0 6px 14px rgba(0,0,0,0.12);
+            text-shadow: 0 1px 2px rgba(0,0,0,0.25);
+        }
+        .stat .ico { font-size: 1.25em; }
+        .stat b { font-weight: 800; color: #fff8d8; }
+
+        .canvas-wrap {
+            position: relative;
+            border-radius: 20px;
+            padding: 8px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0.15));
+            box-shadow: 0 18px 40px rgba(0,0,0,0.3);
+        }
+
+        canvas {
+            display: block;
+            border-radius: 14px;
+            border: 3px solid rgba(255,255,255,0.85);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+            cursor: default;
+            max-width: 100%;
+            height: auto;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 640px;
+        }
+        .key-hint {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 14px;
+            border-radius: 12px;
+            font-size: 0.92em;
+            font-weight: 500;
+            background: rgba(0,0,0,0.18);
+            border: 1px solid rgba(255,255,255,0.25);
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+        .kbd {
+            font-family: 'Baloo 2', sans-serif;
+            font-weight: 700;
+            background: #fff;
+            color: var(--ink);
+            border-radius: 7px;
+            padding: 2px 9px;
+            box-shadow: 0 2px 0 rgba(0,0,0,0.25);
+            font-size: 0.85em;
+        }
+        .goal {
+            width: 100%;
+            text-align: center;
+            font-weight: 600;
+            opacity: 0.95;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+
+        /* Overlays */
+        .overlay {
+            position: fixed;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            background: rgba(10, 40, 60, 0.45);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+        }
+        .overlay.show { display: flex; animation: fadeIn 0.25s ease; }
+
+        .card {
+            text-align: center;
+            padding: 38px 46px;
+            border-radius: 26px;
+            background: rgba(255,255,255,0.16);
+            border: 1px solid rgba(255,255,255,0.4);
+            box-shadow: 0 24px 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.5);
+            backdrop-filter: blur(16px) saturate(150%);
+            -webkit-backdrop-filter: blur(16px) saturate(150%);
+            animation: pop 0.35s cubic-bezier(.18,.89,.32,1.28);
+            max-width: 90vw;
+        }
+        .card h2 {
+            font-family: 'Baloo 2', cursive;
+            font-weight: 800;
+            font-size: 2.4em;
+            margin-bottom: 8px;
+            text-shadow: 0 3px 0 rgba(0,0,0,0.18), 0 8px 16px rgba(0,0,0,0.3);
+        }
+        .card.win h2 { color: #aef6c8; }
+        .card.lose h2 { color: #ffc0b8; }
+        .card p { font-size: 1.2em; margin-bottom: 22px; opacity: 0.95; }
+
+        .btn {
+            font-family: 'Baloo 2', cursive;
+            font-weight: 700;
+            padding: 13px 34px;
+            font-size: 1.15em;
+            color: #1d4d36;
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            background: linear-gradient(180deg, #8df3b6, #3fd08a);
+            box-shadow: 0 6px 0 #1c8a4e, 0 12px 20px rgba(0,0,0,0.25);
+            transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.2s ease;
+        }
+        .btn:hover { filter: brightness(1.05); }
+        .btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #1c8a4e, 0 6px 12px rgba(0,0,0,0.25); }
+        .card.lose .btn {
+            color: #6b1f18;
+            background: linear-gradient(180deg, #ffb0a6, #ff7a6b);
+            box-shadow: 0 6px 0 #c8493b, 0 12px 20px rgba(0,0,0,0.25);
+        }
+        .card.lose .btn:active { box-shadow: 0 2px 0 #c8493b, 0 6px 12px rgba(0,0,0,0.25); }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes pop { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>🌴 Granny in Paradise 🐱</h1>
+        <div class="info-bar">
+            <div class="stat"><span class="ico">🗺️</span> Level <b id="levelNum">1</b></div>
+            <div class="stat"><span class="ico">🐱</span> Cats <b><span id="catsCollected">0</span>/<span id="catsTotal">0</span></b></div>
+        </div>
+        <div class="canvas-wrap">
+            <canvas id="gameCanvas" width="800" height="500"></canvas>
+        </div>
+        <div class="controls">
+            <span class="key-hint"><span class="kbd">A</span><span class="kbd">←</span> Move left</span>
+            <span class="key-hint"><span class="kbd">D</span><span class="kbd">→</span> Move right</span>
+            <span class="key-hint"><span class="kbd">Space</span><span class="kbd">W</span> Jump</span>
+        </div>
+        <div class="goal">Collect all the kitties 🐾 then reach the glowing exit 🚪 — but dodge the crabs 🦀 and gulls 🐦!</div>
+    </div>
+
+    <div class="overlay" id="levelComplete">
+        <div class="card win">
+            <h2>Level Complete! ✨</h2>
+            <p>Pawsome work, Granny! 🌺</p>
+            <button class="btn" onclick="game.nextLevel()">Next Level →</button>
+        </div>
+    </div>
+
+    <div class="overlay" id="gameOver">
+        <div class="card lose">
+            <h2>Oh no! 💫</h2>
+            <p>Granny tumbled into the sea...</p>
+            <button class="btn" onclick="game.restartLevel()">Try Again ↺</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        class Game {
+            constructor() {
+                this.currentLevel = 0;
+                this.gravity = 0.6;
+                this.time = 0;
+                this.particles = [];
+                this.facing = 1;
+                this.coyote = 0;
+                this.jumpBuffer = 0;
+                this.squash = 1;
+                this.initLevel();
+                this.setupInput();
+                this.gameRunning = true;
+            }
+
+            initLevel() {
+                this.player = {
+                    x: 50, y: 0,
+                    width: 30, height: 40,
+                    velocityY: 0, velocityX: 0,
+                    jumping: false
+                };
+                this.catsCollected = 0;
+                this.levelData = this.getLevelData();
+                this.cats = this.levelData.cats.map(cat => ({...cat, collected: false}));
+                this.enemies = (this.levelData.enemies || []).map(en => ({...en, dir: 1}));
+                this.exitOpen = false;
+                this.particles = [];
+                this.squash = 1;
+
+                // build decorative scenery (palm trees) deterministically per level
+                this.palms = this.makePalms();
+
+                document.getElementById('levelNum').textContent = this.currentLevel + 1;
+                document.getElementById('catsTotal').textContent = this.cats.length;
+                document.getElementById('catsCollected').textContent = 0;
+            }
+
+            makePalms() {
+                const ground = this.levelData.platforms[0].y; // top of ground
+                const seeds = [120, 360, 640, 740];
+                return seeds.map((x, i) => ({
+                    x,
+                    baseY: ground,
+                    h: 70 + (i % 3) * 18,
+                    sway: i * 1.3
+                }));
+            }
+
+            getLevelData() {
+                const levels = [
+                    {
+                        platforms: [
+                            {x: 0, y: 480, width: 800, height: 20},
+                            {x: 150, y: 400, width: 200, height: 20},
+                            {x: 500, y: 350, width: 200, height: 20},
+                            {x: 200, y: 280, width: 150, height: 20},
+                            {x: 550, y: 220, width: 150, height: 20}
+                        ],
+                        cats: [
+                            {x: 180, y: 350, width: 25, height: 25},
+                            {x: 530, y: 300, width: 25, height: 25},
+                            {x: 240, y: 230, width: 25, height: 25},
+                            {x: 600, y: 170, width: 25, height: 25}
+                        ],
+                        enemies: [
+                            {type: 'crab', x: 360, y: 462, width: 28, height: 18, minX: 350, maxX: 560, speed: 1.2}
+                        ],
+                        exit: {x: 700, y: 430, width: 50, height: 50}
+                    },
+                    {
+                        platforms: [
+                            {x: 0, y: 480, width: 800, height: 20},
+                            {x: 100, y: 400, width: 150, height: 20},
+                            {x: 300, y: 340, width: 120, height: 20},
+                            {x: 500, y: 280, width: 120, height: 20},
+                            {x: 150, y: 220, width: 200, height: 20},
+                            {x: 500, y: 160, width: 200, height: 20}
+                        ],
+                        cats: [
+                            {x: 130, y: 350, width: 25, height: 25},
+                            {x: 330, y: 290, width: 25, height: 25},
+                            {x: 530, y: 230, width: 25, height: 25},
+                            {x: 180, y: 170, width: 25, height: 25},
+                            {x: 580, y: 110, width: 25, height: 25}
+                        ],
+                        enemies: [
+                            {type: 'crab', x: 250, y: 462, width: 28, height: 18, minX: 200, maxX: 560, speed: 1.4},
+                            {type: 'bird', x: 350, y: 180, width: 26, height: 18, minX: 300, maxX: 650, speed: 1.6}
+                        ],
+                        exit: {x: 700, y: 430, width: 50, height: 50}
+                    },
+                    {
+                        platforms: [
+                            {x: 0, y: 480, width: 800, height: 20},
+                            {x: 50, y: 380, width: 100, height: 20},
+                            {x: 200, y: 320, width: 100, height: 20},
+                            {x: 350, y: 260, width: 100, height: 20},
+                            {x: 500, y: 200, width: 100, height: 20},
+                            {x: 650, y: 140, width: 100, height: 20}
+                        ],
+                        cats: [
+                            {x: 80, y: 330, width: 25, height: 25},
+                            {x: 230, y: 270, width: 25, height: 25},
+                            {x: 380, y: 210, width: 25, height: 25},
+                            {x: 530, y: 150, width: 25, height: 25},
+                            {x: 680, y: 90, width: 25, height: 25}
+                        ],
+                        enemies: [
+                            {type: 'crab', x: 200, y: 462, width: 28, height: 18, minX: 100, maxX: 600, speed: 1.5},
+                            {type: 'bird', x: 300, y: 150, width: 26, height: 18, minX: 200, maxX: 700, speed: 2.0}
+                        ],
+                        exit: {x: 700, y: 430, width: 50, height: 50}
+                    },
+                    {
+                        platforms: [
+                            {x: 0, y: 480, width: 800, height: 20},
+                            {x: 100, y: 400, width: 180, height: 20},
+                            {x: 50, y: 300, width: 120, height: 20},
+                            {x: 300, y: 320, width: 150, height: 20},
+                            {x: 550, y: 280, width: 120, height: 20},
+                            {x: 200, y: 200, width: 150, height: 20},
+                            {x: 550, y: 140, width: 150, height: 20}
+                        ],
+                        cats: [
+                            {x: 140, y: 350, width: 25, height: 25},
+                            {x: 90, y: 250, width: 25, height: 25},
+                            {x: 340, y: 270, width: 25, height: 25},
+                            {x: 590, y: 230, width: 25, height: 25},
+                            {x: 240, y: 150, width: 25, height: 25},
+                            {x: 600, y: 90, width: 25, height: 25}
+                        ],
+                        enemies: [
+                            {type: 'crab', x: 200, y: 462, width: 28, height: 18, minX: 100, maxX: 500, speed: 1.5},
+                            {type: 'crab', x: 310, y: 302, width: 28, height: 18, minX: 305, maxX: 420, speed: 1.2},
+                            {type: 'bird', x: 380, y: 160, width: 26, height: 18, minX: 350, maxX: 650, speed: 2.0}
+                        ],
+                        exit: {x: 700, y: 430, width: 50, height: 50}
+                    },
+                    {
+                        platforms: [
+                            {x: 0, y: 480, width: 800, height: 20},
+                            {x: 80, y: 380, width: 100, height: 20},
+                            {x: 250, y: 340, width: 100, height: 20},
+                            {x: 100, y: 260, width: 120, height: 20},
+                            {x: 400, y: 300, width: 120, height: 20},
+                            {x: 300, y: 200, width: 100, height: 20},
+                            {x: 550, y: 240, width: 120, height: 20},
+                            {x: 200, y: 120, width: 100, height: 20},
+                            {x: 650, y: 160, width: 100, height: 20}
+                        ],
+                        cats: [
+                            {x: 110, y: 330, width: 25, height: 25},
+                            {x: 280, y: 290, width: 25, height: 25},
+                            {x: 140, y: 210, width: 25, height: 25},
+                            {x: 430, y: 250, width: 25, height: 25},
+                            {x: 330, y: 150, width: 25, height: 25},
+                            {x: 580, y: 190, width: 25, height: 25},
+                            {x: 230, y: 70, width: 25, height: 25}
+                        ],
+                        enemies: [
+                            {type: 'crab', x: 150, y: 462, width: 28, height: 18, minX: 150, maxX: 650, speed: 1.6},
+                            {type: 'bird', x: 200, y: 130, width: 26, height: 18, minX: 200, maxX: 650, speed: 2.2},
+                            {type: 'bird', x: 300, y: 260, width: 26, height: 18, minX: 300, maxX: 560, speed: 1.8}
+                        ],
+                        exit: {x: 700, y: 430, width: 50, height: 50}
+                    },
+                    {
+                        platforms: [
+                            {x: 0, y: 480, width: 800, height: 20},
+                            {x: 120, y: 400, width: 140, height: 20},
+                            {x: 340, y: 360, width: 120, height: 20},
+                            {x: 560, y: 320, width: 160, height: 20},
+                            {x: 300, y: 250, width: 140, height: 20},
+                            {x: 80, y: 220, width: 140, height: 20},
+                            {x: 560, y: 200, width: 150, height: 20}
+                        ],
+                        cats: [
+                            {x: 160, y: 350, width: 25, height: 25},
+                            {x: 380, y: 310, width: 25, height: 25},
+                            {x: 610, y: 270, width: 25, height: 25},
+                            {x: 340, y: 200, width: 25, height: 25},
+                            {x: 120, y: 170, width: 25, height: 25},
+                            {x: 610, y: 150, width: 25, height: 25}
+                        ],
+                        enemies: [
+                            {type: 'crab', x: 250, y: 462, width: 28, height: 18, minX: 250, maxX: 560, speed: 1.8},
+                            {type: 'crab', x: 565, y: 302, width: 28, height: 18, minX: 565, maxX: 692, speed: 1.4},
+                            {type: 'bird', x: 150, y: 170, width: 26, height: 18, minX: 150, maxX: 650, speed: 2.2}
+                        ],
+                        exit: {x: 700, y: 430, width: 50, height: 50}
+                    },
+                    {
+                        platforms: [
+                            {x: 0, y: 480, width: 800, height: 20},
+                            {x: 60, y: 400, width: 120, height: 20},
+                            {x: 250, y: 360, width: 120, height: 20},
+                            {x: 440, y: 320, width: 120, height: 20},
+                            {x: 630, y: 280, width: 120, height: 20},
+                            {x: 400, y: 220, width: 120, height: 20},
+                            {x: 180, y: 180, width: 120, height: 20}
+                        ],
+                        cats: [
+                            {x: 100, y: 350, width: 25, height: 25},
+                            {x: 290, y: 310, width: 25, height: 25},
+                            {x: 480, y: 270, width: 25, height: 25},
+                            {x: 670, y: 230, width: 25, height: 25},
+                            {x: 440, y: 170, width: 25, height: 25},
+                            {x: 220, y: 130, width: 25, height: 25}
+                        ],
+                        enemies: [
+                            {type: 'bird', x: 100, y: 150, width: 26, height: 18, minX: 100, maxX: 700, speed: 2.6},
+                            {type: 'bird', x: 250, y: 250, width: 26, height: 18, minX: 250, maxX: 650, speed: 2.2},
+                            {type: 'crab', x: 100, y: 462, width: 28, height: 18, minX: 100, maxX: 650, speed: 1.8},
+                            {type: 'crab', x: 255, y: 342, width: 28, height: 18, minX: 255, maxX: 342, speed: 1.4}
+                        ],
+                        exit: {x: 700, y: 430, width: 50, height: 50}
+                    },
+                    {
+                        platforms: [
+                            {x: 0, y: 480, width: 800, height: 20},
+                            {x: 100, y: 410, width: 110, height: 20},
+                            {x: 280, y: 370, width: 110, height: 20},
+                            {x: 460, y: 330, width: 110, height: 20},
+                            {x: 620, y: 290, width: 130, height: 20},
+                            {x: 420, y: 240, width: 110, height: 20},
+                            {x: 220, y: 200, width: 110, height: 20},
+                            {x: 500, y: 160, width: 120, height: 20}
+                        ],
+                        cats: [
+                            {x: 140, y: 360, width: 25, height: 25},
+                            {x: 315, y: 320, width: 25, height: 25},
+                            {x: 495, y: 280, width: 25, height: 25},
+                            {x: 665, y: 240, width: 25, height: 25},
+                            {x: 455, y: 190, width: 25, height: 25},
+                            {x: 255, y: 150, width: 25, height: 25},
+                            {x: 545, y: 110, width: 25, height: 25}
+                        ],
+                        enemies: [
+                            {type: 'crab', x: 100, y: 462, width: 28, height: 18, minX: 100, maxX: 650, speed: 2.0},
+                            {type: 'crab', x: 285, y: 352, width: 28, height: 18, minX: 285, maxX: 362, speed: 1.6},
+                            {type: 'crab', x: 625, y: 272, width: 28, height: 18, minX: 625, maxX: 722, speed: 1.5},
+                            {type: 'bird', x: 150, y: 160, width: 26, height: 18, minX: 150, maxX: 700, speed: 2.8},
+                            {type: 'bird', x: 300, y: 270, width: 26, height: 18, minX: 300, maxX: 650, speed: 2.4}
+                        ],
+                        exit: {x: 700, y: 430, width: 50, height: 50}
+                    }
+                ];
+                this.totalLevels = levels.length;
+                return levels[Math.min(this.currentLevel, levels.length - 1)];
+            }
+
+            setupInput() {
+                this.keys = {};
+                window.addEventListener('keydown', (e) => {
+                    const k = e.key.toLowerCase();
+                    this.keys[k] = true;
+                    if (k === ' ' || k === 'w' || k === 'arrowup') this.jumpBuffer = 8;
+                    if (['arrowup','arrowdown','arrowleft','arrowright',' '].includes(k)) e.preventDefault();
+                });
+                window.addEventListener('keyup', (e) => {
+                    this.keys[e.key.toLowerCase()] = false;
+                });
+            }
+
+            spawnParticles(x, y, count, color, opts = {}) {
+                const spread = opts.spread ?? 3;
+                const up = opts.up ?? 0;
+                for (let i = 0; i < count; i++) {
+                    this.particles.push({
+                        x, y,
+                        vx: (Math.random() - 0.5) * spread * 2,
+                        vy: (Math.random() - 0.5) * spread - up,
+                        life: 1,
+                        decay: 0.02 + Math.random() * 0.03,
+                        size: 2 + Math.random() * 3,
+                        color
+                    });
+                }
+            }
+
+            update() {
+                this.time++;
+                if (!this.gameRunning) { this.updateParticles(); return; }
+
+                // Smooth horizontal movement with accel + friction
+                const accel = 0.9, maxSpeed = 5, friction = 0.78;
+                let input = 0;
+                if (this.keys['a'] || this.keys['arrowleft']) input -= 1;
+                if (this.keys['d'] || this.keys['arrowright']) input += 1;
+                if (input !== 0) {
+                    this.player.velocityX += input * accel;
+                    this.player.velocityX = Math.max(-maxSpeed, Math.min(maxSpeed, this.player.velocityX));
+                    this.facing = input;
+                } else {
+                    this.player.velocityX *= friction;
+                    if (Math.abs(this.player.velocityX) < 0.1) this.player.velocityX = 0;
+                }
+
+                // Gravity
+                this.player.velocityY += this.gravity;
+
+                // Move
+                this.player.x += this.player.velocityX;
+                this.player.y += this.player.velocityY;
+
+                // Platform collision
+                let onGround = false;
+                this.levelData.platforms.forEach(platform => {
+                    if (this.isColliding(this.player, platform)) {
+                        if (this.player.velocityY > 0) {
+                            const wasFast = this.player.velocityY;
+                            this.player.y = platform.y - this.player.height;
+                            this.player.velocityY = 0;
+                            onGround = true;
+                            if (wasFast > 8) { // landing puff
+                                this.squash = 0.7;
+                                this.spawnParticles(this.player.x + 15, this.player.y + this.player.height,
+                                    8, 'rgba(255,255,255,0.85)', {spread: 4});
+                            }
+                        }
+                    }
+                });
+
+                // Coyote time + jump buffering
+                if (onGround) this.coyote = 8; else if (this.coyote > 0) this.coyote--;
+                if (this.jumpBuffer > 0) this.jumpBuffer--;
+                if (this.jumpBuffer > 0 && this.coyote > 0) {
+                    this.player.velocityY = -12.5;
+                    this.coyote = 0;
+                    this.jumpBuffer = 0;
+                    this.squash = 1.35;
+                    this.spawnParticles(this.player.x + 15, this.player.y + this.player.height,
+                        6, 'rgba(255,255,255,0.7)', {spread: 2.5});
+                }
+
+                // squash/stretch easing back to 1
+                this.squash += (1 - this.squash) * 0.18;
+
+                // Boundaries
+                if (this.player.x < 0) this.player.x = 0;
+                if (this.player.x + this.player.width > canvas.width)
+                    this.player.x = canvas.width - this.player.width;
+
+                // Fall death
+                if (this.player.y > canvas.height) this.gameOver();
+
+                // Enemies: patrol + deadly contact
+                const hitbox = {
+                    x: this.player.x + 4, y: this.player.y + 4,
+                    width: this.player.width - 8, height: this.player.height - 6
+                };
+                this.enemies.forEach(en => {
+                    en.x += en.speed * en.dir;
+                    if (en.x <= en.minX) { en.x = en.minX; en.dir = 1; }
+                    if (en.x >= en.maxX) { en.x = en.maxX; en.dir = -1; }
+                    if (this.isColliding(hitbox, en)) {
+                        this.spawnParticles(this.player.x + 15, this.player.y + 20, 18, '#ff7a6b', {spread: 5, up: 1});
+                        this.gameOver();
+                    }
+                });
+
+                // Collect cats
+                this.cats.forEach(cat => {
+                    if (!cat.collected && this.isColliding(this.player, cat)) {
+                        cat.collected = true;
+                        this.catsCollected++;
+                        document.getElementById('catsCollected').textContent = this.catsCollected;
+                        this.spawnParticles(cat.x + 12, cat.y + 12, 16, '#ffd34e', {spread: 4, up: 1});
+                        this.spawnParticles(cat.x + 12, cat.y + 12, 8, '#ff7a6b', {spread: 3, up: 1});
+                        if (this.catsCollected === this.cats.length) {
+                            this.exitOpen = true;
+                            const e = this.levelData.exit;
+                            this.spawnParticles(e.x + 25, e.y + 25, 24, '#aef6c8', {spread: 5, up: 1});
+                        }
+                    }
+                });
+
+                if (this.exitOpen && this.isColliding(this.player, this.levelData.exit)) {
+                    this.levelComplete();
+                }
+
+                this.updateParticles();
+            }
+
+            updateParticles() {
+                this.particles.forEach(p => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.vy += 0.12;
+                    p.life -= p.decay;
+                });
+                this.particles = this.particles.filter(p => p.life > 0);
+            }
+
+            isColliding(r1, r2) {
+                return r1.x < r2.x + r2.width &&
+                       r1.x + r1.width > r2.x &&
+                       r1.y < r2.y + r2.height &&
+                       r1.y + r1.height > r2.y;
+            }
+
+            /* ---------- DRAWING ---------- */
+            draw() {
+                this.drawBackground();
+                this.palms.forEach(p => this.drawPalm(p));
+                this.levelData.platforms.forEach((p, i) => this.drawPlatform(p, i === 0));
+                this.cats.forEach(cat => { if (!cat.collected) this.drawCat(cat.x, cat.y); });
+                this.enemies.forEach(en => this.drawEnemy(en));
+                this.drawExit();
+                this.drawPlayer(this.player.x, this.player.y);
+                this.drawParticles();
+            }
+
+            drawBackground() {
+                const t = this.time;
+                // sky
+                const sky = ctx.createLinearGradient(0, 0, 0, canvas.height);
+                sky.addColorStop(0, '#7fd8f0');
+                sky.addColorStop(0.45, '#bdeefb');
+                sky.addColorStop(0.75, '#e7f9ec');
+                sky.addColorStop(1, '#f4e2b8');
+                ctx.fillStyle = sky;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // sun with glow
+                const sx = 680, sy = 90;
+                const glow = ctx.createRadialGradient(sx, sy, 8, sx, sy, 90);
+                glow.addColorStop(0, 'rgba(255,236,160,0.95)');
+                glow.addColorStop(1, 'rgba(255,236,160,0)');
+                ctx.fillStyle = glow;
+                ctx.beginPath(); ctx.arc(sx, sy, 90, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = '#ffe27a';
+                ctx.beginPath(); ctx.arc(sx, sy, 34, 0, Math.PI * 2); ctx.fill();
+
+                // parallax clouds
+                ctx.fillStyle = 'rgba(255,255,255,0.85)';
+                const clouds = [
+                    {x: 120, y: 70, s: 1.1, sp: 0.25},
+                    {x: 420, y: 50, s: 0.8, sp: 0.18},
+                    {x: 300, y: 130, s: 0.9, sp: 0.32},
+                    {x: 600, y: 175, s: 0.7, sp: 0.22}
+                ];
+                clouds.forEach(c => {
+                    let cx = (c.x + t * c.sp) % (canvas.width + 160) - 80;
+                    this.drawCloud(cx, c.y, c.s);
+                });
+
+                // ocean band near the horizon (behind ground)
+                const oceanTop = 430;
+                const ocean = ctx.createLinearGradient(0, oceanTop, 0, 480);
+                ocean.addColorStop(0, 'rgba(43,180,214,0.55)');
+                ocean.addColorStop(1, 'rgba(45,127,196,0.7)');
+                ctx.fillStyle = ocean;
+                ctx.fillRect(0, oceanTop, canvas.width, 50);
+                // shimmer lines
+                ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+                ctx.lineWidth = 1.5;
+                for (let i = 0; i < 5; i++) {
+                    const yy = oceanTop + 8 + i * 8;
+                    ctx.beginPath();
+                    for (let xx = 0; xx <= canvas.width; xx += 20) {
+                        const off = Math.sin((xx * 0.05) + t * 0.05 + i) * 2;
+                        if (xx === 0) ctx.moveTo(xx, yy + off); else ctx.lineTo(xx, yy + off);
+                    }
+                    ctx.stroke();
+                }
+            }
+
+            drawCloud(x, y, s) {
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.scale(s, s);
+                ctx.beginPath();
+                ctx.arc(0, 0, 18, 0, Math.PI * 2);
+                ctx.arc(20, -6, 22, 0, Math.PI * 2);
+                ctx.arc(44, 0, 18, 0, Math.PI * 2);
+                ctx.arc(22, 10, 24, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+
+            drawPalm(p) {
+                const sway = Math.sin(this.time * 0.02 + p.sway) * 6;
+                const topX = p.x + sway;
+                const topY = p.baseY - p.h;
+                // trunk
+                ctx.strokeStyle = '#a9743f';
+                ctx.lineWidth = 9;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                ctx.moveTo(p.x, p.baseY);
+                ctx.quadraticCurveTo(p.x - 6, p.baseY - p.h * 0.55, topX, topY);
+                ctx.stroke();
+                ctx.strokeStyle = '#c0894f';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.moveTo(p.x, p.baseY);
+                ctx.quadraticCurveTo(p.x - 6, p.baseY - p.h * 0.55, topX, topY);
+                ctx.stroke();
+                // fronds
+                const fronds = [[-1,-0.6],[1,-0.6],[-1.3,-0.1],[1.3,-0.1],[0,-1]];
+                fronds.forEach(([dx, dy]) => {
+                    ctx.strokeStyle = '#1c8a4e';
+                    ctx.lineWidth = 7;
+                    ctx.beginPath();
+                    ctx.moveTo(topX, topY);
+                    ctx.quadraticCurveTo(topX + dx * 22, topY + dy * 16, topX + dx * 40, topY + dy * 6 + 14);
+                    ctx.stroke();
+                    ctx.strokeStyle = '#2fb56b';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(topX, topY);
+                    ctx.quadraticCurveTo(topX + dx * 22, topY + dy * 16, topX + dx * 40, topY + dy * 6 + 14);
+                    ctx.stroke();
+                });
+                // coconuts
+                ctx.fillStyle = '#7a4a22';
+                ctx.beginPath(); ctx.arc(topX - 5, topY + 6, 4, 0, Math.PI*2); ctx.fill();
+                ctx.beginPath(); ctx.arc(topX + 5, topY + 7, 4, 0, Math.PI*2); ctx.fill();
+            }
+
+            drawPlatform(p, isGround) {
+                const r = 8;
+                // sandy base with rounded top
+                ctx.fillStyle = isGround ? '#e9cf95' : '#caa15e';
+                this.roundRect(p.x, p.y, p.width, p.height + (isGround ? 20 : 0), r);
+                ctx.fill();
+                // grass cap
+                const grass = ctx.createLinearGradient(0, p.y, 0, p.y + 10);
+                grass.addColorStop(0, '#3fd08a');
+                grass.addColorStop(1, '#1c8a4e');
+                ctx.fillStyle = grass;
+                this.roundRect(p.x, p.y, p.width, 9, r);
+                ctx.fill();
+                // grass blades
+                ctx.fillStyle = '#2fb56b';
+                for (let gx = p.x + 6; gx < p.x + p.width - 4; gx += 12) {
+                    ctx.beginPath();
+                    ctx.moveTo(gx, p.y + 1);
+                    ctx.lineTo(gx + 3, p.y - 5);
+                    ctx.lineTo(gx + 6, p.y + 1);
+                    ctx.fill();
+                }
+                // subtle highlight
+                ctx.fillStyle = 'rgba(255,255,255,0.18)';
+                ctx.fillRect(p.x + 4, p.y + 10, p.width - 8, 3);
+            }
+
+            drawCat(x, y) {
+                const bob = Math.sin(this.time * 0.08 + x) * 3;
+                const cy = y + bob;
+                // glow halo so it reads as a collectible
+                const g = ctx.createRadialGradient(x + 12, cy + 12, 2, x + 12, cy + 12, 22);
+                g.addColorStop(0, 'rgba(255,211,78,0.5)');
+                g.addColorStop(1, 'rgba(255,211,78,0)');
+                ctx.fillStyle = g;
+                ctx.beginPath(); ctx.arc(x + 12, cy + 12, 22, 0, Math.PI * 2); ctx.fill();
+
+                // tail
+                ctx.strokeStyle = '#ff9f1c';
+                ctx.lineWidth = 3;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                ctx.moveTo(x + 22, cy + 16);
+                ctx.quadraticCurveTo(x + 30, cy + 12, x + 28 + Math.sin(this.time*0.1)*2, cy + 4);
+                ctx.stroke();
+
+                // body
+                ctx.fillStyle = '#ffb347';
+                this.roundRect(x + 3, cy + 10, 19, 12, 6); ctx.fill();
+                // head
+                ctx.fillStyle = '#ffb347';
+                ctx.beginPath(); ctx.arc(x + 15, cy + 7, 7, 0, Math.PI * 2); ctx.fill();
+                // ears
+                ctx.beginPath();
+                ctx.moveTo(x + 10, cy + 2); ctx.lineTo(x + 8, cy - 4); ctx.lineTo(x + 13, cy + 1); ctx.fill();
+                ctx.beginPath();
+                ctx.moveTo(x + 20, cy + 2); ctx.lineTo(x + 22, cy - 4); ctx.lineTo(x + 17, cy + 1); ctx.fill();
+                // inner ears
+                ctx.fillStyle = '#ff7a6b';
+                ctx.beginPath();
+                ctx.moveTo(x + 10, cy + 1); ctx.lineTo(x + 9, cy - 2); ctx.lineTo(x + 12, cy + 1); ctx.fill();
+                ctx.beginPath();
+                ctx.moveTo(x + 20, cy + 1); ctx.lineTo(x + 21, cy - 2); ctx.lineTo(x + 18, cy + 1); ctx.fill();
+                // eyes
+                ctx.fillStyle = '#2a2540';
+                ctx.beginPath(); ctx.arc(x + 12, cy + 7, 1.6, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(x + 18, cy + 7, 1.6, 0, Math.PI * 2); ctx.fill();
+                // eye shine
+                ctx.fillStyle = 'white';
+                ctx.beginPath(); ctx.arc(x + 12.5, cy + 6.5, 0.6, 0, Math.PI*2); ctx.fill();
+                ctx.beginPath(); ctx.arc(x + 18.5, cy + 6.5, 0.6, 0, Math.PI*2); ctx.fill();
+                // nose
+                ctx.fillStyle = '#ff7a6b';
+                ctx.beginPath(); ctx.arc(x + 15, cy + 9, 1, 0, Math.PI*2); ctx.fill();
+            }
+
+            drawEnemy(en) {
+                if (en.type === 'bird') { this.drawBird(en); return; }
+                this.drawCrab(en);
+            }
+
+            drawCrab(en) {
+                const x = en.x, y = en.y, w = en.width, h = en.height;
+                const cx = x + w / 2;
+                const legPhase = Math.sin(this.time * 0.3) * 2;
+                // legs
+                ctx.strokeStyle = '#b8341f';
+                ctx.lineWidth = 2;
+                ctx.lineCap = 'round';
+                for (let i = -1; i <= 1; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(cx + i * 7, y + h - 2);
+                    ctx.lineTo(cx + i * 11, y + h + 4 + (i === 0 ? 0 : legPhase));
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(cx + i * 7, y + h - 2);
+                    ctx.lineTo(cx + i * 11, y + h + 4 - (i === 0 ? 0 : legPhase));
+                    ctx.stroke();
+                }
+                // claws
+                ctx.fillStyle = '#e0492c';
+                ctx.beginPath(); ctx.arc(x - 1, y + 6, 4, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(x + w + 1, y + 6, 4, 0, Math.PI * 2); ctx.fill();
+                // shell body
+                const shell = ctx.createLinearGradient(0, y, 0, y + h);
+                shell.addColorStop(0, '#ff6347');
+                shell.addColorStop(1, '#d8331c');
+                ctx.fillStyle = shell;
+                this.roundRect(x + 2, y + 2, w - 4, h - 2, 7); ctx.fill();
+                // eyes on stalks
+                ctx.strokeStyle = '#d8331c';
+                ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.moveTo(cx - 5, y + 3); ctx.lineTo(cx - 5, y - 3); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(cx + 5, y + 3); ctx.lineTo(cx + 5, y - 3); ctx.stroke();
+                ctx.fillStyle = '#fff';
+                ctx.beginPath(); ctx.arc(cx - 5, y - 4, 2.2, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(cx + 5, y - 4, 2.2, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = '#2a2540';
+                ctx.beginPath(); ctx.arc(cx - 5, y - 4, 1, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(cx + 5, y - 4, 1, 0, Math.PI * 2); ctx.fill();
+            }
+
+            drawBird(en) {
+                const flap = Math.sin(this.time * 0.25) * 6;
+                const bob = Math.sin(this.time * 0.12 + en.minX) * 4;
+                const x = en.x, y = en.y + bob, w = en.width, h = en.height;
+                const cx = x + w / 2, cy = y + h / 2;
+                const face = en.dir; // 1 right, -1 left
+                // wings
+                ctx.fillStyle = '#5b6b78';
+                ctx.beginPath();
+                ctx.moveTo(cx, cy);
+                ctx.quadraticCurveTo(cx - 14, cy - 10 - flap, cx - 18, cy + 2);
+                ctx.quadraticCurveTo(cx - 10, cy + 2, cx, cy);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.moveTo(cx, cy);
+                ctx.quadraticCurveTo(cx + 14, cy - 10 - flap, cx + 18, cy + 2);
+                ctx.quadraticCurveTo(cx + 10, cy + 2, cx, cy);
+                ctx.fill();
+                // body
+                const body = ctx.createLinearGradient(0, y, 0, y + h);
+                body.addColorStop(0, '#8aa0ad');
+                body.addColorStop(1, '#62727e');
+                ctx.fillStyle = body;
+                ctx.beginPath(); ctx.ellipse(cx, cy, w / 2, h / 2, 0, 0, Math.PI * 2); ctx.fill();
+                // head
+                ctx.beginPath(); ctx.arc(cx + face * 7, cy - 3, 5, 0, Math.PI * 2); ctx.fill();
+                // beak
+                ctx.fillStyle = '#ffb000';
+                ctx.beginPath();
+                ctx.moveTo(cx + face * 11, cy - 4);
+                ctx.lineTo(cx + face * 17, cy - 2);
+                ctx.lineTo(cx + face * 11, cy - 1);
+                ctx.fill();
+                // eye
+                ctx.fillStyle = '#2a2540';
+                ctx.beginPath(); ctx.arc(cx + face * 8, cy - 4, 1.4, 0, Math.PI * 2); ctx.fill();
+            }
+
+            drawExit() {
+                const e = this.levelData.exit;
+                const open = this.exitOpen;
+                if (open) {
+                    const pulse = 0.5 + Math.sin(this.time * 0.12) * 0.25;
+                    const g = ctx.createRadialGradient(e.x+25, e.y+25, 4, e.x+25, e.y+25, 50);
+                    g.addColorStop(0, `rgba(174,246,200,${0.5*pulse+0.3})`);
+                    g.addColorStop(1, 'rgba(174,246,200,0)');
+                    ctx.fillStyle = g;
+                    ctx.beginPath(); ctx.arc(e.x+25, e.y+25, 50, 0, Math.PI*2); ctx.fill();
+                }
+                // hut/door frame
+                ctx.fillStyle = open ? '#3fd08a' : '#9aa0a6';
+                this.roundRect(e.x, e.y, e.width, e.height, 8); ctx.fill();
+                // roof
+                ctx.fillStyle = open ? '#1c8a4e' : '#6b7177';
+                ctx.beginPath();
+                ctx.moveTo(e.x - 6, e.y + 6);
+                ctx.lineTo(e.x + e.width/2, e.y - 14);
+                ctx.lineTo(e.x + e.width + 6, e.y + 6);
+                ctx.closePath(); ctx.fill();
+                // door
+                ctx.fillStyle = open ? '#fff6d6' : '#c2c6ca';
+                this.roundRect(e.x + 12, e.y + 16, 26, 34, 6); ctx.fill();
+                // label
+                ctx.fillStyle = open ? '#1d4d36' : '#5a5f64';
+                ctx.font = 'bold 13px "Baloo 2", Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(open ? 'EXIT' : '🔒', e.x + 25, e.y + 33);
+            }
+
+            drawPlayer(x, y) {
+                const cx = x + 15;
+                const s = this.squash;          // squash/stretch factor
+                const w = 1 / s;                 // conserve volume horizontally
+                ctx.save();
+                ctx.translate(cx, y + this.player.height);
+                ctx.scale(this.facing * w, s);
+                ctx.translate(-cx, -(y + this.player.height));
+
+                // shadow
+                ctx.fillStyle = 'rgba(0,0,0,0.15)';
+                ctx.beginPath();
+                ctx.ellipse(cx, y + this.player.height + 2, 14, 4, 0, 0, Math.PI*2);
+                ctx.fill();
+
+                // legs
+                ctx.fillStyle = '#7a6248';
+                this.roundRect(x + 7, y + 31, 6, 9, 2); ctx.fill();
+                this.roundRect(x + 17, y + 31, 6, 9, 2); ctx.fill();
+
+                // dress (with tropical trim)
+                const dress = ctx.createLinearGradient(0, y + 16, 0, y + 32);
+                dress.addColorStop(0, '#ff8fc0');
+                dress.addColorStop(1, '#ff5fa6');
+                ctx.fillStyle = dress;
+                ctx.beginPath();
+                ctx.moveTo(x + 5, y + 32);
+                ctx.lineTo(x + 8, y + 16);
+                ctx.lineTo(x + 22, y + 16);
+                ctx.lineTo(x + 25, y + 32);
+                ctx.closePath(); ctx.fill();
+                // flower on dress
+                ctx.fillStyle = '#ffe27a';
+                ctx.beginPath(); ctx.arc(x + 15, y + 23, 2.5, 0, Math.PI*2); ctx.fill();
+
+                // arms
+                ctx.fillStyle = '#fdc9b8';
+                this.roundRect(x + 2, y + 18, 4, 10, 2); ctx.fill();
+                this.roundRect(x + 24, y + 18, 4, 10, 2); ctx.fill();
+
+                // head
+                ctx.fillStyle = '#fdc9b8';
+                ctx.beginPath(); ctx.arc(x + 15, y + 9, 8, 0, Math.PI * 2); ctx.fill();
+
+                // grey hair bun
+                ctx.fillStyle = '#e6e6e6';
+                ctx.beginPath(); ctx.arc(x + 15, y + 3, 6, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(x + 9, y + 8, 3.5, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(x + 21, y + 8, 3.5, 0, Math.PI * 2); ctx.fill();
+
+                // glasses
+                ctx.strokeStyle = '#3a3a3a';
+                ctx.lineWidth = 1;
+                ctx.beginPath(); ctx.arc(x + 12, y + 9, 2.4, 0, Math.PI*2); ctx.stroke();
+                ctx.beginPath(); ctx.arc(x + 18, y + 9, 2.4, 0, Math.PI*2); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(x + 14.4, y + 9); ctx.lineTo(x + 15.6, y + 9); ctx.stroke();
+
+                // smile
+                ctx.strokeStyle = '#b5556a';
+                ctx.lineWidth = 1.2;
+                ctx.beginPath();
+                ctx.arc(x + 15, y + 12, 2.2, 0.15 * Math.PI, 0.85 * Math.PI);
+                ctx.stroke();
+
+                // little tropical flower in hair
+                ctx.fillStyle = '#ff7a6b';
+                ctx.beginPath(); ctx.arc(x + 21, y + 4, 2, 0, Math.PI*2); ctx.fill();
+                ctx.fillStyle = '#ffe27a';
+                ctx.beginPath(); ctx.arc(x + 21, y + 4, 0.8, 0, Math.PI*2); ctx.fill();
+
+                ctx.restore();
+            }
+
+            drawParticles() {
+                this.particles.forEach(p => {
+                    ctx.globalAlpha = Math.max(0, p.life);
+                    ctx.fillStyle = p.color;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+                ctx.globalAlpha = 1;
+            }
+
+            roundRect(x, y, w, h, r) {
+                r = Math.min(r, w/2, h/2);
+                ctx.beginPath();
+                ctx.moveTo(x + r, y);
+                ctx.arcTo(x + w, y, x + w, y + h, r);
+                ctx.arcTo(x + w, y + h, x, y + h, r);
+                ctx.arcTo(x, y + h, x, y, r);
+                ctx.arcTo(x, y, x + w, y, r);
+                ctx.closePath();
+            }
+
+            /* ---------- STATE ---------- */
+            levelComplete() {
+                this.gameRunning = false;
+                document.getElementById('levelComplete').classList.add('show');
+            }
+            nextLevel() {
+                document.getElementById('levelComplete').classList.remove('show');
+                if (this.currentLevel < this.totalLevels - 1) {
+                    this.currentLevel++;
+                    this.gameRunning = true;
+                    this.initLevel();
+                } else {
+                    alert('🎉 You beat all the islands! Congratulations, Granny! 🎉');
+                    this.currentLevel = 0;
+                    this.gameRunning = true;
+                    this.initLevel();
+                }
+            }
+            restartLevel() {
+                document.getElementById('gameOver').classList.remove('show');
+                this.gameRunning = true;
+                this.initLevel();
+            }
+            gameOver() {
+                this.gameRunning = false;
+                document.getElementById('gameOver').classList.add('show');
+            }
+
+            gameLoop() {
+                this.update();
+                this.draw();
+                requestAnimationFrame(() => this.gameLoop());
+            }
+        }
+
+        const game = new Game();
+        game.gameLoop();
+    </script>
+</body>
+</html>

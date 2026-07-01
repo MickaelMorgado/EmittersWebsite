@@ -245,7 +245,7 @@ const ParticleBurst = ({ color, burstKey }: { color: string; burstKey: number })
   );
 };
 
-// Detailed flame animation with multiple layers
+// Jet turbo exhaust — horizontal directional plume with Mach cone, shock diamonds, and high-velocity sparks
 const ExhaustPlume = ({
   value,
   direction,
@@ -255,114 +255,231 @@ const ExhaustPlume = ({
 }) => {
   const intensity = Math.min(1, Math.max(0, value));
   const isRight = direction === "right";
-  const scale = 0.3 + intensity * 0.8;
 
-  // Many detailed spark particles - must be before conditional return
-  const particles = useMemo(() => {
-    const count = Math.ceil(20 * intensity);
-    return Array.from({ length: count }).map((_, i) => ({
-      offsetX: (Math.random() - 0.5) * 120 * intensity,
-      offsetY: (Math.random() - 0.5) * 50 * intensity,
-      delay: i * 15,
-      duration: 150 + Math.random() * 300,
-      size: 2 + Math.random() * 10,
-      hue: Math.random() > 0.5 ? 30 + Math.random() * 20 : 0 + Math.random() * 30,
-    }));
-  }, [intensity]);
+  // High-velocity spark particles — shoot outward horizontally
+  const sparks = useMemo(() => {
+    const count = Math.ceil(30 * intensity);
+    return Array.from({ length: count }).map((_, i) => {
+      const angle = (Math.random() - 0.5) * 0.6; // tight cone spread
+      const speed = 0.5 + Math.random() * 0.5;
+      return {
+        travelX: (isRight ? 1 : -1) * (60 + Math.random() * 160) * speed * intensity,
+        travelY: angle * 80 * intensity,
+        delay: Math.random() * 80,
+        duration: 120 + Math.random() * 250,
+        size: 1.5 + Math.random() * 4,
+        hue: Math.random() > 0.6 ? 200 + Math.random() * 40 : 25 + Math.random() * 30,
+        brightness: 60 + Math.random() * 30,
+      };
+    });
+  }, [intensity, isRight]);
 
-  // Ember particles that float upward - must be before conditional return
+  // Embers — drift outward and upward, slower
   const embers = useMemo(() => {
-    const count = Math.ceil(12 * intensity);
+    const count = Math.ceil(10 * intensity);
     return Array.from({ length: count }).map((_, i) => ({
-      offsetX: (Math.random() - 0.5) * 50 * intensity,
-      delay: i * 50,
-      duration: 400 + Math.random() * 600,
-      size: 1 + Math.random() * 3,
+      travelX: (isRight ? 1 : -1) * (30 + Math.random() * 90) * intensity,
+      travelY: -(15 + Math.random() * 40) * intensity,
+      delay: i * 30 + Math.random() * 60,
+      duration: 300 + Math.random() * 500,
+      size: 1 + Math.random() * 2.5,
     }));
-  }, [intensity]);
+  }, [intensity, isRight]);
 
   if (intensity < 0.02) return null;
 
-  // Multi-layer detailed flames: outer → mid → inner → core
-  const flameLayers = [
-    // Outer wispy flames
-    { scaleX: 3.0, scaleY: 1.4, opacity: 0.08 * intensity, blur: 35, hue: 280, lightness: 65, width: 200, height: 70 },
-    { scaleX: 2.8, scaleY: 1.3, opacity: 0.1 * intensity, blur: 30, hue: 290, lightness: 60, width: 190, height: 65 },
-    // Mid flames
-    { scaleX: 2.4, scaleY: 1.2, opacity: 0.2 * intensity, blur: 22, hue: 40, lightness: 55, width: 170, height: 60 },
-    { scaleX: 2.0, scaleY: 1.1, opacity: 0.3 * intensity, blur: 16, hue: 25, lightness: 55, width: 150, height: 55 },
-    // Inner hot flames
-    { scaleX: 1.8, scaleY: 1.0, opacity: 0.45 * intensity, blur: 10, hue: 15, lightness: 60, width: 130, height: 50 },
-    { scaleX: 1.5, scaleY: 0.9, opacity: 0.6 * intensity, blur: 6, hue: 8, lightness: 65, width: 110, height: 45 },
-    // White-hot core
-    { scaleX: 1.2, scaleY: 0.6, opacity: 0.85 * intensity, blur: 3, hue: 45, lightness: 85, width: 80, height: 30 },
-    { scaleX: 0.8, scaleY: 0.4, opacity: intensity, blur: 1, hue: 55, lightness: 98, width: 50, height: 20 },
-  ];
+  const plumeLength = 80 + intensity * 140;
+  const nozzleHeight = 12 + intensity * 18;
+  const exitHeight = nozzleHeight * (0.3 + intensity * 0.5);
+
+  // Shock diamond positions along the plume
+  const shockDiamondCount = Math.floor(2 + intensity * 3);
+  const shockDiamonds = Array.from({ length: shockDiamondCount }).map((_, i) => {
+    const t = (i + 1) / (shockDiamondCount + 1);
+    const xOff = t * plumeLength * 0.75;
+    const scaleAtPoint = 0.3 + t * 0.7;
+    const heightAtPoint = nozzleHeight * scaleAtPoint * 0.5;
+    const brightness = 0.7 - t * 0.3;
+    return { xOff, heightAtPoint, brightness };
+  });
 
   return (
     <div
       className="pointer-events-none absolute inset-0 overflow-visible"
-      style={{
-        marginLeft: isRight ? "2px" : "0",
-        marginRight: isRight ? "0" : "2px",
-      }}
+      style={{ zIndex: 10 }}
     >
-      {/* Flame layers */}
-      {flameLayers.map((layer, idx) => (
+      {/* === PLUME BODY — Mach cone shape via layered gradients === */}
+
+      {/* Outer glow / heated air — wide soft halo */}
+      <div
+        style={{
+          position: "absolute",
+          left: isRight ? "50%" : "auto",
+          right: isRight ? "auto" : "50%",
+          top: "50%",
+          transform: "translateY(-50%)",
+          width: `${plumeLength * 1.3}px`,
+          height: `${nozzleHeight * 3.5}px`,
+          background: `radial-gradient(ellipse at ${isRight ? "0%" : "100%"} 50%, rgba(255, 80, 0, ${0.06 * intensity}), rgba(255, 40, 0, ${0.02 * intensity}) 40%, transparent 70%)`,
+          filter: "blur(25px)",
+          mixBlendMode: "screen",
+        }}
+      />
+
+      {/* Outer plume — red-orange cone */}
+      <div
+        style={{
+          position: "absolute",
+          left: isRight ? "50%" : "auto",
+          right: isRight ? "auto" : "50%",
+          top: "50%",
+          transform: "translateY(-50%)",
+          width: `${plumeLength}px`,
+          height: `${nozzleHeight}px`,
+          clipPath: isRight
+            ? `polygon(0% ${50 - 50}%, 100% ${50 - 30}%, 100% ${50 + 30}%, 0% ${50 + 50}%)`
+            : `polygon(0% ${50 - 30}%, 100% ${50 - 50}%, 100% ${50 + 50}%, 0% ${50 + 30}%)`,
+          background: `linear-gradient(${isRight ? "to right" : "to left"}, hsla(15, 100%, 55%, ${0.7 * intensity}), hsla(25, 100%, 50%, ${0.5 * intensity}) 30%, hsla(35, 90%, 40%, ${0.25 * intensity}) 70%, transparent)`,
+          filter: `blur(${3 + (1 - intensity) * 4}px)`,
+          mixBlendMode: "screen",
+          animation: "jet-flicker 80ms ease-in-out infinite alternate",
+        }}
+      />
+
+      {/* Mid plume — bright orange-yellow */}
+      <div
+        style={{
+          position: "absolute",
+          left: isRight ? "50%" : "auto",
+          right: isRight ? "auto" : "50%",
+          top: "50%",
+          transform: "translateY(-50%)",
+          width: `${plumeLength * 0.75}px`,
+          height: `${nozzleHeight * 0.65}px`,
+          clipPath: isRight
+            ? `polygon(0% ${50 - 50}%, 100% ${50 - 35}%, 100% ${50 + 35}%, 0% ${50 + 50}%)`
+            : `polygon(0% ${50 - 35}%, 100% ${50 - 50}%, 100% ${50 + 50}%, 0% ${50 + 35}%)`,
+          background: `linear-gradient(${isRight ? "to right" : "to left"}, hsla(35, 100%, 70%, ${0.9 * intensity}), hsla(30, 100%, 60%, ${0.7 * intensity}) 25%, hsla(20, 100%, 55%, ${0.4 * intensity}) 60%, transparent)`,
+          filter: `blur(${2 + (1 - intensity) * 3}px)`,
+          mixBlendMode: "screen",
+          animation: "jet-flicker 60ms ease-in-out infinite alternate-reverse",
+        }}
+      />
+
+      {/* Inner core — white-hot */}
+      <div
+        style={{
+          position: "absolute",
+          left: isRight ? "50%" : "auto",
+          right: isRight ? "auto" : "50%",
+          top: "50%",
+          transform: "translateY(-50%)",
+          width: `${plumeLength * 0.45}px`,
+          height: `${nozzleHeight * 0.35}px`,
+          clipPath: isRight
+            ? `polygon(0% ${50 - 50}%, 100% ${50 - 40}%, 100% ${50 + 40}%, 0% ${50 + 50}%)`
+            : `polygon(0% ${50 - 40}%, 100% ${50 - 50}%, 100% ${50 + 50}%, 0% ${50 + 40}%)`,
+          background: `linear-gradient(${isRight ? "to right" : "to left"}, hsla(55, 100%, 95%, ${intensity}), hsla(40, 100%, 80%, ${0.85 * intensity}) 20%, hsla(25, 100%, 65%, ${0.5 * intensity}) 50%, transparent)`,
+          filter: `blur(${1 + (1 - intensity) * 2}px)`,
+          mixBlendMode: "screen",
+          animation: "jet-flicker 50ms ease-in-out infinite alternate",
+        }}
+      />
+
+      {/* Blue-white nozzle core — the hottest point */}
+      <div
+        style={{
+          position: "absolute",
+          left: isRight ? "50%" : "auto",
+          right: isRight ? "auto" : "50%",
+          top: "50%",
+          transform: "translateY(-50%)",
+          width: `${plumeLength * 0.15}px`,
+          height: `${exitHeight * 0.6}px`,
+          background: `radial-gradient(ellipse at ${isRight ? "0%" : "100%"} 50%, hsla(210, 100%, 90%, ${0.9 * intensity}), hsla(190, 100%, 80%, ${0.5 * intensity}) 50%, transparent)`,
+          filter: "blur(2px)",
+          mixBlendMode: "screen",
+        }}
+      />
+
+      {/* === SHOCK DIAMONDS — repeating bright nodes along plume === */}
+      {shockDiamonds.map((diamond, idx) => (
         <div
-          key={idx}
+          key={`shock-${idx}`}
           style={{
             position: "absolute",
-            left: "50%",
-            bottom: isRight ? "0" : "auto",
-            top: isRight ? "auto" : "0",
-            width: `${layer.width}px`,
-            height: `${layer.height}px`,
-            transform: `translateX(-50%) scale(${layer.scaleX}, ${layer.scaleY})`,
-            background: `linear-gradient(to top, hsla(${layer.hue}, 100%, ${layer.lightness}%, ${layer.opacity}), hsla(${layer.hue + 20}, 100%, ${layer.lightness + 10}%, ${layer.opacity * 0.7}))`,
-            borderRadius: "50% 50% 50% 50% / 60% 60% 40% 40%",
-            filter: `blur(${layer.blur}px)`,
+            left: isRight ? `calc(50% + ${diamond.xOff}px)` : `calc(50% - ${diamond.xOff}px)`,
+            top: "50%",
+            transform: "translate(-50%, -50%)",
+            width: `${6 + intensity * 8}px`,
+            height: `${diamond.heightAtPoint}px`,
+            background: `radial-gradient(ellipse, hsla(45, 100%, 85%, ${diamond.brightness * intensity * 0.6}), transparent 70%)`,
+            filter: "blur(2px)",
             mixBlendMode: "screen",
+            animation: `shock-pulse ${100 + idx * 30}ms ease-in-out infinite alternate`,
           }}
         />
       ))}
 
-      {/* Spark particles */}
-      {particles.map((particle, idx) => (
+      {/* === EXHAUST NOZZLE GLOW — bright ring at exit === */}
+      <div
+        style={{
+          position: "absolute",
+          left: isRight ? "50%" : "auto",
+          right: isRight ? "auto" : "50%",
+          top: "50%",
+          transform: "translateY(-50%)",
+          width: `${exitHeight + 6}px`,
+          height: `${exitHeight + 6}px`,
+          borderRadius: "50%",
+          background: `radial-gradient(circle, hsla(55, 100%, 95%, ${0.95 * intensity}), hsla(30, 100%, 70%, ${0.6 * intensity}) 40%, transparent 70%)`,
+          filter: "blur(3px)",
+          mixBlendMode: "screen",
+        }}
+      />
+
+      {/* === HIGH-VELOCITY SPARKS — shoot outward in a tight cone === */}
+      {sparks.map((spark, idx) => (
         <div
           key={`spark-${idx}`}
           style={{
             position: "absolute",
-            left: "50%",
-            bottom: isRight ? "-5px" : "100%",
-            width: `${particle.size}px`,
-            height: `${particle.size}px`,
-            marginLeft: `${particle.offsetX}px`,
-            marginBottom: `-${particle.offsetY}px`,
-            background: `hsl(${particle.hue}, 100%, 70%)`,
+            left: isRight ? "50%" : "auto",
+            right: isRight ? "auto" : "50%",
+            top: "50%",
+            width: `${spark.size}px`,
+            height: `${spark.size}px`,
+            marginLeft: isRight ? "-1px" : "auto",
+            marginRight: isRight ? "auto" : "-1px",
+            background: `hsl(${spark.hue}, 100%, ${spark.brightness}%)`,
             borderRadius: "50%",
-            animation: `spark-rise ${particle.duration}ms ease-out ${particle.delay}ms infinite`,
-            boxShadow: `0 0 ${particle.size * 2}px hsl(${particle.hue}, 100%, 60%)`,
+            animation: `jet-spark ${spark.duration}ms linear ${spark.delay}ms infinite`,
+            boxShadow: `0 0 ${spark.size * 3}px hsl(${spark.hue}, 100%, ${spark.brightness - 10}%)`,
+            ["--sparkX" as string]: `${spark.travelX}px`,
+            ["--sparkY" as string]: `${spark.travelY}px`,
           }}
         />
       ))}
 
-      {/* Ember particles */}
+      {/* === EMBER TRAIL — slower drifting particles === */}
       {embers.map((ember, idx) => (
         <div
           key={`ember-${idx}`}
           style={{
             position: "absolute",
-            left: "50%",
-            bottom: isRight ? "0" : "auto",
-            top: isRight ? "auto" : "0",
+            left: isRight ? "50%" : "auto",
+            right: isRight ? "auto" : "50%",
+            top: "50%",
             width: `${ember.size}px`,
             height: `${ember.size}px`,
-            marginLeft: `${ember.offsetX}px`,
-            background: `hsl(${20 + Math.random() * 30}, 100%, ${50 + Math.random() * 30}%)`,
+            marginLeft: isRight ? "-1px" : "auto",
+            marginRight: isRight ? "auto" : "-1px",
+            background: `hsl(${25 + Math.random() * 20}, 100%, ${55 + Math.random() * 25}%)`,
             borderRadius: "50%",
-            animation: `ember-float ${ember.duration}ms ease-in-out ${ember.delay}ms infinite`,
-            boxShadow: `0 0 ${ember.size * 3}px hsl(30, 100%, 50%)`,
+            animation: `jet-ember ${ember.duration}ms ease-out ${ember.delay}ms infinite`,
+            boxShadow: `0 0 ${ember.size * 2}px hsl(30, 100%, 50%)`,
+            ["--emberX" as string]: `${ember.travelX}px`,
+            ["--emberY" as string]: `${ember.travelY}px`,
           }}
         />
       ))}
@@ -962,33 +1079,42 @@ const ControllerExperience = () => {
             opacity: 0;
           }
         }
-        @keyframes flame-flicker {
-          0% { transform: translateY(-50%) scaleX(1) scaleY(1); }
-          50% { transform: translateY(-50%) scaleX(1.03) scaleY(0.97); }
-          100% { transform: translateY(-50%) scaleX(0.97) scaleY(1.03); }
+        @keyframes jet-flicker {
+          0% { opacity: 0.85; transform: translateY(-50%) scaleX(0.97) scaleY(1.04); }
+          25% { opacity: 1; transform: translateY(-50%) scaleX(1.02) scaleY(0.96); }
+          50% { opacity: 0.9; transform: translateY(-50%) scaleX(0.98) scaleY(1.02); }
+          75% { opacity: 1; transform: translateY(-50%) scaleX(1.01) scaleY(0.98); }
+          100% { opacity: 0.88; transform: translateY(-50%) scaleX(0.99) scaleY(1.01); }
         }
-        @keyframes turbo-particle-trail {
+        @keyframes jet-spark {
           0% {
-            transform: translate(-50%, -50%) scale(1);
+            transform: translate(0, 0) scale(1);
             opacity: 1;
           }
+          30% {
+            opacity: 0.9;
+          }
           100% {
-            transform: translate(calc(-50% + var(--offsetX, 0px)), calc(-50% + var(--offsetY, 0px))) scale(0.3);
+            transform: translate(var(--sparkX, 100px), var(--sparkY, 0px)) scale(0.2);
             opacity: 0;
           }
         }
-        @keyframes ember-float {
+        @keyframes jet-ember {
           0% {
-            transform: translate(-50%, -50%) translateY(0) scale(1);
-            opacity: 0.8;
+            transform: translate(0, 0) scale(1);
+            opacity: 0.9;
           }
-          50% {
-            opacity: 0.6;
+          40% {
+            opacity: 0.7;
           }
           100% {
-            transform: translate(calc(-50% + var(--emberX, 0px)), calc(-50% - 40px)) scale(0.2);
+            transform: translate(var(--emberX, 60px), var(--emberY, -20px)) scale(0.3);
             opacity: 0;
           }
+        }
+        @keyframes shock-pulse {
+          0% { opacity: 0.5; transform: translate(-50%, -50%) scaleX(0.9); }
+          100% { opacity: 0.8; transform: translate(-50%, -50%) scaleX(1.1); }
         }
       `}</style>
     </div>

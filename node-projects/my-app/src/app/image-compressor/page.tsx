@@ -59,6 +59,7 @@ export default function ImageCompressorPage() {
   const [targetMB, setTargetMB] = useState(1);
   const [isCompressing, setIsCompressing] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [enableTargetSize, setEnableTargetSize] = useState(true);
   const [enableCrop, setEnableCrop] = useState(false);
   const [cropWidth, setCropWidth] = useState(1920);
   const [cropHeight, setCropHeight] = useState(1080);
@@ -347,7 +348,7 @@ export default function ImageCompressorPage() {
 
   const compressImage = async (
     file: File,
-    targetMB: number,
+    targetMB: number = 0,
     cropEnabled: boolean = false,
     targetWidth: number = 0,
     targetHeight: number = 0
@@ -358,10 +359,25 @@ export default function ImageCompressorPage() {
         const canvas = document.createElement("canvas");
         let width = img.width;
         let height = img.height;
+        let sx = 0;
+        let sy = 0;
+        let sw = img.width;
+        let sh = img.height;
 
         if (cropEnabled && targetWidth > 0 && targetHeight > 0) {
-          width = targetWidth;
-          height = targetHeight;
+          const sourceAspect = img.width / img.height;
+          const targetAspect = targetWidth / targetHeight;
+
+          if (sourceAspect > targetAspect) {
+            sw = img.height * targetAspect;
+            sx = (img.width - sw) / 2;
+          } else {
+            sh = img.width / targetAspect;
+            sy = (img.height - sh) / 2;
+          }
+
+          width = Math.round(sw);
+          height = Math.round(sh);
         }
 
         canvas.width = width;
@@ -373,10 +389,11 @@ export default function ImageCompressorPage() {
           return;
         }
 
-        ctx.drawImage(img, 0, 0, width, height);
+        ctx.drawImage(img, sx, sy, sw, sh, 0, 0, width, height);
 
         const targetBytes = targetMB * 1024 * 1024;
-        let quality = 0.9;
+        const hasTargetSize = targetMB > 0;
+        let quality = 0.85;
         let iterations = 0;
         const maxIterations = 20;
 
@@ -399,18 +416,20 @@ export default function ImageCompressorPage() {
         const attemptCompression = async () => {
           let result = await compress();
 
-          while (result.size > targetBytes && iterations < maxIterations) {
-            if (result.size > targetBytes * 1.5) {
-              width = Math.floor(width * 0.8);
-              height = Math.floor(height * 0.8);
-              canvas.width = width;
-              canvas.height = height;
-              ctx.drawImage(img, 0, 0, width, height);
-            }
+          if (hasTargetSize) {
+            while (result.size > targetBytes && iterations < maxIterations) {
+              if (result.size > targetBytes * 1.5) {
+                width = Math.floor(width * 0.8);
+                height = Math.floor(height * 0.8);
+                canvas.width = width;
+                canvas.height = height;
+                ctx.drawImage(img, sx, sy, sw, sh, 0, 0, width, height);
+              }
 
-            quality -= 0.05;
-            iterations++;
-            result = await compress();
+              quality -= 0.05;
+              iterations++;
+              result = await compress();
+            }
           }
 
           resolve(result);
@@ -600,7 +619,7 @@ export default function ImageCompressorPage() {
           setImages([...updatedImages]);
         }
 
-        const result = await compressImage(updatedImages[i].file, targetMB, enableCrop, cropWidth, cropHeight);
+        const result = await compressImage(updatedImages[i].file, enableTargetSize ? targetMB : 0, enableCrop, cropWidth, cropHeight);
 
         if (updatedImages[i].preview) {
           URL.revokeObjectURL(updatedImages[i].preview);
@@ -938,31 +957,40 @@ if (vid.croppedBlob && vid.status === "done") {
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div>
-                    <label className="text-sm text-white/60 mb-2 block">
+                    <label className="flex items-center gap-2 text-sm text-white/60 mb-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={enableTargetSize}
+                        onChange={(e) => setEnableTargetSize(e.target.checked)}
+                        className="w-4 h-4 rounded bg-white/10 border-white/20 accent-blue-500"
+                      />
+                      <Zap className="w-4 h-4" />
                       Target Size (MB per image)
                     </label>
-                    <div className="flex items-center gap-4">
-                      <input
-                        type="range"
-                        min="0.1"
-                        max="10"
-                        step="0.1"
-                        value={targetMB}
-                        onChange={(e) => setTargetMB(parseFloat(e.target.value))}
-                        className="flex-1 h-2 bg-white/10 rounded-full appearance-none cursor-pointer accent-blue-500"
-                      />
-                      <Input
-                        type="number"
-                        min="0.1"
-                        max="10"
-                        step="0.1"
-                        value={targetMB}
-                        onChange={(e) =>
-                          setTargetMB(Math.max(0.1, Math.min(10, parseFloat(e.target.value) || 1)))
-                        }
-                        className="w-20 bg-white/5 border-white/10 text-center"
-                      />
-                    </div>
+                    {enableTargetSize && (
+                      <div className="flex items-center gap-4">
+                        <input
+                          type="range"
+                          min="0.1"
+                          max="10"
+                          step="0.1"
+                          value={targetMB}
+                          onChange={(e) => setTargetMB(parseFloat(e.target.value))}
+                          className="flex-1 h-2 bg-white/10 rounded-full appearance-none cursor-pointer accent-blue-500"
+                        />
+                        <Input
+                          type="number"
+                          min="0.1"
+                          max="10"
+                          step="0.1"
+                          value={targetMB}
+                          onChange={(e) =>
+                            setTargetMB(Math.max(0.1, Math.min(10, parseFloat(e.target.value) || 1)))
+                          }
+                          className="w-20 bg-white/5 border-white/10 text-center"
+                        />
+                      </div>
+                    )}
                   </div>
 
                   <div className="pt-4 border-t border-white/10">
