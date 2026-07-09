@@ -52,6 +52,7 @@ const PROJECTS: { [section: string]: Project[] } = {
     { title: "Strudel Live Code", description: "Create music with code - live coding electronic music", href: "/strudel", accentColor: "236, 185, 11", isPublic: true },
     { title: "3D Chess", description: "Multiplayer 3D chess game with Three.js", href: "/chess3d", accentColor: "255, 215, 0", isPublic: true },
     { title: "2D CAD Sketcher", description: "2D CAD drawing app with shapes, lines, and export", href: "/sketcher", accentColor: "156, 163, 175", isPublic: true },
+    { title: "Traffic Route Optimizer", description: "Live TomTom traffic map with alternative escape routes for Faro city", href: "/traffic-optimizer", accentColor: "255, 100, 50", isPublic: false },
     { title: "Investments Dashboard", description: "Live crypto/stock prices with P&L tracking", href: "/investments", accentColor: "34, 197, 94", isPublic: false },
     { title: "Fact Check AI", description: "AI-powered fact checking for text and images", href: "/fact-check", accentColor: "59, 130, 246", isPublic: false },
     { title: "Trading Bot 🤖", description: "Multi-position AI trading bot with real-time signals & analytics", href: "/trading-bot", accentColor: "0, 255, 200", isPublic: false },
