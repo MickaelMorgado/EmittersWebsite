@@ -1517,6 +1517,10 @@ section a {
   background-position: center;
   background-size: 100%;
   animation: alternate-reverse;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
 }
 
 .platforms-button:hover {
@@ -1556,6 +1560,29 @@ section a {
 
 .platforms-button--ultra:hover {
   background-size: 53px;
+}
+
+.platforms-button--itchio {
+  position: relative;
+  background-color: rgba(255, 92, 91, 0.1);
+  border-color: #ff5c5b;
+}
+
+.platforms-button--itchio::after {
+  content: '\f2fa';
+  font-family: 'Font Awesome 5 Free';
+  font-weight: 900;
+  font-size: 40px;
+  color: #ff5c5b;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.platforms-button--itchio:hover {
+  background-color: rgba(255, 92, 91, 0.2);
+  box-shadow: 0 0 70px rgba(255, 92, 91, 0.4);
 }
 
 /* =====================================================================================================================
@@ -2108,4 +2135,100 @@ section a {
     rgba(0, 0, 0, 0.5) 65%,
     rgba(0, 0, 0, 1) 100%
   );
+}
+
+/* ====== MODERN SCI-FI ENHANCEMENTS ====== */
+
+/* Scanline overlay for sci-fi atmosphere */
+body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9999;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.03) 2px,
+    rgba(0, 0, 0, 0.03) 4px
+  );
+}
+
+/* Enhanced header with red glow */
+header {
+  box-shadow: 0 2px 20px rgba(255, 0, 0, 0.15);
+}
+
+/* Hero section enhanced overlay */
+#home::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(ellipse at 70% 50%, transparent 30%, rgba(0, 0, 0, 0.7) 100%);
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Enhanced platform buttons with glow */
+.platforms-button {
+  transition: all 0.3s ease;
+}
+
+.platforms-button:hover {
+  transform: scale(1.08);
+}
+
+/* Enhanced home title */
+.home__content h1 {
+  text-shadow: 0 0 40px rgba(255, 0, 0, 0.3);
+  letter-spacing: 3px;
+}
+
+/* Better story section */
+.story-slogan {
+  font-size: 14px;
+  letter-spacing: 3px;
+  text-shadow: 0 0 20px rgba(255, 0, 0, 0.4);
+}
+
+/* Enhanced flip cards with stronger glow */
+.flip-card:hover .fc-side--front {
+  box-shadow: 0 0 30px rgba(255, 0, 0, 0.3);
+}
+
+/* Social strip enhanced */
+.social-strip {
+  box-shadow: 0 0 400px -30px var(--red);
+  backdrop-filter: blur(10px);
+}
+
+/* Gallery hover glow */
+.gallery-item:hover {
+  box-shadow: 0 0 40px rgba(255, 0, 0, 0.2);
+}
+
+/* Enhanced map slider title */
+.map-title {
+  text-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+}
+
+/* Scroll up button glow */
+.scroll-up {
+  text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+}
+
+.scroll-up:hover {
+  box-shadow: 0 0 30px rgba(255, 0, 0, 0.3);
+}
+
+/* Enhanced meter bars */
+.meter > span {
+  box-shadow: 0 0 25px 3px red, 0 0 50px rgba(255, 0, 0, 0.3);
 }

@@ -1,0 +1,5 @@
+openai-whisper
+srt
+googletrans==4.0.0rc1
+edge-tts
+yt-dlp

@@ -1,15 +1,16 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { TrendingDown, TrendingUp, Eye, EyeOff } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { TrendingDown, TrendingUp, Eye, EyeOff, RefreshCw } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import InvestmentsSidebar from '@/app/investments/components/InvestmentsSidebar';
 import {
-  getEntries,
-  getBEP as getBEPFromEntries,
-  getCurrency as getCurrencyFromData,
+  Entry,
+  fetchAllEntries,
+  getBEPFromEntries,
+  getCurrency,
 } from '@/app/investments/data';
 
 const AUTH_PASSWORD = process.env.NEXT_PUBLIC_AUTH_PASSWORD;
@@ -71,42 +72,8 @@ interface SelectedAsset {
   price: number;
   change: number;
   currency: string;
-  entries: { date: string; qty: number; price: number }[];
+  entries: Entry[];
   bep: number;
-}
-
-const CRYPTO_API = 'https://api.binance.com/api/v3';
-
-async function fetchCryptoPrice(symbol: string): Promise<{ price: number; change: number }> {
-  try {
-    const [priceRes, tickerRes] = await Promise.all([
-      fetch(`${CRYPTO_API}/ticker/price?symbol=${symbol}USDT`),
-      fetch(`${CRYPTO_API}/ticker/24hr?symbol=${symbol}USDT`)
-    ]);
-    const priceData = await priceRes.json();
-    const tickerData = await tickerRes.json();
-    return {
-      price: parseFloat(priceData.price),
-      change: parseFloat(tickerData.priceChangePercent)
-    };
-  } catch {
-    return { price: 0, change: 0 };
-  }
-}
-
-const CRYPTO_SYMBOLS = ['BTC', 'ETH', 'LTC', 'XRP', 'SOL', 'FIL', 'DOGE'];
-
-function initCrypto(): Asset[] {
-  return CRYPTO_SYMBOLS.map(symbol => ({
-    symbol,
-    name: getCryptoName(symbol),
-    price: 0,
-    change: 0,
-    bep: getBEP(symbol),
-    qty: 0,
-    currency: 'USD',
-    price24h: 0
-  }));
 }
 
 function getCryptoName(symbol: string): string {
@@ -117,107 +84,15 @@ function getCryptoName(symbol: string): string {
   return names[symbol] || symbol;
 }
 
-const STOCK_API = 'https://query1.finance.yahoo.com/v8/finance/chart';
-
-async function fetchStockPrice(symbol: string): Promise<{ price: number; change: number }> {
-  try {
-    const res = await fetch(`${STOCK_API}/${symbol}?interval=1d&range=1d`, {
-      headers: { 'User-Agent': 'Mozilla/5.0' }
-    });
-    const data = await res.json();
-    const result = data?.chart?.result?.[0];
-    if (!result) return { price: 0, change: 0 };
-    
-    const price = result.meta.regularMarketPrice || 0;
-    const prevClose = result.meta.previousClose || price;
-    const change = prevClose > 0 ? ((price - prevClose) / prevClose) * 100 : 0;
-    return { price, change };
-  } catch {
-    return { price: 0, change: 0 };
-  }
-}
-
-const STOCK_SYMBOLS = ['DB', 'KVU', 'EXO', 'XBO', 'MOTA'];
-
-function getStockSymbol(symbol: string): string {
-  return getStockName(symbol);
-}
-
 function getStockName(symbol: string): string {
   const names: Record<string, string> = {
-    DB: 'Digital Bros', KVU: 'Kenvue', EXO: 'Exodus', XBO: 'Realbotix',
-    MOTA: 'Mota Engil', BTC: 'Bitcoin', ETH: 'Ethereum', LTC: 'Litecoin',
+    DIB: 'Digital Bros', KVU: 'Kenvue', EXO: 'Exodus', EXOD: 'Exodus', XBO: 'Realbotix',
+    MOTA: 'Mota Engil', XPEV: 'XPeng', MSGM: 'Motorsport Games', NBIU: 'Biotech ETF',
+    IPRP: 'EU Property ETF', EDPR: 'EDP Renewals', TDG: 'MSCI World ETF', XGAT: 'Xetra-Gold', BTC: 'Bitcoin', ETH: 'Ethereum', LTC: 'Litecoin',
     XRP: 'XRP', SOL: 'Solana', FIL: 'Filecoin', DOGE: 'Dogecoin',
     ADA: 'Cardano', XTZ: 'Tezos'
   };
   return names[symbol] || symbol;
-}
-
-
-
-const PORTFOLIO: Record<string, { bep: number; qty: number; currency: string }> = {
-  DB: { bep: 0, qty: 0, currency: 'EUR' },
-  KVU: { bep: 0, qty: 0, currency: 'USD' },
-  EXO: { bep: 0, qty: 0, currency: 'USD' },
-  XBO: { bep: 0, qty: 0, currency: 'EUR' },
-  MOTA: { bep: 0, qty: 0, currency: 'EUR' },
-  BTC: { bep: 0, qty: 0, currency: 'USD' },
-  ETH: { bep: 0, qty: 0, currency: 'USD' },
-  LTC: { bep: 0, qty: 0, currency: 'USD' },
-  XRP: { bep: 0, qty: 0, currency: 'USD' },
-  SOL: { bep: 0, qty: 0, currency: 'USD' },
-  FIL: { bep: 0, qty: 0, currency: 'USD' },
-  DOGE: { bep: 0, qty: 0, currency: 'USD' },
-  ADA: { bep: 0, qty: 0, currency: 'USD' },
-  XTZ: { bep: 0, qty: 0, currency: 'USD' },
-};
-
-function getBEP(symbol: string): number {
-  const entries = getEntries(symbol);
-  return getBEPFromEntries(entries);
-}
-
-function getQty(symbol: string): number {
-  const entries = getEntries(symbol);
-  return entries.reduce((sum, e) => sum + e.qty, 0);
-}
-
-function getCurrency(symbol: string): string {
-  return getCurrencyFromData(symbol);
-}
-
-function getInitialCrypto(): Asset[] {
-  return CRYPTO_SYMBOLS.map(symbol => ({
-    symbol,
-    name: getCryptoName(symbol),
-    price: 0,
-    change: 0,
-    bep: getBEP(symbol),
-    qty: 0,
-    currency: 'USD',
-    price24h: 0
-  }));
-}
-
-function getInitialStocks(): Asset[] {
-  return [...STOCK_SYMBOLS, 'EXOD', 'DIB', 'XBOTF'].map(symbol => ({
-    symbol,
-    name: getStockSymbol(symbol),
-    price: 0,
-    change: 0,
-    bep: getBEP(symbol),
-    qty: getQty(symbol),
-    currency: getCurrency(symbol),
-    price24h: 0
-  }));
-}
-
-function getInitialCommodities(): Asset[] {
-  return [
-    { symbol: 'XAU', name: 'Gold', price: 0, change: 0, bep: 0, qty: 0, currency: 'USD', price24h: 0 },
-    { symbol: 'XPT', name: 'Platinum', price: 0, change: 0, bep: 0, qty: 0, currency: 'USD', price24h: 0 },
-    { symbol: 'SP500', name: 'S&P 500', price: 0, change: 0, bep: 0, qty: 0, currency: 'USD', price24h: 0 },
-  ];
 }
 
 function formatPrice(price: number) {
@@ -337,53 +212,33 @@ function AssetCard({ asset, loading, sparkline = [], onClick, blurValues = false
   );
 }
 
-function getTradingViewLink(symbol: string, currency: string): string {
-  const base = 'https://www.tradingview.com/chart/?symbol=';
-  const pairs: Record<string, string> = {
-    BTC: 'BINANCE:BTCUSDT',
-    ETH: 'BINANCE:ETHUSDT',
-    LTC: 'BINANCE:LTCUSDT',
-    XRP: 'BINANCE:XRPUSDT',
-    SOL: 'BINANCE:SOLUSDT',
-    FIL: 'BINANCE:FILUSDT',
-    DOGE: 'BINANCE:DOGEUSDT',
-    ADA: 'BINANCE:ADAUSDT',
-    XTZ: 'BINANCE:XTZUSDT',
-    AAPL: 'NASDAQ:AAPL',
-    META: 'NASDAQ:META',
-    TTWO: 'NASDAQ:TTWO',
-    XPEV: 'NASDAQ:XPEV',
-    EGL: 'EURONEXT:EGL',
-    KVUE: 'NYSE:KVUE',
-    EXOD: 'NASDAQ:EXOD',
-    DIB: 'MILAN:DIB',
-    XBOTF: 'OTC:XBOTF',
-    XAU: 'TVC:GOLD',
-    XPT: 'TVC:PLATINUM',
-    SP500: 'TVC:SPX',
-  };
-  return base + (pairs[symbol] || `NYSE:${symbol}`);
-}
-
 export default function InvestmentsPage() {
   const [unlocked, setUnlocked] = useState(false);
-  const [cryptoData, setCryptoData] = useState<Asset[]>(getInitialCrypto());
-  const [stockData, setStockData] = useState<Asset[]>(getInitialStocks());
-  const [commodities, setCommodities] = useState<Asset[]>(getInitialCommodities());
+  const [cryptoData, setCryptoData] = useState<Asset[]>([]);
+  const [stockData, setStockData] = useState<Asset[]>([]);
+  const [commodities, setCommodities] = useState<Asset[]>([]);
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState<SelectedAsset | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [blurValues, setBlurValues] = useState(false);
+  const [entriesMap, setEntriesMap] = useState<Record<string, Entry[]>>({});
+
+  const loadEntries = useCallback(async () => {
+    const all = await fetchAllEntries();
+    setEntriesMap(all);
+    return all;
+  }, []);
 
   const handleAssetClick = (asset: Asset) => {
-    const entries = getEntries(asset.symbol);
+    const entries = entriesMap[asset.symbol] || [];
     const bep = getBEPFromEntries(entries);
     setSelectedAsset({
       symbol: asset.symbol,
       name: asset.name,
       price: asset.price,
       change: asset.change,
-      currency: asset.currency,
+      currency: getCurrency(asset.symbol, entries),
       entries,
       bep,
     });
@@ -395,47 +250,67 @@ export default function InvestmentsPage() {
     setSelectedAsset(null);
   };
 
-  useEffect(() => {
-    async function fetchAllPrices() {
-      setLoading(true);
+  const handleEntriesChange = useCallback(async () => {
+    const updated = await loadEntries();
+    if (selectedAsset) {
+      const entries = updated[selectedAsset.symbol] || [];
+      const bep = getBEPFromEntries(entries);
+      setSelectedAsset(prev => prev ? { ...prev, entries, bep } : null);
+    }
+  }, [loadEntries, selectedAsset]);
+
+  const fetchAllPrices = useCallback(async (entries: Record<string, Entry[]>) => {
+    try {
+      const res = await fetch('/api/investments');
+      const data = await res.json();
       
-try {
-        const res = await fetch('/api/investments');
-        const data = await res.json();
-        
-        if (Array.isArray(data)) {
-          const allResults = data.filter((d: any) => d && d.price > 0).map((d: any) => ({
+      if (Array.isArray(data)) {
+        const allResults = data.filter((d: any) => d && d.price > 0).map((d: any) => {
+          const symEntries = entries[d.symbol] || [];
+          return {
             symbol: d.symbol,
-            name: getCryptoName(d.symbol) || getStockSymbol(d.symbol),
+            name: getCryptoName(d.symbol) || getStockName(d.symbol),
             price: d.price,
             change: d.change,
-            bep: getBEP(d.symbol),
-            qty: getQty(d.symbol),
-            currency: getCurrency(d.symbol),
+            bep: getBEPFromEntries(symEntries),
+            qty: symEntries.reduce((sum: number, e: Entry) => sum + e.qty, 0),
+            currency: getCurrency(d.symbol, symEntries),
             price24h: d.price
-          }));
-          
-          const withAllocation = (a: any) => (getQty(a.symbol) || 0) * (getBEP(a.symbol) || 0);
-          
-          const cryptoResults = allResults.filter((a: any) => ['BTC','ETH','LTC','XRP','SOL','FIL','DOGE','ADA','XTZ'].includes(a.symbol));
-          const stockResults = allResults.filter((a: any) => ['DB','KVU','EXO','XBO','MOTA'].includes(a.symbol));
-          const commodityResults = allResults.filter((a: any) => ['XAU','XPT','SP500'].includes(a.symbol));
-          
-          // Only update if we have data
-          if (cryptoResults.length > 0) setCryptoData(cryptoResults.sort((a: any, b: any) => withAllocation(b) - withAllocation(a)));
-          if (stockResults.length > 0) setStockData(stockResults.sort((a: any, b: any) => withAllocation(b) - withAllocation(a)));
-          if (commodityResults.length > 0) setCommodities(commodityResults.sort((a: any, b: any) => withAllocation(b) - withAllocation(a)));
-        }
-      } catch (err) {
-        console.error('Failed to fetch prices:', err);
+          };
+        });
+        
+        const withAllocation = (a: any) => (a.qty || 0) * (a.bep || 0);
+        
+        const cryptoResults = allResults.filter((a: any) => ['BTC','ETH','LTC','XRP','SOL','FIL','DOGE','ADA','XTZ'].includes(a.symbol));
+        const stockResults = allResults.filter((a: any) => ['DIB','KVU','EXO','EXOD','XBO','MOTA','XPEV','MSGM','NBIU','IPRP','EDPR','TDG','XGAT'].includes(a.symbol));
+        const commodityResults = allResults.filter((a: any) => ['XAU','XPT','SP500'].includes(a.symbol));
+        
+        if (cryptoResults.length > 0) setCryptoData(cryptoResults.sort((a: any, b: any) => withAllocation(b) - withAllocation(a)));
+        if (stockResults.length > 0) setStockData(stockResults.sort((a: any, b: any) => withAllocation(b) - withAllocation(a)));
+        if (commodityResults.length > 0) setCommodities(commodityResults.sort((a: any, b: any) => withAllocation(b) - withAllocation(a)));
       }
+    } catch (err) {
+      console.error('Failed to fetch prices:', err);
+    }
+  }, []);
+
+  const handleSync = async () => {
+    setSyncing(true);
+    const entries = await loadEntries();
+    await fetchAllPrices(entries);
+    setSyncing(false);
+  };
+
+  useEffect(() => {
+    async function init() {
+      setLoading(true);
+      const entries = await loadEntries();
       setLoading(false);
+      await fetchAllPrices(entries);
     }
 
-    fetchAllPrices();
-    const interval = setInterval(fetchAllPrices, 30000);
-    return () => clearInterval(interval);
-  }, []);
+    init();
+  }, [loadEntries, fetchAllPrices]);
 
   useEffect(() => {
     const token = localStorage.getItem('investments-token');
@@ -447,22 +322,31 @@ try {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white p-4 lg:p-8">
-      <div className="container mx-auto">
-        <div className="flex items-center justify-between mb-2">
-          <h1 className="text-4xl font-bold tracking-tight heading-shine uppercase">Investments Dashboard</h1>
+    <div className="min-h-screen bg-black text-white p-3 lg:p-4">
+      <div className="flex items-center justify-between mb-2">
+        <h1 className="text-xl font-bold tracking-tight heading-shine uppercase">Investments</h1>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleSync}
+            disabled={syncing}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-colors disabled:opacity-50"
+            title="Sync prices"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${syncing ? 'animate-spin' : ''}`} />
+            <span className="text-xs">{syncing ? 'Syncing...' : 'Sync'}</span>
+          </button>
           <button
             onClick={() => setBlurValues(!blurValues)}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-colors"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-colors"
             title={blurValues ? 'Show values' : 'Hide values'}
           >
-            {blurValues ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-            <span className="text-sm">{blurValues ? 'Show' : 'Hide'}</span>
+            {blurValues ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+            <span className="text-xs">{blurValues ? 'Show' : 'Hide'}</span>
           </button>
         </div>
-        <p className="text-zinc-400 mb-4">Track your stocks, crypto, and market indices</p>
+      </div>
 
-        <div className="flex gap-4 h-[calc(100vh-180px)]">
+      <div className="flex gap-3 h-[calc(100vh-60px)]">
           <div className={`flex-1 transition-all duration-300 overflow-y-auto pr-2 ${selectedAsset ? 'w-[40%]' : 'w-full'}`}>
             {/* Crypto */}
             <section className="mb-8">
@@ -496,20 +380,21 @@ try {
           </div>
           {selectedAsset && (
             <InvestmentsSidebar
-              key={selectedAsset.symbol}
+              key={`${selectedAsset.symbol}-${entriesMap[selectedAsset.symbol]?.length}`}
               symbol={selectedAsset.symbol}
               name={selectedAsset.name}
               currentPrice={selectedAsset.price}
               change24h={selectedAsset.change}
               entries={selectedAsset.entries}
               bep={selectedAsset.bep}
-              currency={getCurrencyFromData(selectedAsset.symbol)}
+              currency={selectedAsset.currency}
               isOpen={sidebarOpen}
               onClose={handleCloseSidebar}
+              onEntriesChange={handleEntriesChange}
+              blurValues={blurValues}
             />
           )}
         </div>
-      </div>
     </div>
   );
 }

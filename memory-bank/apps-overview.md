@@ -28,6 +28,7 @@ This document provides a centralized overview of all interactive applications an
 | **3D Chess** | Multiplayer 3D chess game with Three.js. | [3D Chess](project-specific/apps/chess3d.md) |
 | **MikaBot Dashboard** | AI trading bot performance analytics & self-learning. | [MikaBot](project-specific/apps/mikabot.md) |
 | **Cursor Follower** | Portrait (9:16) live stream centered on mouse cursor. | [Cursor Follower](project-specific/apps/cursor-follower.md) |
+| **LLM Rules Manager** | Manage orthography, context, and tool usage rules for AI assistants. | [LLM Rules](project-specific/apps/llm-rules.md) |
 
 ## Infrastructure & Backend
 

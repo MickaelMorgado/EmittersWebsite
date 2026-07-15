@@ -1,15 +1,46 @@
 .env
 .env.local
+.env.*.local
 
 # Project dependencies
 .cache
 node_modules
+**/node_modules
 yarn-error.log
 
 # Build directory
 /public
+.next/
+**/.next/
+out/
+dist/
+build/
 .DS_Store
 
+# Python / tooling caches
+.venv/
+**/.venv/
+.ruff_cache/
+__pycache__/
+**/__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Tool / agent scratch output
+.playwright-mcp/
+.shared/
+.agent/
+
+# Logs and temp artifacts
+*.log
+**/build.log
+**/server.log
+**/debug.log
+nul
+
+# Media (large binaries)
 assets/videos/
+
+# Personal / local
 personal-memory-bank/
 node-projects/my-app/pc-ai-assistant/output.wav

@@ -122,8 +122,9 @@
     ]
   },
   "image-compressor": {
-    "current": { "version": "1.0.0", "releasedAt": "2026-03-14", "changes": ["Media Processor - compress images and crop videos with preset ratios"] },
+    "current": { "version": "1.1.0", "releasedAt": "2026-06-20", "changes": ["Fix video crop/trim to preserve audio using Web Audio API"] },
     "history": [
+      { "version": "1.1.0", "releasedAt": "2026-06-20", "changes": ["Fix video crop/trim to preserve audio using Web Audio API"] },
       { "version": "1.0.0", "releasedAt": "2026-03-14", "changes": ["Media Processor - compress images and crop videos with preset ratios"] }
     ]
   },
@@ -131,6 +132,12 @@
     "current": { "version": "0.1.0", "releasedAt": "2026-03-14", "changes": ["AI Agent management dashboard for OpenClaw"] },
     "history": [
       { "version": "0.1.0", "releasedAt": "2026-03-14", "changes": ["AI Agent management dashboard for OpenClaw"] }
+    ]
+  },
+  "video-dubbing": {
+    "current": { "version": "1.0.0", "releasedAt": "2026-06-10", "changes": ["AI voice dubbing for YouTube videos", "French and Portuguese support", "Edge TTS voice generation", "Whisper transcription", "Google Translate integration"] },
+    "history": [
+      { "version": "1.0.0", "releasedAt": "2026-06-10", "changes": ["AI voice dubbing for YouTube videos", "French and Portuguese support", "Edge TTS voice generation", "Whisper transcription", "Google Translate integration"] }
     ]
   }
 }
