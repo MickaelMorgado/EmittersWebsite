@@ -30,6 +30,10 @@ export default function EquityChart({ data }: EquityChartProps) {
     }
   }, [data, hasInitialized]);
 
+  const yDomain = data.length > 0
+    ? [Math.floor(Math.min(...data.map(d => d.equity)) - 1), Math.ceil(Math.max(...data.map(d => d.equity)) + 1)]
+    : [0, 100];
+
   return (
     <div className="bg-white/[0.02] border border-white/[0.05] flex flex-col min-h-0 rounded h-full">
       <div className="flex items-center justify-between px-3 py-1 border-b border-white/[0.05] shrink-0">
@@ -37,11 +41,14 @@ export default function EquityChart({ data }: EquityChartProps) {
           <TrendingUp className="w-3 h-3 text-violet-400/40" />
           <h2 className="text-[10px] font-semibold text-white/50 tracking-wide">Equity Curve</h2>
         </div>
-        {data.length > 0 && (
-          <span className={`text-[9px] font-mono font-bold ${data[data.length - 1]?.equity >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-            {data[data.length - 1]?.equity >= 0 ? '+' : ''}{data[data.length - 1]?.equity.toFixed(2)}
-          </span>
-        )}
+        {data.length > 0 && (() => {
+          const delta = data[data.length - 1].equity - data[0].equity;
+          return (
+            <span className={`text-[9px] font-mono font-bold ${delta >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+              {delta >= 0 ? '+' : ''}{delta.toFixed(2)}
+            </span>
+          );
+        })()}
       </div>
 
       <div className="relative flex-1 min-h-0 p-2">
@@ -49,7 +56,7 @@ export default function EquityChart({ data }: EquityChartProps) {
           <div className="flex items-center justify-center h-full text-white/20 text-xs">No data yet</div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
+            <AreaChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: 10 }}>
               <defs>
                 <linearGradient id="xmEquityGradient" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="rgba(139,92,246,0.4)" />
@@ -57,9 +64,9 @@ export default function EquityChart({ data }: EquityChartProps) {
                 </linearGradient>
               </defs>
               <XAxis dataKey="trade" tick={{ fill: 'rgba(255,255,255,0.2)', fontSize: 9 }} axisLine={{ stroke: 'rgba(255,255,255,0.06)' }} tickLine={false} />
-              <YAxis tick={{ fill: 'rgba(255,255,255,0.2)', fontSize: 9 }} axisLine={false} tickLine={false} />
+              <YAxis domain={yDomain} tick={{ fill: 'rgba(255,255,255,0.2)', fontSize: 9 }} axisLine={false} tickLine={false} />
               <Tooltip content={<ChartTooltipContent />} />
-              <ReferenceLine y={0} stroke="rgba(255,255,255,0.1)" strokeDasharray="3 3" />
+              <ReferenceLine y={50} stroke="rgba(255,255,255,0.1)" strokeDasharray="3 3" />
               <Area
                 type="linear"
                 dataKey="equity"

@@ -4,7 +4,9 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import DateRangePicker from './components/DateRangePicker';
 import EquityChart from './components/EquityChart';
 import Header from './components/Header';
+import MonthlyCalendar from './components/MonthlyCalendar';
 import MetricsSection from './components/MetricsSection';
+import ExportPopup from './components/ExportPopup';
 import RiskLimitsCard from './components/RiskLimitsCard';
 import TradeHistorySection from './components/TradeHistorySection';
 
@@ -93,8 +95,8 @@ export default function XmTradingDashboard() {
 
   const { equityData, reports } = useMemo(() => {
     const chronological = [...history].reverse();
-    let cumulative = 0;
-    let peak = 0;
+    let cumulative = 50;
+    let peak = 50;
     let maxDrawdown = 0;
     const equity: { trade: string; equity: number }[] = [];
     const wins: number[] = [];
@@ -143,7 +145,7 @@ export default function XmTradingDashboard() {
       : 0;
 
     return {
-      equityData: equity.reverse(),
+      equityData: equity,
       reports: {
         bestTrade: bestTrade === -Infinity ? 0 : bestTrade,
         worstTrade: worstTrade === Infinity ? 0 : worstTrade,
@@ -157,6 +159,8 @@ export default function XmTradingDashboard() {
         longestLoseStreak,
         totalGrossProfit: totalWins,
         totalGrossLoss: totalLosses,
+        currentStreak: curWinStreak > 0 ? curWinStreak : curLoseStreak,
+        currentStreakType: curWinStreak > 0 ? 'WIN' as const : curLoseStreak > 0 ? 'LOSS' as const : null,
       },
     };
   }, [history]);
@@ -179,23 +183,28 @@ export default function XmTradingDashboard() {
             loading={loading}
             onRefresh={fetchTrades}
           />
-          <DateRangePicker
-            start={dateStart}
-            end={dateEnd}
-            onStartChange={setDateStart}
-            onEndChange={setDateEnd}
-          />
+          <div className="flex items-center gap-1">
+            <DateRangePicker
+              start={dateStart}
+              end={dateEnd}
+              onStartChange={setDateStart}
+              onEndChange={setDateEnd}
+              firstTradeDate={allHistory.length > 0 ? toDateString(parseTradeDate([...allHistory].reverse()[0].time)) : undefined}
+            />
+            <ExportPopup history={history} stats={{ ...stats, ...reports }} dateStart={dateStart} dateEnd={dateEnd} />
+          </div>
         </div>
 
-        <div className="grid grid-cols-4 gap-2 mb-3 shrink-0" style={{ height: '20%' }}>
+        <div className="grid grid-cols-4 gap-2 mb-3 shrink-0" style={{ height: '22%' }}>
           <div className="col-span-3">
             <EquityChart data={equityData} />
           </div>
           <RiskLimitsCard stats={stats} />
         </div>
 
-        <div className="grid grid-cols-2 gap-2 flex-1 min-h-0">
+        <div className="grid grid-cols-3 gap-2 flex-1 min-h-0">
           <MetricsSection reports={reports} stats={stats} />
+          <MonthlyCalendar history={history} />
           <TradeHistorySection history={history} />
         </div>
 
