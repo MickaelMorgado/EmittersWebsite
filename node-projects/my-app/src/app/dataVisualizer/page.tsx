@@ -24,9 +24,10 @@ interface GalaxyProps {
   index: number
   xOffset?: number
   zOffset?: number
+  shape?: "disk" | "sphere"
 }
 
-function Galaxy({ count, spacing, verticality, color, name, showLabel, onHover, index, xOffset = 0, zOffset = 0 }: GalaxyProps) {
+function Galaxy({ count, spacing, verticality, color, name, showLabel, onHover, index, xOffset = 0, zOffset = 0, shape = "disk" }: GalaxyProps) {
   const meshRef = useRef<THREE.InstancedMesh>(null!)
 
   const positions = useMemo(() => {
@@ -34,13 +35,25 @@ function Galaxy({ count, spacing, verticality, color, name, showLabel, onHover, 
     const positions = []
 
     for (let i = 0; i < count; i++) {
-      const angle = (i / count) * Math.PI * 8
-      const radius = Math.pow(Math.random(), 0.5) * (25 * spacing)
-      const armOffset = (i % 3) * ((Math.PI * 2) / 3)
+      let x: number, y: number, z: number
 
-      const x = Math.cos(angle + armOffset) * radius + (Math.random() - 0.5) * (5 * spacing)
-      const z = Math.sin(angle + armOffset) * radius + (Math.random() - 0.5) * (5 * spacing)
-      const y = (Math.random() - 0.5) * (4 * spacing * verticality)
+      if (shape === "sphere") {
+        const phi = Math.acos(2 * Math.random() - 1)
+        const theta = Math.random() * Math.PI * 2
+        const r = Math.pow(Math.random(), 1/3) * (25 * spacing)
+
+        x = r * Math.sin(phi) * Math.cos(theta)
+        y = r * Math.sin(phi) * Math.sin(theta) * verticality
+        z = r * Math.cos(phi)
+      } else {
+        const angle = (i / count) * Math.PI * 8
+        const radius = Math.pow(Math.random(), 0.5) * (25 * spacing)
+        const armOffset = (i % 3) * ((Math.PI * 2) / 3)
+
+        x = Math.cos(angle + armOffset) * radius + (Math.random() - 0.5) * (5 * spacing)
+        z = Math.sin(angle + armOffset) * radius + (Math.random() - 0.5) * (5 * spacing)
+        y = (Math.random() - 0.5) * (4 * spacing * verticality)
+      }
 
       temp.position.set(x, y, z)
       temp.scale.setScalar(Math.random() * 0.05 + 0.05)
@@ -50,7 +63,7 @@ function Galaxy({ count, spacing, verticality, color, name, showLabel, onHover, 
     }
 
     return positions
-  }, [count, spacing, verticality])
+  }, [count, spacing, verticality, shape])
 
   const groupRef = useRef<THREE.Group>(null!)
 
@@ -102,6 +115,7 @@ export default function GalaxyVisualization() {
   const [mainDescription, setMainDescription] = useState<string>("A multi-dimensional comparison of complex datasets.")
   const [isDispersed, setIsDispersed] = useState<boolean>(false)
   const [showLabels, setShowLabels] = useState<boolean>(true)
+  const [shape, setShape] = useState<"disk" | "sphere">("disk")
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(true)
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
 
@@ -206,6 +220,17 @@ export default function GalaxyVisualization() {
                   className="h-10 px-4 whitespace-nowrap"
                 >
                   {isDispersed ? "Dispersed" : "Blended"}
+                </Button>
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-white text-xs">Shape</label>
+                <Button 
+                  onClick={() => setShape(shape === "disk" ? "sphere" : "disk")}
+                  variant="secondary"
+                  size="sm"
+                  className="h-10 px-4 whitespace-nowrap"
+                >
+                  {shape === "disk" ? "Disk" : "Sphere"}
                 </Button>
               </div>
               <div className="flex flex-col gap-1">
@@ -396,7 +421,8 @@ Question:
                     onHover={setHoveredIndex}
                     index={index}
                     xOffset={xOff} 
-                    zOffset={zOff} 
+                    zOffset={zOff}
+                    shape={shape}
                   />
                 )
               }
