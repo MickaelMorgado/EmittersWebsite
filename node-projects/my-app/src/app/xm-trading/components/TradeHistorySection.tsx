@@ -56,8 +56,8 @@ export default function TradeHistorySection({ history }: TradeHistorySectionProp
                 </div>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className={`text-xs font-mono font-bold ${trade.netProfit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                  {trade.netProfit >= 0 ? '+' : ''}{trade.netProfit.toFixed(2)}
+                <span className={`text-xs font-mono font-bold ${(trade.netProfit ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                  {(trade.netProfit ?? 0) >= 0 ? '+' : ''}{(trade.netProfit ?? 0).toFixed(2)}
                 </span>
                 {trade.result && (
                   <span className={`inline-flex items-center px-1 py-0.5 text-[10px] font-bold uppercase tracking-wider ${

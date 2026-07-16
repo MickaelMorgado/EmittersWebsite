@@ -83,11 +83,11 @@ export default function XmTradingDashboard() {
   }, [allHistory, dateStart, dateEnd]);
 
   const stats = useMemo(() => {
-    const wins = history.filter((t) => t.netProfit >= 0).length;
-    const losses = history.filter((t) => t.netProfit < 0).length;
+    const wins = history.filter((t) => (t.netProfit ?? 0) >= 0).length;
+    const losses = history.filter((t) => (t.netProfit ?? 0) < 0).length;
     const total = history.length;
     const winRate = total > 0 ? Math.round((wins / total) * 1000) / 10 : 0;
-    const totalPnl = history.reduce((sum, t) => sum + t.netProfit, 0);
+    const totalPnl = history.reduce((sum, t) => sum + (t.netProfit ?? 0), 0);
     return { totalTrades: total, wins, losses, winRate, totalPnl: Math.round(totalPnl * 100) / 100 };
   }, [history]);
 
@@ -108,17 +108,18 @@ export default function XmTradingDashboard() {
 
     chronological.forEach((t, i) => {
       const tradeLabel = `#${i + 1}`;
-      cumulative += t.netProfit;
+      const profit = t.netProfit ?? 0;
+      cumulative += profit;
 
-      if (t.netProfit > bestTrade) bestTrade = t.netProfit;
-      if (t.netProfit < worstTrade) worstTrade = t.netProfit;
+      if (profit > bestTrade) bestTrade = profit;
+      if (profit < worstTrade) worstTrade = profit;
 
-      if (t.netProfit >= 0) {
-        wins.push(t.netProfit);
+      if (profit >= 0) {
+        wins.push(profit);
         curWinStreak++;
         curLoseStreak = 0;
       } else {
-        losses.push(Math.abs(t.netProfit));
+        losses.push(Math.abs(profit));
         curLoseStreak++;
         curWinStreak = 0;
       }
