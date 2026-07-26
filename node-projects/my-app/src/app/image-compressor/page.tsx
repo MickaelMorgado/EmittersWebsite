@@ -9,6 +9,8 @@ import JSZip from "jszip";
 import { CheckCircle, Crop, Download, Image as ImageIcon, Loader2, Pause, Pencil, Play, Scissors, Upload, Video, Volume2, VolumeX, X, Zap } from "lucide-react";
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { FFmpeg } from "@ffmpeg/ffmpeg";
+import { fetchFile, toBlobURL } from "@ffmpeg/util";
 
 type Tab = "images" | "videos";
 
@@ -42,6 +44,14 @@ interface VideoFile {
   thumbnails?: string[];
 }
 
+const VIDEO_QUALITY_PRESETS = {
+  balanced: { label: "Balanced", desc: "Fast, smaller file", crf: "23", bitrate: "2500k", maxrate: "4000k", bufsize: "8000k", preset: "fast", audioBitrate: "128k", captureBitrate: 4_000_000 },
+  high:     { label: "High",     desc: "Good quality",       crf: "20", bitrate: "5000k", maxrate: "8000k", bufsize: "16000k", preset: "fast",   audioBitrate: "160k", captureBitrate: 7_000_000 },
+  max:      { label: "Max",      desc: "Best quality, slow", crf: "18", bitrate: "8000k", maxrate: "10000k", bufsize: "20000k", preset: "medium", audioBitrate: "192k", captureBitrate: 10_000_000 },
+} as const;
+
+type VideoQuality = keyof typeof VIDEO_QUALITY_PRESETS;
+
 const VIDEO_PRESETS = [
   { name: "TikTok Portrait", width: 1080, height: 1920, ratio: "9:16", icon: "📱" },
   { name: "YouTube Shorts", width: 1080, height: 1920, ratio: "9:16", icon: "🎬" },
@@ -67,6 +77,7 @@ export default function ImageCompressorPage() {
   const [videoHeight, setVideoHeight] = useState(1920);
   const [isProcessingVideo, setIsProcessingVideo] = useState(false);
   const [videoFormat, setVideoFormat] = useState<"webm" | "mp4">("webm");
+  const [videoQuality, setVideoQuality] = useState<VideoQuality>("high");
   const [videoDuration, setVideoDuration] = useState(30);
   const [editingVideoId, setEditingVideoId] = useState<string | null>(null);
   const [draggingHandle, setDraggingHandle] = useState<"start" | "end" | null>(null);
@@ -76,6 +87,8 @@ export default function ImageCompressorPage() {
   const timelineRef = useRef<HTMLDivElement>(null);
   const previewVideoRef = useRef<HTMLVideoElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
+  const ffmpegRef = useRef<FFmpeg | null>(null);
+  const ffmpegLoadedRef = useRef(false);
 
   useEffect(() => {
     if (draggingHandle) {
@@ -131,6 +144,67 @@ export default function ImageCompressorPage() {
     const secs = Math.floor(seconds % 60);
     const ms = Math.floor((seconds % 1) * 10);
     return `${mins}:${secs.toString().padStart(2, "0")}.${ms}`;
+  };
+
+  const loadFFmpeg = async (): Promise<FFmpeg> => {
+    if (ffmpegLoadedRef.current && ffmpegRef.current) return ffmpegRef.current;
+    const ffmpeg = new FFmpeg();
+    const baseURL = "https://unpkg.com/@ffmpeg/core@0.12.10/dist/umd";
+    await ffmpeg.load({
+      coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
+      wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, "application/wasm"),
+    });
+    ffmpegRef.current = ffmpeg;
+    ffmpegLoadedRef.current = true;
+    return ffmpeg;
+  };
+
+  const transcodeToMP4 = async (webmBlob: Blob, quality: VideoQuality = "high"): Promise<Blob> => {
+    const ffmpeg = await loadFFmpeg();
+    const inputData = await fetchFile(webmBlob);
+    await ffmpeg.writeFile("input.webm", inputData);
+
+    const q = VIDEO_QUALITY_PRESETS[quality];
+    const videoArgs = [
+      "-c:v", "libx264",
+      "-profile:v", "high",
+      "-level", "4.2",
+      "-preset", q.preset,
+      "-crf", q.crf,
+      "-b:v", q.bitrate,
+      "-maxrate", q.maxrate,
+      "-bufsize", q.bufsize,
+      "-pix_fmt", "yuv420p",
+      "-vf", "scale=trunc(iw/2)*2:trunc(ih/2)*2",
+      "-r", "30",
+    ];
+    const audioArgs = ["-c:a", "aac", "-b:a", q.audioBitrate, "-ar", "44100", "-ac", "2"];
+
+    // Try with audio first; if it fails (no audio track in source), retry without
+    let exitCode = await ffmpeg.exec([
+      "-i", "input.webm",
+      ...videoArgs,
+      ...audioArgs,
+      "-movflags", "+faststart",
+      "output.mp4",
+    ]);
+
+    if (exitCode !== 0) {
+      exitCode = await ffmpeg.exec([
+        "-i", "input.webm",
+        ...videoArgs,
+        "-an",
+        "-movflags", "+faststart",
+        "output.mp4",
+      ]);
+    }
+
+    if (exitCode !== 0) throw new Error(`ffmpeg exited with code ${exitCode}`);
+
+    const data = await ffmpeg.readFile("output.mp4");
+    await ffmpeg.deleteFile("input.webm");
+    await ffmpeg.deleteFile("output.mp4");
+    return new Blob([data as Uint8Array<ArrayBuffer>], { type: "video/mp4" });
   };
 
   const generateThumbnails = (file: File): Promise<string[]> => {
@@ -447,6 +521,7 @@ export default function ImageCompressorPage() {
     targetWidth: number,
     targetHeight: number,
     outputFormat: "webm" | "mp4" = "webm",
+    quality: VideoQuality = "high",
     trimStartTime: number = 0,
     trimEndTime: number = 0
   ): Promise<{ blob: Blob; size: number }> => {
@@ -537,7 +612,12 @@ export default function ImageCompressorPage() {
             }
           }
 
-          const recorder = new MediaRecorder(combinedStream, { mimeType });
+          const qualityPreset = VIDEO_QUALITY_PRESETS[quality];
+          const recorder = new MediaRecorder(combinedStream, {
+            mimeType,
+            videoBitsPerSecond: qualityPreset.captureBitrate,
+            audioBitsPerSecond: parseInt(qualityPreset.audioBitrate) * 1000,
+          });
           const chunks: Blob[] = [];
 
           recorder.ondataavailable = (e) => {
@@ -546,12 +626,19 @@ export default function ImageCompressorPage() {
             }
           };
 
-          recorder.onstop = () => {
+          recorder.onstop = async () => {
             const actualMimeType = mimeType.split(";")[0];
-            const blob = new Blob(chunks, { type: actualMimeType });
+            let blob = new Blob(chunks, { type: actualMimeType });
             URL.revokeObjectURL(video.src);
             if (audioContext && audioContext.state !== "closed") {
               audioContext.close();
+            }
+            if (outputFormat === "mp4") {
+              try {
+                blob = await transcodeToMP4(blob, quality);
+              } catch (err) {
+                console.error("ffmpeg transcode failed, falling back to source:", err);
+              }
             }
             resolve({ blob, size: blob.size });
           };
@@ -666,7 +753,7 @@ const vidDuration = updatedVideos[i].duration || videoDuration;
         const trimEndTime = (updatedVideos[i].trimEnd / 100) * vidDuration;
         const targetW = cropEnabled ? videoWidth : 1920;
         const targetH = cropEnabled ? videoHeight : 1080;
-        const result = await cropVideo(updatedVideos[i], targetW, targetH, videoFormat, trimStartTime, trimEndTime);
+        const result = await cropVideo(updatedVideos[i], targetW, targetH, videoFormat, videoQuality, trimStartTime, trimEndTime);
 
         if (updatedVideos[i].preview) {
           URL.revokeObjectURL(updatedVideos[i].preview);
@@ -713,7 +800,7 @@ const vidDuration = updatedVideos[i].duration || videoDuration;
   const handleDownloadVideos = () => {
     videos.forEach((vid) => {
 if (vid.croppedBlob && vid.status === "done") {
-        const ext = videoFormat === "mp4" ? "mp4" : "webm";
+        const ext = vid.croppedBlob.type.startsWith("video/mp4") ? "mp4" : "webm";
         const name = vid.file.name.replace(/\.[^/.]+$/, "") + `_${videoWidth}x${videoHeight}.${ext}`;
         const url = URL.createObjectURL(vid.croppedBlob);
         const a = document.createElement("a");
@@ -1653,6 +1740,28 @@ if (vid.croppedBlob && vid.status === "done") {
                     </div>
                   </div>
 
+                  <div className="pt-4 border-t border-white/10">
+                    <label className="text-sm text-white/60 mb-3 block">
+                      Quality
+                    </label>
+                    <div className="flex gap-2">
+                      {(Object.entries(VIDEO_QUALITY_PRESETS) as [VideoQuality, typeof VIDEO_QUALITY_PRESETS[VideoQuality]][]).map(([key, preset]) => (
+                        <button
+                          key={key}
+                          onClick={() => setVideoQuality(key)}
+                          className={`flex-1 text-sm px-3 py-3 rounded-lg bg-white/10 hover:bg-white/20 transition-all ${
+                            videoQuality === key
+                              ? "ring-2 ring-purple-500 bg-purple-500/20"
+                              : ""
+                          }`}
+                        >
+                          <div className="font-medium">{preset.label}</div>
+                          <div className="text-xs text-white/40">{preset.desc}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
                   {videos.length > 0 && (
                     <div className="space-y-3 pt-4 border-t border-white/10">
                       <div className="flex justify-between text-sm">
@@ -1712,7 +1821,7 @@ if (vid.croppedBlob && vid.status === "done") {
                   <p className="text-xs text-white/40 text-center">
                     All video processing happens in your browser.
                     <br />
-                    Videos are cropped to center and exported as {videoFormat.toUpperCase()}.
+                    Videos are cropped to center and exported as {videoFormat.toUpperCase()} ({videoQuality} quality).
                   </p>
                 </CardContent>
               </Card>
