@@ -73,8 +73,9 @@
     ]
   },
   "pc-ai-assistant": {
-    "current": { "version": "1.0.0", "releasedAt": "2026-02-10", "changes": ["Voice AI assistant"] },
+    "current": { "version": "1.1.0", "releasedAt": "2026-07-27", "changes": ["Fix socket lifecycle: move declaration outside try, use local ref in cleanup"] },
     "history": [
+      { "version": "1.1.0", "releasedAt": "2026-07-27", "changes": ["Fix socket lifecycle: move declaration outside try, use local ref in cleanup"] },
       { "version": "1.0.0", "releasedAt": "2026-02-10", "changes": ["Initial release"] }
     ]
   },
@@ -138,6 +139,12 @@
     "current": { "version": "1.0.0", "releasedAt": "2026-06-10", "changes": ["AI voice dubbing for YouTube videos", "French and Portuguese support", "Edge TTS voice generation", "Whisper transcription", "Google Translate integration"] },
     "history": [
       { "version": "1.0.0", "releasedAt": "2026-06-10", "changes": ["AI voice dubbing for YouTube videos", "French and Portuguese support", "Edge TTS voice generation", "Whisper transcription", "Google Translate integration"] }
+    ]
+  },
+  "cursor-follower": {
+    "current": { "version": "1.0.0", "releasedAt": "2026-07-27", "changes": ["Replace Python mouse tracker with Node.js + PowerShell for Windows compatibility", "Fix useEffect dependency array and mount-time connection"] },
+    "history": [
+      { "version": "1.0.0", "releasedAt": "2026-07-27", "changes": ["Replace Python mouse tracker with Node.js + PowerShell for Windows compatibility", "Fix useEffect dependency array and mount-time connection"] }
     ]
   }
 }

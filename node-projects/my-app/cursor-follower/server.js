@@ -53,7 +53,7 @@ function startPythonTracker() {
   }
 
   console.log('[Cursor Server] Starting mouse tracker...');
-  pythonProcess = spawn('python', ['mouse_tracker.py'], { cwd: __dirname });
+  pythonProcess = spawn('node', ['mouse_tracker.js'], { cwd: __dirname });
 
   pythonProcess.stdout.on('data', (data) => {
     const lines = data.toString().trim().split('\n');

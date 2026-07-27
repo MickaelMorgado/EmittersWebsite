@@ -225,10 +225,11 @@ const [audioEnabled, setAudioEnabled] = useState(false)
 
   useEffect(() => {
     console.log('PC AI Assistant: Initializing Socket.io connection...')
+    let newSocket: Socket | null = null
 
     try {
       // Initialize Socket.io connection
-      const newSocket = io('http://localhost:3001', {
+      newSocket = io('http://localhost:3001', {
         transports: ['websocket', 'polling']
       })
       setSocket(newSocket)
@@ -271,7 +272,7 @@ const [audioEnabled, setAudioEnabled] = useState(false)
         setStatus('Speaking... 🟢')
       })
 
-newSocket.on('ai_response_end', () => {
+      newSocket.on('ai_response_end', () => {
         console.log('PC AI Assistant: AI response end event received')
         setAnimationState('idle')
         setParticleColor('#ffffff')
@@ -301,12 +302,12 @@ newSocket.on('ai_response_end', () => {
     }
 
     return () => {
-      if (socket) {
+      if (newSocket) {
         console.log('PC AI Assistant: Cleaning up socket connection')
-        socket.close()
+        newSocket.close()
       }
     }
-  }, [socket])
+  }, [])
 
   // Removed handleSendMessage as per instruction
   // Removed addConversationText as per instruction

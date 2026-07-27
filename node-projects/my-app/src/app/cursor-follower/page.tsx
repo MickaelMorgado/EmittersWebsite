@@ -320,7 +320,8 @@ export default function CursorFollower() {
   useEffect(() => {
     setMounted(true);
     checkServerStatus();
-  }, []);
+    connectToMouseServer();
+  }, [connectToMouseServer, checkServerStatus]);
 
   return (
     <div className="relative h-screen overflow-hidden mx-auto max-w-screen bg-[#0a0a0f]">
