@@ -200,3 +200,60 @@
     background-position: -100% 0;
   }
 }
+
+/* Cyberpunk Shop Theme */
+:root {
+  --shop-accent: #00ff88;
+  --shop-accent-dim: rgba(0, 255, 136, 0.1);
+  --shop-bg: #0a0a0a;
+  --shop-surface: #111111;
+  --shop-surface-hover: #1a1a1a;
+  --shop-border: #222222;
+  --shop-text-primary: #f0f0f0;
+  --shop-text-secondary: #888888;
+  --shop-text-muted: #666666;
+}
+
+/* Cyberpunk Scrollbar */
+.shop-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.shop-scrollbar::-webkit-scrollbar-track {
+  background: var(--shop-bg);
+}
+
+.shop-scrollbar::-webkit-scrollbar-thumb {
+  background: #333333;
+  border-radius: 0;
+}
+
+.shop-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--shop-accent);
+}
+
+/* Shop Card Glow Effect */
+.shop-card-glow {
+  transition: all 0.3s ease;
+  border: 1px solid var(--shop-border);
+}
+
+.shop-card-glow:hover {
+  border-color: var(--shop-accent);
+  box-shadow: 0 0 20px rgba(0, 255, 136, 0.15);
+}
+
+/* Shop Accent Button */
+.shop-btn-accent {
+  background: transparent;
+  border: 1px solid var(--shop-accent);
+  color: var(--shop-accent);
+  transition: all 0.2s ease;
+}
+
+.shop-btn-accent:hover {
+  background: var(--shop-accent);
+  color: var(--shop-bg);
+  box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
+}

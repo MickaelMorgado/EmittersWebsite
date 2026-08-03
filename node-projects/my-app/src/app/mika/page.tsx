@@ -181,6 +181,7 @@ export default function MikaPage() {
               <a href="#skills" className="hover:text-primary transition-colors">SKILLS</a>
               <a href="#atp" className="hover:text-primary transition-colors">ACHIEVEMENTS</a>
               <a href="#connect" className="hover:text-primary transition-colors">CONNECT</a>
+              <a href="/shop" className="hover:text-[#00ff88] transition-colors" style={{ color: '#00ff88' }}>SHOP</a>
             </div>
           </div>
         </div>
