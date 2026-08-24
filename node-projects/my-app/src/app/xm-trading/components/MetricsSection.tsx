@@ -15,6 +15,7 @@ interface ReportMetrics {
   longestLoseStreak: number;
   totalGrossProfit: number;
   totalGrossLoss: number;
+  rr: number;
 }
 
 interface XmStats {
@@ -58,6 +59,8 @@ export default function MetricsSection({ reports, stats }: MetricsSectionProps) 
               <span className="text-[10px] font-bold text-white/25 uppercase tracking-widest">Profitability</span>
               <div className="mt-1.5">
                 <ReportRow label="Profit Factor" value={reports.profitFactor === Infinity ? '∞' : reports.profitFactor.toFixed(2)} color={reports.profitFactor >= 1 ? 'text-emerald-400' : 'text-red-400'} />
+                <ReportRow label="Risk/Reward" value={reports.rr === Infinity ? '∞' : `1:${reports.rr.toFixed(2)}`} color={reports.rr >= 1 ? 'text-emerald-400' : 'text-red-400'} />
+                <ReportRow label="Win / Loss" value={`${stats.winRate}% / ${(100 - stats.winRate).toFixed(1)}%`} color={stats.winRate >= 50 ? 'text-emerald-400' : 'text-red-400'} />
                 <ReportRow label="Expectancy" value={`${reports.expectancy >= 0 ? '+' : ''}${reports.expectancy.toFixed(2)}`} color={reports.expectancy >= 0 ? 'text-emerald-400' : 'text-red-400'} />
                 <ReportRow label="Avg Trade" value={`${reports.avgTrade >= 0 ? '+' : ''}${reports.avgTrade.toFixed(2)}`} color={reports.avgTrade >= 0 ? 'text-emerald-400' : 'text-red-400'} />
                 <ReportRow label="Gross Profit" value={`+${reports.totalGrossProfit.toFixed(2)}`} color="text-emerald-400" />

@@ -27,6 +27,7 @@ interface ExportPopupProps {
     expectancy: number;
     currentStreak: number;
     currentStreakType: 'WIN' | 'LOSS' | null;
+    rr: number;
   };
   dateStart: string;
   dateEnd: string;
@@ -51,6 +52,7 @@ export default function ExportPopup({ history, stats, dateStart, dateEnd }: Expo
     lines.push(`Avg Win: €${stats.avgWin.toFixed(2)}`);
     lines.push(`Avg Loss: €${stats.avgLoss.toFixed(2)}`);
     lines.push(`Profit Factor: ${stats.profitFactor.toFixed(2)}`);
+    lines.push(`Risk/Reward: 1:${stats.rr.toFixed(2)}`);
     lines.push(`Expectancy: €${stats.expectancy.toFixed(2)}`);
     lines.push(`Streak: ${stats.currentStreak > 0 ? stats.currentStreak : ''}${stats.currentStreakType || '-'}`);
     lines.push('');

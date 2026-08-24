@@ -143,6 +143,7 @@ export default function XmTradingDashboard() {
     const expectancy = chronological.length > 0
       ? (wins.length / chronological.length) * avgWin - (losses.length / chronological.length) * avgLoss
       : 0;
+    const rr = avgLoss > 0 ? avgWin / avgLoss : avgWin > 0 ? Infinity : 0;
 
     return {
       equityData: equity,
@@ -161,6 +162,7 @@ export default function XmTradingDashboard() {
         totalGrossLoss: totalLosses,
         currentStreak: curWinStreak > 0 ? curWinStreak : curLoseStreak,
         currentStreakType: curWinStreak > 0 ? 'WIN' as const : curLoseStreak > 0 ? 'LOSS' as const : null,
+        rr,
       },
     };
   }, [history]);

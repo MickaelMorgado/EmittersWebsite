@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar, AlertTriangle } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 interface XmTrade {
@@ -15,6 +15,7 @@ interface XmTrade {
 
 interface MonthlyCalendarProps {
   history: XmTrade[];
+  initialCapital?: number;
 }
 
 function parseDate(time: string): Date {
@@ -25,10 +26,11 @@ function formatMonth(year: number, month: number): string {
   return new Date(year, month).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 }
 
-export default function MonthlyCalendar({ history }: MonthlyCalendarProps) {
+export default function MonthlyCalendar({ history, initialCapital = 50 }: MonthlyCalendarProps) {
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth());
+  const [thresholdPct, setThresholdPct] = useState(1);
 
   const { dailyPnl, dailyCount, weeklyPnls, monthlyPnl, weeks } = useMemo(() => {
     const pnlByDay: Record<number, number> = {};
@@ -89,6 +91,7 @@ export default function MonthlyCalendar({ history }: MonthlyCalendarProps) {
   };
 
   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const thresholdAmount = initialCapital * (thresholdPct / 100);
 
   return (
     <div className="bg-white/[0.02] border border-white/[0.05] flex flex-col min-h-0 rounded h-full">
@@ -98,6 +101,19 @@ export default function MonthlyCalendar({ history }: MonthlyCalendarProps) {
           <h2 className="text-[11px] font-semibold text-white/50 tracking-wide">Calendar</h2>
         </div>
         <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 mr-1">
+            <AlertTriangle className="w-2.5 h-2.5 text-orange-400/50" />
+            <input
+              type="number"
+              min="0"
+              max="100"
+              step="0.1"
+              value={thresholdPct}
+              onChange={(e) => setThresholdPct(Number(e.target.value))}
+              className="w-10 bg-white/[0.04] border border-white/[0.06] rounded px-1 py-0.5 text-[9px] font-mono text-orange-400/70 text-center outline-none [color-scheme:dark]"
+            />
+            <span className="text-[9px] text-white/20">%</span>
+          </div>
           <button onClick={prevMonth} className="p-1 hover:bg-white/[0.08] rounded transition-colors cursor-pointer">
             <ChevronLeft className="w-3.5 h-3.5 text-white/40" />
           </button>
@@ -132,23 +148,26 @@ export default function MonthlyCalendar({ history }: MonthlyCalendarProps) {
                     const isToday = day === now.getDate() && month === now.getMonth() && year === now.getFullYear();
                     const bg = pnl > 0 ? 'bg-emerald-500/15' : pnl < 0 ? 'bg-red-500/15' : 'bg-white/[0.02]';
                     const textColor = pnl > 0 ? 'text-emerald-400' : pnl < 0 ? 'text-red-400' : 'text-white/30';
+                    const pnlPct = initialCapital > 0 ? (pnl / initialCapital) * 100 : 0;
+                    const showWarning = count > 0 && pnl < -thresholdAmount;
                     return (
                       <div
                         key={di}
-                        className={`flex flex-col items-center justify-center h-[48px] rounded ${bg} ${isToday ? 'ring-1 ring-violet-500/40' : ''}`}
+                        className={`relative flex flex-col items-center justify-center h-[48px] rounded ${bg} ${isToday ? 'ring-1 ring-violet-500/40' : ''}`}
                       >
+                        {showWarning && (
+                          <AlertTriangle className="absolute top-0.5 right-0.5 w-2.5 h-2.5 text-orange-400/70" />
+                        )}
                         <span className={`text-[12px] font-bold leading-tight ${isToday ? 'text-violet-400' : 'text-white/40'}`}>{day}</span>
                         {count > 0 ? (
-                          <>
-                            <span className="text-[9px] font-mono text-white/15 leading-tight">
-                              {count}×
-                            </span>
+                          <div className="flex flex-col items-center leading-tight">
+                            <span className="text-[8px] font-mono text-white/20">{count}×{pnl >= 0 ? '+' : ''}{pnl.toFixed(2)}</span>
                             {pnl !== 0 && (
-                              <span className={`text-[9px] font-mono leading-tight ${textColor}`}>
-                                {pnl >= 0 ? '+' : ''}{pnl.toFixed(2)}
+                              <span className={`text-[8px] font-mono ${pnlPct >= 0 ? 'text-emerald-400/40' : 'text-red-400/40'}`}>
+                                {pnlPct >= 0 ? '+' : ''}{pnlPct.toFixed(1)}%
                               </span>
                             )}
-                          </>
+                          </div>
                         ) : <span />}
                       </div>
                     );

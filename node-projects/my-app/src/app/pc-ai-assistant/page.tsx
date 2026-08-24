@@ -228,7 +228,9 @@ const [audioEnabled, setAudioEnabled] = useState(false)
 
     try {
       // Initialize Socket.io connection
-      const newSocket = io('http://localhost:3001', {
+      // Port read from env (NEXT_PUBLIC_VOICE_BRIDGE_PORT) — falls back to 3005
+      const voicePort = process.env.NEXT_PUBLIC_VOICE_BRIDGE_PORT || '3005'
+      const newSocket = io(`http://localhost:${voicePort}`, {
         transports: ['websocket', 'polling']
       })
       setSocket(newSocket)
