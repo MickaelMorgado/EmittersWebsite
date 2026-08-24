@@ -1,0 +1,10 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "mt5-mcp",
+      "runtimeExecutable": "C:\\Users\\Mickael M\\AppData\\Local\\Programs\\Python\\Python312\\Scripts\\mt5mcp.exe",
+      "disabled": false
+    }
+  ]
+}

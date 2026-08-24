@@ -1,400 +1,350 @@
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { TrendingDown, TrendingUp, Eye, EyeOff, RefreshCw } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import InvestmentsSidebar from '@/app/investments/components/InvestmentsSidebar';
+import { useState } from 'react';
+import { Activity } from 'lucide-react';
 import {
-  Entry,
-  fetchAllEntries,
-  getBEPFromEntries,
-  getCurrency,
-} from '@/app/investments/data';
+  BarChart, Bar, LineChart, Line,
+  XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, ReferenceLine
+} from 'recharts';
 
-const AUTH_PASSWORD = process.env.NEXT_PUBLIC_AUTH_PASSWORD;
+type Product = { name: string; price: number; features: string[] };
+type Category = { id: string; label: string; active: boolean; selected: string; items: Product[] };
 
-function AuthScreen({ onUnlock }: { onUnlock: () => void }) {
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+const NET_WORTH = 14099;
+const MONTHLY_GROWTH = 496;
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (password === AUTH_PASSWORD) {
-      localStorage.setItem('investments-token', password);
-      onUnlock();
-    } else {
-      setError('Invalid password');
-    }
-  };
+const history = [
+  { month: 'Apr 25', value: 6658 },
+  { month: 'May', value: 7307 },
+  { month: 'Jun', value: 7688 },
+  { month: 'Jul', value: 7852 },
+  { month: 'Aug', value: 8277 },
+  { month: 'Sep', value: 9101 },
+  { month: 'Oct', value: 9358 },
+  { month: 'Nov', value: 9506 },
+  { month: 'Dec', value: 9594 },
+  { month: 'Jan 26', value: 10842 },
+  { month: 'Feb', value: 12060 },
+  { month: 'Mar', value: 12157 },
+  { month: 'Apr', value: 13484 },
+  { month: 'May', value: 13816 },
+  { month: 'Jun', value: 13790 },
+  { month: 'Jul', value: 14099 },
+];
 
+const initialCategories: Category[] = [
+  {
+    id: 'smartwatch',
+    label: 'SMARTWATCH',
+    active: true,
+    selected: 'KOSPET ORB 2',
+    items: [
+      { name: 'KOSPET ORB 2', price: 81, features: ['HR Broadcast', 'Dual-band GPS', 'AMOLED', '16-day battery', 'Amazon.es €81'] },
+      { name: 'KOSPET PULSE 2', price: 70, features: ['HR Broadcast', 'Dual-band GPS', 'Square AMOLED', '16-day battery'] },
+      { name: 'Amazfit GTR 4', price: 100, features: ['HR (app only)', 'GPS', 'AMOLED', '14-day battery'] },
+      { name: 'COROS Pace 3', price: 210, features: ['HR Broadcast', 'Dual-band GPS', 'AMOLED', '38h GPS'] },
+      { name: 'Polar H10 (strap)', price: 90, features: ['Gold standard HR', 'ANT+ & BLE', '500h battery'] },
+    ],
+  },
+  {
+    id: 'car-repair',
+    label: 'CAR REPAIR',
+    active: false,
+    selected: 'BMW Full Service',
+    items: [
+      { name: 'BMW Full Service', price: 2000, features: ['Transmission chain (€1400)', 'Diagnostics + labor', 'BMW 116d F20 EFDYN2015'] },
+      { name: 'Chain Only', price: 1400, features: ['Transmission chain', 'BMW 116d F20 EFDYN2015'] },
+      { name: 'Diagnostics Only', price: 150, features: ['OBD2 scan', 'Engine + transmission'] },
+      { name: 'Rear Light Replacement', price: 50, features: ['LED rear light', 'BMW 116d F20 EFDYN2015'] },
+    ],
+  },
+];
+
+function getTotalCost(categories: Category[]) {
+  return categories.reduce((sum, cat) => {
+    if (!cat.active) return sum;
+    const item = cat.items.find((i) => i.name === cat.selected);
+    return sum + (item?.price ?? 0);
+  }, 0);
+}
+
+function getChartData(totalCost: number, showHistory: boolean) {
+  const future = [
+    { month: 'Jul 26', baseline: NET_WORTH, withPurchase: NET_WORTH - totalCost, history: null as number | null },
+    { month: 'M1', baseline: NET_WORTH + MONTHLY_GROWTH, withPurchase: NET_WORTH - totalCost + MONTHLY_GROWTH, history: null },
+    { month: 'M3', baseline: NET_WORTH + MONTHLY_GROWTH * 3, withPurchase: NET_WORTH - totalCost + MONTHLY_GROWTH * 3, history: null },
+    { month: 'M6', baseline: NET_WORTH + MONTHLY_GROWTH * 6, withPurchase: NET_WORTH - totalCost + MONTHLY_GROWTH * 6, history: null },
+    { month: 'M12', baseline: NET_WORTH + MONTHLY_GROWTH * 12, withPurchase: NET_WORTH - totalCost + MONTHLY_GROWTH * 12, history: null },
+  ];
+  if (!showHistory) return future;
+  const past = history.map((h) => ({ month: h.month, baseline: null, withPurchase: null, history: h.value }));
+  return [...past, ...future];
+}
+
+function ChartTooltip({ active, payload, label }: any) {
+  if (!active || !payload?.length) return null;
   return (
-    <div className="min-h-screen bg-black text-white flex items-center justify-center p-4">
-      <Card className="w-full max-w-md bg-zinc-900 border-zinc-800">
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold text-center uppercase">Investments</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <Input
-              type="password"
-              placeholder="Enter password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="bg-zinc-800 border-zinc-700 text-white"
-            />
-            {error && <p className="text-red-500 text-sm">{error}</p>}
-            <Button type="submit" className="w-full">
-              Unlock
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+    <div style={{ background: '#111111' }} className="px-3 py-2">
+      <p className="text-[10px] font-mono" style={{ color: '#666666' }}>{label}</p>
+      {payload.map((p: any, i: number) => (
+        <p key={i} className="text-[11px] font-mono" style={{ color: '#f0f0f0' }}>
+          {p.name}: €{p.value.toLocaleString()}
+        </p>
+      ))}
     </div>
   );
 }
 
-interface Asset {
-  symbol: string;
-  name: string;
-  price: number;
-  change: number;
-  bep: number;
-  qty: number;
-  currency: string;
-  price24h: number;
-}
-
-interface SelectedAsset {
-  symbol: string;
-  name: string;
-  price: number;
-  change: number;
-  currency: string;
-  entries: Entry[];
-  bep: number;
-}
-
-function getCryptoName(symbol: string): string {
-  const names: Record<string, string> = {
-    BTC: 'Bitcoin', ETH: 'Ethereum', LTC: 'Litecoin', XRP: 'XRP',
-    SOL: 'Solana', FIL: 'Filecoin', DOGE: 'Dogecoin'
-  };
-  return names[symbol] || symbol;
-}
-
-function getStockName(symbol: string): string {
-  const names: Record<string, string> = {
-    DIB: 'Digital Bros', KVU: 'Kenvue', EXO: 'Exodus', EXOD: 'Exodus', XBO: 'Realbotix',
-    MOTA: 'Mota Engil', XPEV: 'XPeng', MSGM: 'Motorsport Games', NBIU: 'Biotech ETF',
-    IPRP: 'EU Property ETF', EDPR: 'EDP Renewals', TDG: 'MSCI World ETF', XGAT: 'Xetra-Gold', BTC: 'Bitcoin', ETH: 'Ethereum', LTC: 'Litecoin',
-    XRP: 'XRP', SOL: 'Solana', FIL: 'Filecoin', DOGE: 'Dogecoin',
-    ADA: 'Cardano', XTZ: 'Tezos'
-  };
-  return names[symbol] || symbol;
-}
-
-function formatPrice(price: number) {
-  if (price === 0) return <span className="text-zinc-500 text-sm">--</span>;
-  if (price >= 1000) return price.toLocaleString('en-US', { maximumFractionDigits: 0 });
-  if (price >= 1) return price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  return price.toLocaleString('en-US', { minimumFractionDigits: 4, maximumFractionDigits: 4 });
-}
-
-function formatPnL(price: number, bep: number) {
-  if (price === 0 || bep === 0) return <span className="text-zinc-500 text-xs">--</span>;
-  
-  const pnl = ((price - bep) / bep) * 100;
-  const isProfit = pnl >= 0;
-  
+function Stat({ label, value, accent = false }: { label: string; value: string; accent?: boolean }) {
   return (
-    <div className={`flex items-center text-xs font-medium ${isProfit ? 'text-green-500' : 'text-red-500'}`}>
-      {isProfit ? <TrendingUp className="h-3 w-3 mr-1" /> : <TrendingDown className="h-3 w-3 mr-1" />}
-      {pnl >= 0 ? '+' : ''}{pnl.toFixed(2)}%
+    <div className="flex flex-col">
+      <span className="text-[10px] uppercase tracking-wider" style={{ color: '#666666' }}>{label}</span>
+      <span className="text-lg font-mono" style={{ color: accent ? '#00ff88' : '#f0f0f0' }}>{value}</span>
     </div>
   );
 }
 
-function MiniChart({ data, color }: { data: number[]; color: string }) {
-  if (!data || data.length < 2) return null;
-  const min = Math.min(...data);
-  const max = Math.max(...data);
-  const range = max - min || 1;
-  const points = data.map((v, i) => {
-    const x = (i / (data.length - 1)) * 100;
-    const y = 100 - ((v - min) / range) * 100;
-    return `${x},${y}`;
-  }).join(' ');
-  
-  return (
-    <svg className="absolute inset-0 w-full h-full opacity-20 pointer-events-none" preserveAspectRatio="none">
-      <polyline fill="none" stroke={color} strokeWidth="1.5" points={points} />
-    </svg>
-  );
-}
+export default function InvestmentPage() {
+  const [categories, setCategories] = useState<Category[]>(initialCategories);
+  const [showHistory, setShowHistory] = useState(true);
+  const [logScale, setLogScale] = useState(true);
 
-function AssetCard({ asset, loading, sparkline = [], onClick, blurValues = false, compact = false }: { asset: Asset; loading?: boolean; sparkline?: number[]; onClick?: () => void; blurValues?: boolean; compact?: boolean }) {
-  const { symbol, name, price, change, bep, qty, currency } = asset;
-  const isPositive = change > 0;
-  const isNeutral = change === 0;
-  const hasPrice = price > 0;
-  const hasPosition = qty > 0;
-  const pnl = hasPrice && bep > 0 ? ((price - bep) / bep) * 100 : 0;
-  const isProfit = pnl > 0;
-  const hasPnlData = hasPrice && bep > 0;
-  
-  const gradientClass = hasPnlData 
-    ? isProfit 
-      ? 'bg-gradient-to-tl from-green-600/25 to-transparent' 
-      : 'bg-gradient-to-tl from-red-600/25 to-transparent'
-    : '';
+  const totalCost = getTotalCost(categories);
+  const pctNetWorth = ((totalCost / NET_WORTH) * 100).toFixed(2);
+  const pctGrowth = ((totalCost / MONTHLY_GROWTH) * 100).toFixed(1);
+  const n26After = 827 - totalCost;
+  const workDays = Math.ceil(totalCost / (MONTHLY_GROWTH / 22));
+  const chartData = getChartData(totalCost, showHistory);
+  const activeCategory = categories.find((c) => c.active);
+  const selectedItem = activeCategory?.items.find((i) => i.name === activeCategory.selected);
 
-  const lineColor = hasPnlData ? (isProfit ? '#22c55e' : '#ef4444') : '#71717a';
+  function toggleCategory(id: string) {
+    setCategories((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, active: !c.active } : c))
+    );
+  }
 
-  if (compact) {
-    return (
-      <button onClick={onClick} className="block w-full text-left">
-        <Card className={`relative overflow-hidden bg-zinc-900/50 border-zinc-800 hover:border-zinc-600 transition-all py-2 px-3 ${gradientClass}`}>
-          <MiniChart data={sparkline} color={lineColor} />
-          <div className="flex items-center justify-between relative">
-            <div>
-              <CardTitle className="text-sm font-bold text-white">{symbol}</CardTitle>
-              <p className="text-[10px] text-zinc-400 truncate max-w-[80px]">{name}</p>
-            </div>
-            <div className="text-right">
-              <span className="text-sm font-semibold text-white">
-                {loading && !hasPrice ? <span className="text-zinc-500 text-xs animate-pulse">...</span> : formatPrice(price)}
-              </span>
-              <div className={`flex items-center text-[10px] font-medium ${isNeutral ? 'text-zinc-400' : isPositive ? 'text-green-500' : 'text-red-500'}`}>
-                {isNeutral ? '--' : `${isPositive ? '+' : ''}${Math.abs(change).toFixed(1)}%`}
-              </div>
-            </div>
-          </div>
-        </Card>
-      </button>
+  function selectItem(categoryId: string, itemName: string) {
+    setCategories((prev) =>
+      prev.map((c) => (c.id === categoryId ? { ...c, selected: itemName, active: true } : c))
     );
   }
 
   return (
-    <button onClick={onClick} className="block w-full text-left">
-      <Card className={`relative overflow-hidden bg-zinc-900/50 border-zinc-800 hover:border-zinc-600 transition-all hover:scale-[1.02] ${gradientClass}`}>
-        <MiniChart data={sparkline} color={lineColor} />
-        <CardHeader className="pb-1 relative">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-lg font-bold text-white">{symbol}</CardTitle>
-            {hasPosition && <span className="text-xs bg-zinc-700 px-2 py-0.5 rounded">{qty}x</span>}
+    <div className="h-screen overflow-hidden p-6" style={{ background: '#0a0a0a', color: '#f0f0f0' }}>
+      <style>{`
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0a0a0a; }
+        ::-webkit-scrollbar-thumb { background: #333333; border-radius: 0; }
+        ::-webkit-scrollbar-thumb:hover { background: '#00ff88'; }
+        * { scrollbar-width: thin; scrollbar-color: #333333 #0a0a0a; -ms-overflow-style: none; }
+      `}</style>
+
+      <div className="h-full flex flex-col">
+        {/* Header */}
+        <div className="flex items-center justify-between pb-4" style={{ borderBottom: '1px solid #222222' }}>
+          <div>
+            <h1 className="text-sm font-light uppercase tracking-widest" style={{ color: '#f0f0f0' }}>
+              INVESTMENT // ANALYSIS
+            </h1>
+            <p className="text-[10px] mt-1" style={{ color: '#666666' }}>
+              {totalCost > 0 ? `TOTAL: €${totalCost}` : 'NO ITEMS SELECTED'} — <span style={{ color: '#00ff88' }}>JUL 31, 2026</span>
+            </p>
           </div>
-          <p className="text-xs text-zinc-400">{name}</p>
-        </CardHeader>
-        <CardContent className="space-y-2 relative">
-          <div className="flex items-end justify-between">
-            <span className="text-xl font-semibold text-white">
-              {loading && !hasPrice ? <span className="text-zinc-500 text-sm animate-pulse">Loading...</span> : formatPrice(price)}
-            </span>
-            <div className={`flex items-center text-sm font-medium ${isNeutral ? 'text-zinc-400' : isPositive ? 'text-green-500' : 'text-red-500'}`}>
-              {isNeutral ? <span className="text-zinc-400">--</span> : <>{isPositive ? <TrendingUp className="h-4 w-4 mr-1" /> : <TrendingDown className="h-4 w-4 mr-1" />}{Math.abs(change).toFixed(2)}%</>}
+          <div className="flex items-center gap-2">
+            <Activity className="w-3 h-3" style={{ color: '#ff073a' }} />
+            <span className="text-[10px] font-mono" style={{ color: '#ff073a' }}>FASCICULAR BLOCK</span>
+          </div>
+        </div>
+
+        {/* Key Metrics */}
+        <div className="flex items-center gap-8 py-3" style={{ borderBottom: '1px solid #222222' }}>
+          <Stat label="Total Cost" value={totalCost > 0 ? `€${totalCost}` : '€0'} accent={totalCost > 0} />
+          <span style={{ color: '#222222' }}>|</span>
+          <Stat label="% Net Worth" value={totalCost > 0 ? `${pctNetWorth}%` : '0%'} />
+          <span style={{ color: '#222222' }}>|</span>
+          <Stat label="% Monthly Growth" value={totalCost > 0 ? `${pctGrowth}%` : '0%'} />
+          <span style={{ color: '#222222' }}>|</span>
+          <Stat label="N26 After" value={totalCost > 0 ? `€${n26After}` : '€827'} />
+          <span style={{ color: '#222222' }}>|</span>
+          <Stat label="Work Days" value={totalCost > 0 ? `${workDays}d` : '0d'} accent={totalCost > 0} />
+          <span style={{ color: '#222222' }}>|</span>
+          <Stat label="12mo Delta" value={totalCost > 0 ? `-€${totalCost}` : '€0'} />
+        </div>
+
+        {/* Main Content - 65/35 split */}
+        <div className="flex-1 flex gap-0 min-h-0">
+          {/* Left 65% */}
+          <div className="w-[65%] flex flex-col" style={{ borderRight: '1px solid #222222' }}>
+            {/* Growth Projection */}
+            <div className="flex-1 p-6" style={{ borderBottom: '1px solid #222222' }}>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-[10px] uppercase tracking-wider" style={{ color: '#666666' }}>
+                  NET WORTH {showHistory ? '(HISTORY + PROJECTION)' : '(PROJECTION)'}
+                </h3>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setLogScale(!logScale)}
+                    className="text-[9px] font-mono px-1.5 py-1 transition-colors"
+                    style={{
+                      border: `1px solid ${logScale ? '#00ff8830' : '#333333'}`,
+                      color: logScale ? '#00ff88' : '#666666',
+                      background: logScale ? 'rgba(0,255,136,0.03)' : 'transparent',
+                    }}
+                    title="Toggle logarithmic scale"
+                  >
+                    LOG
+                  </button>
+                  <button
+                    onClick={() => setShowHistory(!showHistory)}
+                    className="text-[9px] font-mono uppercase tracking-wider px-2 py-1 transition-colors"
+                    style={{
+                      border: `1px solid ${showHistory ? '#00ff8830' : '#333333'}`,
+                      color: showHistory ? '#00ff88' : '#666666',
+                      background: showHistory ? 'rgba(0,255,136,0.03)' : 'transparent',
+                    }}
+                  >
+                    {showHistory ? 'HISTORY ON' : 'HISTORY OFF'}
+                  </button>
+                </div>
+              </div>
+              <ResponsiveContainer width="100%" height="85%">
+                <LineChart data={chartData}>
+                  <XAxis dataKey="month" stroke="#222222" tick={{ fill: '#666666', fontSize: 10 }} interval={showHistory ? 2 : 0} />
+                  <YAxis stroke="#222222" scale={logScale ? 'log' : 'auto'} domain={logScale ? [5000, 25000] : ['dataMin - 500', 'dataMax + 500']} tick={{ fill: '#666666', fontSize: 10 }} tickFormatter={(v) => `€${(v / 1000).toFixed(1)}k`} />
+                  <Tooltip content={<ChartTooltip />} />
+                  {showHistory && (
+                    <Line type="monotone" dataKey="history" name="Actual" stroke="#00ff88" strokeWidth={1.5} dot={{ fill: '#00ff88', r: 2 }} connectNulls={false} />
+                  )}
+                  <Line type="monotone" dataKey="baseline" name="Baseline" stroke="#666666" strokeWidth={1} dot={{ fill: '#666666', r: 2 }} strokeDasharray="4 4" connectNulls={false} />
+                  {totalCost > 0 && (
+                    <Line type="monotone" dataKey="withPurchase" name="With Purchase" stroke="#00ff88" strokeWidth={2} dot={{ fill: '#00ff88', r: 3 }} activeDot={{ r: 5 }} connectNulls={false} />
+                  )}
+                </LineChart>
+              </ResponsiveContainer>
+              <div className="text-center mt-1">
+                <span className="text-[9px] font-mono" style={{ color: '#666666' }}>
+                  {totalCost > 0
+                    ? `€${totalCost} GAP = CONSISTENT ACROSS 12 MONTHS — ${(totalCost / (NET_WORTH + MONTHLY_GROWTH * 12) * 100).toFixed(2)}% OF M12 PORTFOLIO`
+                    : 'SELECT A CATEGORY AND PRODUCT TO SEE IMPACT'}
+                </span>
+              </div>
+            </div>
+
+            {/* Cost vs Benefit */}
+            <div className="p-6">
+              <h3 className="text-[10px] uppercase tracking-wider mb-3" style={{ color: '#666666' }}>
+                COST AMORTIZATION
+              </h3>
+              <ResponsiveContainer width="100%" height={140}>
+                <BarChart data={[
+                  { period: '1 MO', cost: totalCost },
+                  { period: '6 MO', cost: Math.round((totalCost / 6) * 100) / 100 },
+                  { period: '12 MO', cost: Math.round((totalCost / 12) * 100) / 100 },
+                  { period: '24 MO', cost: Math.round((totalCost / 24) * 100) / 100 },
+                ]}>
+                  <XAxis dataKey="period" stroke="#222222" tick={{ fill: '#666666', fontSize: 10 }} />
+                  <YAxis stroke="#222222" tick={{ fill: '#666666', fontSize: 10 }} tickFormatter={(v) => `€${v}`} />
+                  <Tooltip content={<ChartTooltip />} />
+                  <Bar dataKey="cost" fill={totalCost > 0 ? '#00ff88' : '#333333'} fillOpacity={0.6} />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           </div>
-          <div className="flex items-center justify-between pt-1 border-t border-zinc-800">
-            <span className="text-xs text-zinc-500">{blurValues ? 'Pos' : 'BEP'}</span>
-            <span className={`text-xs text-zinc-400 ${blurValues ? 'blur-sm select-none' : ''}`}>
-              {bep > 0 ? (blurValues ? '••••' : `${currency} ${formatPrice(bep)}`) : '--'}
-            </span>
+
+          {/* Right 35% */}
+          <div className="w-[35%] flex flex-col overflow-y-auto">
+            {/* Categories */}
+            <div className="p-6" style={{ borderBottom: '1px solid #222222' }}>
+              <h3 className="text-[10px] uppercase tracking-wider mb-3" style={{ color: '#666666' }}>
+                CATEGORIES
+              </h3>
+              <div className="space-y-1">
+                {categories.map((cat) => (
+                  <div key={cat.id}>
+                    {/* Category toggle */}
+                    <button
+                      onClick={() => toggleCategory(cat.id)}
+                      className="w-full flex items-center justify-between py-2 px-2 text-[11px] font-mono uppercase tracking-wider transition-colors"
+                      style={{
+                        color: cat.active ? '#00ff88' : '#666666',
+                        background: cat.active ? 'rgba(0,255,136,0.03)' : 'transparent',
+                        borderBottom: '1px solid #1a1a1a',
+                      }}
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2" style={{ background: cat.active ? '#00ff88' : '#333333' }} />
+                        {cat.label}
+                      </div>
+                      <span className="text-[9px]" style={{ color: cat.active ? '#00ff88' : '#444444' }}>
+                        {cat.items.length} ITEMS
+                      </span>
+                    </button>
+
+                    {/* Items (show when category active) */}
+                    {cat.active && (
+                      <div className="ml-4">
+                        {cat.items.map((item) => (
+                          <button
+                            key={item.name}
+                            onClick={() => selectItem(cat.id, item.name)}
+                            className="w-full flex items-center justify-between py-1.5 px-2 text-[10px] transition-colors"
+                            style={{
+                              color: cat.selected === item.name ? '#00ff88' : '#888888',
+                              background: cat.selected === item.name ? 'rgba(0,255,136,0.05)' : 'transparent',
+                              borderBottom: '1px solid #111111',
+                            }}
+                          >
+                            <div className="flex items-center gap-2">
+                              <div className="w-1.5 h-1.5" style={{ background: cat.selected === item.name ? '#00ff88' : '#333333' }} />
+                              <span className="font-mono">{item.name}</span>
+                            </div>
+                            <span className="font-mono" style={{ color: cat.selected === item.name ? '#00ff88' : '#666666' }}>
+                              €{item.price}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Selected item details */}
+            {selectedItem && (
+              <div className="p-6" style={{ borderBottom: '1px solid #222222' }}>
+                <h3 className="text-[10px] uppercase tracking-wider mb-2" style={{ color: '#666666' }}>
+                  SELECTED // {activeCategory?.label}
+                </h3>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-mono" style={{ color: '#00ff88' }}>{selectedItem.name}</span>
+                  <span className="text-xs font-mono" style={{ color: '#00ff88' }}>€{selectedItem.price}</span>
+                </div>
+                <div className="flex flex-wrap gap-1">
+                  {selectedItem.features.map((f) => (
+                    <span key={f} className="text-[9px] px-1.5 py-0.5" style={{ color: '#666666', background: '#111111' }}>{f}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Verdict */}
+            <div className="p-6">
+              <h3 className="text-[10px] uppercase tracking-wider mb-3" style={{ color: '#666666' }}>VERDICT</h3>
+              {totalCost > 0 ? (
+                <p className="text-[11px] leading-relaxed" style={{ color: '#888888' }}>
+                  <span style={{ color: '#00ff88' }}>€{totalCost}</span> = <span style={{ color: '#00ff88' }}>{workDays} work days</span>. {pctNetWorth}% of net worth. {pctGrowth}% of monthly growth.
+                </p>
+              ) : (
+                <p className="text-[11px] leading-relaxed" style={{ color: '#888888' }}>
+                  SELECT A CATEGORY TO BEGIN ANALYSIS.
+                </p>
+              )}
+            </div>
           </div>
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-zinc-500">P&L</span>
-            {formatPnL(price, bep)}
-          </div>
-        </CardContent>
-      </Card>
-    </button>
-  );
-}
-
-export default function InvestmentsPage() {
-  const [unlocked, setUnlocked] = useState(false);
-  const [cryptoData, setCryptoData] = useState<Asset[]>([]);
-  const [stockData, setStockData] = useState<Asset[]>([]);
-  const [commodities, setCommodities] = useState<Asset[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [syncing, setSyncing] = useState(false);
-  const [selectedAsset, setSelectedAsset] = useState<SelectedAsset | null>(null);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [blurValues, setBlurValues] = useState(false);
-  const [entriesMap, setEntriesMap] = useState<Record<string, Entry[]>>({});
-
-  const loadEntries = useCallback(async () => {
-    const all = await fetchAllEntries();
-    setEntriesMap(all);
-    return all;
-  }, []);
-
-  const handleAssetClick = (asset: Asset) => {
-    const entries = entriesMap[asset.symbol] || [];
-    const bep = getBEPFromEntries(entries);
-    setSelectedAsset({
-      symbol: asset.symbol,
-      name: asset.name,
-      price: asset.price,
-      change: asset.change,
-      currency: getCurrency(asset.symbol, entries),
-      entries,
-      bep,
-    });
-    setSidebarOpen(true);
-  };
-
-  const handleCloseSidebar = () => {
-    setSidebarOpen(false);
-    setSelectedAsset(null);
-  };
-
-  const handleEntriesChange = useCallback(async () => {
-    const updated = await loadEntries();
-    if (selectedAsset) {
-      const entries = updated[selectedAsset.symbol] || [];
-      const bep = getBEPFromEntries(entries);
-      setSelectedAsset(prev => prev ? { ...prev, entries, bep } : null);
-    }
-  }, [loadEntries, selectedAsset]);
-
-  const fetchAllPrices = useCallback(async (entries: Record<string, Entry[]>) => {
-    try {
-      const res = await fetch('/api/investments');
-      const data = await res.json();
-      
-      if (Array.isArray(data)) {
-        const allResults = data.filter((d: any) => d && d.price > 0).map((d: any) => {
-          const symEntries = entries[d.symbol] || [];
-          return {
-            symbol: d.symbol,
-            name: getCryptoName(d.symbol) || getStockName(d.symbol),
-            price: d.price,
-            change: d.change,
-            bep: getBEPFromEntries(symEntries),
-            qty: symEntries.reduce((sum: number, e: Entry) => sum + e.qty, 0),
-            currency: getCurrency(d.symbol, symEntries),
-            price24h: d.price
-          };
-        });
-        
-        const withAllocation = (a: any) => (a.qty || 0) * (a.bep || 0);
-        
-        const cryptoResults = allResults.filter((a: any) => ['BTC','ETH','LTC','XRP','SOL','FIL','DOGE','ADA','XTZ'].includes(a.symbol));
-        const stockResults = allResults.filter((a: any) => ['DIB','KVU','EXO','EXOD','XBO','MOTA','XPEV','MSGM','NBIU','IPRP','EDPR','TDG','XGAT'].includes(a.symbol));
-        const commodityResults = allResults.filter((a: any) => ['XAU','XPT','SP500'].includes(a.symbol));
-        
-        if (cryptoResults.length > 0) setCryptoData(cryptoResults.sort((a: any, b: any) => withAllocation(b) - withAllocation(a)));
-        if (stockResults.length > 0) setStockData(stockResults.sort((a: any, b: any) => withAllocation(b) - withAllocation(a)));
-        if (commodityResults.length > 0) setCommodities(commodityResults.sort((a: any, b: any) => withAllocation(b) - withAllocation(a)));
-      }
-    } catch (err) {
-      console.error('Failed to fetch prices:', err);
-    }
-  }, []);
-
-  const handleSync = async () => {
-    setSyncing(true);
-    const entries = await loadEntries();
-    await fetchAllPrices(entries);
-    setSyncing(false);
-  };
-
-  useEffect(() => {
-    async function init() {
-      setLoading(true);
-      const entries = await loadEntries();
-      setLoading(false);
-      await fetchAllPrices(entries);
-    }
-
-    init();
-  }, [loadEntries, fetchAllPrices]);
-
-  useEffect(() => {
-    const token = localStorage.getItem('investments-token');
-    if (token === AUTH_PASSWORD) setUnlocked(true);
-  }, []);
-
-  if (!unlocked) {
-    return <AuthScreen onUnlock={() => setUnlocked(true)} />;
-  }
-
-  return (
-    <div className="min-h-screen bg-black text-white p-3 lg:p-4">
-      <div className="flex items-center justify-between mb-2">
-        <h1 className="text-xl font-bold tracking-tight heading-shine uppercase">Investments</h1>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleSync}
-            disabled={syncing}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-colors disabled:opacity-50"
-            title="Sync prices"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${syncing ? 'animate-spin' : ''}`} />
-            <span className="text-xs">{syncing ? 'Syncing...' : 'Sync'}</span>
-          </button>
-          <button
-            onClick={() => setBlurValues(!blurValues)}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-colors"
-            title={blurValues ? 'Show values' : 'Hide values'}
-          >
-            {blurValues ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-            <span className="text-xs">{blurValues ? 'Show' : 'Hide'}</span>
-          </button>
         </div>
       </div>
-
-      <div className="flex gap-3 h-[calc(100vh-60px)]">
-          <div className={`flex-1 transition-all duration-300 overflow-y-auto pr-2 ${selectedAsset ? 'w-[40%]' : 'w-full'}`}>
-            {/* Crypto */}
-            <section className="mb-8">
-              <h2 className="text-2xl font-bold mb-4 text-zinc-300">Crypto</h2>
-              <div className={`grid gap-2 ${selectedAsset ? 'grid-cols-1' : 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-8'}`}>
-                {cryptoData.map((asset) => (
-                  <AssetCard key={asset.symbol} asset={asset} loading={loading} onClick={() => handleAssetClick(asset)} blurValues={blurValues} compact={!!selectedAsset} />
-                ))}
-              </div>
-            </section>
-
-            {/* Stocks */}
-            <section className="mb-8">
-              <h2 className={`font-bold mb-3 text-zinc-300 ${selectedAsset ? 'text-lg' : 'text-2xl mb-4'}`}>Stocks</h2>
-              <div className={`grid gap-2 ${selectedAsset ? 'grid-cols-1' : 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-8'}`}>
-                {stockData.map((asset) => (
-                  <AssetCard key={asset.symbol} asset={asset} loading={loading} onClick={() => handleAssetClick(asset)} blurValues={blurValues} compact={!!selectedAsset} />
-                ))}
-              </div>
-            </section>
-
-            {/* Metals & Commodities */}
-            <section className="mb-8">
-              <h2 className={`font-bold mb-3 text-zinc-300 ${selectedAsset ? 'text-lg' : 'text-2xl mb-4'}`}>Metals & Commodities</h2>
-              <div className={`grid gap-2 ${selectedAsset ? 'grid-cols-1' : 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6'}`}>
-                {commodities.map((asset) => (
-                  <AssetCard key={asset.symbol} asset={asset} onClick={() => handleAssetClick(asset)} blurValues={blurValues} compact={!!selectedAsset} loading={loading} />
-                ))}
-              </div>
-            </section>
-          </div>
-          {selectedAsset && (
-            <InvestmentsSidebar
-              key={`${selectedAsset.symbol}-${entriesMap[selectedAsset.symbol]?.length}`}
-              symbol={selectedAsset.symbol}
-              name={selectedAsset.name}
-              currentPrice={selectedAsset.price}
-              change24h={selectedAsset.change}
-              entries={selectedAsset.entries}
-              bep={selectedAsset.bep}
-              currency={selectedAsset.currency}
-              isOpen={sidebarOpen}
-              onClose={handleCloseSidebar}
-              onEntriesChange={handleEntriesChange}
-              blurValues={blurValues}
-            />
-          )}
-        </div>
     </div>
   );
 }

@@ -4,7 +4,7 @@ import { VersionBadge } from '@/components/VersionBadge';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Sidebar from '../../components/sidebar';
 
-const STREAM_FPS = 60;
+const STREAM_FPS = 30;
 const MOUSE_SERVER_URL = 'ws://localhost:3003';
 const MOUSE_SERVER_API = 'http://localhost:3003';
 
@@ -22,8 +22,8 @@ export default function CursorFollower() {
   const [serverRunning, setServerRunning] = useState(false);
   const [mounted, setMounted] = useState(false);
 
-  const canvasWidth = useMemo(() => orientation === 'portrait' ? 1080 : 1920, [orientation]);
-  const canvasHeight = useMemo(() => orientation === 'portrait' ? 1920 : 1080, [orientation]);
+  const canvasWidth = useMemo(() => orientation === 'portrait' ? 720 : 1280, [orientation]);
+  const canvasHeight = useMemo(() => orientation === 'portrait' ? 1280 : 720, [orientation]);
   const targetAspect = useMemo(() => orientation === 'portrait' ? 9 / 16 : 16 / 9, [orientation]);
 
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -142,14 +142,14 @@ export default function CursorFollower() {
       setStatus('Select what to share...');
 
       const stream = await navigator.mediaDevices.getDisplayMedia({
-        video: { width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 60 } },
+        video: { width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30 } },
         audio: false
       });
 
       mediaStreamRef.current = stream;
 
       const videoTrack = stream.getVideoTracks()[0];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const settings = videoTrack.getSettings() as any;
 
       if (videoRef.current) {
