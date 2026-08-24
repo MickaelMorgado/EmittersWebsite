@@ -26,9 +26,9 @@ function makeSoftCircle(size: number, softness: number): THREE.CanvasTexture {
 // ─── Ground Fog (smoky drifting clouds) ──────────────────────────────────────
 
 const FOG_LAYERS = [
-  { count: 30, y: [0, 0.6], spread: 16, size: 1.8, speed: 0.12, opacity: 0.10, color: '#9a82b8' },
-  { count: 20, y: [0.3, 1.2], spread: 14, size: 2.4, speed: 0.08, opacity: 0.06, color: '#7a6a9a' },
-  { count: 12, y: [0.8, 2.0], spread: 18, size: 3.0, speed: 0.05, opacity: 0.04, color: '#6a5a8a' },
+  { count: 30, y: [0, 0.6], spread: 16, size: 1.8, speed: 0.12, opacity: 0.10, color: '#666666' },
+  { count: 20, y: [0.3, 1.2], spread: 14, size: 2.4, speed: 0.08, opacity: 0.06, color: '#666666' },
+  { count: 12, y: [0.8, 2.0], spread: 18, size: 3.0, speed: 0.05, opacity: 0.04, color: '#666666' },
 ];
 
 interface FogParticle {
@@ -153,7 +153,7 @@ export function GroundFog() {
 
 // ─── Sparkle Dust (rising magical particles) ─────────────────────────────────
 
-const SPARKLE_COUNT = 25;
+const SPARKLE_COUNT = 250;
 const sparklePositions = new Float32Array(SPARKLE_COUNT * 3);
 const sparkleVelocities = new Float32Array(SPARKLE_COUNT * 3);
 

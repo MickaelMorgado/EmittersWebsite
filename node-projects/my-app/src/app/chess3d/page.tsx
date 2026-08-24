@@ -2,22 +2,22 @@
 
 import { VersionBadge } from '@/components/VersionBadge';
 import { ContactShadows, Environment, OrbitControls } from '@react-three/drei';
-import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Bloom, EffectComposer, SMAA, Vignette } from '@react-three/postprocessing';
-import { SMAAPreset } from 'postprocessing';
 import { RotateCcw, Volume2, VolumeX } from 'lucide-react';
+import { SMAAPreset } from 'postprocessing';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
+import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 
-import { Piece, PieceType, PlayerColor, Position, Move, AnimatingMove, INITIAL_BOARD, PIECE_ORDER } from './types';
-import { getValidMoves, findKing, isInCheck, isCheckmate, getBestAIMove } from './chess-logic';
-import { GlassPiece, RefractionCapture } from './glass-pieces';
-import { GroundFog, SparkleDust } from './particles';
-import { playMoveSound, playCaptureSound, playCheckSound, playCheckmateSound } from './audio';
+import { playCaptureSound, playCheckSound, playCheckmateSound, playMoveSound } from './audio';
 import { ChessBoard } from './board';
-import { StartingMenu } from './menu';
+import { findKing, getBestAIMove, getValidMoves, isCheckmate, isInCheck } from './chess-logic';
+import { GlassPiece, RefractionCapture } from './glass-pieces';
 import { FantasyHighlights } from './highlights';
+import { StartingMenu } from './menu';
+import { SparkleDust } from './particles';
+import { AnimatingMove, INITIAL_BOARD, Move, PIECE_ORDER, Piece, PieceType, PlayerColor, Position } from './types';
 
 // ─── Ambient Audio ───────────────────────────────────────────────────────────
 
@@ -108,6 +108,21 @@ function CameraRig({
 
     currentTarget.current.lerp(targetLookAt.current, 0.04);
     controls.target.copy(currentTarget.current);
+
+    // Move camera behind piece when focused
+    if (!isUserOrbiting.current) {
+      const cam = controls.object.position;
+      if (selectedPos) {
+        const tx = selectedPos.col - 3.5;
+        const tz = selectedPos.row - 3.5;
+        // Camera stays on player's side of the piece
+        const behindDir = currentTurn === 'white' ? 1 : -1;
+        const idealPos = new THREE.Vector3(tx * 0.3, 4, tz + behindDir * 5);
+        cam.lerp(idealPos, 0.03);
+      } else {
+        cam.lerp(DEFAULT_CAM, 0.03);
+      }
+    }
   });
 
   return null;
@@ -428,22 +443,18 @@ export default function Chess3D() {
         camera={{ position: [0, 8, 8], fov: 50 }}
         style={{ width: '100%', height: '100%' }}
       >
-        <color attach="background" args={['#080510']} />
-        <fog attach="fog" args={['#080510', 14, 30]} />
+        <color attach="background" args={['#000000']} />
 
         <ambientLight color="#ffffff" intensity={.6} />
         <directionalLight
           position={[4, 10, 5]}
-          intensity={4}
-          color="#fdfefe"
+          intensity={5}
+          color="#ffffff"
           castShadow
           shadow-mapSize={[1024, 1024]}
         />
-        <pointLight position={[-5.5, 3.5, -5.5]} color="#ece9e5" intensity={1.8} distance={14} decay={2} />
-        <pointLight position={[5.5, 3.5, 5.5]} color="#f5f0ea" intensity={1.8} distance={14} decay={2} />
-        <pointLight position={[0, -0.3, 0]} color="#d9d4de" intensity={0.5} distance={6} decay={2} />
 
-        <GroundFog />
+        {/* <GroundFog /> */}
         <SparkleDust />
 
         <RefractionCapture>

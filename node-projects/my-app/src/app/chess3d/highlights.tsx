@@ -1,7 +1,7 @@
 'use client';
 
-import { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
+import { useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { Position } from './types';
 
@@ -47,8 +47,10 @@ function MoveOrb({ position, isCapture }: { position: [number, number, number]; 
     });
   });
 
-  const color = isCapture ? '#ff4466' : '#66ffaa';
-  const emissiveColor = isCapture ? '#ff2244' : '#22ff88';
+  const green = '#10d569';
+  const red = '#ff4466';
+  const color = isCapture ? red : green;
+  const emissiveColor = isCapture ? red : green;
 
   return (
     <group ref={groupRef} position={position}>

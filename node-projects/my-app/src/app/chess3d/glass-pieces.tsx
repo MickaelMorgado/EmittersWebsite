@@ -1,47 +1,49 @@
 'use client';
 
-import { useMemo } from 'react';
-import { MeshTransmissionMaterial } from '@react-three/drei';
+import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { PieceType, PlayerColor } from './types';
 
-const GLASS_WHITE = '#eef4ff';
+const GLASS_WHITE = '#ffffff';
 const GLASS_BLACK = '#1a0828';
 const GLASS_BASE = '#1a1520';
 
-const TRANSMISSION_WHITE = {
-  color: GLASS_WHITE,
-  transmission: 1,
-  roughness: 0.0,
-  thickness: 0.3,
-  ior: 2.4,
-  chromaticAberration: 0.04,
-  anisotropicBlur: 0.1,
-  distortion: 0.05,
-  distortionScale: 0.1,
-  temporalDistortion: 0.05,
-  backside: false,
-  samples: 4,
-  resolution: 128,
-  transmissionSampler: true,
-};
+function GlassMaterial({ isWhite }: { isWhite: boolean }) {
+  const ref = useRef<THREE.MeshPhysicalMaterial>(null);
 
-const TRANSMISSION_BLACK = {
-  color: GLASS_BLACK,
-  transmission: 1,
-  roughness: 0.0,
-  thickness: 0.3,
-  ior: 2.4,
-  chromaticAberration: 0.04,
-  anisotropicBlur: 0.1,
-  distortion: 0.05,
-  distortionScale: 0.1,
-  temporalDistortion: 0.05,
-  backside: false,
-  samples: 4,
-  resolution: 128,
-  transmissionSampler: true,
-};
+  useEffect(() => {
+    const mat = ref.current;
+    if (!mat) return;
+    mat.onBeforeCompile = (shader) => {
+      shader.fragmentShader = shader.fragmentShader.replace(
+        '#include <dithering_fragment>',
+        `#include <dithering_fragment>
+        vec3 N = gl_FrontFacing ? normalize(vNormal) : normalize(-vNormal);
+        float fresnel = pow(1.0 - abs(dot(normalize(vViewPosition), N)), 3.0);
+        gl_FragColor.rgb += fresnel * vec3(0.35, 0.25, 0.55);
+        gl_FragColor.a = mix(gl_FragColor.a, 1.0, fresnel * 0.6);`
+      );
+    };
+  }, []);
+
+  return (
+    <meshPhysicalMaterial
+      ref={ref}
+      color={isWhite ? '#ffffff' : '#000000'}
+      transmission={0.6}
+      roughness={0.05}
+      thickness={0.5}
+      ior={1.8}
+      metalness={1}
+      envMapIntensity={2.5}
+      transparent
+      clearcoat={1}
+      clearcoatRoughness={0}
+      reflectivity={0.9}
+      opacity={0.95}
+    />
+  );
+}
 
 function Base() {
   return (
@@ -62,17 +64,16 @@ function SelectRing() {
 }
 
 function GlassPawn({ isWhite, isSelected }: { isWhite: boolean; isSelected?: boolean }) {
-  const props = isWhite ? TRANSMISSION_WHITE : TRANSMISSION_BLACK;
   return (
     <group>
       <Base />
       <mesh castShadow position={[0, 0.24, 0]}>
         <cylinderGeometry args={[0.14, 0.28, 0.38, 6]} />
-        <MeshTransmissionMaterial {...props} />
+        <GlassMaterial isWhite={isWhite} />
       </mesh>
       <mesh castShadow position={[0, 0.55, 0]}>
         <sphereGeometry args={[0.19, 6, 5]} />
-        <MeshTransmissionMaterial {...props} />
+        <GlassMaterial isWhite={isWhite} />
       </mesh>
       {isSelected && <SelectRing />}
     </group>
@@ -80,22 +81,21 @@ function GlassPawn({ isWhite, isSelected }: { isWhite: boolean; isSelected?: boo
 }
 
 function GlassRook({ isWhite, isSelected }: { isWhite: boolean; isSelected?: boolean }) {
-  const props = isWhite ? TRANSMISSION_WHITE : TRANSMISSION_BLACK;
   return (
     <group>
       <Base />
       <mesh castShadow position={[0, 0.32, 0]}>
         <cylinderGeometry args={[0.23, 0.30, 0.52, 4]} />
-        <MeshTransmissionMaterial {...props} />
+        <GlassMaterial isWhite={isWhite} />
       </mesh>
       <mesh castShadow position={[0, 0.62, 0]}>
         <boxGeometry args={[0.48, 0.1, 0.48]} />
-        <MeshTransmissionMaterial {...props} />
+        <GlassMaterial isWhite={isWhite} />
       </mesh>
       {[[-0.18,-0.18],[-0.18,0.18],[0.18,-0.18],[0.18,0.18]].map(([x,z],i) => (
         <mesh castShadow key={i} position={[x, 0.71, z]}>
           <boxGeometry args={[0.1, 0.14, 0.1]} />
-          <MeshTransmissionMaterial {...props} />
+          <GlassMaterial isWhite={isWhite} />
         </mesh>
       ))}
       {isSelected && <SelectRing />}
@@ -104,21 +104,20 @@ function GlassRook({ isWhite, isSelected }: { isWhite: boolean; isSelected?: boo
 }
 
 function GlassKnight({ isWhite, isSelected }: { isWhite: boolean; isSelected?: boolean }) {
-  const props = isWhite ? TRANSMISSION_WHITE : TRANSMISSION_BLACK;
   return (
     <group>
       <Base />
       <mesh castShadow position={[0, 0.24, 0]}>
         <cylinderGeometry args={[0.20, 0.30, 0.36, 6]} />
-        <MeshTransmissionMaterial {...props} />
+        <GlassMaterial isWhite={isWhite} />
       </mesh>
       <mesh castShadow position={[0, 0.60, 0]} rotation={[0.3, 0, 0]}>
         <boxGeometry args={[0.26, 0.30, 0.40]} />
-        <MeshTransmissionMaterial {...props} />
+        <GlassMaterial isWhite={isWhite} />
       </mesh>
       <mesh castShadow position={[0, 0.76, -0.18]} rotation={[0.1, 0, 0]}>
         <boxGeometry args={[0.16, 0.12, 0.16]} />
-        <MeshTransmissionMaterial {...props} />
+        <GlassMaterial isWhite={isWhite} />
       </mesh>
       {isSelected && <SelectRing />}
     </group>
@@ -126,17 +125,16 @@ function GlassKnight({ isWhite, isSelected }: { isWhite: boolean; isSelected?: b
 }
 
 function GlassBishop({ isWhite, isSelected }: { isWhite: boolean; isSelected?: boolean }) {
-  const props = isWhite ? TRANSMISSION_WHITE : TRANSMISSION_BLACK;
   return (
     <group>
       <Base />
       <mesh castShadow position={[0, 0.43, 0]}>
         <cylinderGeometry args={[0.10, 0.26, 0.70, 6]} />
-        <MeshTransmissionMaterial {...props} />
+        <GlassMaterial isWhite={isWhite} />
       </mesh>
       <mesh castShadow position={[0, 0.84, 0]}>
         <sphereGeometry args={[0.10, 5, 4]} />
-        <MeshTransmissionMaterial {...props} />
+        <GlassMaterial isWhite={isWhite} />
       </mesh>
       {isSelected && <SelectRing />}
     </group>
@@ -144,21 +142,20 @@ function GlassBishop({ isWhite, isSelected }: { isWhite: boolean; isSelected?: b
 }
 
 function GlassQueen({ isWhite, isSelected }: { isWhite: boolean; isSelected?: boolean }) {
-  const props = isWhite ? TRANSMISSION_WHITE : TRANSMISSION_BLACK;
   return (
     <group>
       <Base />
       <mesh castShadow position={[0, 0.45, 0]}>
         <cylinderGeometry args={[0.15, 0.28, 0.74, 6]} />
-        <MeshTransmissionMaterial {...props} />
+        <GlassMaterial isWhite={isWhite} />
       </mesh>
       <mesh castShadow position={[0, 0.85, 0]} rotation={[Math.PI / 2, 0, 0]}>
         <torusGeometry args={[0.20, 0.04, 4, 8]} />
-        <MeshTransmissionMaterial {...props} />
+        <GlassMaterial isWhite={isWhite} />
       </mesh>
       <mesh castShadow position={[0, 0.96, 0]}>
         <sphereGeometry args={[0.12, 6, 4]} />
-        <MeshTransmissionMaterial {...props} />
+        <GlassMaterial isWhite={isWhite} />
       </mesh>
       {isSelected && <SelectRing />}
     </group>
@@ -166,13 +163,12 @@ function GlassQueen({ isWhite, isSelected }: { isWhite: boolean; isSelected?: bo
 }
 
 function GlassKing({ isWhite, isSelected }: { isWhite: boolean; isSelected?: boolean }) {
-  const props = isWhite ? TRANSMISSION_WHITE : TRANSMISSION_BLACK;
   return (
     <group>
       <Base />
       <mesh castShadow position={[0, 0.47, 0]}>
         <cylinderGeometry args={[0.18, 0.28, 0.78, 6]} />
-        <MeshTransmissionMaterial {...props} />
+        <GlassMaterial isWhite={isWhite} />
       </mesh>
       <mesh castShadow position={[0, 0.97, 0]}>
         <boxGeometry args={[0.06, 0.30, 0.06]} />

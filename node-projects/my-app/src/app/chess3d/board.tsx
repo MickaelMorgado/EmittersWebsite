@@ -1,9 +1,9 @@
 'use client';
 
 import * as THREE from 'three';
-import { Piece, Position } from './types';
 import { GlassPiece } from './glass-pieces';
 import { useMarbleTextures } from './marble';
+import { Piece, Position } from './types';
 
 const BOARD_SIZE = 8;
 
@@ -54,7 +54,6 @@ function BoardFrame() {
         <boxGeometry args={[9.0, 0.08, 9.0]} />
         <meshStandardMaterial color="#1a1030" roughness={0.7} metalness={0.6} />
       </mesh>
-      <pointLight position={[0, -0.1, 0]} color="#221144" intensity={0.6} distance={10} decay={2} />
     </group>
   );
 }
