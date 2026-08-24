@@ -2,6 +2,7 @@
 
 import { VersionBadge } from '@/components/VersionBadge';
 import { ContactShadows, Environment, OrbitControls } from '@react-three/drei';
+import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Bloom, EffectComposer, SMAA, Vignette } from '@react-three/postprocessing';
 import { SMAAPreset } from 'postprocessing';
@@ -11,11 +12,12 @@ import * as THREE from 'three';
 
 import { Piece, PieceType, PlayerColor, Position, Move, AnimatingMove, INITIAL_BOARD, PIECE_ORDER } from './types';
 import { getValidMoves, findKing, isInCheck, isCheckmate, getBestAIMove } from './chess-logic';
-import { GlassPiece } from './glass-pieces';
+import { GlassPiece, RefractionCapture } from './glass-pieces';
 import { GroundFog, SparkleDust } from './particles';
 import { playMoveSound, playCaptureSound, playCheckSound, playCheckmateSound } from './audio';
 import { ChessBoard } from './board';
 import { StartingMenu } from './menu';
+import { FantasyHighlights } from './highlights';
 
 // ─── Ambient Audio ───────────────────────────────────────────────────────────
 
@@ -59,6 +61,59 @@ function toggleAmbient(on: boolean) {
 // ─── Animating Piece ─────────────────────────────────────────────────────────
 
 const BOARD_SIZE = 8;
+
+// ─── Camera Focus Rig ────────────────────────────────────────────────────────
+
+const DEFAULT_CAM = new THREE.Vector3(0, 8, 8);
+const DEFAULT_TARGET = new THREE.Vector3(0, 0, 0);
+
+function CameraRig({
+  selectedPos,
+  currentTurn,
+  controlsRef,
+}: {
+  selectedPos: Position | null;
+  currentTurn: PlayerColor;
+  controlsRef: React.RefObject<OrbitControlsImpl | null>;
+}) {
+  const targetLookAt = useRef(new THREE.Vector3());
+  const currentTarget = useRef(new THREE.Vector3());
+  const isUserOrbiting = useRef(false);
+
+  useEffect(() => {
+    const controls = controlsRef.current;
+    if (!controls) return;
+    const onStart = () => { isUserOrbiting.current = true; };
+    const onEnd = () => { isUserOrbiting.current = false; };
+    controls.addEventListener('start', onStart);
+    controls.addEventListener('end', onEnd);
+    return () => {
+      controls.removeEventListener('start', onStart);
+      controls.removeEventListener('end', onEnd);
+    };
+  }, [controlsRef]);
+
+  useFrame(() => {
+    const controls = controlsRef.current;
+    if (!controls) return;
+
+    if (selectedPos) {
+      const tx = selectedPos.col - 3.5;
+      const tz = selectedPos.row - 3.5;
+      const lookAhead = currentTurn === 'white' ? 0.3 : -0.3;
+      targetLookAt.current.set(tx, 0.5, tz + lookAhead);
+    } else {
+      targetLookAt.current.copy(DEFAULT_TARGET);
+    }
+
+    currentTarget.current.lerp(targetLookAt.current, 0.04);
+    controls.target.copy(currentTarget.current);
+  });
+
+  return null;
+}
+
+// ─── Animating Piece ─────────────────────────────────────────────────────────
 
 function AnimatingPiece({ move }: { move: AnimatingMove }) {
   const groupRef = useRef<THREE.Group>(null);
@@ -104,6 +159,7 @@ export default function Chess3D() {
   const [capturedWhite, setCapturedWhite] = useState<Piece[]>([]);
   const [capturedBlack, setCapturedBlack] = useState<Piece[]>([]);
   const [animatingMove, setAnimatingMove] = useState<AnimatingMove | null>(null);
+  const controlsRef = useRef<OrbitControlsImpl>(null);
 
   const applyMoveToBoard = useCallback(
     (move: Move) => {
@@ -189,6 +245,7 @@ export default function Chess3D() {
       const clickedPiece = board[row][col];
       const isClickedOwnPiece = clickedPiece && clickedPiece.color === currentTurn;
 
+      // If a piece is selected and clicking a valid move, execute it
       if (selectedPos && validMoves.some((m) => m.row === row && m.col === col)) {
         const move: Move = {
           from: selectedPos,
@@ -200,6 +257,14 @@ export default function Chess3D() {
         return;
       }
 
+      // Clicking same piece deselects
+      if (selectedPos && row === selectedPos.row && col === selectedPos.col) {
+        setSelectedPos(null);
+        setValidMoves([]);
+        return;
+      }
+
+      // Select own piece
       if (isClickedOwnPiece) {
         setSelectedPos({ row, col });
         setValidMoves(getValidMoves(board, { row, col }));
@@ -372,36 +437,43 @@ export default function Chess3D() {
           intensity={4}
           color="#fdfefe"
           castShadow
-          shadow-mapSize={[2048, 2048]}
+          shadow-mapSize={[1024, 1024]}
         />
-        <pointLight position={[-5.5, 3.5, -5.5]} color="#ece9e5" intensity={1.8} distance={14} decay={2} castShadow />
-        <pointLight position={[5.5, 3.5, 5.5]} color="#f5f0ea" intensity={1.8} distance={14} decay={2} castShadow />
+        <pointLight position={[-5.5, 3.5, -5.5]} color="#ece9e5" intensity={1.8} distance={14} decay={2} />
+        <pointLight position={[5.5, 3.5, 5.5]} color="#f5f0ea" intensity={1.8} distance={14} decay={2} />
         <pointLight position={[0, -0.3, 0]} color="#d9d4de" intensity={0.5} distance={6} decay={2} />
 
         <GroundFog />
         <SparkleDust />
 
-        <ChessBoard
-          board={board}
-          selectedPos={selectedPos}
-          validMoves={validMoves}
-          kingInCheck={kingInCheck}
-          animatingMove={animatingMove}
-          onSquareClick={handleSquareClick}
-        />
+        <RefractionCapture>
+          <ChessBoard
+            board={board}
+            kingInCheck={kingInCheck}
+            animatingMove={animatingMove}
+            onSquareClick={handleSquareClick}
+          />
 
-        {animatingMove && <AnimatingPiece move={animatingMove} />}
+          <FantasyHighlights
+            selectedPos={selectedPos}
+            validMoves={validMoves}
+            board={board}
+          />
+
+          {animatingMove && <AnimatingPiece move={animatingMove} />}
+        </RefractionCapture>
 
         <ContactShadows
           position={[0, -0.35, 0]}
-          opacity={0.45}
+          opacity={0.35}
           scale={20}
-          blur={2.5}
-          far={6}
+          blur={2}
+          far={5}
           color="#0d0520"
         />
 
         <OrbitControls
+          ref={controlsRef}
           enableDamping
           dampingFactor={0.05}
           minDistance={5}
@@ -409,14 +481,16 @@ export default function Chess3D() {
           maxPolarAngle={Math.PI / 2.1}
         />
 
+        <CameraRig selectedPos={selectedPos} currentTurn={currentTurn} controlsRef={controlsRef} />
+
         <Environment preset="night" />
 
         <EffectComposer multisampling={0}>
-          <SMAA preset={SMAAPreset.ULTRA} />
+          <SMAA preset={SMAAPreset.MEDIUM} />
           <Bloom
-            luminanceThreshold={0.35}
+            luminanceThreshold={0.4}
             luminanceSmoothing={0.9}
-            intensity={0.65}
+            intensity={0.5}
             mipmapBlur
           />
           <Vignette offset={0.3} darkness={0.7} />

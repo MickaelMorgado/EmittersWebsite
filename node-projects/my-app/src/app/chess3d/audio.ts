@@ -1,17 +1,25 @@
-const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+let audioCtx: AudioContext | null = null;
+
+function getAudioCtx() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+  }
+  return audioCtx;
+}
 
 function playTone(frequency: number, duration: number, type: OscillatorType = 'sine', volume: number = 0.3) {
-  if (audioCtx.state === 'suspended') audioCtx.resume();
-  const oscillator = audioCtx.createOscillator();
-  const gainNode = audioCtx.createGain();
+  const ctx = getAudioCtx();
+  if (ctx.state === 'suspended') ctx.resume();
+  const oscillator = ctx.createOscillator();
+  const gainNode = ctx.createGain();
   oscillator.connect(gainNode);
-  gainNode.connect(audioCtx.destination);
+  gainNode.connect(ctx.destination);
   oscillator.type = type;
-  oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime);
-  gainNode.gain.setValueAtTime(volume, audioCtx.currentTime);
-  gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-  oscillator.start(audioCtx.currentTime);
-  oscillator.stop(audioCtx.currentTime + duration);
+  oscillator.frequency.setValueAtTime(frequency, ctx.currentTime);
+  gainNode.gain.setValueAtTime(volume, ctx.currentTime);
+  gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+  oscillator.start(ctx.currentTime);
+  oscillator.stop(ctx.currentTime + duration);
 }
 
 export function playMoveSound() {
