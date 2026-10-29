@@ -232,50 +232,6 @@ export const STALKER_AMMO_DATA: AmmoCaliber[] = [
     ]
   },
   {
-    id: '762x39',
-    name: '7.62x39mm',
-    variants: [
-      {
-        id: '762x39_ps',
-        name: '7.62x39mm PS',
-        type: 'Regular',
-        weight: 0.016,
-        damage: 7,
-        penetration: 5,
-        degradation: 2,
-        description: 'Standard AK-47 round.',
-        imageUrl: `${BASE_URL}stalker-2-762x39mm-ps.png`,
-        compatibleWeapons: ['KHAROD', 'AKM-74', 'SKS', 'Glutton', 'AKM'],
-        boxSize: 30
-      },
-      {
-        id: '762x39_bz',
-        name: '7.62x39mm BZ',
-        type: 'AP',
-        weight: 0.017,
-        damage: 6,
-        penetration: 8,
-        degradation: 6,
-        description: 'Armor-piercing incendiary variant.',
-        imageUrl: `${BASE_URL}stalker-2-762x39mm-bz.png`,
-        boxSize: 30
-      },
-      {
-        id: '762x39_lan',
-        name: '7.62x39mm Lancaster',
-        type: 'Special',
-        weight: 0.016,
-        damage: 8,
-        penetration: 4,
-        degradation: 4,
-        description: 'Specialized hunting round.',
-        imageUrl: `${BASE_URL}stalker-2-762x39mm-lan.png`,
-        compatibleWeapons: ['KHAROD', 'AKM-74', 'SKS', 'ASh-12'],
-        boxSize: 30
-      }
-    ]
-  },
-  {
     id: '762x51',
     name: '.308',
     variants: [
@@ -371,7 +327,7 @@ export const STALKER_AMMO_DATA: AmmoCaliber[] = [
     variants: [
       {
         id: '9x39_sp5',
-        name: '9x39mm SP-5',
+        name: '9x39mm PA',
         type: 'Regular',
         weight: 0.022,
         damage: 7,
@@ -396,13 +352,13 @@ export const STALKER_AMMO_DATA: AmmoCaliber[] = [
       },
       {
         id: '9x39_pa',
-        name: '9x39mm PAB-9',
-        type: 'AP',
+        name: '9x39mm SP-5',
+        type: 'Sniper',
         weight: 0.023,
         damage: 8,
         penetration: 7,
         degradation: 7,
-        description: 'Economical armor-piercing variant.',
+        description: 'Subsonic sniper round.',
         imageUrl: `${BASE_URL}stalker-2-9x39mm-pa.png`,
         boxSize: 20
       },
@@ -453,7 +409,7 @@ export const STALKER_AMMO_DATA: AmmoCaliber[] = [
       },
       {
         id: '12x76_dart',
-        name: '12x76 Dart',
+        name: '12x76 Expanding Dart',
         type: 'AP',
         weight: 0.045,
         damage: 7,

@@ -18,7 +18,26 @@ const OPENROUTER_TEXT_MODELS = [
 const OLLAMA_HOST = process.env.OLLAMA_HOST || 'http://localhost:11434';
 const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'llama2:7b';
 
-export type AIProvider = 'openai' | 'openrouter' | 'ollama';
+export type AIProvider = 'openai' | 'openrouter' | 'ollama' | 'opencode';
+
+const OPENCODE_MIDDLEMAN = process.env.NEXT_PUBLIC_OPENCODE_MIDDLEMAN || 'http://localhost:7700';
+
+export async function chatOpenCode(prompt: string): Promise<AIResponse> {
+  try {
+    const res = await fetch(`${OPENCODE_MIDDLEMAN}/api/opencode-chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt })
+    });
+    const data = await res.json();
+    if (data?.ok && data?.text) {
+      return { content: data.text, provider: 'opencode' };
+    }
+    return { content: '', provider: 'opencode', error: data?.error || `HTTP ${res.status}` };
+  } catch (err) {
+    return { content: '', provider: 'opencode', error: String(err) };
+  }
+}
 
 export interface AIResponse {
   content: string;

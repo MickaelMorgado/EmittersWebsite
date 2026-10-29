@@ -4,7 +4,9 @@ import { VersionBadge } from "@/components/VersionBadge";
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import { AmmoVariant, STALKER_AMMO_DATA } from './data';
-import { chatAI } from '@/lib/ai';
+import { chatAI, chatOpenCode, parseJSON } from '@/lib/ai';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import './styles.css';
 
 interface AmmoState {
@@ -27,6 +29,9 @@ interface AppSettings {
   surplusMultiplierInventory: number;
   surplusMultiplierLoot: number;
   openaiKey: string;
+  openrouterKey: string;
+  ollamaHost: string;
+  ollamaModel: string;
 }
 
 const getWeaponImageUrl = (weaponName: string) => {
@@ -231,11 +236,16 @@ Your personality:
 
 Your expertise:
 - Ammunition trading strategies and optimal loadouts
+- When inventory is 0 but stash is over threshold: this is a SURPLUS situation (beneficial), not a shortage. Recommend transferring from stash to backpack. Do not flag as critical.
 - Zone survival tips and equipment management
 - Trader relationships and reputation systems
 - Regional ammo availability across different Zone areas
 - Weight management and carrying capacity optimization
 - Weapon-ammo compatibility and tactical recommendations
+
+When the user gives ammo counts to add or sync (e.g. "I have 50 9x19 FMJ in my backpack"), reply with a JSON block in this exact format, then a short conversational note:
+{"items":[{"name":"9x19mm FMJ","count":50,"location":"inventory"}]}
+Use ammo names from the Zone-Net data. location is "inventory" or "stash". Only include the JSON block when ammo counts are given; otherwise reply normally in plain text.
 
 Keep responses concise (2-4 sentences unless explaining something complex). Be helpful but maintain your gruff trader persona. If asked about topics unrelated to the Zone or ammunition, politely redirect to matters you can help with.`;
 
@@ -306,17 +316,21 @@ export default function StalkerAmmoPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
 const [openaiKey, setOpenaiKey] = useState<string>('');
+const [openrouterKey, setOpenrouterKey] = useState<string>('');
+const [ollamaHost, setOllamaHost] = useState<string>('http://localhost:11434');
+const [ollamaModel, setOllamaModel] = useState<string>('llava');
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
 const [isProcessing, setIsProcessing] = useState(false);
   const [isChatLoading, setIsChatLoading] = useState(false);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const chatMessagesRef = useRef<HTMLDivElement>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [expandedImage, setExpandedImage] = useState<string | null>(null);
   const [accordionLogistics, setAccordionLogistics] = useState(true);
   const [accordionAssistant, setAccordionAssistant] = useState(true);
   const [confirmingPurge, setConfirmingPurge] = useState(false);
   const [importJson, setImportJson] = useState('');
-  const [appSettings, setAppSettings] = useState<AppSettings>({ surplusMultiplierInventory: 3, surplusMultiplierLoot: 1.8, openaiKey: '' });
+  const [appSettings, setAppSettings] = useState<AppSettings>({ surplusMultiplierInventory: 3, surplusMultiplierLoot: 1.8, openaiKey: '', openrouterKey: '', ollamaHost: 'http://localhost:11434', ollamaModel: 'llava' });
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [settingsActiveTab, setSettingsActiveTab] = useState<'thresholds' | 'api' | 'import'>('thresholds');
 
@@ -405,6 +419,12 @@ const [isProcessing, setIsProcessing] = useState(false);
     setWeaponSelectedIndex(0);
   }, [weaponSearch]);
 
+  // Keep chat scrolled to bottom on new messages
+  useEffect(() => {
+    const el = chatMessagesRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [chatMessages]);
+
   // Audio Effects for Advanced Interactions (Opening & Closing)
   const prevQuickAdd = useRef(quickAddTarget);
   const prevEditingThresh = useRef(editingThreshold);
@@ -426,59 +446,106 @@ const [isProcessing, setIsProcessing] = useState(false);
   useEffect(() => {
     const savedKey = localStorage.getItem('stalker_openai_key_v1');
     if (savedKey) setOpenaiKey(savedKey);
+    const savedOrKey = localStorage.getItem('stalker_openrouter_key_v1');
+    if (savedOrKey) setOpenrouterKey(savedOrKey);
+    const savedOllamaHost = localStorage.getItem('stalker_ollama_host_v1');
+    if (savedOllamaHost) setOllamaHost(savedOllamaHost);
+    const savedOllamaModel = localStorage.getItem('stalker_ollama_model_v1');
+    if (savedOllamaModel) setOllamaModel(savedOllamaModel);
   }, []);
 
   const analyzeScreenshot = async (imageBase64: string): Promise<AIDetectionResult> => {
-    if (!openaiKey) throw new Error('OpenAI API key not configured. Please add your key in Settings.');
-    
-    let lastError = '';
-    
-    const tryOpenAI = async (): Promise<string> => {
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${openaiKey}`
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o',
-          messages: [{
-            role: 'user',
-            content: [
+    const errors: string[] = [];
+
+    // 1. OpenAI (gpt-4o vision)
+    if (openaiKey) {
+      try {
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${openaiKey}` },
+          body: JSON.stringify({
+            model: 'gpt-4o',
+            messages: [{ role: 'user', content: [
               { type: 'text', text: AI_DETECTION_PROMPT },
               { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${imageBase64}` }}
-            ]
-          }],
-          max_tokens: 1500
+            ]}],
+            max_tokens: 1500
+          })
+        });
+        if (response.ok) {
+          const data = await response.json();
+          const content = data.choices?.[0]?.message?.content;
+          if (content) {
+            const jsonMatch = content.match(/\{[\s\S]*\}/);
+            if (jsonMatch) return JSON.parse(jsonMatch[0]);
+          }
+        } else {
+          const err = await response.json().catch(() => ({}));
+          errors.push(`OpenAI: ${err.error?.message || response.status}`);
+        }
+      } catch (e) { errors.push(`OpenAI: ${e instanceof Error ? e.message : String(e)}`); }
+    }
+
+    // 2. OpenRouter (vision-capable free models)
+    const orKey = openrouterKey || (typeof process !== 'undefined' ? (process.env.NEXT_PUBLIC_OPENROUTER_KEY || '') : '');
+    if (orKey) {
+      const orModels = ['google/gemini-2.0-flash-exp:free', 'meta-llama/llama-3.2-11b-vision-instruct:free'];
+      for (const model of orModels) {
+        try {
+          const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${orKey}`, 'HTTP-Referer': 'https://emitterswebsite.com', 'X-Title': 'EmittersWebsite' },
+            body: JSON.stringify({
+              model,
+              messages: [{ role: 'user', content: [
+                { type: 'text', text: AI_DETECTION_PROMPT },
+                { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${imageBase64}` }}
+              ]}],
+              max_tokens: 1500
+            })
+          });
+          if (response.ok) {
+            const data = await response.json();
+            const content = data.choices?.[0]?.message?.content;
+            if (content) {
+              const jsonMatch = content.match(/\{[\s\S]*\}/);
+              if (jsonMatch) return JSON.parse(jsonMatch[0]);
+            }
+          } else {
+            const err = await response.json().catch(() => ({}));
+            errors.push(`OpenRouter(${model}): ${err.error?.message || response.status}`);
+          }
+        } catch (e) { errors.push(`OpenRouter(${model}): ${e instanceof Error ? e.message : String(e)}`); }
+      }
+    }
+
+    // 3. Ollama (llava vision)
+    try {
+      const response = await fetch(`${ollamaHost}/api/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: ollamaModel || 'llava',
+          messages: [{ role: 'user', content: AI_DETECTION_PROMPT, images: [imageBase64] }],
+          stream: false
         })
       });
-
-      if (!response.ok) {
-        const error = await response.json();
-        lastError = error.error?.message || 'API request failed';
-        throw new Error(lastError);
+      if (response.ok) {
+        const data = await response.json();
+        const content = data.message?.content;
+        if (content) {
+          const jsonMatch = content.match(/\{[\s\S]*\}/);
+          if (jsonMatch) return JSON.parse(jsonMatch[0]);
+        }
+      } else {
+        errors.push(`Ollama: HTTP ${response.status}`);
       }
+    } catch (e) { errors.push(`Ollama: ${e instanceof Error ? e.message : String(e)}`); }
 
-      const data = await response.json();
-      const content = data.choices?.[0]?.message?.content;
-      if (!content) throw new Error('No response from AI');
-      return content;
-    };
-
-    try {
-      const content = await tryOpenAI();
-      const jsonMatch = content.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) throw new Error('Could not parse AI response');
-      return JSON.parse(jsonMatch[0]);
-    } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : String(err);
-      
-      if (errorMsg.includes('quota') || errorMsg.includes('insufficient_quota') || errorMsg.includes('exceeded')) {
-        throw new Error('OpenAI quota exceeded. Screenshot analysis requires a paid OpenAI plan. Upgrade at platform.openai.com or use text chat with Kuznetsov.');
-      }
-      
-      throw new Error(errorMsg);
+    if (!openaiKey && !orKey) {
+      throw new Error('No AI provider configured. Add an OpenAI or OpenRouter API key in Settings, or run Ollama with a vision model (llava).');
     }
+    throw new Error(errors.join(' | ') || 'All AI providers failed.');
   };
 
   const sendKuznetsovMessage = async (userMessage: string): Promise<string> => {
@@ -490,14 +557,58 @@ const [isProcessing, setIsProcessing] = useState(false);
         content: m.content
       })) as Array<{ role: 'user' | 'assistant'; content: string }>;
 
-    const fullPrompt = `${KUZNETSOV_SYSTEM_PROMPT}\n\nConversation:\n${chatHistory.map(m => `${m.role}: ${m.content}`).join('\n')}\n\nUser: ${userMessage}\n\nKuznetsov:`;
+    // Build a compact logistics state summary so the agent has context
+    const variantById = new Map(STALKER_AMMO_DATA.flatMap(c => c.variants).map(v => [v.id, v]));
+    const lines: string[] = [];
+    const surplusLines: string[] = [];
+    Object.entries(data).forEach(([id, st]) => {
+      const v = variantById.get(id);
+      if (!v) return;
+      const inv = st.inventory || 0;
+      const stash = st.stash || 0;
+      if (inv === 0 && stash === 0 && (st.inventoryThreshold || 0) === 0 && (st.stashThreshold || 0) === 0) return;
+      lines.push(`${v.name} (${id}): inv ${inv}/${st.inventoryThreshold || 0}, stash ${stash}/${st.stashThreshold || 0}`);
+      // Surplus (sellable) detection
+      const invMult = appSettings.surplusMultiplierInventory || 3;
+      const stashMult = appSettings.surplusMultiplierLoot || 1.8;
+      if (st.inventoryThreshold > 0 && inv >= st.inventoryThreshold * invMult) {
+        const sellable = inv - (st.inventoryThreshold * invMult);
+        if (sellable > 0) surplusLines.push(`${v.name}: ${sellable} sellable in backpack (inv ${inv}, trigger ${st.inventoryThreshold * invMult})`);
+      }
+      if (st.stashThreshold > 0 && stash >= st.stashThreshold * stashMult) {
+        const sellable = stash - (st.stashThreshold * stashMult);
+        if (sellable > 0) surplusLines.push(`${v.name}: ${sellable} sellable in stash (stash ${stash}, trigger ${st.stashThreshold * stashMult})`);
+      }
+    });
+    const weaponLines = carriedWeapons.map(w => `${w.name}${w.isActive ? ' (active)' : ' (inactive)'} min=${w.minRounds || 0}`).join('; ');
+    // Hardware alerts (weapon-ammo mismatches / supply below minRounds)
+    const hwAlerts: string[] = [];
+    carriedWeapons.forEach(hw => {
+      if (!hw.isActive) return;
+      const compatAmmo = allVariants.filter(v => {
+        if (hw.ammoFilter) return hw.ammoFilter.includes(v.id);
+        return v.compatibleWeapons?.some(cw => cw.replace(' (Mod)', '') === hw.name);
+      });
+      if (compatAmmo.length === 0) return;
+      const totalInv = compatAmmo.reduce((s, v) => s + (data[v.id]?.inventory || 0), 0);
+      const totalStash = compatAmmo.reduce((s, v) => s + (data[v.id]?.stash || 0), 0);
+      if (totalInv === 0) {
+        hwAlerts.push(totalStash > 0
+          ? `URGENT: ${hw.name} has 0 compatible rounds in backpack (${totalStash} in stash) - transfer immediately.`
+          : `DEADLOCK: ${hw.name} has zero compatible ammunition in Zone caches.`);
+      } else if (hw.minRounds && totalInv < hw.minRounds) {
+        hwAlerts.push(`SUPPLY LOW: ${hw.name} ${totalInv}/${hw.minRounds} rounds (deficit ${hw.minRounds - totalInv})${totalStash > 0 ? `; ${totalStash} in stash` : ''}.`);
+      }
+    });
+    const logisticsState = `CURRENT LOGISTICS STATE:\nHardware alerts:\n${hwAlerts.join('\n') || '(none)'}\nAmmo (inv/thresh, stash/thresh):\n${lines.join('\n') || '(none)'}\nSellable surplus:\n${surplusLines.join('\n') || '(none)'}\nCarried weapons: ${weaponLines || '(none)'}`;
 
+    const fullPrompt = `${KUZNETSOV_SYSTEM_PROMPT}\n\n${logisticsState}\n\nConversation:\n${chatHistory.map(m => `${m.role}: ${m.content}`).join('\n')}\n\nUser: ${userMessage}\n\nKuznetsov:`;
+
+    // Prefer OpenCode (middleman) so the chat talks to this OpenCode session; fall back to chatAI providers.
+    const ocResult = await chatOpenCode(fullPrompt);
+    if (ocResult.content) return ocResult.content;
     const result = await chatAI(fullPrompt);
-    
-    if (!result.content && result.error) {
-      throw new Error(result.error);
-    }
-    
+    if (!result.content && result.error) throw new Error(result.error || ocResult.error || 'No AI provider configured');
     return result.content || 'No response from Kuznetsov.';
   };
 
@@ -519,12 +630,25 @@ const [isProcessing, setIsProcessing] = useState(false);
 
     try {
       const response = await sendKuznetsovMessage(userText);
-      setChatMessages(prev => [...prev, {
-        id: `ai_${Date.now()}`,
-        type: 'ai-text',
-        content: response,
-        timestamp: Date.now()
-      }]);
+      const parsed = parseJSON<{ items?: Array<{ name: string; count: number; location?: string }> }>(response);
+      if (parsed?.items && Array.isArray(parsed.items) && parsed.items.length > 0) {
+        const processed = processDetectedItems({ items: parsed.items.map(i => ({ name: i.name, count: i.count, location: i.location || 'unknown' })), confidence: 'high', notes: '' } as AIDetectionResult);
+        setChatMessages(prev => [...prev, {
+          id: `ai_${Date.now()}`,
+          type: 'ai-result',
+          content: `Detected ${processed.length} ammunition types`,
+          items: processed,
+          notes: response.replace(/```[\s\S]*?```/g, '').replace(/\{[\s\S]*\}/, '').trim(),
+          timestamp: Date.now()
+        }]);
+      } else {
+        setChatMessages(prev => [...prev, {
+          id: `ai_${Date.now()}`,
+          type: 'ai-text',
+          content: response,
+          timestamp: Date.now()
+        }]);
+      }
     } catch (error) {
       setChatMessages(prev => [...prev, {
         id: `err_${Date.now()}`,
@@ -739,9 +863,15 @@ const [isProcessing, setIsProcessing] = useState(false);
         setAppSettings({
           surplusMultiplierInventory: settings.surplusMultiplierInventory ?? 3,
           surplusMultiplierLoot: settings.surplusMultiplierLoot ?? 1.8,
-          openaiKey: settings.openaiKey ?? ''
+          openaiKey: settings.openaiKey ?? '',
+          openrouterKey: settings.openrouterKey ?? '',
+          ollamaHost: settings.ollamaHost ?? 'http://localhost:11434',
+          ollamaModel: settings.ollamaModel ?? 'llava'
         });
         if (settings.openaiKey) setOpenaiKey(settings.openaiKey);
+        if (settings.openrouterKey) setOpenrouterKey(settings.openrouterKey);
+        if (settings.ollamaHost) setOllamaHost(settings.ollamaHost);
+        if (settings.ollamaModel) setOllamaModel(settings.ollamaModel);
       } catch (e) {
         console.warn('Failed to load settings:', e);
       }
@@ -751,10 +881,14 @@ const [isProcessing, setIsProcessing] = useState(false);
   // Save app settings
   useEffect(() => {
     if (mounted) {
-      const settingsToSave = { ...appSettings, openaiKey };
+      const settingsToSave = { ...appSettings, openaiKey, openrouterKey, ollamaHost, ollamaModel };
       localStorage.setItem('stalker_app_settings_v1', JSON.stringify(settingsToSave));
+      localStorage.setItem('stalker_openai_key_v1', openaiKey);
+      localStorage.setItem('stalker_openrouter_key_v1', openrouterKey);
+      localStorage.setItem('stalker_ollama_host_v1', ollamaHost);
+      localStorage.setItem('stalker_ollama_model_v1', ollamaModel);
     }
-  }, [appSettings, openaiKey, mounted]);
+  }, [appSettings, openaiKey, openrouterKey, ollamaHost, ollamaModel, mounted]);
 
   useEffect(() => {
     if (mounted && !isShowcase) {
@@ -1322,7 +1456,7 @@ if (excess > 0) {
         
         <div className="sidebar-content">
           <div className="ai-chat-window">
-              <div className={`ai-accordion ${logisticsSeverity || 'info'}`}>
+              <div className={`ai-accordion ${logisticsSeverity || 'info'} ${accordionLogistics ? 'expanded' : 'collapsed'}`}>
                 <div 
                   className="ai-accordion-header"
                   onClick={() => setAccordionLogistics(!accordionLogistics)}
@@ -1403,7 +1537,7 @@ if (excess > 0) {
                 )}
               </div>
               
-<div className="ai-accordion assistant">
+<div className={`ai-accordion assistant ${accordionAssistant ? 'expanded' : 'collapsed'}`}>
                 <div 
                   className="ai-accordion-header"
                   onClick={() => setAccordionAssistant(!accordionAssistant)}
@@ -1421,13 +1555,15 @@ if (excess > 0) {
                   <div className="ai-accordion-content assistant-content">
                     <p className="assistant-intro">Welcome back, Stalker. I am monitoring your caches in real-time. Upload an inventory screenshot or ask me about ammo strategy.</p>
                     
-                    <div className="chat-messages-container">
+                    <div className="chat-messages-container" ref={chatMessagesRef}>
                       {chatMessages.map(msg => (
                         <div key={msg.id} className={`ai-message ${msg.type}`}>
                           <span className="msg-tag">[{msg.type === 'user-image' ? 'SCREENSHOT' : msg.type === 'user-text' ? 'YOU' : msg.type === 'ai-error' ? 'ERROR' : msg.type === 'system' ? 'APPLIED' : msg.type === 'ai-text' ? 'KUZNETSOV' : 'DETECTION'}]</span>
                           
                           {(msg.type === 'user-text' || msg.type === 'ai-text') && (
-                            <p className="chat-text-content">{msg.content}</p>
+                            <div className="chat-text-content markdown-body">
+                              <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
+                            </div>
                           )}
                           
                           {msg.type === 'user-image' && msg.image && (
@@ -1525,23 +1661,6 @@ if (excess > 0) {
                               {msg.items.length > 0 && (
                                 <div className="apply-actions">
                                   <button 
-                                    className="btn-apply"
-                                    onClick={() => {
-                                      playAmmoSound();
-                                      const appliedCount = msg.items!.length;
-                                      const totalCount = msg.items!.reduce((sum, item) => sum + item.count, 0);
-                                      applyDetectedItems(msg.items!, 'inventory');
-                                      setChatMessages(prev => prev.map(m => 
-                                        m.id === msg.id 
-                                          ? { ...m, type: 'system', content: `✓ Applied ${appliedCount} ammo types (${totalCount} rounds) to Backpack`, items: undefined }
-                                          : m
-                                      ));
-                                    }}
-                                    onMouseEnter={playHoverSound}
-                                  >
-                                    Apply to Backpack
-                                  </button>
-                                  <button 
                                     className="btn-apply stash"
                                     onClick={() => {
                                       playAmmoSound();
@@ -1557,6 +1676,23 @@ if (excess > 0) {
                                     onMouseEnter={playHoverSound}
                                   >
                                     Apply to Loot
+                                  </button>
+                                  <button 
+                                    className="btn-apply"
+                                    onClick={() => {
+                                      playAmmoSound();
+                                      const appliedCount = msg.items!.length;
+                                      const totalCount = msg.items!.reduce((sum, item) => sum + item.count, 0);
+                                      applyDetectedItems(msg.items!, 'inventory');
+                                      setChatMessages(prev => prev.map(m => 
+                                        m.id === msg.id 
+                                          ? { ...m, type: 'system', content: `✓ Applied ${appliedCount} ammo types (${totalCount} rounds) to Backpack`, items: undefined }
+                                          : m
+                                      ));
+                                    }}
+                                    onMouseEnter={playHoverSound}
+                                  >
+                                    Apply to Backpack
                                   </button>
                                   <button 
                                     className="btn-apply both"
@@ -1595,12 +1731,6 @@ if (excess > 0) {
                         </div>
                       )}
                     </div>
-                  </div>
-)}
-                </div>
-            </div>
-          </div>
-
           <div className="sidebar-footer">
           <div className="ai-input-wrapper">
             <input 
@@ -1649,7 +1779,12 @@ if (excess > 0) {
           <div className="upload-hint">
             {openaiKey ? 'Text chat or paste/upload screenshot' : 'Configure API key to enable AI'}
           </div>
-        </div>
+          </div>
+                  </div>
+)}
+                </div>
+            </div>
+          </div>
 
         {isDragOver && (
           <div className="drag-overlay">
@@ -2870,6 +3005,39 @@ if (excess > 0) {
                 <div className="settings-info">
                   Your API key is stored locally and never sent to external servers except OpenAI.
                 </div>
+
+                <label className="settings-label">OpenRouter API Key</label>
+                <div className="settings-description">
+                  Fallback for screenshot detection (vision models). Leave blank to disable.
+                </div>
+                <input
+                  type="password"
+                  className="settings-input-full"
+                  placeholder="sk-or-..."
+                  value={openrouterKey}
+                  onChange={(e) => setOpenrouterKey(e.target.value)}
+                />
+
+                <label className="settings-label">Ollama Host</label>
+                <div className="settings-description">
+                  Local Ollama for offline vision (model must support images, e.g. llava).
+                </div>
+                <input
+                  type="text"
+                  className="settings-input-full"
+                  placeholder="http://localhost:11434"
+                  value={ollamaHost}
+                  onChange={(e) => setOllamaHost(e.target.value)}
+                />
+
+                <label className="settings-label">Ollama Model</label>
+                <input
+                  type="text"
+                  className="settings-input-full"
+                  placeholder="llava"
+                  value={ollamaModel}
+                  onChange={(e) => setOllamaModel(e.target.value)}
+                />
               </div>
 
               {/* Import/Export Tab */}
